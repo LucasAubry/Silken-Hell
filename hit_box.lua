@@ -25,24 +25,58 @@ function checkCollision(ax, ay, aw, ah, bx, by, bw, bh)
            by < ay + ah
 end
 
+
+function isTouching(a, b)
+	local ax = a.x + (a.hitBox_offset_x or 0)
+	local ay = a.y + (a.hitBox_offset_y or 0)
+	local bx = b.x + (b.hitBox_offset_x or 0)
+	local by = b.y + (b.hitBox_offset_y or 0)
+
+	return checkCollision(
+		ax, ay, a.hitBox_width, a.hitBox_height,
+		bx, by, b.hitBox_width, b.hitBox_height
+	)
+end
+
+
+
+
+
+function draw_enemy_hitboxes()
+	love.graphics.setColor(1, 0, 1, 0.5)
+
+	for _, e in ipairs(Enemies) do
+		if e.hitBox_width and e.hitBox_height then
+			local offsetX = e.hitBox_offset_x or 0
+			local offsetY = e.hitBox_offset_y or 0
+			love.graphics.rectangle("fill", e.x + offsetX, e.y + offsetY, e.hitBox_width, e.hitBox_height)
+		end
+	end
+
+	love.graphics.setColor(1, 1, 1)
+end
+
 function draw_hit_box()
-    -- Hitbox des murs
-    love.graphics.setColor(1, 0, 0, 0.5)
-    for _, wall in ipairs(Walls) do
-        love.graphics.rectangle("fill", wall.x, wall.y, wall.w, wall.h)
-    end
+	-- murs
+	love.graphics.setColor(1, 0, 0, 0.5)
+	for _, wall in ipairs(Walls) do
+		love.graphics.rectangle("fill", wall.x, wall.y, wall.w, wall.h)
+	end
 
-    -- Hitbox du joueur
-    love.graphics.setColor(0, 0, 1, 0.5)
-    love.graphics.rectangle("fill", player.x + 8, player.y + 5, player.hitBox_width, player.hitBox_height)
+	-- joueur
+	love.graphics.setColor(0, 0, 1, 0.5)
+	love.graphics.rectangle("fill", player.x + 8, player.y + 5, player.hitBox_width, player.hitBox_height)
 
-    -- Hitbox de la larme (si elle est encore visible)
-    if not objet.larme.taken then
-        love.graphics.setColor(1, 1, 0, 0.5) -- jaune semi-transparent
-        love.graphics.rectangle("fill", objet.larme.x, objet.larme.y, objet.larme.hitBox_width, objet.larme.hitBox_height)
-    end
+	-- larme
+	if not objet.larme.taken then
+		love.graphics.setColor(1, 1, 0, 0.5)
+		love.graphics.rectangle("fill", objet.larme.x, objet.larme.y, objet.larme.hitBox_width, objet.larme.hitBox_height)
+	end
 
-    -- Réinitialisation de la couleur
-    love.graphics.setColor(1, 1, 1)
+	-- ennemis
+	draw_enemy_hitboxes()
+
+	-- reset couleur
+	love.graphics.setColor(1, 1, 1)
 end
 

@@ -12,7 +12,7 @@ function load_level()
 		aureole_position = { x = 100, y = 100}
 	}
 	levels[2] = {
-		player_position = { x = 100, y = 100 },
+		player_position = { x = 370, y = 265 },
 		larme_position = {
 			[1] = { x = 395, y = 70 },
 			[2] = { x = 667, y = 275 },--toujours en metre 2 pour eviter le bug

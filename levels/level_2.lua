@@ -32,18 +32,37 @@ walls_2 = {
 
 function draw_level_2()
 
------------BACKGROUND-------------
-draw_background_1()
------------WALL-------------------
-draw_wall_1()
------------OBJECT-----------------
-
-draw_objet_1()
-take_objet(objet.larme)
-
------------MOB--------------------
-draw_mob_1()
-
+	-----------BACKGROUND-------------
+	draw_background_1()
+	-----------WALL-------------------
+	draw_wall_1()
+	-----------OBJECT-----------------
+	
+	draw_objet_1()
+	take_objet(objet.larme)
+	
+	-----------MOB--------------------
+	draw_mob(mob.ange)
+	draw_mob(mob.piege)
+	
+	
 end
 
+
+function mob_level_2(dt)
+	move_mob_towards_player(mob.ange, player, dt)
+
+	if isTouching(player, mob.ange) then
+		print("L'ange t'a touché !")
+		player.life = player.life - 1
+	end
+
+
+	static_mob(mob.piege)
+
+	if isTouching(player, mob.piege) then
+		print("Tu es tombé dans un piège !")
+		player.life = 0
+	end
+end
 

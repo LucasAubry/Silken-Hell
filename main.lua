@@ -52,6 +52,7 @@ function love.update(dt)
 --	print("player Y", player.y)
 	timer = timer + dt
 	select_tp_larme(dt)
+	select_mob_level(dt)
 
 
 

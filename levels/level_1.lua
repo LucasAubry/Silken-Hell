@@ -41,7 +41,7 @@ function draw_level_1()
 	draw_objet_1()
 	take_objet(objet.larme)
 	-----------MOB--------------------
-	--draw_mob_1()
+	draw_mob()
 
 end
 
@@ -131,20 +131,4 @@ function draw_objet_1()
 	love.graphics.draw(objet.larme.img, objet.larme.x, objet.larme.y + floatOffset, 0, objet.larme.size)
 
 
-end
-
-
-function draw_mob_1()
---	love.graphics.draw(mob.pique_img, x, y, 0 , 0.2)
---	love.graphics.draw(mob.piege_img, x, y, 0 , 0.2)
-
---	love.graphics.draw(mob.ange_up_img, x, y, 0 , 0.2)
---	love.graphics.draw(mob.ange_down_img, x, y, 0 , 0.2)
---	love.graphics.draw(mob.ange_left_img, x, y, 0 , 0.2)
---	love.graphics.draw(mob.ange_right_img, x, y, 0 , 0.2)
-
-
-
---	love.graphics.draw(mob.crane_img, x, y, 0 , 0.2)
---	love.graphics.draw(mob.troll_img, x, y, 0 , 0.2)
 end
