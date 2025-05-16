@@ -34,7 +34,7 @@ function love.draw()
 	draw_player(direction)
 
 	draw_hud()
---	draw_hit_box()--debug
+	draw_hit_box()--debug
 
 
 
@@ -54,6 +54,8 @@ function love.update(dt)
 	select_tp_larme(dt)
 	select_mob_level(dt)
 
+	update_freezes(dt)
+	mob_interaction(dt)
 
 
 end

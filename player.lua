@@ -6,7 +6,6 @@ function load_player()
 	player.size = 0.18
 	player.speed = 1.5
 	player.last_mouve = "player.y+"
-	player.life = 1
 	player.img_up = love.graphics.newImage("texture/spider_up.png")
 	player.img_down = love.graphics.newImage("texture/spider_down.png")
 	player.img_left = love.graphics.newImage("texture/spider_left.png")

@@ -4,7 +4,7 @@ function load_mob()
 
 	-- Ange
 	mob.ange = {
-		x = 100,
+		x = 0,
 		y = 0,
 		size = 0.2,
 		speed = 1,
@@ -18,7 +18,9 @@ function load_mob()
 			right = love.graphics.newImage("texture/mob/ange_right.png")
 		},
 		hitBox_width = 70,
-		hitBox_height = 140
+		hitBox_height = 140,
+		hitBox_offset_x = 0,
+		hitBox_offset_x = 0
 	}
 	table.insert(Enemies, mob.ange)
 
@@ -26,16 +28,20 @@ function load_mob()
 	mob.piege = {
 		x = 100,
 		y = 100,
-		size = 0.2,
+		active = false,
+		size = 0.3,
 		speed = 0,
 		float = false,
 		dir = "up",
 		img = nil,
 		imgs = {
 			up = love.graphics.newImage("texture/mob/piege.png"),
+			active = love.graphics.newImage("texture/mob/piege_active.png"),
 		},
-		hitBox_width = 60,
-		hitBox_height = 60
+		hitBox_width = 30,
+		hitBox_height = 30,
+		hitBox_offset_x = 15,
+		hitBox_offset_y = 15
 	}
 	table.insert(Enemies, mob.piege)
 end
@@ -86,7 +92,11 @@ end
 
 
 function static_mob(m)
-	m.img = m.imgs["up"]
+	if m.active == false then
+		m.img = m.imgs["up"]
+	else
+		m.img = m.imgs["active"]
+	end
 end
 
 
@@ -124,3 +134,38 @@ function select_mob_level(dt)
 		mob_level_10(dt)
 	end
 end
+
+function mob_interaction(dt)
+	if isTouching(mob.ange, mob.piege) and mob.piege.active == false then
+		freeze(mob.ange, 2)
+		mob.piege.active = true
+	end
+end
+
+
+----------------TOOLS FOR MOB-----------------------
+
+function freeze(entity, duration)
+	if not entity.is_frozen then
+		entity.freeze_timer = duration
+		entity.original_speed = entity.speed
+		entity.speed = 0
+		entity.is_frozen = true
+	end
+end
+
+function update_freezes(dt)
+	-- on parcourt uniquement ceux que tu veux (player et mobs)
+	local all = { player, mob.ange, mob.piege }
+
+	for _, entity in ipairs(all) do
+		if entity.is_frozen then
+			entity.freeze_timer = entity.freeze_timer - dt
+			if entity.freeze_timer <= 0 then
+				entity.speed = entity.original_speed or 1.5
+				entity.is_frozen = false
+			end
+		end
+	end
+end
+

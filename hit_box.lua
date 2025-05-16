@@ -41,7 +41,6 @@ end
 
 
 
-
 function draw_enemy_hitboxes()
 	love.graphics.setColor(1, 0, 1, 0.5)
 

@@ -9,7 +9,8 @@ function load_level()
 			[3] = { x = 102, y = 275 },
 			[4] = { x = 395, y = 470 }
 		},
-		aureole_position = { x = 100, y = 100}
+		aureole_position = { x = 100, y = 100},
+		ange_position = { x = 300, y = 300 }
 	}
 	levels[2] = {
 		player_position = { x = 370, y = 265 },
@@ -19,7 +20,9 @@ function load_level()
 			[3] = { x = 102, y = 275 },
 			[4] = { x = 395, y = 470 }
 		},
-		aureole_position = { x = 100, y = 100}
+		aureole_position = { x = 100, y = 100},
+		ange_position = { x = 300, y = 300 }
+
 	}
 end
 
@@ -48,6 +51,11 @@ function reset_level()
 
 	objet.aureole.x = level.aureole_position.x
 	objet.aureole.y = level.aureole_position.y
+
+	mob.ange.x = level.ange_position.x
+	mob.ange.y = level.ange_position.y
+
+	mob.piege.active = false
 
 	update_walls_level()
 end
