@@ -19,9 +19,8 @@ function love.load()
 	load_mob()
 	load_objet()
 	load_hud()
-
-
 	load_particles()
+
 	reset_level()
 
 end
@@ -39,7 +38,7 @@ function love.draw()
 
 
 
-	love.graphics.setColor(1, 1, 1, 1) -- reset la couleur
+	love.graphics.setColor(1, 1, 1, 1)
 
 end
 
@@ -52,6 +51,9 @@ function love.update(dt)
 --	print("player X", player.x)
 --	print("player Y", player.y)
 	timer = timer + dt
+	select_tp_larme(dt)
+
+
 
 end
 
@@ -70,24 +72,24 @@ function mouve()
 	local dx, dy = 0, 0
 
 	if love.keyboard.isDown("right") then
-		x = x + 10
+		x = x + 5
 		dx = 5
 		player.last_mouve = "player.x+"
 		direction = "right"
 	elseif love.keyboard.isDown("left") then
-		x = x -10
+		x = x -5
 		dx = -5
 		player.last_mouve = "player.x-"
 		direction = "left"
 	end
 
 	if love.keyboard.isDown("up") then
-		y = y -10
+		y = y -5
 		dy = -5
 		player.last_mouve = "player.y-"
 		direction = "up"
 	elseif love.keyboard.isDown("down") then
-		y = y + 10
+		y = y + 5
 		dy = 5
 		player.last_mouve = "player.y+"
 		direction = "down"
@@ -101,7 +103,6 @@ function mouve()
 		player.y = newY
 	end
 
-	-- dash (espace)
 	if love.keyboard.isDown("space") then
 		local dashX, dashY = 0, 0
 		direction = "dash"

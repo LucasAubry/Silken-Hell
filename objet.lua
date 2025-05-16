@@ -32,15 +32,15 @@ function load_particles()
     particleSystem:setEmissionRate(100)            -- nombre de particules par seconde
     particleSystem:setSizeVariation(1)            -- variation de taille
     particleSystem:setSizes(0.5, 1)              -- taille initiale > finale
-    particleSystem:setLinearAcceleration(-30, -30, 30, 30) -- déplacement aléatoire autour
+    particleSystem:setLinearAcceleration(-30, -30, 30, 30)
 	particleSystem:setColors(
 	    1, 0, 0, 0,    -- 🔴
 	    1, 0.5, 0, 1,  -- 🟠
 	    1, 1, 0, 1     -- 🟡
 	)
 
-    particleSystem:setSpread(math.rad(360))        -- 360° autour
-    particleSystem:setSpeed(20, 50)                -- vitesse légère
+    particleSystem:setSpread(math.rad(360))
+    particleSystem:setSpeed(20, 50)
     particleSystem:start()
 end
 
@@ -48,21 +48,19 @@ end
 
 function take_objet(obj)
 
-	-- Position et taille de la hitbox du joueur
 	local px = player.x
 	local py = player.y
 	local pw = player.hitBox_width
 	local ph = player.hitBox_height
 
-	-- Position et taille de la hitbox de l'objet
 	local ox = obj.x
 	local oy = obj.y
 	local ow = obj.hitBox_width
 	local oh = obj.hitBox_height
 
-	-- Collision ?
 	if checkCollision(px, py, pw, ph, ox, oy, ow, oh) then
 		player.level = player.level + 1
+		just_loaded = true
 		print("Objet ramassé !")
 	end
 end

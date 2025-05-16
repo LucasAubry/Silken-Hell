@@ -1,8 +1,8 @@
 function load_player()
 	player = {}
 	player.level = 1
-	player.x = 355
-	player.y = 265
+	player.x = 0--init dans levle
+	player.y = 0--idem
 	player.size = 0.18
 	player.speed = 1.5
 	player.last_mouve = "player.y+"
@@ -76,18 +76,17 @@ function draw_hud()
     love.graphics.setFont(font_demon)
 
     -- Ombre/épaisseur simulée
-    love.graphics.setColor(0.2, 0, 0) -- foncé
+    love.graphics.setColor(0.2, 0, 0)
     for dx = -1, 1 do
         for dy = -1, 1 do
             love.graphics.print(time_text, 340 + dx, 10 + dy)
         end
     end
 
-    -- Texte principal au centre
     love.graphics.setColor(1, 0, 0)
     love.graphics.print(time_text, 340, 10)
 
-    love.graphics.setColor(1, 1, 1) -- reset
+    love.graphics.setColor(1, 1, 1)
 end
 
 

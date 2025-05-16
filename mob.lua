@@ -10,5 +10,3 @@ function load_mob()
 	mob.ange_left_img = love.graphics.newImage("texture/mob/ange_left.png")
 	mob.ange_right_img = love.graphics.newImage("texture/mob/ange_right.png")
 end
-
-

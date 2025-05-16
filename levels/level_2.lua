@@ -33,12 +33,16 @@ walls_2 = {
 function draw_level_2()
 
 -----------BACKGROUND-------------
-
+draw_background_1()
 -----------WALL-------------------
-
+draw_wall_1()
 -----------OBJECT-----------------
 
+draw_objet_1()
+take_objet(objet.larme)
+
 -----------MOB--------------------
+draw_mob_1()
 
 end
 

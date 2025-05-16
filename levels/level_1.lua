@@ -31,17 +31,17 @@ walls_1 = {
 
 function draw_level_1()
 
------------BACKGROUND-------------
- draw_background_1()
-
------------WALL-------------------
-draw_wall_1()
-
------------OBJECT-----------------
-draw_objet_1()
-take_objet(objet.larme)
------------MOB--------------------
--- draw_mob_1()
+	-----------BACKGROUND-------------
+	draw_background_1()
+	
+	-----------WALL-------------------
+	draw_wall_1()
+	
+	-----------OBJECT-----------------
+	draw_objet_1()
+	take_objet(objet.larme)
+	-----------MOB--------------------
+	--draw_mob_1()
 
 end
 
@@ -115,14 +115,24 @@ function draw_wall_1()
 end
 
 function draw_objet_1()
-	love.graphics.draw(objet.aureole.img, x, y, 0, objet.aureole.size)
+	if not objet or not objet.larme or not objet.larme.x or not objet.larme.y then
+		return
+	end
+
+	-- aureoles
+	love.graphics.draw(objet.aureole.img, 353, 80, 0, objet.aureole.size)
+	love.graphics.draw(objet.aureole.img, 625, 285, 0, objet.aureole.size)
+	love.graphics.draw(objet.aureole.img, 60, 285, 0, objet.aureole.size)
+	love.graphics.draw(objet.aureole.img, 353, 480, 0, objet.aureole.size)
 
 	local floatOffset = math.sin(larme_float_timer * 2) * 5
 	draw_shadow(10, 10, objet.larme.x + 17, objet.larme.y + 43 + floatOffset)
 	love.graphics.draw(particleSystem, objet.larme.x + 16, objet.larme.y + 25 + floatOffset)
 	love.graphics.draw(objet.larme.img, objet.larme.x, objet.larme.y + floatOffset, 0, objet.larme.size)
 
+
 end
+
 
 function draw_mob_1()
 --	love.graphics.draw(mob.pique_img, x, y, 0 , 0.2)
