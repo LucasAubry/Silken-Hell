@@ -17,10 +17,10 @@ function load_mob()
 			left = love.graphics.newImage("texture/mob/ange_left.png"),
 			right = love.graphics.newImage("texture/mob/ange_right.png")
 		},
-		hitBox_width = 70,
-		hitBox_height = 140,
-		hitBox_offset_x = 0,
-		hitBox_offset_x = 0
+		hitBox_width = 40,
+		hitBox_height = 120,
+		hitBox_offset_x = 5,
+		hitBox_offset_y = 15
 	}
 	table.insert(Enemies, mob.ange)
 

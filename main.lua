@@ -34,7 +34,7 @@ function love.draw()
 	draw_player(direction)
 
 	draw_hud()
-	draw_hit_box()--debug
+--	draw_hit_box()--debug
 
 
 

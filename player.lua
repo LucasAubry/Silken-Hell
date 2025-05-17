@@ -3,7 +3,7 @@ function load_player()
 	player.level = 1
 	player.x = 0--init dans levle
 	player.y = 0--idem
-	player.size = 0.18
+	player.size = 0.16
 	player.speed = 1.5
 	player.last_mouve = "player.y+"
 	player.img_up = love.graphics.newImage("texture/spider_up.png")
@@ -15,7 +15,7 @@ function load_player()
 end
 
 function draw_player(direction)
-	draw_shadow(25, 20, player.x + 45, player.y + 45)
+	draw_shadow(25, 20, player.x + 40, player.y + 40)
 
 	if direction == "up" then
 		image = player.img_up
