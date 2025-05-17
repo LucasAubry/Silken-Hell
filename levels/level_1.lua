@@ -41,7 +41,6 @@ function draw_level_1()
 	draw_objet_1()
 	take_objet(objet.larme)
 	-----------MOB--------------------
-	draw_mob()
 
 end
 
@@ -108,9 +107,6 @@ function draw_wall_1()
     love.graphics.draw(world.lv_1.poto_2, 720, 190, 0, 0.5)
     love.graphics.draw(world.lv_1.poto_2, 720, 408, 0, 0.5)
 
- --   love.graphics.draw(world.lv_1.wall, -330, 400, 0, 1)
-  --  love.graphics.draw(world.lv_1.wall, x, y, 0, 1)
- --  love.graphics.draw(world.lv_1.muret, x, y, 0, 0.5)
 
 end
 

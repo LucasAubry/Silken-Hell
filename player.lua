@@ -14,6 +14,8 @@ function load_player()
 	player.hitBox_height = 55
 end
 
+local direction = "down"
+
 function draw_player(direction)
 	draw_shadow(25, 20, player.x + 40, player.y + 40)
 
@@ -37,16 +39,6 @@ function draw_player(direction)
 		end
 	end
 
-	if direction == "dash" then
-		for i = 1, 5 do
-			local offsetX, offsetY = 0, 0
-			if player.last_mouve == "player.x+" then offsetX = 20 end
-			if player.last_mouve == "player.x-" then offsetX = -20 end
-			if player.last_mouve == "player.y+" then offsetY = 20 end
-			if player.last_mouve == "player.y-" then offsetY = -20 end
-
-		end
-	end
 
 	if image then
 		love.graphics.draw(image, player.x, player.y, 0, player.size)

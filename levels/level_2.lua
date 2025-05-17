@@ -42,29 +42,8 @@ function draw_level_2()
 	take_objet(objet.larme)
 	
 	-----------MOB--------------------
-	draw_mob(mob.ange)
-	draw_mob(mob.piege)
 	
 	
-end
-
-function mob_level_2(dt)
-	local hold_timer = 0
-	move_mob_towards_player(mob.ange, player, dt)
-
-	if isTouching(player, mob.ange) then
-		print("L'ange t'a touché !")
-		reset_level()
-	end
-
-
-	static_mob(mob.piege)
-
-	if isTouching(player, mob.piege) and mob.piege.active == false then
-		freeze(player, 2)
-		mob.piege.active = true
-	end
-
 end
 
 

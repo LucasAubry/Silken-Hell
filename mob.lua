@@ -1,55 +1,107 @@
+MobBehaviors = {}
 function load_mob()
-	mob = {}
-	Enemies = {} -- reset la liste des ennemis
+    mobs = {} -- reset
+end
 
-	-- Ange
-	mob.ange = {
-		x = 0,
-		y = 0,
-		size = 0.2,
-		speed = 1,
-		float = true,
-		dir = "right",
-		img = nil,
-		imgs = {
-			up = love.graphics.newImage("texture/mob/ange_up.png"),
-			down = love.graphics.newImage("texture/mob/ange_down.png"),
-			left = love.graphics.newImage("texture/mob/ange_left.png"),
-			right = love.graphics.newImage("texture/mob/ange_right.png")
-		},
-		hitBox_width = 40,
-		hitBox_height = 120,
-		hitBox_offset_x = 5,
-		hitBox_offset_y = 15
-	}
-	table.insert(Enemies, mob.ange)
+--------------------PIEGE------------------------------
+function spawn_piege(x, y)
+    local piege = {
+        type = "piege",
+        x = x, y = y,
+        active = false,
+        size = 0.3,
+        speed = 0,
+        float = false,
+        dir = "up",
+        img = nil,
+        imgs = {
+            up = love.graphics.newImage("texture/mob/piege.png"),
+            active = love.graphics.newImage("texture/mob/piege_active.png")
+        },
+        hitBox_width = 30,
+        hitBox_height = 30,
+        hitBox_offset_x = 15,
+        hitBox_offset_y = 15
+    }
+    table.insert(mobs, piege)
+end
 
-	-- Piège (immobile, mais hitbox quand même ?)
-	mob.piege = {
-		x = 100,
-		y = 100,
-		active = false,
-		size = 0.3,
-		speed = 0,
-		float = false,
-		dir = "up",
-		img = nil,
-		imgs = {
-			up = love.graphics.newImage("texture/mob/piege.png"),
-			active = love.graphics.newImage("texture/mob/piege_active.png"),
-		},
-		hitBox_width = 30,
-		hitBox_height = 30,
-		hitBox_offset_x = 15,
-		hitBox_offset_y = 15
-	}
-	table.insert(Enemies, mob.piege)
+function MobBehaviors.piege(m, dt)
+    static_mob(m)
+    draw_mob(m)
+    if isTouching(player, m) and not m.active then
+        freeze(player, 2)
+        m.active = true
+    end
 end
 
 
---love.graphics.newImage("texture/mob/crane.png"),
---love.graphics.newImage("texture/mob/troll.png")
---love.graphics.newImage("texture/mob/pique.png"),
+
+---------------------------------ANGE----------------------------
+
+function spawn_ange(x, y)
+    local ange = {
+        type = "ange",
+        x = x, y = y,
+        size = 0.2,
+        speed = 1,
+        float = true,
+        dir = "right",
+        img = nil,
+        imgs = {
+            up = love.graphics.newImage("texture/mob/ange_up.png"),
+            down = love.graphics.newImage("texture/mob/ange_down.png"),
+            left = love.graphics.newImage("texture/mob/ange_left.png"),
+            right = love.graphics.newImage("texture/mob/ange_right.png")
+        },
+        hitBox_width = 40,
+        hitBox_height = 120,
+        hitBox_offset_x = 5,
+        hitBox_offset_y = 15
+    }
+    table.insert(mobs, ange)
+end
+
+function MobBehaviors.ange(m, dt)
+    move_mob_towards_player(m, player, dt)
+    draw_mob(m)
+    if isTouching(player, m) then
+        reset_level()
+    end
+end
+
+------------------------------NEXT MOB-----------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function draw_mob(enemy)
+    if enemy and enemy.img and enemy.float then
+        local float = math.sin(love.timer.getTime() * 4) * 5
+        love.graphics.draw(enemy.img, enemy.x, enemy.y + float, 0, enemy.size)
+    elseif enemy and enemy.img then
+        love.graphics.draw(enemy.img, enemy.x, enemy.y, 0, enemy.size)
+    end
+end
+
+
+
+
+
+
+------------------COMPORTEMENT DES MOBS ---------------------
 
 --mouvement gauche droite
 function move_mob(m, dt)
@@ -101,48 +153,6 @@ end
 
 
 
-
-function draw_mob(enemy)
-	if enemy and enemy.img and enemy.float then
-		local float = math.sin(love.timer.getTime() * 4) * 5
-		love.graphics.draw(enemy.img, enemy.x, enemy.y + float, 0, enemy.size)
-	elseif enemy and enemy.img then
-		love.graphics.draw(enemy.img, enemy.x, enemy.y, 0, enemy.size)
-	end
-end
-
-
-function select_mob_level(dt)
-	if player.level == 1 then
-	elseif player.level == 2 then
-		mob_level_2(dt)
-	elseif player.level == 3 then
-		mob_level_3(dt)
-	elseif player.level == 4 then
-		mob_level_4(dt)
-	elseif player.level == 5 then
-		mob_level_5(dt)
-	elseif player.level == 6 then
-		mob_level_6(dt)
-	elseif player.level == 7 then
-		mob_level_7(dt)
-	elseif player.level == 8 then
-		mob_level_8(dt)
-	elseif player.level == 9 then
-		mob_level_9(dt)
-	elseif player.level == 10 then
-		mob_level_10(dt)
-	end
-end
-
-function mob_interaction(dt)
-	if isTouching(mob.ange, mob.piege) and mob.piege.active == false then
-		freeze(mob.ange, 2)
-		mob.piege.active = true
-	end
-end
-
-
 ----------------TOOLS FOR MOB-----------------------
 
 function freeze(entity, duration)
@@ -156,7 +166,9 @@ end
 
 function update_freezes(dt)
 	-- on parcourt uniquement ceux que tu veux (player et mobs)
-	local all = { player, mob.ange, mob.piege }
+	local all = { player }
+	for _, m in ipairs(mobs) do table.insert(all, m) end
+
 
 	for _, entity in ipairs(all) do
 		if entity.is_frozen then
