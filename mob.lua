@@ -3,6 +3,48 @@ function load_mob()
     mobs = {} -- reset
 end
 
+function spawn_scie(x, y)
+    local scie = {
+        type = "scie",
+        x = x, y = y,
+        size = 0.29,
+        speed = 1,
+        float = false,
+        dir = "up",
+        img = nil,
+        imgs = {
+            up = love.graphics.newImage("texture/mob/scie.png"),
+        },
+        hitBox_width = 40,
+        hitBox_height = 40,
+        hitBox_offset_x = -10,
+        hitBox_offset_y = 50
+    }
+    scie.img = scie.imgs["up"]
+    table.insert(mobs, scie)
+end
+
+MobBehaviors.scie = {
+    update = function(m, dt)
+       m.rotation = (m.rotation or 0) + 2 * dt
+
+        local radius = 60
+
+
+	
+    	m.hitBox_offset_x = math.cos(m.rotation) * radius -20 -- 195
+    	m.hitBox_offset_y = math.sin(m.rotation) * radius -20 -- 195
+
+        if isTouching(player, m) then
+            reset_level()
+        end
+    end,
+
+    draw = function(m)
+        draw_mob(m, 50, m.img:getHeight() / 2)
+    end
+}
+
 --------------------PIEGE------------------------------
 function spawn_piege(x, y)
     local piege = {
@@ -18,22 +60,28 @@ function spawn_piege(x, y)
             up = love.graphics.newImage("texture/mob/piege.png"),
             active = love.graphics.newImage("texture/mob/piege_active.png")
         },
-        hitBox_width = 30,
-        hitBox_height = 30,
-        hitBox_offset_x = 15,
-        hitBox_offset_y = 15
+        hitBox_width = 20,
+        hitBox_height = 20,
+        hitBox_offset_x = -10,
+        hitBox_offset_y = -10
     }
     table.insert(mobs, piege)
 end
 
-function MobBehaviors.piege(m, dt)
-    static_mob(m)
-    draw_mob(m)
-    if isTouching(player, m) and not m.active then
-        freeze(player, 2)
-        m.active = true
+MobBehaviors.piege = {
+    update = function(m, dt)
+        static_mob(m)
+        if isTouching(player, m) and not m.active then
+            freeze(player, 2)
+            m.active = true
+        end
+    end,
+
+    draw = function(m)
+        draw_mob(m)
     end
-end
+}
+
 
 
 
@@ -54,21 +102,34 @@ function spawn_ange(x, y)
             left = love.graphics.newImage("texture/mob/ange_left.png"),
             right = love.graphics.newImage("texture/mob/ange_right.png")
         },
-        hitBox_width = 40,
-        hitBox_height = 120,
-        hitBox_offset_x = 5,
-        hitBox_offset_y = 15
+        hitBox_width = 20,
+        hitBox_height = 110,
+        hitBox_offset_x = -10,
+        hitBox_offset_y = -50
     }
     table.insert(mobs, ange)
 end
 
-function MobBehaviors.ange(m, dt)
-    move_mob_towards_player(m, player, dt)
-    draw_mob(m)
-    if isTouching(player, m) then
-        reset_level()
+MobBehaviors.ange = {
+    update = function(m, dt)
+        move_mob_towards_player(m, player, dt)
+        if isTouching(player, m) then
+            reset_level()
+        end
+
+        for _, other in ipairs(mobs) do
+            if other.type == "piege" and not other.active and isTouching(m, other) then
+                freeze(m, 2)
+                other.active = true
+            end
+        end
+    end,
+
+    draw = function(m)
+        draw_mob(m)
     end
-end
+}
+
 
 ------------------------------NEXT MOB-----------------------------------
 
@@ -81,25 +142,30 @@ end
 
 
 
+function draw_mob(m, pivotX, pivotY)
+    local img = m.img
+    if not img then return end
 
+    local w, h = img:getWidth(), img:getHeight()
+    local ox = pivotX or w / 2
+    local oy = pivotY or h / 2
 
-
-
-
-
-function draw_mob(enemy)
-    if enemy and enemy.img and enemy.float then
-        local float = math.sin(love.timer.getTime() * 4) * 5
-        love.graphics.draw(enemy.img, enemy.x, enemy.y + float, 0, enemy.size)
-    elseif enemy and enemy.img then
-        love.graphics.draw(enemy.img, enemy.x, enemy.y, 0, enemy.size)
+    local float = 0
+    if m.float then
+        float = math.sin(love.timer.getTime() * 4) * 5
     end
+
+    love.graphics.draw(
+        img,
+        m.x,
+        m.y + float,
+        m.rotation or 0,
+        m.size,
+        m.size,
+        ox,
+        oy
+    )
 end
-
-
-
-
-
 
 ------------------COMPORTEMENT DES MOBS ---------------------
 
@@ -152,8 +218,18 @@ function static_mob(m)
 end
 
 
+function turn_mob(m, dt)
+    if not m.rotation then
+        m.rotation = 0
+    end
+    m.rotation = m.rotation + math.rad(180) * dt -- 180°/s
+end
+
+
+
 
 ----------------TOOLS FOR MOB-----------------------
+---
 
 function freeze(entity, duration)
 	if not entity.is_frozen then

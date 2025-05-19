@@ -40,11 +40,10 @@ end
 
 
 
-
 function draw_enemy_hitboxes()
 	love.graphics.setColor(1, 0, 1, 0.5)
 
-	for _, e in ipairs(Enemies) do
+	for _, e in ipairs(mobs) do
 		if e.hitBox_width and e.hitBox_height then
 			local offsetX = e.hitBox_offset_x or 0
 			local offsetY = e.hitBox_offset_y or 0
@@ -54,6 +53,7 @@ function draw_enemy_hitboxes()
 
 	love.graphics.setColor(1, 1, 1)
 end
+
 
 function draw_hit_box()
 	-- murs
@@ -75,7 +75,6 @@ function draw_hit_box()
 	-- ennemis
 	draw_enemy_hitboxes()
 
-	-- reset couleur
 	love.graphics.setColor(1, 1, 1)
 end
 

@@ -27,9 +27,12 @@ end
 
 
 function reset_level()
+
+    load_mob()
     local level = levels[player.level]
     player.x = level.player_position.x
     player.y = level.player_position.y
+	--player.speed = 1.5
 
     local lp = level.larme_position
     if type(lp) == "table" and #lp > 1 then
@@ -45,15 +48,15 @@ function reset_level()
     objet.aureole.x = level.aureole_position.x
     objet.aureole.y = level.aureole_position.y
 
-    load_mob()
     if player.level == 1 then
-        spawn_piege(100, 100)
+		spawn_scie(200, 200)
+        --spawn_piege(100, 100)
         spawn_piege(600, 400)
-        spawn_ange(300, 300)
+      --  spawn_ange(300, 300)
     elseif player.level == 2 then
+        spawn_piege(500, 300)
         spawn_ange(400, 400)
         spawn_ange(200, 200)
-        spawn_piege(500, 300)
     end
 
     update_walls_level()

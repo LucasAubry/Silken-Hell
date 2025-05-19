@@ -31,26 +31,31 @@ function love.load()
 end
 
 local direction = "down"
-
+xx = 0
+yy = 0
 function mouve()
     local dx, dy = 0, 0
 
     if love.keyboard.isDown("right") then
         dx = 5
+		xx = xx +5
         player.last_mouve = "player.x+"
         direction = "right"
     elseif love.keyboard.isDown("left") then
         dx = -5
+		xx = xx -5
         player.last_mouve = "player.x-"
         direction = "left"
     end
 
     if love.keyboard.isDown("up") then
         dy = -5
+		yy = yy -5
         player.last_mouve = "player.y-"
         direction = "up"
     elseif love.keyboard.isDown("down") then
         dy = 5
+		yy = yy +5
         player.last_mouve = "player.y+"
         direction = "down"
     end
@@ -80,7 +85,8 @@ function mouve()
 	    end
 	end
 
-
+print("X:  ", xx)
+print("Y:  ", yy)
 end
 
 
@@ -92,21 +98,34 @@ function love.update(dt)
     larme_float_timer = larme_float_timer + dt
     select_tp_larme(dt)
 
-    for _, mob in ipairs(mobs) do
-        local behavior = MobBehaviors[mob.type]
-        if behavior then
-            behavior(mob, dt)
-        end
-    end
+	for _, mob in ipairs(mobs) do
+		local behavior = MobBehaviors[mob.type]
+	    if behavior and behavior.update then
+       		behavior.update(mob, dt)
+    	end
+	end
 end
 
 function love.draw()
     draw_level()
+
+	for _, mob in ipairs(mobs) do
+	    local behavior = MobBehaviors[mob.type]
+	    if behavior and behavior.draw then
+	        behavior.draw(mob)
+	    end
+	end
     draw_player(direction)
-    for _, mob in ipairs(mobs) do
-        draw_mob(mob)
-    end
+
+--	draw_hit_box()
+
     draw_hud()
     love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.rectangle("fill", xx, yy, 10, 10)
 end
 
+function love.keypressed(key)
+	if key == "escape" then
+		love.event.quit()
+	end
+end
