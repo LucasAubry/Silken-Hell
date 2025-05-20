@@ -1,4 +1,4 @@
-walls_2 = {
+walls_3 = {
 --left
    {x = 0, y = 35, w = 50, h = 150},
    {x = 0, y = 255, w = 50, h = 150},
@@ -30,7 +30,7 @@ walls_2 = {
 }
 
 
-function draw_level_2()
+function draw_level_3()
 
 	-----------BACKGROUND-------------
 	draw_background_1()
@@ -46,16 +46,19 @@ function draw_level_2()
 	
 end
 
-function mob_lv2()
-	spawn_piege(520, 175)
-	spawn_piege(260, 425)
+function mob_lv3()
+    spawn_piege(635, 285)
 
-	spawn_ange(405, 140)
-	spawn_ange(240, 310)
-	spawn_ange(630, 310)
-	spawn_ange(325, 565)
-	spawn_ange(95, 65)
+	spawn_scie(145, 235, -1, 2, "left")
+	spawn_scie(560, 415, 1, 5, "left")
+	spawn_scie(460, 180, -1, 1, "up")
+
+    spawn_ange(380, 150)
+    spawn_ange(275, 435)
 end
+
+
+
 		--spawn_scie(200, 200, -1, 3, "up")
 		--spawn_scie(400, 400, 1, 7, "down")
 		--spawn_scie(600, 300, 1, 2, "left")

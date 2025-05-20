@@ -1,4 +1,4 @@
-walls_2 = {
+walls_5 = {
 --left
    {x = 0, y = 35, w = 50, h = 150},
    {x = 0, y = 255, w = 50, h = 150},
@@ -30,7 +30,7 @@ walls_2 = {
 }
 
 
-function draw_level_2()
+function draw_level_5()
 
 	-----------BACKGROUND-------------
 	draw_background_1()
@@ -38,7 +38,7 @@ function draw_level_2()
 	draw_wall_1()
 	-----------OBJECT-----------------
 	
-	draw_objet_1()
+	draw_objet_5()
 	take_objet(objet.larme)
 	
 	-----------MOB--------------------
@@ -46,16 +46,17 @@ function draw_level_2()
 	
 end
 
-function mob_lv2()
-	spawn_piege(520, 175)
-	spawn_piege(260, 425)
+function mob_lv5()
 
-	spawn_ange(405, 140)
-	spawn_ange(240, 310)
-	spawn_ange(630, 310)
-	spawn_ange(325, 565)
-	spawn_ange(95, 65)
+	spawn_piege(500, 300)
+	spawn_ange(400, 400, 4, true)
+	spawn_ange(300, 400, 4)
+	spawn_ange(200, 400, 4)
+	spawn_ange(100, 400, 4)
 end
+
+
+
 		--spawn_scie(200, 200, -1, 3, "up")
 		--spawn_scie(400, 400, 1, 7, "down")
 		--spawn_scie(600, 300, 1, 2, "left")
@@ -64,4 +65,24 @@ end
         --spawn_piege(600, 400)
         --spawn_ange(300, 300)
 
+
+--	spawn_piege(500, 300)
+--	spawn_ange(400, 400)
+--	spawn_ange(200, 200)
+
+
+
+function draw_objet_5()
+	if not objet or not objet.larme or not objet.larme.x or not objet.larme.y then
+		return
+	end
+
+
+	local floatOffset = math.sin(larme_float_timer * 2) * 5
+	draw_shadow(10, 10, objet.larme.x + 17, objet.larme.y + 43 + floatOffset)
+	love.graphics.draw(particleSystem, objet.larme.x + 16, objet.larme.y + 25 + floatOffset)
+	love.graphics.draw(objet.larme.img, objet.larme.x, objet.larme.y + floatOffset, 0, objet.larme.size)
+
+
+end
 

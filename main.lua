@@ -7,14 +7,19 @@ require "hit_box"
 require "level"
 require "levels/level_1"
 require "levels/level_2"
+require "levels/level_3"
+require "levels/level_4"
+require "levels/level_5"
+require "levels/level_6"
+require "levels/level_7"
+require "levels/level_8"
+require "levels/level_9"
+require "levels/level_10"
 require "mob" -- Assure que draw_mob est bien chargé
 
 mobs = {}
 larme_indexes = {}
-timer = 0
-larme_float_timer = 0
-larme_timer = 0
-larme_interval = 2
+
 just_loaded = true
 local direction = "down"
 
@@ -96,7 +101,12 @@ function love.update(dt)
     particleSystem:update(dt)
     timer = timer + dt
     larme_float_timer = larme_float_timer + dt
-    select_tp_larme(dt)
+	if player.level == 5 then
+		update_larme_dos_ange()
+	else
+    	select_tp_larme(dt)
+	end
+
 
 	for _, mob in ipairs(mobs) do
 		local behavior = MobBehaviors[mob.type]
@@ -120,8 +130,9 @@ function love.draw()
 --	draw_hit_box()
 
     draw_hud()
-    love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.setColor(255,0,0)
 	love.graphics.rectangle("fill", xx, yy, 10, 10)
+	love.graphics.setColor(1,1,1)
 end
 
 function love.keypressed(key)

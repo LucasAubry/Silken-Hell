@@ -6,3 +6,5 @@ all:
 	cp index.html game/
 	python3 -m http.server --directory game &
 	open http://localhost:8000
+	trap 'pkill Python; echo hayanne le goat' EXIT; \
+	while pgrep -q Python; do sleep 2; done

@@ -3,37 +3,42 @@ function load_mob()
     mobs = {} -- reset
 end
 
-function spawn_scie(x, y)
+function spawn_scie(x, y, rotation, speed, texture)
     local scie = {
         type = "scie",
         x = x, y = y,
+		rota = rotation, -- = -1 ou +1
         size = 0.29,
-        speed = 1,
+        speed = speed,
         float = false,
         dir = "up",
         img = nil,
         imgs = {
             up = love.graphics.newImage("texture/mob/scie.png"),
+            down = love.graphics.newImage("texture/mob/scie_pique.png"),
+            left = love.graphics.newImage("texture/mob/scie_blanc.png"),
         },
         hitBox_width = 40,
         hitBox_height = 40,
-        hitBox_offset_x = -10,
-        hitBox_offset_y = 50
+        offset_fix_x = 1,
+		offset_fix_y = -2
+
     }
-    scie.img = scie.imgs["up"]
+    scie.img = scie.imgs[texture]
     table.insert(mobs, scie)
 end
 
 MobBehaviors.scie = {
     update = function(m, dt)
-       m.rotation = (m.rotation or 0) + 2 * dt
+        m.rotation = (m.rotation or 0) + m.speed * dt * m.rota
 
         local radius = 60
+        local cx = math.cos(m.rotation) * radius
+        local cy = math.sin(m.rotation) * radius
 
-
-	
-    	m.hitBox_offset_x = math.cos(m.rotation) * radius -20 -- 195
-    	m.hitBox_offset_y = math.sin(m.rotation) * radius -20 -- 195
+        -- Position de la scie (centre de rotation + mouvement + offset fixe)
+        m.hitBox_offset_x = cx + (m.offset_fix_x or 0) - m.hitBox_width / 2
+        m.hitBox_offset_y = cy + (m.offset_fix_y or 0) - m.hitBox_height / 2
 
         if isTouching(player, m) then
             reset_level()
@@ -44,6 +49,7 @@ MobBehaviors.scie = {
         draw_mob(m, 50, m.img:getHeight() / 2)
     end
 }
+
 
 --------------------PIEGE------------------------------
 function spawn_piege(x, y)
@@ -87,14 +93,15 @@ MobBehaviors.piege = {
 
 ---------------------------------ANGE----------------------------
 
-function spawn_ange(x, y)
+function spawn_ange(x, y, speed, has_larme)
     local ange = {
         type = "ange",
         x = x, y = y,
         size = 0.2,
-        speed = 1,
+        speed = speed or 1,
         float = true,
         dir = "right",
+		has_larme = has_larme or false,
         img = nil,
         imgs = {
             up = love.graphics.newImage("texture/mob/ange_up.png"),
@@ -113,6 +120,7 @@ end
 MobBehaviors.ange = {
     update = function(m, dt)
         move_mob_towards_player(m, player, dt)
+
         if isTouching(player, m) then
             reset_level()
         end
@@ -121,14 +129,23 @@ MobBehaviors.ange = {
             if other.type == "piege" and not other.active and isTouching(m, other) then
                 freeze(m, 2)
                 other.active = true
+
+                -- 🧠 Seul l'ange porteur lâche la larme
+                if m.has_larme and not objet.larme_dropped then
+                    objet.larme.x = m.x
+                    objet.larme.y = m.y + 30
+                    objet.larme_dropped = true
+                end
             end
         end
-    end,
+    end, -- ⬅️ VIRGULE ajoutée ici
 
     draw = function(m)
         draw_mob(m)
     end
 }
+
+
 
 
 ------------------------------NEXT MOB-----------------------------------
@@ -182,31 +199,28 @@ function move_mob(m, dt)
 end
 
 --mouvement qui suis le joueur
-function move_mob_towards_player(m, target, dt)
-	local dx = target.x - m.x
-	local dy = target.y - m.y
-	local dist = math.sqrt(dx * dx + dy * dy)
+function move_mob_towards_player(m, player, dt)
+    local dx = player.x - m.x
+    local dy = player.y - m.y
+    local angle = math.atan2(dy, dx)
+    local speed = m.speed or 1
 
-	if dist > 1 then
-		-- Normalisation du vecteur direction
-		local nx = dx / dist
-		local ny = dy / dist
+    m.x = m.x + math.cos(angle) * speed
+    m.y = m.y + math.sin(angle) * speed
 
-		-- Déplacement
-		m.x = m.x + nx * m.speed
-		m.y = m.y + ny * m.speed
+    -- Met à jour la direction (visuelle + logique)
+    if math.abs(dx) > math.abs(dy) then
+        m.dir = dx > 0 and "right" or "left"
+    else
+        m.dir = dy > 0 and "down" or "up"
+    end
 
-		-- Direction principale pour choisir l'image
-		if math.abs(dx) > math.abs(dy) then
-			m.dir = dx > 0 and "right" or "left"
-		else
-			m.dir = dy > 0 and "down" or "up"
-		end
-
-		-- Mettre à jour l’image selon la direction
-		m.img = m.imgs[m.dir]
-	end
+    -- Met à jour l’image si utile
+    if m.imgs and m.imgs[m.dir] then
+        m.img = m.imgs[m.dir]
+    end
 end
+
 
 
 function static_mob(m)

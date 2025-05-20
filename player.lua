@@ -1,17 +1,20 @@
 function load_player()
 	player = {}
-	player.level = 1
+	player.level = 5
 	player.x = 0--init dans levle
 	player.y = 0--idem
-	player.size = 0.16
-	player.speed = 1.5
+	player.size = 0.14
+	player.speed = 1
 	player.last_mouve = "player.y+"
 	player.img_up = love.graphics.newImage("texture/spider_up.png")
 	player.img_down = love.graphics.newImage("texture/spider_down.png")
 	player.img_left = love.graphics.newImage("texture/spider_left.png")
 	player.img_right = love.graphics.newImage("texture/spider_right.png")
-	player.hitBox_width = 70
-	player.hitBox_height = 55
+	player.hitBox_width = 60
+	player.hitBox_height = 30
+	player.hitBox_offset_x = 5
+	player.hitBox_offset_y = 10
+
 end
 
 local direction = "down"

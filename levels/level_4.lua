@@ -1,4 +1,4 @@
-walls_1 = {
+walls_4 = {
 --left
    {x = 0, y = 35, w = 50, h = 150},
    {x = 0, y = 255, w = 50, h = 150},
@@ -29,97 +29,50 @@ walls_1 = {
   {x = -15, y = 590, w = 800, h = 50},
 }
 
-function draw_level_1()
+
+function draw_level_4()
 
 	-----------BACKGROUND-------------
 	draw_background_1()
-	
 	-----------WALL-------------------
 	draw_wall_1()
-	
 	-----------OBJECT-----------------
-	draw_objet_1()
+	
+	draw_objet_4()
 	take_objet(objet.larme)
+	
 	-----------MOB--------------------
-
+	
+	
 end
 
-function mob_lv1()
+function mob_lv4()
+--	spawn_piege(405, 230)
+--	spawn_piege(405, 355)
+--	spawn_piege(335, 300)
+	spawn_piege(413, 165)
+	spawn_piege(625, 380)
+	spawn_piege(205, 360)
+
+
+	spawn_scie(590, 255, 1, 3, "left")
+	spawn_scie(465, 450, -1, 1, "left")
+
+	spawn_ange(505, 230)
+	spawn_ange(310, 135)
+	spawn_ange(300, 525)
+end
+
+
 		--spawn_scie(200, 200, -1, 3, "up")
-		--spawn_scie(400, 400, 1, 7, "down")
 		--spawn_scie(600, 300, 1, 2, "left")
 
         --spawn_piege(100, 100)
         --spawn_piege(600, 400)
         --spawn_ange(300, 300)
+	
 
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function draw_background_1()
-    local img = world.background_lv
-    local imgW = img:getWidth()
-    local imgH = img:getHeight()
-    local screenW = love.graphics.getWidth()
-    local screenH = love.graphics.getHeight()
-
-    local scaleX = screenW / imgW
-    local scaleY = screenH / imgH
-    local scale = math.max(scaleX, scaleY)
-
-    local finalW = imgW * scale
-    local finalH = imgH * scale
-
-    local offsetX = (screenW - finalW) / 2
-    local offsetY = (screenH - finalH) / 2
-
-    love.graphics.draw(img, offsetX, offsetY, 0, scale, scale)
-end
-
-
-function draw_wall_1()
-
-
-
-    love.graphics.draw(world.lv_1.wall, -140, -565, 0, 0.7)
-    love.graphics.draw(world.lv_1.wall, -230, 474, 0, 1)
-
-
-    love.graphics.draw(world.lv_1.poto_2, -50, -25, 0, 0.5)
-    love.graphics.draw(world.lv_1.poto_2, -50, 190, 0, 0.5)
-    love.graphics.draw(world.lv_1.poto_2, -50, 408, 0, 0.5)
-
-    love.graphics.draw(world.lv_1.poto_2, 720, -25, 0, 0.5)
-    love.graphics.draw(world.lv_1.poto_2, 720, 190, 0, 0.5)
-    love.graphics.draw(world.lv_1.poto_2, 720, 408, 0, 0.5)
-
-
-end
-
-function draw_objet_1()
+function draw_objet_4()
 	if not objet or not objet.larme or not objet.larme.x or not objet.larme.y then
 		return
 	end
@@ -130,6 +83,11 @@ function draw_objet_1()
 	love.graphics.draw(objet.aureole.img, 60, 285, 0, objet.aureole.size)
 	love.graphics.draw(objet.aureole.img, 353, 500, 0, objet.aureole.size)
 
+	love.graphics.draw(objet.aureole.img, 530, 430, 0, objet.aureole.size)
+	love.graphics.draw(objet.aureole.img, 160, 430, 0, objet.aureole.size)
+	love.graphics.draw(objet.aureole.img, 530, 140, 0, objet.aureole.size)
+	love.graphics.draw(objet.aureole.img, 160, 140, 0, objet.aureole.size)
+
 	local floatOffset = math.sin(larme_float_timer * 2) * 5
 	draw_shadow(10, 10, objet.larme.x + 17, objet.larme.y + 43 + floatOffset)
 	love.graphics.draw(particleSystem, objet.larme.x + 16, objet.larme.y + 25 + floatOffset)
@@ -137,4 +95,3 @@ function draw_objet_1()
 
 
 end
-

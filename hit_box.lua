@@ -10,13 +10,22 @@ function addWall(x, y, w, h)
 end
 
 function willCollide(newX, newY)
+	local offsetX = player.hitBox_offset_x or 0
+	local offsetY = player.hitBox_offset_y or 0
+
 	for _, wall in ipairs(Walls) do
-		if checkCollision(newX +8, newY +5, player.hitBox_width, player.hitBox_height, wall.x, wall.y, wall.w, wall.h) then
+		if checkCollision(
+			newX + offsetX, newY + offsetY,
+			player.hitBox_width, player.hitBox_height,
+			wall.x, wall.y, wall.w, wall.h
+		) then
 			return true
 		end
 	end
 	return false
 end
+
+
 
 function checkCollision(ax, ay, aw, ah, bx, by, bw, bh)
     return ax < bx + bw and
@@ -63,8 +72,10 @@ function draw_hit_box()
 	end
 
 	-- joueur
+	local offsetX = player.hitBox_offset_x or 0
+	local offsetY = player.hitBox_offset_y or 0
 	love.graphics.setColor(0, 0, 1, 0.5)
-	love.graphics.rectangle("fill", player.x + 8, player.y + 5, player.hitBox_width, player.hitBox_height)
+	love.graphics.rectangle("fill", player.x + offsetX, player.y + offsetY, player.hitBox_width, player.hitBox_height)
 
 	-- larme
 	if not objet.larme.taken then
