@@ -33,12 +33,14 @@ walls_6 = {
 function draw_level_6()
 
 	-----------BACKGROUND-------------
+--	love.graphics.setColor(255,0,0)
 	draw_background_1()
+	love.graphics.setColor(1,1,1)
 	-----------WALL-------------------
 	draw_wall_1()
 	-----------OBJECT-----------------
 	
-	draw_objet_1()
+	draw_objet_4()
 	take_objet(objet.larme)
 	
 	-----------MOB--------------------
@@ -47,7 +49,9 @@ function draw_level_6()
 end
 
 function mob_lv6()
+	spawn_boss(500, 300)
 --	spawn_piege(500, 300)
 --	spawn_ange(400, 400)
 --	spawn_ange(200, 200)
+--	spaw_scie(200, 400, -1, 1, "left")
 end

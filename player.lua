@@ -1,6 +1,6 @@
 function load_player()
 	player = {}
-	player.level = 5
+	player.level = 1
 	player.x = 0--init dans levle
 	player.y = 0--idem
 	player.size = 0.14

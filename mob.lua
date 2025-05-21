@@ -3,6 +3,49 @@ function load_mob()
     mobs = {} -- reset
 end
 
+-------------BOSS------------------------
+function spawn_boss(x, y, speed)
+    local boss = {
+        type = "boss",
+        x = x, y = y,
+        size = 0.3,
+        speed = speed,
+        float = true,
+        dir = "up",
+        img = nil,
+        imgs = {
+            up = love.graphics.newImage("texture/mob/boss_up.png"),
+            down = love.graphics.newImage("texture/mob/boss_down.png"),
+            left = love.graphics.newImage("texture/mob/boss_left.png"),
+            right = love.graphics.newImage("texture/mob/boss_right.png"),
+        },
+        hitBox_width = 40,
+        hitBox_height = 40,
+        offset_fix_x = 0,
+		offset_fix_y = 0
+    }
+    boss.img = boss.imgs[texture]
+    table.insert(mobs, boss)
+end
+
+MobBehaviors.boss = {
+    update = function(m, dt)
+        move_mob_towards_player(m, player, dt)
+        if isTouching(player, m) and not m.active then
+			reset_level()
+            activateShaderEffect()
+            m.active = true
+        end
+    end,
+
+    draw = function(m)
+        draw_mob(m)
+    end
+}
+
+
+-----------------SCIE----------------
+
 function spawn_scie(x, y, rotation, speed, texture)
     local scie = {
         type = "scie",
@@ -42,6 +85,7 @@ MobBehaviors.scie = {
 
         if isTouching(player, m) then
             reset_level()
+            activateShaderEffect()
         end
     end,
 
@@ -93,6 +137,7 @@ MobBehaviors.piege = {
 
 ---------------------------------ANGE----------------------------
 
+-- MobBehaviors.ange
 function spawn_ange(x, y, speed, has_larme)
     local ange = {
         type = "ange",
@@ -101,7 +146,7 @@ function spawn_ange(x, y, speed, has_larme)
         speed = speed or 1,
         float = true,
         dir = "right",
-		has_larme = has_larme or false,
+        has_larme = has_larme or false,
         img = nil,
         imgs = {
             up = love.graphics.newImage("texture/mob/ange_up.png"),
@@ -123,6 +168,7 @@ MobBehaviors.ange = {
 
         if isTouching(player, m) then
             reset_level()
+            activateShaderEffect()
         end
 
         for _, other in ipairs(mobs) do
@@ -130,7 +176,6 @@ MobBehaviors.ange = {
                 freeze(m, 2)
                 other.active = true
 
-                -- 🧠 Seul l'ange porteur lâche la larme
                 if m.has_larme and not objet.larme_dropped then
                     objet.larme.x = m.x
                     objet.larme.y = m.y + 30
@@ -138,13 +183,12 @@ MobBehaviors.ange = {
                 end
             end
         end
-    end, -- ⬅️ VIRGULE ajoutée ici
+    end,
 
     draw = function(m)
         draw_mob(m)
     end
 }
-
 
 
 

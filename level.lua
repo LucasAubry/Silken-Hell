@@ -223,20 +223,20 @@ function update_larme_dos_ange()
 
 	for _, m in ipairs(mobs) do
 		if m.type == "ange" and m.has_larme then
-			local offset = 25
+			local offset = 50
 			local dir = m.dir or "down"
 
 			if m.speed == 0 then
 				objet.larme.x = m.x
 				objet.larme.y = m.y + offset
 			elseif dir == "up" then
-				objet.larme.x = m.x
+				objet.larme.x = m.x - 15
 				objet.larme.y = m.y + offset
 			elseif dir == "down" then
-				objet.larme.x = m.x
+				objet.larme.x = m.x - 20
 				objet.larme.y = m.y - offset
 			elseif dir == "left" then
-				objet.larme.x = m.x + offset
+				objet.larme.x = m.x + 25
 				objet.larme.y = m.y
 			elseif dir == "right" then
 				objet.larme.x = m.x - offset

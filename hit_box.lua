@@ -1,4 +1,7 @@
 --fonction pour metre a jours les hit box en fonction  du levle
+hitbox_display_timer = 0         -- temps restant d'affichage
+hitbox_display_duration = 2      -- durée en secondes, modifiable
+
 Walls = walls_1
 function update_walls_level()
 	Walls = _G["walls_" .. tostring(player.level)] or {}

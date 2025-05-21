@@ -48,11 +48,12 @@ end
 
 function mob_lv5()
 
-	spawn_piege(500, 300)
-	spawn_ange(400, 400, 4, true)
-	spawn_ange(300, 400, 4)
-	spawn_ange(200, 400, 4)
-	spawn_ange(100, 400, 4)
+	spawn_piege(655, 70)
+	spawn_piege(400, 400)
+	spawn_ange(100, 500, 2)
+	spawn_ange(400, 100, 3, true)
+	spawn_ange(700, 500, 2)
+
 end
 
 

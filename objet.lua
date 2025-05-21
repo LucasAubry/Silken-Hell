@@ -65,3 +65,16 @@ function take_objet(obj)
 	end
 end
 
+shader_effect_timer = 0
+shader_duration = 0.3
+
+
+
+function activateShaderEffect()
+    shader_effect_timer = shader_duration
+end
+
+function isShaderActive()
+    return shader_effect_timer > 0
+end
+
