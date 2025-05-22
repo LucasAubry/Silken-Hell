@@ -17,10 +17,10 @@ function load_player()
 
 end
 
-local direction = "down"
 
 function draw_player(direction)
 	draw_shadow(25, 20, player.x + 40, player.y + 40)
+	local image = nil
 
 	if direction == "up" then
 		image = player.img_up

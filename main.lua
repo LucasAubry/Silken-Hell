@@ -16,6 +16,7 @@ require "levels/level_8"
 require "levels/level_9"
 require "levels/level_10"
 require "mob"
+require "effect"
 
 mobs = {}
 larme_indexes = {}
@@ -97,27 +98,40 @@ function mouve()
         player.y = newY
     end
 
-    if love.keyboard.isDown("space") and player.speed > 0 then
-        local dashX, dashY = 0, 0
-        if player.last_mouve == "player.x+" then dashX = player.speed * 4 end
-        if player.last_mouve == "player.x-" then dashX = -player.speed * 4 end
-        if player.last_mouve == "player.y+" then dashY = player.speed * 4 end
-        if player.last_mouve == "player.y-" then dashY = -player.speed * 4 end
+	if love.keyboard.isDown("space") and player.speed > 0 then
+	    local dashX, dashY = 0, 0
+	    if player.last_mouve == "player.x+" then dashX = player.speed * 4 end
+	    if player.last_mouve == "player.x-" then dashX = -player.speed * 4 end
+	    if player.last_mouve == "player.y+" then dashY = player.speed * 4 end
+	    if player.last_mouve == "player.y-" then dashY = -player.speed * 4 end
+	
+	    local dashNewX = player.x + dashX
+	    local dashNewY = player.y + dashY
+	
+	    if not willCollide(dashNewX, dashNewY) then
+	        -- ajoute un ghost juste avant de bouger
+	        table.insert(ghosts, {
+	            x = player.x,
+	            y = player.y,
+	            direction = direction,
+	            alpha = 0.4,
+	            time = 0
+	        })
+	
+	        player.x = dashNewX
+	        player.y = dashNewY
+	    end
+	end
 
-        local dashNewX = player.x + dashX
-        local dashNewY = player.y + dashY
 
-        if not willCollide(dashNewX, dashNewY) then
-            player.x = dashNewX
-            player.y = dashNewY
-        end
-    end
 
     print("X:  ", xx)
     print("Y:  ", yy)
 end
 
 function love.update(dt)
+	update_shadow_dash(dt)
+
     mouve()
     update_freezes(dt)
     particleSystem:update(dt)
@@ -161,13 +175,12 @@ function love.draw()
             behavior.draw(mob)
         end
     end
+	draw_shadow_dash()
 
     draw_player(direction)
     draw_hud()
 
-    if hitbox_display_timer and hitbox_display_timer > 0 then
-        draw_hit_box()
-    end
+   -- draw_hit_box()
 
     love.graphics.setColor(1, 0, 0)
     love.graphics.rectangle("fill", xx, yy, 10, 10)
@@ -190,7 +203,7 @@ function love.draw()
 	love.graphics.draw(intermediateCanvas, 0, 0)
 	love.graphics.setShader()
 
-  end
+end
 
 function love.keypressed(key)
     if key == "escape" then
