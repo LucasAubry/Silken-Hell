@@ -38,7 +38,7 @@ function draw_level_7()
 	draw_wall_1()
 	-----------OBJECT-----------------
 	
-	draw_objet_1()
+	draw_objet_5()
 	take_objet(objet.larme)
 	
 	-----------MOB--------------------
@@ -48,6 +48,6 @@ end
 
 function mob_lv7()
 --	spawn_piege(500, 300)
---	spawn_ange(400, 400)
+	spawn_ange(400, 400, 3, true)
 --	spawn_ange(200, 200)
 end

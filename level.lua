@@ -61,14 +61,8 @@ function load_level()
 		levels[6] = {
 			player_position = { x = 370, y = 265 },
 			larme_position = {
-				[1] = { x = 395, y = 70 },
-				[2] = { x = 572, y = 130 },
-				[3] = { x = 667, y = 275 },--toujours en metre 2 pour eviter le bug
-				[4] = { x = 572, y = 420 },
-				[5] = { x = 395, y = 490 },
-				[6] = { x = 202, y = 420 },
-				[7] = { x = 102, y = 275 },
-				[8] = { x = 202, y = 130 }
+				[1] = { x = 70, y = 95 },
+				[2] = { x = 70, y = 95 },
 			},
 			aureole_position = { x = 100, y = 100},
 			ange_position = { x = 300, y = 300 }
@@ -219,7 +213,7 @@ end
 
 
 function update_larme_dos_ange()
-	if player.level ~= 5 or objet.larme_dropped then return end
+	if objet.larme_dropped then return end
 
 	for _, m in ipairs(mobs) do
 		if m.type == "ange" and m.has_larme then
@@ -279,8 +273,4 @@ function select_tp_larme(dt)
 	if nb_pos > 1 then
 		tp_larme(level, dt, nb_pos)
 	end
-end
-
-
-function fin()
 end

@@ -40,7 +40,7 @@ function draw_level_6()
 	draw_wall_1()
 	-----------OBJECT-----------------
 	
-	draw_objet_4()
+	draw_objet_6()
 	take_objet(objet.larme)
 	
 	-----------MOB--------------------
@@ -49,9 +49,29 @@ function draw_level_6()
 end
 
 function mob_lv6()
-	spawn_boss(500, 300)
---	spawn_piege(500, 300)
---	spawn_ange(400, 400)
+	spawn_snake(110, 560, 5)
+	spawn_snake(600, 430, 5)
+	spawn_snake(300, 370, 5)
+	spawn_snake(200, 210, 5)
 --	spawn_ange(200, 200)
 --	spaw_scie(200, 400, -1, 1, "left")
+
+--	155
+--	135
+end
+
+function draw_objet_6()
+	if not objet or not objet.larme or not objet.larme.x or not objet.larme.y then
+		return
+	end
+
+	-- aureoles
+	love.graphics.draw(objet.aureole.img, 30, 105, 0, objet.aureole.size)
+
+	local floatOffset = math.sin(larme_float_timer * 2) * 5
+	draw_shadow(10, 10, objet.larme.x + 17, objet.larme.y + 43 + floatOffset)
+	love.graphics.draw(particleSystem, objet.larme.x + 16, objet.larme.y + 25 + floatOffset)
+	love.graphics.draw(objet.larme.img, objet.larme.x, objet.larme.y + floatOffset, 0, objet.larme.size)
+
+
 end

@@ -22,8 +22,8 @@ mobs = {}
 larme_indexes = {}
 
 just_loaded = true
-local direction = "down"
-local xx, yy = 0, 0
+direction = "down"
+ xx, yy = 0, 0
 
 -- Shader effect control
 local shaderTime = 0
@@ -63,19 +63,23 @@ function love.load()
 	load_shader()
 end
 
-function mouve()
+
+function mouve(dt)
     local dx, dy = 0, 0
+    player.has_moved = false
 
     if love.keyboard.isDown("right") then
         dx = 5
         xx = xx + 5
         player.last_mouve = "player.x+"
         direction = "right"
+        player.has_moved = true
     elseif love.keyboard.isDown("left") then
         dx = -5
         xx = xx - 5
         player.last_mouve = "player.x-"
         direction = "left"
+        player.has_moved = true
     end
 
     if love.keyboard.isDown("up") then
@@ -83,11 +87,13 @@ function mouve()
         yy = yy - 5
         player.last_mouve = "player.y-"
         direction = "up"
+        player.has_moved = true
     elseif love.keyboard.isDown("down") then
         dy = 5
         yy = yy + 5
         player.last_mouve = "player.y+"
         direction = "down"
+        player.has_moved = true
     end
 
     local newX = player.x + dx * player.speed
@@ -98,47 +104,53 @@ function mouve()
         player.y = newY
     end
 
-	if love.keyboard.isDown("space") and player.speed > 0 then
-	    local dashX, dashY = 0, 0
-	    if player.last_mouve == "player.x+" then dashX = player.speed * 4 end
-	    if player.last_mouve == "player.x-" then dashX = -player.speed * 4 end
-	    if player.last_mouve == "player.y+" then dashY = player.speed * 4 end
-	    if player.last_mouve == "player.y-" then dashY = -player.speed * 4 end
-	
-	    local dashNewX = player.x + dashX
-	    local dashNewY = player.y + dashY
-	
-	    if not willCollide(dashNewX, dashNewY) then
-	        -- ajoute un ghost juste avant de bouger
-	        table.insert(ghosts, {
-	            x = player.x,
-	            y = player.y,
-	            direction = direction,
-	            alpha = 0.4,
-	            time = 0
-	        })
-	
-	        player.x = dashNewX
-	        player.y = dashNewY
-	    end
-	end
+    -- Génération continue d’ombres quand le joueur bouge (même sans dash)
+    if player.has_moved then
+		add_ghost(dt)
+    end
 
+    -- Dash avec ombre immédiate
+    if love.keyboard.isDown("space") and player.speed > 0 then
+        local dashX, dashY = 0, 0
+        if player.last_mouve == "player.x+" then dashX = player.speed * 4 end
+        if player.last_mouve == "player.x-" then dashX = -player.speed * 4 end
+        if player.last_mouve == "player.y+" then dashY = player.speed * 4 end
+        if player.last_mouve == "player.y-" then dashY = -player.speed * 4 end
 
+        local dashNewX = player.x + dashX
+        local dashNewY = player.y + dashY
+
+        if not willCollide(dashNewX, dashNewY) then
+			add_ghost(dt)
+            player.x = dashNewX
+            player.y = dashNewY
+            player.has_moved = true
+        end
+    end
 
     print("X:  ", xx)
     print("Y:  ", yy)
 end
 
+
+
+
+
+
+
+
+
+
 function love.update(dt)
 	update_shadow_dash(dt)
 
-    mouve()
+    mouve(dt)
     update_freezes(dt)
     particleSystem:update(dt)
     timer = timer + dt
     larme_float_timer = larme_float_timer + dt
 
-    if player.level == 5 then
+    if player.level == 5 or player.level == 7 then
         update_larme_dos_ange()
     else
         select_tp_larme(dt)
@@ -160,12 +172,19 @@ function love.update(dt)
     if shader_effect_timer > 0 then
         shader_effect_timer = shader_effect_timer - dt
     end
+
+	update_camera_shake(dt)
+
 end
 
 function love.draw()
     love.graphics.setCanvas(gameCanvas)
     love.graphics.clear()
     love.graphics.origin()
+
+
+	love.graphics.push()
+	love.graphics.translate(cameraShakeX, cameraShakeY)
 
     draw_level()
 
@@ -179,6 +198,7 @@ function love.draw()
 
     draw_player(direction)
     draw_hud()
+
 
    -- draw_hit_box()
 
@@ -203,6 +223,7 @@ function love.draw()
 	love.graphics.draw(intermediateCanvas, 0, 0)
 	love.graphics.setShader()
 
+	love.graphics.pop()
 end
 
 function love.keypressed(key)
