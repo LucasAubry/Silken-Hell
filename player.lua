@@ -1,6 +1,6 @@
 function load_player()
 	player = {}
-	player.level = 1
+	player.level = 7
 	player.death = 0
 	player.x = 0--init dans levle
 	player.y = 0--idem
@@ -16,6 +16,7 @@ function load_player()
 	player.hitBox_height = 30
 	player.hitBox_offset_x = 5
 	player.hitBox_offset_y = 10
+	player.reset = false
 
 end
 

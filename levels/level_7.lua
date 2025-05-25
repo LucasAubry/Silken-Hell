@@ -47,7 +47,15 @@ function draw_level_7()
 end
 
 function mob_lv7()
---	spawn_piege(500, 300)
-	spawn_ange(400, 400, 3, true)
---	spawn_ange(200, 200)
+	spawn_piege(610, 170)
+	spawn_piege(610, 470)
+	spawn_piege(180, 470)
+	spawn_piege(180, 170)
+
+
+	spawn_ange(400, 400, 1, true)
+	spawn_snake(90, 90, 2)
+	spawn_snake(90, 550, 2)
+	spawn_snake(690, 90, 2)
+	spawn_snake(690, 550, 2)
 end

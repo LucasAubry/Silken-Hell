@@ -32,7 +32,7 @@ MobBehaviors.boss = {
     update = function(m, dt)
         move_mob_towards_player(m, player, dt)
         if isTouching(player, m) and not m.active then
-			reset_level()
+    		player.reset = true -- die (le reset et dans update pour eviter les bug
 			player.death = player.death +1
             activateShaderEffect()
             m.active = true
@@ -78,7 +78,7 @@ MobBehaviors.snake = {
 
 
         if isTouching(player, m) then
-            reset_level()
+			player.reset = true
 			player.death = player.death +1
             activateShaderEffect()
         end
@@ -148,7 +148,7 @@ MobBehaviors.scie = {
         m.hitBox_offset_y = cy + (m.offset_fix_y or 0) - m.hitBox_height / 2
 
         if isTouching(player, m) then
-            reset_level()
+			player.reset = true
 			player.death = player.death +1
             activateShaderEffect()
         end
@@ -233,7 +233,7 @@ MobBehaviors.ange = {
 
 
         if isTouching(player, m) then
-            reset_level()
+			player.reset = true
 			player.death = player.death +1
             activateShaderEffect()
         end

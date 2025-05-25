@@ -173,7 +173,17 @@ function love.update(dt)
         shader_effect_timer = shader_effect_timer - dt
     end
 
+
+    -- Reset demandé ?
+    if player.reset then
+        player.reset = false
+        reset_level()
+    end
+
+
+
 	update_camera_shake(dt)
+
 
 end
 

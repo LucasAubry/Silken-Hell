@@ -70,14 +70,8 @@ function load_level()
 		levels[7] = {
 			player_position = { x = 370, y = 265 },
 			larme_position = {
-				[1] = { x = 395, y = 70 },
-				[2] = { x = 572, y = 130 },
-				[3] = { x = 667, y = 275 },--toujours en metre 2 pour eviter le bug
-				[4] = { x = 572, y = 420 },
-				[5] = { x = 395, y = 490 },
-				[6] = { x = 202, y = 420 },
-				[7] = { x = 102, y = 275 },
-				[8] = { x = 202, y = 130 }
+				[1] = { x = -100, y = -110 },
+				[2] = { x = -100, y = -100 },
 			},
 			aureole_position = { x = 100, y = 100},
 			ange_position = { x = 300, y = 300 }
@@ -125,6 +119,8 @@ function load_level()
 		}
 	end
 
+
+
 timer = 0
 larme_float_timer = 0
 larme_timer = 0
@@ -133,6 +129,7 @@ larme_interval = 1.5
 function reset_level()
 
     load_mob()
+
     local level = levels[player.level]
     player.x = level.player_position.x
     player.y = level.player_position.y
@@ -274,3 +271,4 @@ function select_tp_larme(dt)
 		tp_larme(level, dt, nb_pos)
 	end
 end
+
