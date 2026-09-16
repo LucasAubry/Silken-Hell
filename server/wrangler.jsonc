@@ -1,0 +1,17 @@
+{
+  "name": "silken-hell-api",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-09-15",
+  "account_id": "51e3944fe46f458430bac131ee19be4b",
+  "workers_dev": true,
+  "preview_urls": false,
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "silken-hell-scores",
+    "database_id": "2f558415-572e-441f-88ee-3545863cff42",
+    "migrations_dir": "migrations"
+  }],
+  "ratelimits": [{"name":"API_LIMITER","namespace_id":"2026091601","simple":{"limit":120,"period":60}}],
+  "triggers": {"crons":["23 4 * * *"]},
+  "observability": {"enabled":false}
+}

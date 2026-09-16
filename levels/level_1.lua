@@ -83,8 +83,8 @@ function draw_background_1()
     local img = world.background_lv
     local imgW = img:getWidth()
     local imgH = img:getHeight()
-    local screenW = love.graphics.getWidth()
-    local screenH = love.graphics.getHeight()
+    local screenW = 800
+    local screenH = 600
 
     local scaleX = screenW / imgW
     local scaleY = screenH / imgH
@@ -104,7 +104,7 @@ function draw_wall_1()
 
 
 
-    love.graphics.draw(world.lv_1.wall, -140, -565, 0, 0.7)
+    love.graphics.draw(world.lv_1.wall, -140, -615, 0, 0.7)
     love.graphics.draw(world.lv_1.wall, -230, 474, 0, 1)
 
 

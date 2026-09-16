@@ -1,0 +1,195 @@
+[
+  {
+    "name": "hell_spider",
+    "dir": "down",
+    "path": "sprites/directional/hell_spider_down.png",
+    "prompt": "Use case: stylized-concept. Production game sprite for Silken Hell. ONE playable spider skin: dark obsidian segmented shell with glowing ember red cracks, eight legs, red-orange eyes, small hornlike shell ridges. Same spider proportions as reference. FRONT/down facing view, slightly overhead dungeon camera. Match reference chunky dark fantasy pixel art with crisp square pixel clusters, muted palette and strong dark stepped silhouette. Centered entire creature, generous empty padding. Isolated cutout on a transparent alpha background. No scenery, words, borders, ground or shadow plane. Reference is visual style only except spider references also define proportions."
+  },
+  {
+    "name": "hell_spider",
+    "dir": "up",
+    "path": "sprites/directional/hell_spider_up.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same playable spider skin: dark obsidian segmented shell with glowing ember red cracks, eight legs, red-orange eyes, small hornlike shell ridges. Same spider proportions as reference. from reference image 1, now REAR view facing UP, showing back of head and back, face not visible. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "hell_spider",
+    "dir": "left",
+    "path": "sprites/directional/hell_spider_left.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same playable spider skin: dark obsidian segmented shell with glowing ember red cracks, eight legs, red-orange eyes, small hornlike shell ridges. Same spider proportions as reference. from reference image 1, now LEFT SIDE profile facing screen left, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "hell_spider",
+    "dir": "right",
+    "path": "sprites/directional/hell_spider_right.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same playable spider skin: dark obsidian segmented shell with glowing ember red cracks, eight legs, red-orange eyes, small hornlike shell ridges. Same spider proportions as reference. from reference image 1, now RIGHT SIDE profile facing screen right, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "ocean_spider",
+    "dir": "down",
+    "path": "sprites/directional/ocean_spider_down.png",
+    "prompt": "Use case: stylized-concept. Production game sprite for Silken Hell. ONE playable spider skin: turquoise and deep ocean-blue segmented shell, pale pearl barnacle markings, eight legs, bright aqua eyes. Same spider proportions as reference. FRONT/down facing view, slightly overhead dungeon camera. Match reference chunky dark fantasy pixel art with crisp square pixel clusters, muted palette and strong dark stepped silhouette. Centered entire creature, generous empty padding. Isolated cutout on a transparent alpha background. No scenery, words, borders, ground or shadow plane. Reference is visual style only except spider references also define proportions."
+  },
+  {
+    "name": "ocean_spider",
+    "dir": "up",
+    "path": "sprites/directional/ocean_spider_up.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same playable spider skin: turquoise and deep ocean-blue segmented shell, pale pearl barnacle markings, eight legs, bright aqua eyes. Same spider proportions as reference. from reference image 1, now REAR view facing UP, showing back of head and back, face not visible. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "ocean_spider",
+    "dir": "left",
+    "path": "sprites/directional/ocean_spider_left.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same playable spider skin: turquoise and deep ocean-blue segmented shell, pale pearl barnacle markings, eight legs, bright aqua eyes. Same spider proportions as reference. from reference image 1, now LEFT SIDE profile facing screen left, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "ocean_spider",
+    "dir": "right",
+    "path": "sprites/directional/ocean_spider_right.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same playable spider skin: turquoise and deep ocean-blue segmented shell, pale pearl barnacle markings, eight legs, bright aqua eyes. Same spider proportions as reference. from reference image 1, now RIGHT SIDE profile facing screen right, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "crown_spider",
+    "dir": "down",
+    "path": "sprites/directional/crown_spider_down.png",
+    "prompt": "Use case: stylized-concept. Production game sprite for Silken Hell. ONE playable spider skin: royal violet and ivory segmented shell, eight legs, gold eyes, a small distinct three-point golden crown with a ruby gem perched on the head. Same spider proportions as reference. FRONT/down facing view, slightly overhead dungeon camera. Match reference chunky dark fantasy pixel art with crisp square pixel clusters, muted palette and strong dark stepped silhouette. Centered entire creature, generous empty padding. Isolated cutout on a transparent alpha background. No scenery, words, borders, ground or shadow plane. Reference is visual style only except spider references also define proportions."
+  },
+  {
+    "name": "crown_spider",
+    "dir": "up",
+    "path": "sprites/directional/crown_spider_up.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same playable spider skin: royal violet and ivory segmented shell, eight legs, gold eyes, a small distinct three-point golden crown with a ruby gem perched on the head. Same spider proportions as reference. from reference image 1, now REAR view facing UP, showing back of head and back, face not visible. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "crown_spider",
+    "dir": "left",
+    "path": "sprites/directional/crown_spider_left.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same playable spider skin: royal violet and ivory segmented shell, eight legs, gold eyes, a small distinct three-point golden crown with a ruby gem perched on the head. Same spider proportions as reference. from reference image 1, now LEFT SIDE profile facing screen left, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "crown_spider",
+    "dir": "right",
+    "path": "sprites/directional/crown_spider_right.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same playable spider skin: royal violet and ivory segmented shell, eight legs, gold eyes, a small distinct three-point golden crown with a ruby gem perched on the head. Same spider proportions as reference. from reference image 1, now RIGHT SIDE profile facing screen right, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "jelly",
+    "dir": "down",
+    "path": "sprites/directional/jelly_down.png",
+    "prompt": "Use case: stylized-concept. Production game sprite for Silken Hell. ONE ocean jellyfish monster: translucent cyan bell, indigo rim, luminous turquoise markings, a few flowing violet tentacles, readable full silhouette. FRONT/down facing view, slightly overhead dungeon camera. Match reference chunky dark fantasy pixel art with crisp square pixel clusters, muted palette and strong dark stepped silhouette. Centered entire creature, generous empty padding. Isolated cutout on a transparent alpha background. No scenery, words, borders, ground or shadow plane. Reference is visual style only except spider references also define proportions."
+  },
+  {
+    "name": "jelly",
+    "dir": "up",
+    "path": "sprites/directional/jelly_up.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same ocean jellyfish monster: translucent cyan bell, indigo rim, luminous turquoise markings, a few flowing violet tentacles, readable full silhouette. from reference image 1, now REAR view facing UP, showing back of head and back, face not visible. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "jelly",
+    "dir": "left",
+    "path": "sprites/directional/jelly_left.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same ocean jellyfish monster: translucent cyan bell, indigo rim, luminous turquoise markings, a few flowing violet tentacles, readable full silhouette. from reference image 1, now LEFT SIDE profile facing screen left, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "jelly",
+    "dir": "right",
+    "path": "sprites/directional/jelly_right.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same ocean jellyfish monster: translucent cyan bell, indigo rim, luminous turquoise markings, a few flowing violet tentacles, readable full silhouette. from reference image 1, now RIGHT SIDE profile facing screen right, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "fish",
+    "dir": "down",
+    "path": "sprites/directional/fish_down.png",
+    "prompt": "Use case: stylized-concept. Production game sprite for Silken Hell. ONE small predatory reef fish monster: teal scales, orange sharp dorsal fins, white fangs, large gold eye, chunky compact silhouette. FRONT/down facing view, slightly overhead dungeon camera. Match reference chunky dark fantasy pixel art with crisp square pixel clusters, muted palette and strong dark stepped silhouette. Centered entire creature, generous empty padding. Isolated cutout on a transparent alpha background. No scenery, words, borders, ground or shadow plane. Reference is visual style only except spider references also define proportions."
+  },
+  {
+    "name": "fish",
+    "dir": "up",
+    "path": "sprites/directional/fish_up.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same small predatory reef fish monster: teal scales, orange sharp dorsal fins, white fangs, large gold eye, chunky compact silhouette. from reference image 1, now REAR view facing UP, showing back of head and back, face not visible. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "fish",
+    "dir": "left",
+    "path": "sprites/directional/fish_left.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same small predatory reef fish monster: teal scales, orange sharp dorsal fins, white fangs, large gold eye, chunky compact silhouette. from reference image 1, now LEFT SIDE profile facing screen left, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "fish",
+    "dir": "right",
+    "path": "sprites/directional/fish_right.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same small predatory reef fish monster: teal scales, orange sharp dorsal fins, white fangs, large gold eye, chunky compact silhouette. from reference image 1, now RIGHT SIDE profile facing screen right, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "worm",
+    "dir": "down",
+    "path": "sprites/directional/worm_down.png",
+    "prompt": "Use case: stylized-concept. Production game sprite for Silken Hell. ONE underground earthworm monster: curled long segmented pink and russet worm with dark ring bands, tiny black eyes, blunt head, moist earth-toned shading. FRONT/down facing view, slightly overhead dungeon camera. Match reference chunky dark fantasy pixel art with crisp square pixel clusters, muted palette and strong dark stepped silhouette. Centered entire creature, generous empty padding. Isolated cutout on a transparent alpha background. No scenery, words, borders, ground or shadow plane. Reference is visual style only except spider references also define proportions."
+  },
+  {
+    "name": "worm",
+    "dir": "up",
+    "path": "sprites/directional/worm_up.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same underground earthworm monster: curled long segmented pink and russet worm with dark ring bands, tiny black eyes, blunt head, moist earth-toned shading. from reference image 1, now REAR view facing UP, showing back of head and back, face not visible. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "worm",
+    "dir": "left",
+    "path": "sprites/directional/worm_left.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same underground earthworm monster: curled long segmented pink and russet worm with dark ring bands, tiny black eyes, blunt head, moist earth-toned shading. from reference image 1, now LEFT SIDE profile facing screen left, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image.",
+    "integration": "Recovered sprite; background cleaned with imagegen. RGB white exterior decoded as transparent by Art.imageData; enclosed eye highlights preserved."
+  },
+  {
+    "name": "worm",
+    "dir": "right",
+    "path": "sprites/directional/worm_right.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same underground earthworm monster: curled long segmented pink and russet worm with dark ring bands, tiny black eyes, blunt head, moist earth-toned shading. from reference image 1, now RIGHT SIDE profile facing screen right, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "mole",
+    "dir": "down",
+    "path": "sprites/directional/mole_down.png",
+    "prompt": "Use case: stylized-concept. Production game sprite for Silken Hell. ONE underground mole monster: stout dark umber fur, pink nose, small eyes, huge pale digging claws, squat readable body. FRONT/down facing view, slightly overhead dungeon camera. Match reference chunky dark fantasy pixel art with crisp square pixel clusters, muted palette and strong dark stepped silhouette. Centered entire creature, generous empty padding. Isolated cutout on a transparent alpha background. No scenery, words, borders, ground or shadow plane. Reference is visual style only except spider references also define proportions."
+  },
+  {
+    "name": "mole",
+    "dir": "up",
+    "path": "sprites/directional/mole_up.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same underground mole monster: stout dark umber fur, pink nose, small eyes, huge pale digging claws, squat readable body. from reference image 1, now REAR view facing UP, showing back of head and back, face not visible. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "mole",
+    "dir": "left",
+    "path": "sprites/directional/mole_left.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same underground mole monster: stout dark umber fur, pink nose, small eyes, huge pale digging claws, squat readable body. from reference image 1, now LEFT SIDE profile facing screen left, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "mole",
+    "dir": "right",
+    "path": "sprites/directional/mole_right.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same underground mole monster: stout dark umber fur, pink nose, small eyes, huge pale digging claws, squat readable body. from reference image 1, now RIGHT SIDE profile facing screen right, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "gull",
+    "dir": "down",
+    "path": "sprites/directional/gull_down.png",
+    "prompt": "Use case: stylized-concept. Production game sprite for Silken Hell. ONE sky seagull monster: white-gray plumage, black wing tips, yellow beak and feet, spread wings, fierce little black eye. FRONT/down facing view, slightly overhead dungeon camera. Match reference chunky dark fantasy pixel art with crisp square pixel clusters, muted palette and strong dark stepped silhouette. Centered entire creature, generous empty padding. Isolated cutout on a transparent alpha background. No scenery, words, borders, ground or shadow plane. Reference is visual style only except spider references also define proportions."
+  },
+  {
+    "name": "gull",
+    "dir": "up",
+    "path": "sprites/directional/gull_up.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same sky seagull monster: white-gray plumage, black wing tips, yellow beak and feet, spread wings, fierce little black eye. from reference image 1, now REAR view facing UP, showing back of head and back, face not visible. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "gull",
+    "dir": "left",
+    "path": "sprites/directional/gull_left.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same sky seagull monster: white-gray plumage, black wing tips, yellow beak and feet, spread wings, fierce little black eye. from reference image 1, now LEFT SIDE profile facing screen left, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  },
+  {
+    "name": "gull",
+    "dir": "right",
+    "path": "sprites/directional/gull_right.png",
+    "prompt": "Production game sprite directional variant. Redraw the EXACT same sky seagull monster: white-gray plumage, black wing tips, yellow beak and feet, spread wings, fierce little black eye. from reference image 1, now RIGHT SIDE profile facing screen right, strong horizontal readable profile. Same chunky pixel clusters, colors, proportions, markings and equipment. Slightly overhead dungeon camera. ONE entire creature centered, empty padding, isolated actual transparent alpha background, no glow outside silhouette, no shadow, no scenery or text. Do not simply rotate the frontal image."
+  }
+]

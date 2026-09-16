@@ -1,2 +1,8 @@
 game.love
 game
+server/node_modules/
+server/.wrangler/
+server/.dev.vars
+game.love.tmp
+.DS_Store
+*.log

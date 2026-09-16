@@ -1,6 +1,6 @@
 function load_player()
 	player = {}
-	player.level = 7
+	player.level = 1
 	player.death = 0
 	player.x = 0--init dans levle
 	player.y = 0--idem
@@ -22,33 +22,14 @@ end
 
 
 function draw_player(direction)
-	draw_shadow(25, 20, player.x + 40, player.y + 40)
-	local image = nil
-
-	if direction == "up" then
-		image = player.img_up
-	elseif direction == "down" then
-		image = player.img_down
-	elseif direction == "left" then
-		image = player.img_left
-	elseif direction == "right" then
-		image = player.img_right
-	elseif direction == "dash" then
-		if player.last_mouve == "player.x+" then
-			image = player.img_right
-		elseif player.last_mouve == "player.x-" then
-			image = player.img_left
-		elseif player.last_mouve == "player.y+" then
-			image = player.img_down
-		elseif player.last_mouve == "player.y-" then
-			image = player.img_up
-		end
-	end
-
-
-	if image then
-		love.graphics.draw(image, player.x, player.y, 0, player.size)
-	end
+    draw_shadow(22,10,player.x+15,player.y+27)
+    if (player.venom or 0)>0 then
+        love.graphics.setColor(.24,1,.14,.2+.1*math.sin(larme_float_timer*10))
+        love.graphics.ellipse('fill',player.x+15,player.y+14,34,22)
+        love.graphics.setColor(.42,1,.32)
+    else love.graphics.setColor(1,1,1) end
+    Characters.draw(player.x+15,player.y+8,62,direction)
+    love.graphics.setColor(1,1,1)
 end
 
 function load_hud()

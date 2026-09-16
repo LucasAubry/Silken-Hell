@@ -137,6 +137,11 @@ function reset_level()
 
 	player.speed = 1
 	player.freeze_timer = 0
+    player.is_frozen = false
+    player.original_speed = 1
+    player.reset = false
+    ghosts = {}
+    just_loaded = false
 	objet.larme_dropped = false
 
 
@@ -154,7 +159,9 @@ function reset_level()
     objet.aureole.x = level.aureole_position.x
     objet.aureole.y = level.aureole_position.y
 
-    if player.level == 1 then
+    if Campaign and Campaign.world == 2 then
+        Campaign.spawnHell(player.level)
+    elseif player.level == 1 then
 		mob_lv1()
     elseif player.level == 2 then
 		mob_lv2()
@@ -196,18 +203,10 @@ end
 
 just_loaded = true
 function draw_level()
-	local draw_function = _G["draw_level_" .. tostring(player.level)]
-	if draw_function then
-		draw_function()
-	end
-
-	if just_loaded then
-		reset_level()
-		just_loaded = false
-	end
+    if Campaign.world == 2 then Campaign.drawHell(); return end
+    local draw_function = _G["draw_level_" .. tostring(player.level)]
+    if draw_function then draw_function() end
 end
-
-
 
 function update_larme_dos_ange()
 	if objet.larme_dropped then return end

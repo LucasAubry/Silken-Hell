@@ -24,14 +24,14 @@ function spawn_boss(x, y, speed)
         offset_fix_x = 0,
 		offset_fix_y = 0
     }
-    boss.img = boss.imgs[texture]
+    boss.img = boss.imgs.up
     table.insert(mobs, boss)
 end
 
 MobBehaviors.boss = {
     update = function(m, dt)
         move_mob_towards_player(m, player, dt)
-        if isTouching(player, m) and not m.active then
+        if isTouching(player, m) and not m.active and not player.reset then
     		player.reset = true -- die (le reset et dans update pour eviter les bug
 			player.death = player.death +1
             activateShaderEffect()
@@ -77,7 +77,7 @@ MobBehaviors.snake = {
 		move_when_player_moves(m, player, dt)
 
 
-        if isTouching(player, m) then
+        if isTouching(player, m) and not player.reset then
 			player.reset = true
 			player.death = player.death +1
             activateShaderEffect()
@@ -147,7 +147,7 @@ MobBehaviors.scie = {
         m.hitBox_offset_x = cx + (m.offset_fix_x or 0) - m.hitBox_width / 2
         m.hitBox_offset_y = cy + (m.offset_fix_y or 0) - m.hitBox_height / 2
 
-        if isTouching(player, m) then
+        if isTouching(player, m) and not player.reset then
 			player.reset = true
 			player.death = player.death +1
             activateShaderEffect()
@@ -185,8 +185,12 @@ end
 
 MobBehaviors.piege = {
     update = function(m, dt)
+        if m.active then
+            m.rearm=(m.rearm or 0)+dt
+            if m.rearm>=6 then m.active=false; m.rearm=0 end
+        end
         static_mob(m)
-        if isTouching(player, m) and not m.active then
+        if isTouching(player, m) and not m.active and not player.reset then
             freeze(player, 2)
             m.active = true
         end
@@ -232,7 +236,7 @@ MobBehaviors.ange = {
         move_mob_towards_player(m, player, dt)
 
 
-        if isTouching(player, m) then
+        if isTouching(player, m) and not player.reset then
 			player.reset = true
 			player.death = player.death +1
             activateShaderEffect()
@@ -328,8 +332,8 @@ function move_mob_towards_player(m, player, dt)
     local angle = math.atan2(dy, dx)
     local speed = m.speed or 1
 
-    m.x = m.x + math.cos(angle) * speed
-    m.y = m.y + math.sin(angle) * speed
+    m.x = m.x + math.cos(angle) * speed * dt * 60
+    m.y = m.y + math.sin(angle) * speed * dt * 60
 
     -- Met à jour la direction (visuelle + logique)
     if math.abs(dx) > math.abs(dy) then
@@ -376,8 +380,8 @@ function move_when_player_moves(m, player, dt)
     local angle = math.atan2(dy, dx)
     local speed = m.speed or 1
 
-    m.x = m.x + math.cos(angle) * speed
-    m.y = m.y + math.sin(angle) * speed
+    m.x = m.x + math.cos(angle) * speed * dt * 60
+    m.y = m.y + math.sin(angle) * speed * dt * 60
 
     -- Met à jour la direction
     if math.abs(dx) > math.abs(dy) then

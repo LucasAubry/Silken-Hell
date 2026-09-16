@@ -8,20 +8,12 @@ cameraShakeY = 0
 shake_timer = 0
 
 function draw_shadow_dash()
-    for _, g in ipairs(ghosts) do
-        love.graphics.setColor(1, 1, 1, g.alpha)
-	--	love.graphics.setColor(1, 0, 0, 1)
-        if g.direction == "up" then
-            love.graphics.draw(player.img_up, g.x, g.y, 0, player.size)
-        elseif g.direction == "down" then
-            love.graphics.draw(player.img_down, g.x, g.y, 0, player.size)
-        elseif g.direction == "left" then
-            love.graphics.draw(player.img_left, g.x, g.y, 0, player.size)
-        elseif g.direction == "right" then
-            love.graphics.draw(player.img_right, g.x, g.y, 0, player.size)
-        end
+    for _,ghost in ipairs(ghosts) do
+        local tint=Worlds.color(Campaign.world).tear
+        love.graphics.setColor(tint[1],tint[2],tint[3],ghost.alpha*0.6)
+        Characters.draw(ghost.x+15,ghost.y+8,62,ghost.direction)
     end
-    love.graphics.setColor(1, 1, 1)
+    love.graphics.setColor(1,1,1)
 end
 
 function update_shadow_dash(dt)

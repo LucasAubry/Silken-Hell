@@ -46,24 +46,8 @@ end
 
 
 
-function take_objet(obj)
-
-	local px = player.x
-	local py = player.y
-	local pw = player.hitBox_width
-	local ph = player.hitBox_height
-
-	local ox = obj.x
-	local oy = obj.y
-	local ow = obj.hitBox_width
-	local oh = obj.hitBox_height
-
-	if checkCollision(px, py, pw, ph, ox, oy, ow, oh) then
-		player.level = player.level + 1
-		just_loaded = true
-		print("Objet ramassé !")
-	end
-end
+-- Collection is resolved once per update, never while drawing.
+function take_objet(obj) end
 
 shader_effect_timer = 0
 shader_duration = 0.3
