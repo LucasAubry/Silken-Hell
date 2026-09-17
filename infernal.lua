@@ -40,9 +40,8 @@ MobBehaviors.imp={
         local a=math.atan2(dy,dx); m.dir=Art.direction(dx,dy,m.dir)
         local speed=m.speed
         if m.charge<0 then speed=speed*2.1 end
-        -- Two full seconds of acceleration, previously half a second.
-        if m.charge < -2 then m.charge=2.0 end
-        Arena.move(m,math.cos(a)*speed*dt,math.sin(a)*speed*dt)
+        if m.charge < -3 then m.charge=2.0 end
+        Arena.navigate(m,player.x+15,player.y+12,speed,dt)
         if isTouching(player,m) then die() end
     end,
     draw=function(m)

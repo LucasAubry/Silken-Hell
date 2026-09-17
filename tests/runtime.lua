@@ -3,18 +3,47 @@ local function level(w,n)
     Campaign.select(w); player.level=n; reset_level(); App.state='playing'
 end
 local function damageBird()
-    local f=Raven.feathers[1]; local previous=f.spot
+    local f=Raven.eggs[1]; local previous=f.spot
     Raven.projectiles={{x=f.x,y=f.y,vx=0,vy=0,life=1}}; Raven.shot=100
     local hp=Raven.hp; Raven.update(.01); assert(Raven.hp==hp-1)
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv("SILKEN_RENAISSANCE_QA")=="1" then require("tests.renaissance").visual(); return end
+    if os.getenv("SILKEN_ABYSS_BREATH_QA")=="1" then require("tests.abyss_breath").visual(); return end
+    if os.getenv("SILKEN_MAGMA_QA")=="1" then require("tests.magma").visual(); return end
+    if os.getenv('SILKEN_WORKSHOP_QA')=='1' then require('tests.workshop_editor').visual(); return end
+    if os.getenv('SILKEN_FISH_DEATH_TEST')=='1' then require('tests.fish_death').run(); love.event.quit(); return end
+    if os.getenv("SILKEN_EXPANSION_QA")=="1" then require("tests.expansion").visual(); return end
+    if os.getenv('SILKEN_WORLD_QA')=='1' then require('tests.world_revision').visual(); return end
+    if os.getenv('SILKEN_OCTOPUS_QA')=='1' then require('tests.octopus_revision').visual(); return end
+    if os.getenv('SILKEN_REFINEMENTS_QA')=='1' then require('tests.refinements').visual(); return end
+    if os.getenv('SILKEN_TRAVERSAL_QA')=='1' then require('tests.traversal').visual(); return end
+    if os.getenv('SILKEN_TERRAIN_TEST')=='1' then require('tests.terrain_serpent').run(); love.event.quit(); return end
+    if os.getenv('SILKEN_TERRAIN_QA')=='1' then require('tests.terrain_visual').run(); return end
+    if os.getenv('SILKEN_MARINE_QA')=='1' then require('tests.marine_visual').run(); return end
+    if os.getenv('SILKEN_BIOME_QA')=='1' then require('tests.biomes_visual').run(); return end
+    if os.getenv('SILKEN_ENCOUNTER_QA')=='1' then require('tests.encounters_visual').run(); return end
     if os.getenv('SILKEN_VISUAL_QA')=='1' then require('tests.visual_release').run(); return end
     if os.getenv("SILKEN_ASSET_QA")=="1" then require("tests.assets").run(); return end
     Profile.unlocked=2; Profile.scores={}; Profile.name='Test'; Profile.country='FR'; Online.country='FR'
     App.start(1)
+    require("tests.renaissance").run()
+    require("tests.abyss_breath").run()
+    require("tests.magma").run()
     require("tests.gameplay_v5").run()
     require('tests.release').run()
+    require('tests.encounters').run()
+    require('tests.bosses_rankings').run()
+    require('tests.ocean_progression').run()
+    require('tests.marine_revision').run()
+    require('tests.terrain_serpent').run()
+    require('tests.traversal').run()
+    require('tests.refinements').run()
+    require('tests.octopus_revision').run()
+    require('tests.world_revision').run()
+    require('tests.expansion').run()
+    require('tests.workshop_editor').run()
     for _,name in ipairs({'merle','wasp','wasp_ground','nest','lava','black_feather'}) do
         local d=love.image.newImageData('assets/sprites/'..name..'.png')
         local _,_,_,a=d:getPixel(0,0); assert(a==0,'PNG transparent '..name); d:release()
@@ -46,7 +75,7 @@ function T.run()
     level(1,10)
     assert(Raven.name=='Le Merle noir' and Raven.interval()<.3)
     local x,y=Raven.x,Raven.y; Raven.update(.01); assert(Raven.x==x and Raven.y==y)
-    local nest=Raven.nests[1]
+    local nest=Raven.nests[2]
     player.x=nest.x-15; player.y=nest.y-12; assert(Hazards.speed()<.2,'Nid ralentit fortement')
     player.x=60; player.y=500
     Raven.projectiles={{x=nest.x,y=nest.y,vx=300,vy=0,life=4}}; Raven.shot=100; Raven.update(.01)
@@ -59,7 +88,7 @@ function T.run()
     reset_level(); assert(Raven.hp==12 and #Raven.projectiles==0)
     for _=1,12 do damageBird() end
     assert(Raven.defeated and Campaign.canCollect())
-    level(2,10)
+    level(2,10); Wasp.reset(true)
     player.x=Wasp.x-15; player.y=Wasp.y+33; player.dashing=true; player.moveY=-1
     Wasp.contact(); assert(Wasp.hp==10 and not player.reset,'Intouchable en vol')
     local wx=Wasp.x; player.x=60; player.y=500; Wasp.update(.1); assert(Wasp.x~=wx)
@@ -78,7 +107,7 @@ function T.run()
         local hp=Wasp.hp; Wasp.contact(); assert(Wasp.hp==hp-1 and Wasp.phase=='flying')
     end
     assert(Wasp.defeated and Campaign.canCollect() and Wasp.interval()<interval)
-    level(2,10); Wasp.phase='landed'; local sx,sy=Wasp.stinger(); player.x=sx-15; player.y=sy-12
+    level(2,10); Wasp.reset(true); Wasp.phase='landed'; local sx,sy=Wasp.stinger(); player.x=sx-15; player.y=sy-12
     player.dashing=false; Wasp.contact(); assert(not player.reset and Wasp.hp==9,'Contact au sol sans sprint sûr')
     level(2,3); local p=Hazards.lava[1]; player.x=p.x-15; player.y=p.y-12; Hazards.contact(); assert(player.reset,'Lave mortelle')
     reset_level(); assert(player.venom==0 and not player.reset)
@@ -102,7 +131,7 @@ function T.run()
     love.update=function(dt)
         ticks=ticks+1; UI.clock=UI.clock+dt
         if ticks==1 then level(1,10); local n=Raven.nests[1]; Raven.projectiles={{x=n.x,y=n.y,vx=-240,vy=-100,life=4}}; Raven.shot=100; Raven.update(.01); for _,p in ipairs(Raven.projectiles) do p.x=p.x+p.vx*.35; p.y=p.y+p.vy*.35 end; App.capture='merle-v4-qa.png' end
-        if ticks==5 then level(2,10); Wasp.phase='landed'; Wasp.x=Arena.width/2; Wasp.y=300; Wasp.fire('venom'); for _,p in ipairs(Wasp.projectiles) do p.x=p.x+p.vx*.65; p.y=p.y+p.vy*.65 end; App.capture='wasp-ground-v4-qa.png' end
+        if ticks==5 then level(2,10); Wasp.reset(true); Wasp.phase='landed'; Wasp.x=Arena.width/2; Wasp.y=300; Wasp.fire('venom'); for _,p in ipairs(Wasp.projectiles) do p.x=p.x+p.vx*.65; p.y=p.y+p.vy*.65 end; App.capture='wasp-ground-v4-qa.png' end
         if ticks==9 then Wasp.phase='flying'; Wasp.summon=0; Wasp.update(.05); App.capture='wasp-air-v4-qa.png' end
         if ticks==13 then level(2,7); App.capture='hell-v5-qa.png' end
         if ticks==17 then level(1,5); App.capture='carrier-v4-qa.png' end

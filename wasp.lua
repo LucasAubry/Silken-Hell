@@ -17,7 +17,7 @@ function W.contact()
         W.hitGrace=.35; W.hp=math.max(0,W.hp-1); W.flash=.3; Audio.play('pick')
         W.phase='flying'; W.phaseTime=math.max(2.8,5-(1-W.hp/W.maxHp)*2); W.shot=.6
         if W.hp==0 then
-            W.defeated=true; W.projectiles={}; W.minions={}; objet.larme.taken=false
+            W.defeated=true; W.projectiles={}; objet.larme.taken=false
             objet.larme.x=W.x-15; objet.larme.y=W.y-20
         end
     end
@@ -31,30 +31,40 @@ function W.fire(kind)
     end
 end
 function W.update(dt)
-    if not W.active or W.defeated then return end
+    if not W.active then return end
     W.hitGrace=math.max(0,W.hitGrace-dt); W.elapsed=W.elapsed+dt; W.flash=math.max(0,W.flash-dt); W.phaseTime=W.phaseTime-dt; W.shot=W.shot-dt
+    if not W.defeated then
     if W.phase=='flying' then
         local oldX,oldY=W.x,W.y
-        W.x=Arena.width/2+math.sin(W.elapsed*0.65)*Arena.width*0.28
-        W.y=280+math.sin(W.elapsed*0.91)*140
+        -- Integrate flight from the current body position, including after takeoff.
+        local tx=Arena.width/2+math.sin(W.elapsed*.65)*Arena.width*.28
+        local ty=280+math.sin(W.elapsed*.91)*140
+        local distance=math.sqrt((tx-W.x)^2+(ty-W.y)^2)
+        local step=math.min(1,115*dt/math.max(.001,distance))
+        W.x=W.x+(tx-W.x)*step; W.y=W.y+(ty-W.y)*step
         W.dir=Art.direction(W.x-oldX,W.y-oldY,W.dir)
         if W.phaseTime<=0 then
             W.phase='landing'; W.phaseTime=.8
             local x,y=Arena.clearSpot(W.x-65,W.y-65,130,130)
-            W.x,W.y=x+65,y+65
+            W.landingX,W.landingY=x+65,y+65
+            W.landingStartX,W.landingStartY=W.x,W.y
         end
         W.summon=W.summon-dt
         if W.summon<=0 and #W.minions<5 then
-            W.minions[#W.minions+1]={x=W.x-45,y=W.y,life=9}
-            W.minions[#W.minions+1]={x=W.x+45,y=W.y,life=9}; W.summon=4.5; Bestiary.discover('waspling'); Bestiary.save()
+            W.minions[#W.minions+1]={x=W.x-45,y=W.y}
+            W.minions[#W.minions+1]={x=W.x+45,y=W.y}; W.summon=4.5; Bestiary.discover('waspling'); Bestiary.save()
         end
     elseif W.phase=='landing' then
+        local t=math.min(1,1-W.phaseTime/.8); t=t*t*(3-2*t)
+        W.x=W.landingStartX+(W.landingX-W.landingStartX)*t
+        W.y=W.landingStartY+(W.landingY-W.landingStartY)*t
         if W.phaseTime<=0 then W.phase='landed'; W.phaseTime=4.5; W.shot=0.3; W.landings=W.landings+1 end
     elseif W.phaseTime<=0 then W.phase='flying'; W.phaseTime=4; W.shot=0.5 end
     if W.shot<=0 and W.phase~='landing' then
         W.fire(W.phase=='landed' and 'venom' or 'sting'); W.shot=W.interval()*(W.phase=='landed' and 1.7 or 1)
     end
     W.contact()
+    end
     for i=#W.projectiles,1,-1 do
         local p=W.projectiles[i]; p.life=p.life-dt; local dead=p.life<=0
         local steps=math.max(1,math.ceil(math.sqrt(p.vx*p.vx+p.vy*p.vy)*dt/4))
@@ -67,12 +77,11 @@ function W.update(dt)
         end
         if dead then table.remove(W.projectiles,i) end
     end
-    for i=#W.minions,1,-1 do local m=W.minions[i]; m.life=m.life-dt
+    for i=#W.minions,1,-1 do local m=W.minions[i]
         local a=math.atan2(player.y+12-m.y,player.x+15-m.x)
         m.dir=Art.direction(math.cos(a),math.sin(a))
         m.x=m.x+math.cos(a)*95*dt; m.y=m.y+math.sin(a)*95*dt
         if (player.x+15-m.x)^2+(player.y+12-m.y)^2<20^2 and W.hitGrace<=0 then Hazards.kill() end
-        if m.life<=0 then table.remove(W.minions,i) end
     end
 end
 function W.drawGround()
@@ -93,7 +102,7 @@ function W.draw(airborne)
 
     end
     if airborne then
-        for _,m in ipairs(W.minions) do g.setColor(1,1,1); Art.drawFacing('wasp',m.dir,m.x,m.y,34) end
+        for _,m in ipairs(W.minions) do g.setColor(1,1,1); Art.drawFacing('waspling',m.dir,m.x,m.y,34) end
         for _,p in ipairs(W.projectiles) do
             if p.kind=='venom' then
                 g.setColor(0.2,0.9,0.13,0.3); g.circle('fill',p.x,p.y,12)

@@ -1,0 +1,22 @@
+[
+  [
+    "luminous_jelly",
+    "A NEW abyss luminous jellyfish: a translucent pearly cyan bell with a radiant tiny white blue heart inside, delicate long bioluminescent tendrils, dangling white/cyan light beads, eerie beautiful marine creature viewed from slightly above/front. Distinct from an ordinary purple combat jellyfish. All soft glows confined close to silhouette. Square canvas."
+  ],
+  [
+    "electric_vent_idle",
+    "A low circular abyss electrical sea-anemone trap, top-down three-quarter view, six dark indigo calcified petal prongs around a sunken crystal center. DORMANT phase: prongs folded inward, center dark teal, very faint cyan points. Compact low profile, no lightning. Square canvas."
+  ],
+  [
+    "electric_vent_charge",
+    "A low circular abyss electrical sea-anemone trap, top-down three-quarter view, six dark indigo calcified petal prongs around a sunken crystal center. CHARGING phase: petals half-open, center luminous cyan, short fine blue electric threads between the prongs. Compact low profile. Square canvas."
+  ],
+  [
+    "electric_vent_active",
+    "A low circular abyss electrical sea-anemone trap, top-down three-quarter view, six dark indigo calcified petal prongs around a sunken crystal center. DISCHARGING phase: petals fully open, brilliant white cyan core, small jagged thin electric arcs between all prongs. Compact low profile. Square canvas."
+  ],
+  [
+    "electric_vent_spent",
+    "A low circular abyss electrical sea-anemone trap, top-down three-quarter view, six dark indigo calcified petal prongs around a sunken crystal center. COOLDOWN phase: petals drooping outward, empty dark crystal center, fading violet tips, no lightning. Compact low profile. Square canvas."
+  ]
+]

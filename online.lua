@@ -9,13 +9,14 @@ local function saveOutbox()
     love.filesystem.write('online-outbox.json',json.encode(rows))
 end
 local function request(path,body,callback)
+    if not N.enabled then if callback then callback({error='Connexion au Workshop indisponible.'},0) end; return end
     N.sequence=N.sequence+1; N.callbacks[N.sequence]=callback
-    love.thread.getChannel('silken.requests'):push({id=N.sequence,url=config.url..path,method=body and 'POST' or 'GET',body=body,token=body and N.token or nil})
+    love.thread.getChannel('silken.requests'):push({id=N.sequence,url=config.url..path,method=body and 'POST' or 'GET',body=body,token=N.token})
 end
+N.request=request
 function N.refresh(world)
     if not N.enabled then return end
     local b=N.boards[world] or {}; N.boards[world]=b
-    if world==3 then b.global={}; b.country={}; return end
     if b.loading then return end
     b.loading=true; b.requested=N.clock; b.remaining=2
     for _,scope in ipairs({'global','country'}) do local key=scope
@@ -25,6 +26,25 @@ function N.refresh(world)
             else b.error=true end
         end)
     end
+end
+N.pages={}
+function N.page(world,country,page)
+    page=page or 1
+    if not N.enabled then
+        local all=Profile.ranking(world,country and Profile.country or nil); local rows={}
+        for i=(page-1)*10+1,math.min(page*10,#all) do rows[#rows+1]=all[i] end
+        return {scores=rows,total=#all,hasMore=page*10<#all},'local'
+    end
+    local key=world..':'..(country and N.country or 'global')..':'..page
+    local entry=N.pages[key]
+    if not entry or (not entry.loading and N.clock-entry.requested>30) then
+        entry=entry or {}; N.pages[key]=entry; entry.loading=true; entry.requested=N.clock
+        request('/v1/leaderboard?world='..world..'&scope='..(country and 'country' or 'global')..'&page='..page,nil,function(data,code)
+            entry.loading=false; entry.error=code~=200
+            if code==200 and type(data.scores)=='table' then entry.data=data else entry.error=true end
+        end)
+    end
+    return entry.data or {scores={},total=0,hasMore=false},entry.error and 'offline' or entry.loading and 'loading' or 'online'
 end
 function N.scores(world,country)
     if not N.enabled then return Profile.ranking(world,country and Profile.country or nil),'local' end
@@ -80,7 +100,7 @@ function N.checkpoint(level,time,deaths)
     local r=N.current
     if not N.enabled or not r or r.failed then return end
     r.pending[#r.pending+1]={level=level,elapsedMs=math.floor(time*1000+0.5),deaths=deaths}
-    if level==10 then N.scoreStatus='Envoi du score…' end
+    if level==Worlds.levelCount(r.world) then N.scoreStatus='Envoi du score…' end
     saveOutbox(); N.flush(r)
 end
 function N.flush(r)
@@ -91,7 +111,8 @@ function N.flush(r)
         r.busy=false
         if code==200 then
             table.remove(r.pending,1); saveOutbox()
-            if checkpoint.level==10 then
+            if checkpoint.level==Worlds.levelCount(r.world) then
+                N.pages={}
                 if N.current==r then N.scoreStatus='Score publié dans les classements' end
                 N.refresh(r.world)
             end

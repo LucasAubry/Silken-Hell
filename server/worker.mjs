@@ -1,3 +1,4 @@
+import {workshop} from './workshop.mjs';
 const reply=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 const fail=(status,error)=>{throw Object.assign(new Error(error),{status});};
 export function countryOf(request) {
@@ -10,14 +11,14 @@ async function ownerOf(request) {
   const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));
   return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
 }
-async function bodyOf(request) {
-  if(Number(request.headers.get('Content-Length'))>2048) fail(413,'Requête trop grande.');
+async function bodyOf(request,limit=2048) {
+  if(Number(request.headers.get('Content-Length'))>limit) fail(413,'Requête trop grande.');
   const reader=request.body?.getReader();
   if(!reader) fail(400,'Requête vide.');
   let length=0; const chunks=[];
   while(true) {
     const {done,value}=await reader.read(); if(done) break;
-    length+=value.length; if(length>2048) {await reader.cancel(); fail(413,'Requête trop grande.');}
+    length+=value.length; if(length>limit) {await reader.cancel(); fail(413,'Requête trop grande.');}
     chunks.push(value);
   }
   const bytes=new Uint8Array(length); let offset=0;
@@ -34,26 +35,32 @@ export default {
         const {success}=await env.API_LIMITER.limit({key:request.headers.get('CF-Connecting-IP') || 'unknown'});
         if(!success) return reply({error:'Trop de requêtes. Réessaie dans une minute.'},429);
       }
+      const community=await workshop(request,env,{reply,fail,ownerOf,bodyOf}); if(community) return community;
       if(request.method==='GET' && path==='/v1/location') return reply({country:countryOf(request)});
       if(request.method==='GET' && path==='/v1/leaderboard') {
         const world=Number(url.searchParams.get('world'));
-        if(![1,2,3,4,5,6].includes(world)) fail(400,'Monde invalide.');
+        if(![1,2,3,4,5,6,7].includes(world)) fail(400,'Monde invalide.');
         const country=countryOf(request), local=url.searchParams.get('scope')==='country';
-        if(world===3 || (local && country==='ZZ')) return reply({world,country,scores:[]});
-        // One best time per installation per world; nicknames need not be unique.
-        const query=`SELECT name,country,elapsed_ms,deaths,skin FROM (
-          SELECT *,ROW_NUMBER() OVER(PARTITION BY owner ORDER BY elapsed_ms,deaths,completed_at) AS best
-          FROM scores WHERE world=? ${local?'AND country=?':''}
-        ) WHERE best=1 ORDER BY elapsed_ms,deaths,completed_at LIMIT 10`;
-        const stmt=env.DB.prepare(query).bind(...(local?[world,country]:[world]));
-        const {results}=await stmt.all();
-        return reply({world,country,scores:results.map(s=>({name:s.name,country:s.country,time:s.elapsed_ms/1000,deaths:s.deaths,skin:s.skin}))});
+        const page=Number(url.searchParams.get('page') || 1);
+        if(!Number.isSafeInteger(page) || page<1 || page>1000000) fail(400,'Page invalide.');
+        if(local && country==='ZZ') return reply({world,country,scores:[],page,total:0,hasMore:false});
+        // One best run per nickname and world, across all installations.
+        const ranked=`SELECT * FROM (
+          SELECT *,ROW_NUMBER() OVER(PARTITION BY name ORDER BY elapsed_ms,deaths,completed_at,run_id) AS best
+          FROM scores WHERE world=?
+        ) WHERE best=1 ${local?'AND country=?':''}`;
+        const args=local?[world,country]:[world];
+        const [{results},count]=await Promise.all([
+          env.DB.prepare(`SELECT name,country,elapsed_ms,deaths,skin FROM (${ranked}) ORDER BY elapsed_ms,deaths,completed_at,run_id LIMIT 10 OFFSET ?`).bind(...args,(page-1)*10).all(),
+          env.DB.prepare(`SELECT COUNT(*) AS total FROM (${ranked})`).bind(...args).first()
+        ]);
+        return reply({world,country,page,total:count.total,hasMore:page*10<count.total,scores:results.map(s=>({name:s.name,country:s.country,time:s.elapsed_ms/1000,deaths:s.deaths,skin:s.skin}))});
       }
       if(request.method==='POST' && path==='/v1/runs') {
         const owner=await ownerOf(request), b=await bodyOf(request);
         const name=typeof b.name==='string'?b.name.normalize('NFC').trim():'';
         if(!name || [...name].length>16 || /[\p{C}]/u.test(name)) fail(400,'Pseudo invalide (1 à 16 caractères).');
-        if(![1,2,4,5,6].includes(b.world)) fail(400,'Monde indisponible.');
+        if(![1,2,3,4,5,6,7].includes(b.world)) fail(400,'Monde indisponible.');
         const skin=b.skin===undefined?1:b.skin;
         if(!Number.isInteger(skin)||skin<1||skin>5) fail(400,'Apparence invalide.');
         const now=Date.now();
@@ -69,18 +76,19 @@ export default {
         const run=await env.DB.prepare('SELECT * FROM runs WHERE id=? AND owner=?').bind(match[1],owner).first();
         if(!run) fail(404,'Partie introuvable.');
         const {level,elapsedMs,deaths}=b;
-        if(!Number.isInteger(level)||level<1||level>10||!Number.isInteger(elapsedMs)||!Number.isInteger(deaths)||deaths<0||deaths>100000) fail(400,'Score invalide.');
-        if(level===run.level && elapsedMs===run.elapsed_ms && deaths===run.deaths) return reply({ok:true,completed:level===10});
-        if(run.level===10) fail(409,'Partie déjà terminée.');
+        const lastLevel=run.world===3?6:10;
+        if(!Number.isInteger(level)||level<1||level>lastLevel||!Number.isInteger(elapsedMs)||!Number.isInteger(deaths)||deaths<0||deaths>100000) fail(400,'Score invalide.');
+        if(level===run.level && elapsedMs===run.elapsed_ms && deaths===run.deaths) return reply({ok:true,completed:level===lastLevel});
+        if(run.level===lastLevel) fail(409,'Partie déjà terminée.');
         if(level!==run.level+1) fail(409,'Niveaux à terminer dans l’ordre.');
         const now=Date.now();
         if(now-run.started_at>86400000) fail(410,'Partie expirée.');
         if(elapsedMs<run.elapsed_ms+100||elapsedMs>now-run.started_at+2500||elapsedMs>86400000||deaths<run.deaths) fail(400,'Chronomètre ou compteur incohérent.');
         const writes=[env.DB.prepare('UPDATE runs SET level=?,elapsed_ms=?,deaths=? WHERE id=? AND owner=? AND level=?').bind(level,elapsedMs,deaths,run.id,owner,run.level)];
-        if(level===10) writes.push(env.DB.prepare(`INSERT OR IGNORE INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin)
-          SELECT id,owner,world,name,country,elapsed_ms,deaths,?,skin FROM runs WHERE id=? AND owner=? AND level=10`).bind(now,run.id,owner));
+        if(level===lastLevel) writes.push(env.DB.prepare(`INSERT OR IGNORE INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin)
+          SELECT id,owner,world,name,country,elapsed_ms,deaths,?,skin FROM runs WHERE id=? AND owner=? AND level=?`).bind(now,run.id,owner,lastLevel));
         await env.DB.batch(writes);
-        return reply({ok:true,completed:level===10});
+        return reply({ok:true,completed:level===lastLevel});
       }
       return reply({error:'Route introuvable.'},404);
     } catch(e) {

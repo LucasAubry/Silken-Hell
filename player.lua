@@ -22,6 +22,26 @@ end
 
 
 function draw_player(direction)
+    if player.abyssHeld then
+        local s=player.abyssHeld.swallowed; local scale=math.max(0,1-(s and s.time or 0)/.25)
+        love.graphics.setColor(.5,.9,1,scale); Characters.draw(player.x+15,player.y+8,62*scale,direction)
+        love.graphics.setColor(1,1,1); return
+    end
+    if player.tunnelTravel then
+        local scale,dy=Realms.travelPose(player); love.graphics.setColor(1,1,1,scale)
+        Characters.draw(player.x+15,player.y+8+dy,62*scale,direction)
+        love.graphics.setColor(1,1,1); return
+    end
+    if player.whirl then
+        local g=love.graphics; g.push(); g.translate(player.x+15,player.y+12); g.rotate(Realms.clock*18)
+        g.setColor(1,1,1); Characters.draw(0,0,62,direction); g.pop(); return
+    end
+    if player.falling then
+        local scale=math.max(.05,(player.fallTimer or .32)/.32)
+        love.graphics.setColor(.45,.55,.7,scale)
+        Characters.draw(player.x+15,player.y+8+(1-scale)*20,62*scale,direction)
+        love.graphics.setColor(1,1,1); return
+    end
     draw_shadow(22,10,player.x+15,player.y+27)
     if (player.venom or 0)>0 then
         love.graphics.setColor(.24,1,.14,.2+.1*math.sin(larme_float_timer*10))

@@ -18,11 +18,25 @@ Art=require 'art'
 Arena=require 'arena'
 Raven=require 'raven'
 Wasp=require 'wasp'
+Storm=require 'storm'
+BossFX=require 'boss_fx'
+Hedgehog=require 'hedgehog'
+Octopus=require 'octopus'
+Ocean=require 'breathing_bubble'
 Hazards=require 'hazards'
 Characters=require 'characters'
 Bestiary=require 'bestiary'
 Realms=require 'realms'
+BiomeFloor=require 'biome_floor'
+LevelLayouts=require 'level_layouts'
+Abyss=require 'abyss'
+Bosses=require 'boss_instances'
+LayoutSchema=require 'layout_schema'
+PreviewBridge=require 'preview_bridge'
+Workshop=require 'workshop'
+Creator=require 'creator'
 require 'infernal'
+Magma=require 'magma'
 App={state='menu',selectedWorld=1}
 mobs={}; larme_indexes={}; direction='down'
 shader_effect_timer=0; shader_duration=0.3
@@ -30,6 +44,7 @@ local gameCanvas,hitShader
 function activateShaderEffect() shader_effect_timer=shader_duration end
 function isShaderActive() return shader_effect_timer>0 end
 function App.openEntry(world)
+    App.sessionLayout=nil; App.singleLevel=false; App.workshopMap=nil
     if not Worlds.canEnter(world) then return end
     App.selectedWorld=world; App.draftName=''
     App.error=nil; UI.focus='name'; App.state='entry'
@@ -42,34 +57,47 @@ function App.submit()
     App.start(App.selectedWorld)
 end
 function App.start(world)
-    if not Worlds.canEnter(world) then return end
+    if not App.sessionLayout and not Worlds.canEnter(world) then return end
     Arena.configure(love.graphics.getDimensions())
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
-    Campaign.starts={{},{},{},{},{},{}}; Campaign.lastSide=nil
+    Campaign.starts={{},{},{},{},{},{},{}}; Campaign.lastSide=nil
     Campaign.select(world); App.selectedWorld=world
     timer=0; player.level=1; player.death=0; direction='down'
     shader_effect_timer=0; App.state='playing'; love.keyboard.setTextInput(false)
     reset_level()
     App.runSkin=Characters.selected()
-    Online.start(world,Profile.name,App.runSkin)
+    App.custom=os.getenv('SILKEN_PREVIEW_WORLD')~=nil
+    for _,layout in pairs(LevelLayouts.read()) do if layout.world==world then App.custom=true end end
+    if not App.custom then Online.start(world,Profile.name,App.runSkin) end
 end
 function love.load()
     love.graphics.setDefaultFilter('linear','linear')
     font_demon=love.graphics.newFont('police.ttf',40)
     if os.getenv('SILKEN_TEST')=='1' then love.filesystem.setIdentity('silken-hell-tests')
-    elseif os.getenv('SILKEN_ONLINE_TEST')=='1' then love.filesystem.setIdentity('silken-hell-online-tests') end
+    elseif os.getenv('SILKEN_ONLINE_TEST')=='1' then love.filesystem.setIdentity('silken-hell-online-tests')
+    elseif os.getenv('SILKEN_WORKSHOP_LIVE_TEST')=='1' then love.filesystem.setIdentity('silken-hell-workshop-tests') end
     Profile.load(); Bestiary.load(); Audio.load(); UI.load()
     load_level(); load_world(); load_player(); load_objet(); load_mob(); load_particles()
-    Art.load(); Arena.configure(love.graphics.getDimensions())
+    local assetStart=love.timer.getTime(); Art.load()
+    if os.getenv('SILKEN_BENCH')=='1' then print(string.format('ASSET_LOAD_SECONDS=%.3f',love.timer.getTime()-assetStart)) end
+    if os.getenv('SILKEN_EXPORT_ART')=='1' then local f=assert(io.open(os.getenv('SILKEN_ART_PATH'),'wb')); f:write(require('json').encode(Art.metadata)); f:close(); love.event.quit(); return end
+    Arena.configure(love.graphics.getDimensions())
     Campaign.install(); Campaign.select(1); reset_level()
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
     hitShader=love.graphics.newShader('hyper_demon_shader.glsl')
     App.selectedWorld=1
     Online.init()
-    if os.getenv('SILKEN_TEST')=='1' then require('tests.runtime').run()
+    if os.getenv('SILKEN_EXPORT_LEVELS')=='1' then require('designer.export').run(); love.event.quit(); return end
+    local preview=tonumber(os.getenv('SILKEN_PREVIEW_WORLD'))
+    if preview then
+        Profile.unlocked=7; App.start(preview); player.level=tonumber(os.getenv('SILKEN_PREVIEW_LEVEL')) or 1; reset_level(); App.preview=true
+    end
+    if os.getenv('SILKEN_WORKSHOP_LIVE_TEST')=='1' then require('tests.workshop_live').run()
+    elseif os.getenv('SILKEN_TEST')=='1' then require('tests.runtime').run()
     elseif os.getenv('SILKEN_ONLINE_TEST')=='1' then require('tests.online').run() end
 end
-local function move(dt)
+function App.move(dt)
+    if player.abyssHeld or player.abyssSpit or player.whirl or player.throw or player.tunnelTravel then player.has_moved=false; player.dashing=false; return end
     local k=Profile.keys
     local dx=(love.keyboard.isDown(k.right) and 1 or 0)-(love.keyboard.isDown(k.left) and 1 or 0)
     local dy=(love.keyboard.isDown(k.down) and 1 or 0)-(love.keyboard.isDown(k.up) and 1 or 0)
@@ -77,13 +105,14 @@ local function move(dt)
     if dx~=0 then direction=dx>0 and 'right' or 'left'; player.last_mouve=dx>0 and 'player.x+' or 'player.x-' end
     if dy~=0 then direction=dy>0 and 'down' or 'up'; player.last_mouve=dy>0 and 'player.y+' or 'player.y-' end
     local length=math.sqrt(dx*dx+dy*dy)
-    if length>0 then dx=dx/length; dy=dy/length end
+    if length>0 then dx=dx/length; dy=dy/length; player.lastMoveX=dx; player.lastMoveY=dy end
     local speed=300*player.speed*Hazards.speed()
-    player.dashing=love.keyboard.isDown(k.dash) and player.speed>0
-    if love.keyboard.isDown(k.dash) then
-        speed=speed*1.8
-        if length==0 then dx=direction=='right' and 1 or direction=='left' and -1 or 0; dy=direction=='down' and 1 or direction=='up' and -1 or 0 end
+    player.dashing=love.keyboard.isDown(k.dash) and player.speed>0 and length>0
+    if Bosses.riderInput(dx,dy,love.keyboard.isDown(k.dash),dt) or (Octopus.active and Octopus.riderInput(dx,dy,love.keyboard.isDown(k.dash),dt)) then
+        player.has_moved=false; player.dashing=false; return
     end
+    if player.dashing then speed=speed*1.8 end
+    player.has_moved=(dx~=0 or dy~=0) and speed>0
     player.moveX=dx; player.moveY=dy
     -- Substeps prevent a dash from crossing a thin wall on a slow frame.
     local steps=math.max(1,math.ceil(speed*dt/8))
@@ -97,6 +126,7 @@ local function move(dt)
     if player.has_moved then add_ghost(dt) end
 end
 function love.update(dt)
+    PreviewBridge.update(dt)
     UI.clock=UI.clock+dt
     Online.update(dt)
     if App.state=='story' and Story.text~='' then
@@ -104,27 +134,43 @@ function love.update(dt)
     end
     Audio.update(Profile,App.selectedWorld==2)
     if App.state~='playing' then return end
+    if player.falling and player.fallTimer>0 then
+        timer=timer+dt; player.fallTimer=math.max(0,player.fallTimer-dt)
+        if player.fallTimer==0 then Audio.play('death'); reset_level() end
+        return
+    end
     -- Bound physics only; the scored clock still measures real active play time.
     timer=timer+dt; dt=math.min(dt,0.05)
     larme_float_timer=larme_float_timer+dt
     player.venom=math.max(0,player.venom-dt)
-    update_shadow_dash(dt); update_freezes(dt); move(dt); particleSystem:update(dt)
+    player.ink=math.max(0,(player.ink or 0)-dt)
+    Abyss.updatePlayer(dt)
+    update_shadow_dash(dt); update_freezes(dt); App.move(dt); particleSystem:update(dt)
+    Abyss.refreshLight()
     Campaign.updateTear(dt)
     for _,m in ipairs(mobs) do
         local behavior=MobBehaviors[m.type]
-        if behavior and behavior.update then behavior.update(m,dt) end
+        if not m.abyssHeld and behavior and behavior.update then behavior.update(m,dt) end
         if player.reset then break end
     end
+    Magma.update(dt)
     Realms.update(dt)
+    Ocean.update(dt)
     Campaign.updateTear(0)
-    if not player.reset then Raven.update(dt); Wasp.update(dt) end
+    if not player.reset then Raven.update(dt); Wasp.update(dt); Hedgehog.update(dt); Octopus.update(dt); Storm.update(dt); Bosses.update(dt) end
+    Abyss.refreshLight()
+    BossFX.update(dt)
     shader_effect_timer=math.max(0,shader_effect_timer-dt)
-    if player.reset then Audio.play('death'); reset_level(); return end
-    if Campaign.canCollect() and isTouching(player,objet.larme) then
+    if player.reset then
+        if player.falling then player.fallTimer=.32 else Audio.play('death'); reset_level() end
+        return
+    end
+    if not player.tunnelTravel and Campaign.canCollect() and isTouching(player,objet.larme) then
         Audio.play('pick')
-        Online.checkpoint(player.level,timer,player.death)
-        if player.level==10 then
-            Profile.complete(Campaign.world,timer,player.death)
+        if not App.custom then Online.checkpoint(player.level,timer,player.death) end
+        if App.singleLevel then App.state='customVictory'
+        elseif player.level==Worlds.levelCount(Campaign.world) then
+            if not App.custom then Profile.complete(Campaign.world,timer,player.death) end
             UI.boardWorld=Campaign.world; App.state='victory'
         else player.level=player.level+1; reset_level() end
     end
@@ -135,24 +181,28 @@ function love.draw()
         love.graphics.setCanvas(gameCanvas); love.graphics.clear(); love.graphics.origin(); love.graphics.setColor(1,1,1)
         draw_level()
         -- Draw all floor traps first, regardless of their spawn order.
-        for _,m in ipairs(mobs) do if m.type=='piege' then Campaign.drawMob(m) end end
+        for _,m in ipairs(mobs) do if m.type=='piege' or m.ground then Campaign.drawMob(m) end end
         draw_shadow_dash()
-        for _,m in ipairs(mobs) do if m.type~='piege' then Campaign.drawMob(m) end end
-        Raven.draw(); Wasp.draw(false); love.graphics.setColor(1,1,1); draw_player(direction); Wasp.draw(true)
+        for _,m in ipairs(mobs) do if m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
+        Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false); love.graphics.setColor(1,1,1); draw_player(direction); Ocean.drawBubble(); Wasp.draw(true); Bosses.draw(true); Abyss.drawBones()
+        Realms.drawDarkness(); Realms.drawFireflies(); Abyss.drawLights(); Bosses.drawLights(); BossFX.draw()
         love.graphics.setCanvas()
     end
     local w,h=love.graphics.getDimensions()
     if App.state=='playing' then
         -- Extend the world artwork over the entire desktop, preserving the arena's proportions.
-        local backdrop=Campaign.world==1 and world.background_lv or Campaign.world==2 and Campaign.floor or Realms.floor
-        local fill=math.max(w/backdrop:getWidth(),h/backdrop:getHeight())
-        love.graphics.setColor(1,1,1)
-        love.graphics.draw(backdrop,(w-backdrop:getWidth()*fill)/2,(h-backdrop:getHeight()*fill)/2,0,fill,fill)
+        if Campaign.world==6 then
+            local backdrop=Realms.floor
+            local fill=math.max(w/backdrop:getWidth(),h/backdrop:getHeight())
+            love.graphics.setColor(1,1,1)
+            love.graphics.draw(backdrop,(w-backdrop:getWidth()*fill)/2,(h-backdrop:getHeight()*fill)/2,0,fill,fill)
+        else BiomeFloor.draw(Campaign.world,w,h,UI.clock) end
         local scale,x,y=App.viewport(w,h)
         if isShaderActive() then hitShader:send('time',UI.clock); hitShader:send('screen_size',{Arena.width,Arena.height}); love.graphics.setShader(hitShader) end
-        love.graphics.draw(gameCanvas,x,y,0,scale,scale); love.graphics.setShader()
+        local shakeX,shakeY=BossFX.offset(); love.graphics.draw(gameCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale); love.graphics.setShader()
+        Realms.drawWind(w,h); Octopus.drawInk(w,h); Bosses.drawInk(w,h)
     else
-        UI.shader:send('time',UI.clock); UI.shader:send('inferno',App.selectedWorld==2 and 1 or 0)
+        UI.theme()
         love.graphics.setShader(UI.shader); love.graphics.setColor(1,1,1); love.graphics.draw(UI.pixel,0,0,0,w,h); love.graphics.setShader()
     end
     local s=math.min(w/1200,h/750)
@@ -167,6 +217,7 @@ function love.mousepressed(x,y,button)
     if button==1 then local vx,vy=UI.mouse(x,y); UI.click(vx,vy) end
 end
 function love.textinput(text)
+    if App.state=='workshop' then Workshop.text(text); return end
     if App.state~='entry' then return end
     text=text:gsub('[%c]','')
     local name=App.draftName..text
@@ -174,6 +225,7 @@ function love.textinput(text)
     App.error=nil
 end
 function love.keypressed(key)
+    if App.state=='workshop' and Workshop.focus then Workshop.key(key); return end
     if key=='f11' then App.toggleFullscreen(); return end
     if UI.binding then
         if key=='escape' then UI.binding=nil; return end
@@ -183,8 +235,11 @@ function love.keypressed(key)
         Profile.keys[UI.binding]=key; UI.binding=nil; Profile.save(); return
     end
     if key=='escape' then
-        if App.state=='playing' then App.state='pause'
+        if App.state=='menu' then App.state='quitConfirm'
+        elseif App.state=='quitConfirm' then App.state='menu'
+        elseif App.state=='playing' then App.state='pause'
         elseif App.state=='pause' then App.state='playing'
+        elseif App.state=='workshop' or App.state=='customVictory' then App.leaveCustom()
         elseif App.state=='bestiary' then App.state=UI.bestReturn or 'menu'
         elseif App.state=='settings' then App.state=UI.returnTo or 'menu'
         else App.state='menu'; love.keyboard.setTextInput(false) end
@@ -201,6 +256,13 @@ function love.focus(focused)
     if not focused and App.state=='playing' then App.state='pause' end
 end
 
+function App.leaveCustom()
+    Workshop.focus=nil; love.keyboard.setTextInput(false)
+    App.sessionLayout=nil; App.singleLevel=false; App.workshopMap=nil; App.state='menu'
+end
+function App.restartCurrent()
+    if App.singleLevel then timer=0; player.death=0; reset_level(); App.state='playing' else App.start(Campaign.world) end
+end
 function App.viewport(w,h)
     local scale=math.min(w/Arena.width,h/Arena.height)
     return scale,(w-Arena.width*scale)/2,(h-Arena.height*scale)/2
@@ -213,11 +275,14 @@ function love.wheelmoved(_,y)
         UI.storyOffset=math.max(0,math.min(UI.storyLimit or math.huge,(UI.storyOffset or 0)-y*35))
     end
 end
-function love.quit() Online.quit() end
+function love.quit() if App.preview then love.filesystem.remove('preview-heartbeat.txt') end; Online.quit() end
 
 function love.resize(w,h)
     -- Reflow a running arena when its window shape changes; retain progress and boss health.
     if not player or not Campaign.data or not gameCanvas then return end
+    local custom=LevelLayouts.read()[Campaign.world..':'..player.level]~=nil
+    local customWalls=Arena.interior
+    local zones={holes=Realms.holes,tunnels=Realms.tunnels,tornadoes=Realms.tornadoes,current=Realms.current,rainSites=Realms.rainSites,vents=Realms.vents}
     local oldW=Arena.width; Arena.configure(w,h)
     if oldW==Arena.width then return end
     local ratio=Arena.width/oldW
@@ -227,22 +292,59 @@ function love.resize(w,h)
     for _,p in ipairs(level.larme_position) do p.x=p.x*ratio end
     objet.larme.x=objet.larme.x*ratio
     for _,m in ipairs(mobs) do m.x=m.x*ratio end
-    Arena.build(level.player_position,level.larme_position,Raven.active or Wasp.active)
+    Arena.build(level.player_position,level.larme_position,Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active)
+    if custom then
+        Arena.interior=customWalls; while #Arena.walls>4 do table.remove(Arena.walls) end
+        for _,r in ipairs(customWalls) do r.x=r.x*ratio; r.w=r.w*ratio; Arena.walls[#Arena.walls+1]=r end
+    end
     player.x,player.y=Arena.clearSpot(player.x,player.y,30,24)
     if Raven.active then
-        Raven.x=Arena.width/2
-        for _,list in ipairs({Raven.spots,Raven.feathers,Raven.projectiles,Raven.nests}) do for _,p in ipairs(list) do p.x=p.x*ratio end end
+        Raven.x=Raven.x*ratio
+        for _,list in ipairs({Raven.eggs,Raven.projectiles,Raven.nests}) do for _,p in ipairs(list) do p.x=p.x*ratio end end
+        for _,m in ipairs(Raven.chicks) do m.cx=m.cx*ratio; m.x=m.x*ratio end
     end
     for _,p in ipairs(Hazards.lava) do p.x=p.x*ratio end
     if Wasp.active then
         Wasp.x=Wasp.x*ratio
+        if Wasp.landingX then Wasp.landingX=Wasp.landingX*ratio; Wasp.landingStartX=Wasp.landingStartX*ratio end
         for _,list in ipairs({Wasp.projectiles,Wasp.minions}) do for _,p in ipairs(list) do p.x=p.x*ratio end end
     end
-    if Campaign.world>=4 then
-        local rain,clock=Realms.rain,Realms.clock
-        for _,p in ipairs(rain) do p.x=p.x*ratio end
-        Realms.reset(Campaign.world,player.level); Realms.rain=rain; Realms.clock=clock
+    if not custom then Arena.reconcile() end
+    if Hedgehog.active then
+        Hedgehog.x=Hedgehog.x*ratio
+        local x,y=Arena.clearSpot(Hedgehog.x-32,Hedgehog.y-32,64,64); Hedgehog.x=x+32; Hedgehog.y=y+32
+        for _,p in ipairs(Hedgehog.projectiles) do p.x=p.x*ratio end
     end
+    if Octopus.active then
+        Octopus.x=Octopus.x*ratio
+        for _,list in ipairs({Octopus.projectiles,Octopus.crabs,Octopus.wounds}) do for _,p in ipairs(list) do p.x=p.x*ratio; if p.tx then p.tx=p.tx*ratio end end end
+    end
+    for _,b in ipairs(Ocean.bubbles) do b.x=b.x*ratio end
+    if Campaign.biome>=4 or custom then
+        local wind=Realms.wind; local illuminated=player.illuminated; local lightning=Realms.lightning; local lightningClock=Realms.lightningClock
+        local rain,clock,bolts,eggs,larvae=Realms.rain,Realms.clock,Realms.bolts,Realms.eggs,Realms.larvae
+        for _,list in ipairs({rain,bolts,eggs,larvae}) do for _,p in ipairs(list) do p.x=p.x*ratio end end
+        Realms.reset(Campaign.biome,Campaign.world==3 and 10 or player.level); Realms.custom=custom
+        Realms.wind=wind; Realms.rain=rain; Realms.clock=clock; Realms.bolts=bolts; Realms.eggs=eggs; Realms.larvae=larvae
+        if custom then
+            for key,list in pairs(zones) do for _,p in ipairs(list) do p.x=p.x*ratio end; Realms[key]=list end
+        end
+        if Abyss.active then
+            Abyss.origin.x=Abyss.origin.x*ratio
+            if Abyss.head then Abyss.head.x=Abyss.head.x*ratio end
+            for _,p in ipairs(Abyss.lightSites) do p.x=p.x*ratio end
+        end
+        Ocean.relayout()
+        player.illuminated=illuminated; Realms.lightning=lightning; Realms.lightningClock=lightningClock
+        if Abyss.giant then Abyss.buildBones() end
+    end
+    local spit=player.abyssSpit; if spit then spit.fromX=spit.fromX*ratio; spit.toX=spit.toX*ratio end
+    Magma.resize(ratio)
+    if Storm.active then
+        Storm.x=Storm.x*ratio
+        for _,list in ipairs({Storm.projectiles,Storm.strikes}) do for _,p in ipairs(list) do p.x=p.x*ratio end end
+    end
+    Bosses.resize(ratio or 1)
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
 end
 

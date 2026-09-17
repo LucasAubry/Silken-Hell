@@ -28,3 +28,12 @@ Le fichier `wrangler.jsonc` nomme explicitement la base dédiée. Ne jamais subs
 ## Tests
 
 `npm test` utilise `node:sqlite` de Node 24 et n'accède à aucune ressource distante. Les tests couvrent les pays, les mondes, l'authentification anonyme, la progression, l'idempotence, les temps impossibles, les charges trop grandes et la limitation de débit.
+
+## Workshop
+
+- `GET /v1/workshop?page=1` : huit cartes par page, triées par étoiles décroissantes ; état de l’étoile de l’installation si authentifiée.
+- `GET /v1/workshop/:id` : carte et disposition complète.
+- `POST /v1/workshop` : `{title,author,layout,id?}` publie une carte ou met à jour une publication appartenant à la même identité.
+- `POST /v1/workshop/:id/star` : `{starred:true|false}` ajoute/retire l’unique étoile de cette installation.
+
+Migration additive `0004_workshop.sql`. Cartes limitées à 1 000 objets et 128 Kio, format de données validé côté serveur/client, aucun code téléchargé. Créations limitées à 20/heure et 100 par identité ; limite IP commune conservée. Les identités restent anonymes par installation.

@@ -47,7 +47,10 @@ function draw_level_8()
 end
 
 function mob_lv8()
---	spawn_piege(500, 300)
---	spawn_ange(400, 400)
-	spawn_ange(200, 200, 3, true)
+    -- A moving carrier, two independent pursuers, and crossed rotating blades.
+    spawn_ange(175,125,2.6,true)
+    spawn_ange(645,450,2.1,false)
+    spawn_snake(645,120,2.2)
+    spawn_scie(250,360,1,1.65,'down')
+    spawn_scie(545,210,-1,1.8,'up')
 end

@@ -18,7 +18,7 @@ function T.run()
     Campaign.starts={{},{},{},{},{},{}}; Campaign.lastSide=nil
     local sides={}; local previous
     for n=1,9 do
-        level(2,n); assert(#Arena.interior>=4,'Murs Enfer rétablis')
+        level(2,n); assert(#Arena.interior>=1,'Murs Enfer sans chevauchement')
         if not Campaign.carrier then
             assert(Campaign.lastSide~=previous,'Côté différent du précédent')
             previous=Campaign.lastSide; sides[previous]=true
@@ -43,7 +43,8 @@ function T.run()
     spawn_imp(150,300,50); local m=mobs[1]; m.charge=-.01
     MobBehaviors.imp.update(m,.6); assert(m.charge<0 and m.x>205,'Charge au-delà de 0,5 seconde')
     MobBehaviors.imp.update(m,1); assert(m.charge<0,'Charge encore active après 1,6 seconde')
-    MobBehaviors.imp.update(m,.5); assert(m.charge>0,'Fin après deux secondes')
+    MobBehaviors.imp.update(m,1); assert(m.charge<0,'Charge encore active après 2,6 secondes')
+    MobBehaviors.imp.update(m,.5); assert(m.charge>0,'Fin après trois secondes')
     for _,w in ipairs({1,2}) do
         level(w,3); mobs={}; spawn_spinner(700,400,110); local snake=mobs[1]; setup_spinner(snake)
         local clone={}; for k,v in pairs(snake) do clone[k]=v end
@@ -60,7 +61,7 @@ function T.run()
     player.x=rotor.tipX-15; player.y=rotor.tipY-12; MobBehaviors.scie.update(rotor,0)
     assert(player.reset,'Collision sur la tête mobile')
     for _,d in ipairs({'up','down','left','right'}) do
-        level(2,10); Wasp.phase='landed'; Wasp.dir=d
+        level(2,10); Wasp.reset(true); Wasp.phase='landed'; Wasp.dir=d
         local sx,sy=Wasp.stinger(); local dx,dy=Wasp.stingerVector()
         player.x=sx-15; player.y=sy-12; player.dashing=true; player.moveX=-dx; player.moveY=-dy
         Wasp.contact(); assert(Wasp.hp==9,'Dard orienté '..d)

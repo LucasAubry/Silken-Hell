@@ -47,7 +47,12 @@ function draw_level_9()
 end
 
 function mob_lv9()
---	spawn_piege(500, 300)
---	spawn_ange(400, 400)	
-	spawn_ange(200, 200, 3, true)
+    -- Final trial before the Merle: lure the carrier through two rotating lanes.
+    spawn_ange(635,115,2.9,true)
+    spawn_ange(150,440,2.2,false)
+    spawn_snake(160,115,2.4)
+    spawn_snake(630,455,2.2)
+    spawn_scie(255,205,1,1.9,'down')
+    spawn_scie(545,385,-1,2,'up')
+    spawn_piege(400,105)
 end

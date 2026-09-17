@@ -17,6 +17,7 @@ fi
 # Le cache hors iCloud garde les textures disponibles pendant toute la partie.
 CACHE_DIR="$HOME/Library/Application Support/Silken Hell"
 mkdir -p "$CACHE_DIR"
+printf '%s\n' "$GAME_DIR" > "$CACHE_DIR/project-path.txt"
 cd "$GAME_DIR"
 echo 'Préparation du jeu…'
 BUILD_DIR=$(mktemp -d "$CACHE_DIR/build.XXXXXX")
@@ -25,7 +26,7 @@ if [[ -f "$CACHE_DIR/Silken Hell.love" ]]; then
   cp "$CACHE_DIR/Silken Hell.love" "$BUILD_DIR/game.love"
 fi
 # Synchronise aussi les suppressions, sans relire les textures inchangées.
-/usr/bin/zip -q -FS -r "$BUILD_DIR/game.love" ./*.lua ./*.glsl police.ttf levels assets texture tests || {
+/usr/bin/zip -q -FS -r "$BUILD_DIR/game.love" ./*.lua ./*.glsl police.ttf levels assets texture tests designer || {
   RESULT=$?
   if [[ "$RESULT" != 12 ]]; then exit "$RESULT"; fi
 }

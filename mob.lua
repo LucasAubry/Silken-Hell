@@ -332,8 +332,7 @@ function move_mob_towards_player(m, player, dt)
     local angle = math.atan2(dy, dx)
     local speed = m.speed or 1
 
-    m.x = m.x + math.cos(angle) * speed * dt * 60
-    m.y = m.y + math.sin(angle) * speed * dt * 60
+    Arena.navigate(m,player.x+15,player.y+12,speed*60,dt)
 
     -- Met à jour la direction (visuelle + logique)
     if math.abs(dx) > math.abs(dy) then
@@ -380,8 +379,7 @@ function move_when_player_moves(m, player, dt)
     local angle = math.atan2(dy, dx)
     local speed = m.speed or 1
 
-    m.x = m.x + math.cos(angle) * speed * dt * 60
-    m.y = m.y + math.sin(angle) * speed * dt * 60
+    Arena.navigate(m,player.x+15,player.y+12,speed*60,dt)
 
     -- Met à jour la direction
     if math.abs(dx) > math.abs(dy) then
