@@ -56,15 +56,15 @@ local function entity(e,ghost)
         if e.type=='gull' and e.electric then g.setColor(1,.88,.15) end
         if e.kind=='tear' or e.kind=='light' then Art.drawTinted(c.art,e.x,e.y,size)
         elseif e.type=='skeleton_fish' then
-            local width=M.layout.width; local span=width*.55; local count=math.max(3,math.floor(span/145))
-            for i=1,count do
-                local xx=e.x-width*.3+(i-1)*span/count; local hh=105+25*math.sin(i/count*math.pi)
+            local width=M.layout.width; local span=width*.48; local count=math.max(3,math.floor(span/205)+1)
+            for i=1,((e.skeletonStage or 10)>=9 and count or 0) do
+                local xx=e.x-width*.3+(i-1)*span/(count-1); local hh=95+18*math.sin(i/count*math.pi)
                 Art.draw('skeleton_spine',xx,e.y,22,0,28)
                 Art.draw('skeleton_rib',xx,e.y-hh/2-20,22,-.12,hh)
                 Art.draw('skeleton_rib',xx,e.y+hh/2+20,22,math.pi+.12,hh)
             end
-            Art.draw('skeleton_tail',e.x-width*.405,e.y,110,0,160)
-            Art.draw('skeleton_head',e.x+width*.32,e.y,170,0,150)
+            Art.draw('skeleton_tail',e.x-width*.405,e.y,100,0,145)
+            if (e.skeletonStage or 10)==10 then Art.draw('skeleton_head',e.x+width*.29,e.y,170,0,150) end
         else Art.draw(c.art,e.x,e.y,size) end
     end
     if e.kind=='spawn' then g.setColor(.3,1,.7,.75); g.circle('line',e.x,e.y,32) end
@@ -163,11 +163,13 @@ function love.draw()
     local e=M.selected
     if e then
         text(catalog(e).name,right,208,18,nil,210)
+        local defaults=e.kind=='boss' and {movementRate=1,attackRate=1} or e.kind=='magma_spawner' and {spawnDelay=1,spawnInterval=3} or {}
         local row=0
-        for _,f in ipairs({'x','y','w','h','rx','ry','speed','phase','dx','rota','radius'}) do if e[f]~=nil then
-            local yy=250+row*43; text(({speed='Vitesse',radius='Rayon',phase='Phase',w='Largeur',h='Hauteur'})[f] or f:upper(),right,yy+8,12,color.muted)
-            local label=state.input==f and state.inputText..'|' or tostring(math.floor(e[f]*100+.5)/100)
-            button(label,right+88,yy,117,34,function() state.input=f; state.inputText=tostring(e[f]); love.keyboard.setTextInput(true) end,state.input==f)
+        for _,f in ipairs({'x','y','w','h','rx','ry','speed','phase','dx','rota','radius','spawnDelay','spawnInterval','movementRate','attackRate'}) do if e[f]~=nil or defaults[f]~=nil then
+            local value=e[f] or defaults[f]
+            local yy=250+row*43; text(({movementRate='Dépl. ×',attackRate='Attaques ×',spawnDelay='Début (s)',spawnInterval='Intervalle (s)',speed='Vitesse',radius='Rayon',phase='Phase',w='Largeur',h='Hauteur'})[f] or f:upper(),right,yy+8,12,color.muted)
+            local label=state.input==f and state.inputText..'|' or tostring(math.floor(value*100+.5)/100)
+            button(label,right+88,yy,117,34,function() state.input=f; state.inputText=tostring(value); love.keyboard.setTextInput(true) end,state.input==f)
             row=row+1
         end end
         local yy=258+row*43

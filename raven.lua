@@ -34,7 +34,7 @@ function B.fire()
 end
 function B.update(dt)
     if not B.active or B.defeated then return end
-    B.elapsed=B.elapsed+dt; B.flash=math.max(0,B.flash-dt); B.shot=B.shot-dt
+    B.elapsed=B.elapsed+dt; B.flash=math.max(0,B.flash-dt); B.shot=B.shot-dt*(B.attackRate or 1)
     if B.shot<=0 then B.fire(); B.shot=B.interval() end
     for _,f in ipairs(B.eggs) do f.glow=math.max(0,f.glow-dt) end
     for _,m in ipairs(B.chicks) do

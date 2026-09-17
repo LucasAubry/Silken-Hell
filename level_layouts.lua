@@ -1,6 +1,6 @@
 local json=require 'json'
 local L={disabled=false}
-local fields={'x','y','speed','rota','radius','phase','rx','ry','dx','seed','w','h','electric','has_larme','elite','schoolId'}
+local fields={'x','y','speed','rota','radius','phase','rx','ry','dx','seed','w','h','electric','has_larme','elite','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage'}
 local function copy(t)
     local r={}; for _,k in ipairs(fields) do if type(t[k])=="number" or type(t[k])=="boolean" then r[k]=t[k] end end; return r
 end
@@ -24,7 +24,7 @@ function L.snapshot()
     for kind,b in pairs({merle=Raven,wasp=Wasp,hedgehog=Hedgehog,octopus=Octopus,storm=Storm}) do
         if b.active then put('boss',b,kind) end
     end
-    if Abyss.giant then put('boss',{x=Arena.width/2,y=280},'skeleton_fish') end
+    if Abyss.giant then put('boss',{x=Arena.width/2,y=280,skeletonStage=Abyss.skeletonStage},'skeleton_fish') end
     if Abyss.boss then
         for i=#out.entities,1,-1 do if out.entities[i].kind=='tear' then table.remove(out.entities,i) end end
         for _,p in ipairs(Abyss.lightSites) do put('light',p) end
@@ -72,7 +72,7 @@ function L.apply(layout)
     if not layout or type(layout.entities)~='table' then return false end
     require('layout_schema').migrate(layout)
     local scale=Arena.width/layout.width; Realms.custom=true; L.schools={}; mobs={}; Campaign.carrier=nil; Realms.schools={}
-    Magma.reset()
+    Magma.reset(); Burning.reset()
     Hazards.lava={}; Realms.vents={}; Realms.holes={}; Realms.tunnels={}; Realms.tornadoes={}; Realms.current={}; Realms.rainSites={}
     Arena.interior={}; while #Arena.walls>4 do table.remove(Arena.walls) end
     levels[player.level].larme_position={}; local tears=levels[player.level].larme_position
@@ -83,7 +83,7 @@ function L.apply(layout)
         elseif e.kind=='tear' then tears[#tears+1]={x=e.x-15,y=e.y-39}
         elseif e.kind=='wall' then
             local r={x=e.x-e.w*scale/2,y=e.y-e.h/2,w=e.w*scale,h=e.h}; Arena.interior[#Arena.interior+1]=r; Arena.walls[#Arena.walls+1]=r
-        elseif e.kind=='magma_spawner' then Magma.addSpawner(e.x,e.y)
+        elseif e.kind=='magma_spawner' then Magma.addSpawner(e.x,e.y,e.spawnDelay,e.spawnInterval)
         elseif e.kind=='mob' then L.spawn(e)
         elseif e.kind=='boss' then bossEntities[#bossEntities+1]=e
         elseif e.kind=='nest' then nests[#nests+1]=e
@@ -103,7 +103,7 @@ function L.apply(layout)
     for _,e in ipairs(bossEntities) do if e.type=='skeleton_fish' then Abyss.active=true end end
     if #lights>0 then Abyss.active=true end
     Bosses.load(bossEntities,nests,lights)
-    local boss=Bosses.any()
+    local boss=Bosses.alive()
     objet.larme.taken=boss
     local p=tears[1] or {x=Arena.width/2-15,y=280}; objet.larme.x=p.x; objet.larme.y=p.y; larme_indexes[player.level]=1
     levels[player.level].player_position={x=player.x,y=player.y}

@@ -24,17 +24,16 @@ function T.run()
     level(6,3); assert(#Realms.clouds==0 and Hazards.speed()==1,'Nuages ralentissants supprimés')
     Realms.rain={{x=player.x+15,y=player.y+12,age=.84}}; Realms.update(.02); assert(player.reset,'Pluie mortelle après avertissement')
     reset_level(); assert(#Realms.rain==0)
-    level(2,10); Wasp.reset(true)
-    for _,p in ipairs({{-40,0},{35,0},{0,-45},{0,35},{0,0}}) do
-        Wasp.phase='landed'; player.x=Wasp.x+p[1]-15; player.y=Wasp.y+p[2]-12; player.dashing=false
-        local hp=Wasp.hp; Wasp.contact(); assert(Wasp.hp==hp-1 and not player.reset,'Contact sûr partout au sol')
-        Wasp.contact(); assert(Wasp.hp==hp-1,'Un seul dégât avant redécollage')
+    for _,offset in ipairs({{-35,0},{35,0},{0,-40},{0,35},{0,0}}) do
+        level(2,10);Wasp.reset(true);local bee=Wasp.bees[1];bee.phase='fatigued';bee.time=2
+        player.x=bee.x+offset[1]-15;player.y=bee.y+offset[2]-12;player.dashing=false
+        Wasp.contact();assert(Wasp.hp==8 and not player.reset,'Contact sûr partout pendant la fatigue')
+        Wasp.contact();assert(Wasp.hp==8,'Un coup par fenêtre')
     end
-    player.x=60; player.y=500; Wasp.phase='landed'; Wasp.phaseTime=.01; Wasp.shot=100; Wasp.update(.02)
-    assert(Wasp.phase=='flying','Redécollage automatique')
-    level(2,10); Wasp.reset(true); Wasp.phase='landed'; player.x=Wasp.x-15; player.y=Wasp.y-12
-    Wasp.projectiles={{x=Wasp.x,y=Wasp.y,vx=0,vy=0,life=1,kind='sting'}}
-    Wasp.update(.01); assert(Wasp.hp==9 and not player.reset,'Protection du contact réussi')
+    level(2,10);Wasp.reset(true);local bee=Wasp.bees[1];bee.phase='fatigued';bee.time=2
+    player.x=bee.x-15;player.y=bee.y-12
+    Wasp.projectiles={{x=bee.x,y=bee.y,vx=0,vy=0,life=1,kind='ember'}}
+    Wasp.update(.01);assert(Wasp.hp==8 and not player.reset,'Protection du contact réussi')
     Bestiary.seen={}; Bestiary.unread={}; Bestiary.discover('mole'); Bestiary.save(); Bestiary.load()
     assert(Bestiary.seen.mole and Bestiary.pending(),'Découverte persistante')
     App.state='playing'; Bestiary.open(); assert(not Bestiary.pending() and App.state=='bestiary' and UI.bestReturn=='playing')

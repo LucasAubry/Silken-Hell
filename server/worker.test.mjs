@@ -91,9 +91,9 @@ test('a nickname keeps its best time across computers, with the matching skin an
   await env.DB.prepare('INSERT INTO scores VALUES(?,?,?,?,?,?,?,?,?)').bind(id,owner,1,'Même pseudo',country,ms,deaths,1,skin).run();
  }
  const data=await (await call(env,'/v1/leaderboard?world=1')).json();
- assert.equal(data.total,1); assert.deepEqual(data.scores,[{name:'Même pseudo',country:'BE',time:15,deaths:3,skin:4}]);
+ assert.equal(data.total,1); assert.deepEqual(data.scores,[{name:'Même pseudo',country:'BE',time:15.15,rawTime:15,penalty:.15,deaths:3,skin:4}]);
  const local=await (await call(env,'/v1/leaderboard?world=1&scope=country',{country:'BE'})).json();
- assert.equal(local.total,1); assert.equal(local.scores[0].time,15);
+ assert.equal(local.total,1); assert.equal(local.scores[0].time,15.15);
 });
 const map={world:1,level:1,width:960,height:600,entities:[{kind:'spawn',x:480,y:300},{kind:'tear',x:90,y:100},{kind:'mob',type:'abyss_fish',x:200,y:200},{kind:'boss',type:'wasp',x:300,y:180},{kind:'boss',type:'wasp',x:650,y:180}]};
 test('Workshop supports mixed maps, ownership, independent stars, ranking, and pagination',async()=>{
@@ -157,4 +157,27 @@ test('Renaissance migration retains historical runs and scores',()=>{
  assert.equal(db.prepare('SELECT level FROM runs').get().level,4);
  assert.equal(db.prepare('SELECT skin FROM scores').get().skin,5);
  assert.equal(db.prepare('SELECT elapsed_ms FROM scores').get().elapsed_ms,30000);
+});
+
+test('death penalties rerank historical raw times and choose nickname best adjusted run',async()=>{
+ const env={DB:database()};
+ for(const [id,name,raw,deaths] of [['a','Rapide',10000,40],['b','Prudent',11000,0],['c','Rapide',10500,10]])
+  await env.DB.prepare('INSERT INTO scores VALUES(?,?,?,?,?,?,?,?,?)').bind(id,'o',2,name,'FR',raw,deaths,1,1).run();
+ const {scores}=await (await call(env,'/v1/leaderboard?world=2')).json();
+ assert.equal(scores.length,2); assert.equal(scores[0].name,'Prudent');
+ assert.equal(scores[1].name,'Rapide');assert.equal(scores[1].rawTime,10.5);assert.equal(scores[1].time,11);assert.equal(scores[1].penalty,.5);
+ const again=await (await call(env,'/v1/leaderboard?world=2')).json();assert.deepEqual(again.scores,scores);
+});
+
+test('Workshop preserves encounter tuning and rejects unsafe multipliers',async()=>{
+ const env={DB:database()};const layout=structuredClone(map);
+ layout.entities[3].movementRate=2;layout.entities[3].attackRate=.5;
+ layout.entities.push({kind:'magma_spawner',x:400,y:300,spawnDelay:.4,spawnInterval:1.2});
+ let response=await call(env,'/v1/workshop',{body:{title:'Cadences',author:'Test',layout}});
+ assert.equal(response.status,201);
+ const {id}=await response.json();assert.deepEqual((await (await call(env,'/v1/workshop/'+id)).json()).layout,layout);
+ for(const value of [0,6,'2']) {
+  layout.entities[3].attackRate=value;
+  response=await call(env,'/v1/workshop',{body:{title:'Cadences',author:'Test',layout}});assert.equal(response.status,400);
+ }
 });

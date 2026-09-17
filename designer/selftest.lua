@@ -14,7 +14,11 @@ function T.run(M,state,select,apply,preview)
         for _,e in ipairs(M.defaults.levels['3:'..n].entities) do if e.kind=='boss' and e.type==kind then found=true end end
         assert(found,'Boss Renaissance importé : '..kind)
     end
-    select(4,1); M.add({kind='magma_spawner',rx=31,ry=23},180,220); M.add({kind='mob',type='magma_larva',speed=245},280,220); assert(M.validate(M.layout)); M.undo(false); M.undo(false)
+    for n=8,10 do
+        local found=false; for _,e in ipairs(M.defaults.levels['7:'..n].entities) do if e.type=='skeleton_fish' then assert(e.skeletonStage==n); found=true end end
+        assert(found,'Squelette progressif importé')
+    end
+    select(4,1); M.add({kind='magma_spawner',rx=31,ry=23,spawnDelay=.5,spawnInterval=2},180,220); M.add({kind='mob',type='magma_larva',speed=245},280,220); assert(M.validate(M.layout)); M.undo(false); M.undo(false)
     select(2,10)
     local found=false; for _,e in ipairs(M.layout.entities) do if e.kind=='boss' then assert(e.type=='wasp'); found=true end end
     assert(found,'Abeille importée comme boss de l’Enfer')
@@ -57,7 +61,11 @@ function T.run(M,state,select,apply,preview)
         if tick==2 then love.graphics.captureScreenshot('designer-ocean.png')
         elseif tick==5 then select(7,10); state.category='Pièges'; state.scroll=0
         elseif tick==7 then love.graphics.captureScreenshot('designer-abyss.png')
-        elseif tick==10 then print('PASS designer: 66 imports, placement, undo/redo, sauvegarde atomique, validation libre'); love.event.quit() end
+        elseif tick==10 then select(2,10); for _,e in ipairs(M.layout.entities) do if e.kind=='boss' then M.selected=e; break end end
+        elseif tick==12 then love.graphics.captureScreenshot('designer-boss-rates.png')
+        elseif tick==15 then select(2,1); for _,e in ipairs(M.layout.entities) do if e.kind=='magma_spawner' then M.selected=e; break end end
+        elseif tick==17 then love.graphics.captureScreenshot('designer-spawner-rates.png')
+        elseif tick==20 then print('PASS designer: 66 imports, placement, undo/redo, sauvegarde atomique, validation libre'); love.event.quit() end
     end
 end
 return T

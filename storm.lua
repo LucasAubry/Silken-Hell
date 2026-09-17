@@ -11,6 +11,7 @@ function S.fire()
     end
 end
 function S.summon()
+    if Campaign.biome~=6 then return end
     local px,py=player.x+15,player.y+12
     for _,offset in ipairs({-85,0,85}) do
         S.strikes[#S.strikes+1]={x=math.max(65,math.min(Arena.width-65,px+offset)),y=math.max(80,math.min(520,py)),age=0}
@@ -30,9 +31,9 @@ function S.update(dt)
     S.clock=S.clock+dt; S.flash=math.max(0,S.flash-dt); S.hitGrace=math.max(0,S.hitGrace-dt); S.phaseTime=S.phaseTime-dt
     if S.phase=='storm' then
         local tx=Arena.width/2+math.sin(S.clock*.65)*Arena.width*.19; local ty=235+math.sin(S.clock*.9)*95
-        local dx,dy=tx-S.x,ty-S.y; local step=math.min(1,90*dt/math.max(1,math.sqrt(dx*dx+dy*dy)))
+        local dx,dy=tx-S.x,ty-S.y; local step=math.min(1,90*(S.movementRate or 1)*dt/math.max(1,math.sqrt(dx*dx+dy*dy)))
         S.x=S.x+dx*step; S.y=S.y+dy*step; S.dir=Art.direction(dx,dy,S.dir)
-        S.shot=S.shot-dt; S.bolt=S.bolt-dt
+        S.shot=S.shot-dt*(S.attackRate or 1); S.bolt=S.bolt-dt*(S.attackRate or 1)
         if S.shot<=0 then S.fire(); S.shot=1.5-(S.maxHp-S.hp)*.07 end
         if S.bolt<=0 then S.summon(); S.bolt=2.1-(S.maxHp-S.hp)*.06 end
         if S.phaseTime<=0 then S.phase='rest'; S.phaseTime=3.2; S.projectiles={}; S.strikes={}; S.dir='down' end

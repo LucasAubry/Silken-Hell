@@ -38,10 +38,7 @@ function T.run()
     for i=1,6 do Realms.wind.time=0; Realms.updateWind(.01); strengths[i]=math.sqrt(Realms.wind.tx^2+Realms.wind.ty^2) end
     assert(strengths[3]==0 and strengths[6]==0 and strengths[5]>strengths[1]*2,'Rafales faibles/fortes et accalmies')
     level(2,10); assert(Wasp.active and not Campaign.canCollect(),'Abeille native dans l’Enfer')
-    for _=1,10 do
-        Wasp.phase='landed'; player.x=Wasp.x-15; player.y=Wasp.y-12; Wasp.contact()
-        assert(not player.reset,'Contact au sol sûr')
-    end
+    require('tests.wasp_trio').defeat(Wasp)
     assert(Wasp.defeated and Campaign.canCollect(),'Abeille vaincue libère la larme')
     for _,entry in ipairs(require('designer.catalog')) do assert(entry.type~='hellserpent','Boss retiré du catalogue') end
     for _,entry in ipairs(Bestiary.entries) do assert(entry.id~='hellserpent','Boss retiré du bestiaire') end

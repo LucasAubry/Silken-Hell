@@ -3,7 +3,7 @@ local g=love.graphics
 local utf8=require 'utf8'
 local gold={0.82,0.72,0.49}; local muted={0.47,0.59,0.61}; local white={0.91,0.91,0.83}
 function U.load()
-    U.fonts={small=g.newFont(12),body=g.newFont(16),medium=g.newFont(22),title=g.newFont('police.ttf',82),heading=g.newFont(28)}
+    U.fonts={tiny=g.newFont(10),small=g.newFont(12),body=g.newFont(16),medium=g.newFont(22),title=g.newFont('police.ttf',82),heading=g.newFont(28)}
     U.shader=g.newShader('assets/celestial.glsl')
     U.pixel=g.newImage(love.image.newImageData(1,1)); U.pixel:replacePixels(love.image.newImageData(1,1))
 end
@@ -126,6 +126,7 @@ function U.board(x,y,w,country)
         U.text(U.time(score.time),x+w-117,yy+3,'small',gold)
         g.setColor(1,1,1); Art.draw('skull',x+w-43,yy+10,14)
         U.text(tostring(score.deaths or 0),x+w-32,yy+3,'small',white)
+        U.text('('..Scoring.label(score.deaths)..')',x+w-80,yy+17,'tiny',muted,68,'right')
     end
 end
 function U.worldTabs(y)
@@ -141,12 +142,12 @@ function U.rankings()
     local data,status=Online.page(U.boardWorld,U.boardCountry,U.boardPage)
     U.panel(200,244,800,352)
     U.text('Rang',224,255,'small',muted); U.text('Joueur',330,255,'small',muted)
-    U.text('Chrono',724,255,'small',muted); U.text('Morts',889,255,'small',muted)
+    U.text('Chrono',724,255,'small',muted); U.text('Morts · pénalité',843,255,'small',muted)
     for i,s in ipairs(data.scores) do local y=287+(i-1)*29
         U.text(tostring((U.boardPage-1)*10+i),226,y,'body',gold)
         g.setColor(1,1,1); Characters.portrait(s.skin or 1,300,y+9,26)
         U.text(s.name,330,y,'body',white); U.text(U.time(s.time),724,y,'body',gold)
-        U.text(tostring(s.deaths),900,y,'body',white)
+        U.text(tostring(s.deaths)..' ('..Scoring.label(s.deaths)..')',843,y,'small',white)
     end
     if #data.scores==0 then U.text(status=='loading' and 'Connexion…' or status=='offline' and 'Connexion indisponible' or 'Aucun score',300,407,'body',muted,600,'center') end
     U.text(string.format('Page %d / %d  ·  %d joueurs',U.boardPage,math.max(1,math.ceil((data.total or 0)/10)),data.total or 0),370,610,'body',gold,460,'center')
@@ -168,7 +169,7 @@ function U.menu()
     U.button('JOUER',425,450,350,54,function() App.openEntry(App.selectedWorld) end,false,true)
     U.button('PARAMÈTRES',425,511,170,38,function() App.state='settings'; U.returnTo='menu' end)
     U.button('HISTOIRE',605,511,170,38,function() App.state='story'; U.storyOffset=0 end)
-    U.button('BESTIAIRE'..(Bestiary.pending() and '   ·   i' or ''),425,557,170,38,Bestiary.open)
+    U.button('BESTIAIRE',425,557,170,38,Bestiary.open)
     U.button(string.format('%02d  %s',Worlds.rank(App.selectedWorld),Worlds.names[App.selectedWorld]:upper()),425,650,350,36,function() App.state='worlds' end)
     U.button('SUCCÈS',605,557,170,38,function() App.state='achievements' end)
     U.button('WORKSHOP',425,603,170,38,Workshop.open)
@@ -277,9 +278,10 @@ function U.iconButton(cx,cy,kind,callback)
 end
 function U.gameHud()
     g.setColor(1,1,1); Art.draw('clock',49,31,25)
-    U.outlined(U.time(timer),70,17,'medium',nil,144)
+    U.outlined(U.time(Scoring.total(timer,player.death)),70,17,'medium',nil,144)
     g.setColor(1,1,1); Art.draw('skull',250,31,26)
     U.outlined(tostring(player.death),267,17,'medium',nil,65)
+    U.text(Scoring.label(player.death),335,24,'small',gold)
     U.outlined(string.format('%02d',player.level),564,16,'medium',nil,72)
     U.iconButton(1090,31,'pause',function() App.state='pause' end)
     U.iconButton(1150,31,'restart',App.restartCurrent)
@@ -370,7 +372,7 @@ function U.draw()
         U.button('Retour',440,610,320,40,function() App.state='menu' end)
     elseif App.state=='customVictory' then
         U.panel(300,235,600,350); U.text('Carte terminée',330,265,'heading',white,540,'center')
-        U.text(U.time(timer)..' · '..player.death..' morts',330,325,'body',gold,540,'center')
+        U.text(U.time(Scoring.total(timer,player.death))..' · '..player.death..' morts ('..Scoring.label(player.death)..')',330,325,'body',gold,540,'center')
         if App.workshopMap then U.button('Donner une étoile',375,380,450,42,function() Workshop.star(App.workshopMap) end,App.workshopMap.starred) end
         U.button('Rejouer',375,441,450,42,App.restartCurrent)
         U.button('Retour au Workshop',375,497,450,42,function() App.leaveCustom(); Workshop.open() end)
@@ -392,7 +394,7 @@ function U.draw()
     elseif App.state=='victory' then
         U.panel(355,350,490,300)
         U.text(Worlds.names[Campaign.world]..' · accompli',375,373,'heading',white,450,'center')
-        U.text(Profile.name..'  ·  '..U.time(timer)..'  ·  '..player.death..' morts',380,423,'body',gold,440,'center')
+        U.text(Profile.name..'  ·  '..U.time(Scoring.total(timer,player.death))..'  ·  '..player.death..' morts ('..Scoring.label(player.death)..')',380,423,'body',gold,440,'center')
         U.text(Worlds.next(Campaign.world) and Worlds.names[Worlds.next(Campaign.world)]..' est débloqué.' or 'Tous les mondes sont accomplis.',385,466,'body',muted,430,'center')
         U.text(Online.scoreStatus,375,507,'small',gold,450,'center')
         U.button(Worlds.next(Campaign.world) and 'Entrer : '..Worlds.names[Worlds.next(Campaign.world)] or 'Rejouer : '..Worlds.names[Campaign.world],385,536,430,44,function() App.openEntry(Worlds.next(Campaign.world) or Campaign.world) end,false,true)

@@ -7,7 +7,10 @@ export function validateLayout(l) {
  let spawn=0;
  for(const e of l.entities) {
   if(!e || !kinds.has(e.kind) || (e.kind==='mob'&&!mobs.has(e.type)) || (e.kind==='boss'&&!bosses.has(e.type))) return false;
-  for(const k of ['x','y','speed','w','h','rx','ry','radius','phase','dx','rota','seed','schoolId']) if(e[k]!==undefined && (!Number.isFinite(e[k]) || Math.abs(e[k])>10000)) return false;
+  for(const k of ['x','y','speed','w','h','rx','ry','radius','phase','dx','rota','seed','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage']) if(e[k]!==undefined && (!Number.isFinite(e[k]) || Math.abs(e[k])>10000)) return false;
+  for(const k of ['movementRate','attackRate']) if(e[k]!==undefined && (e[k]<.1||e[k]>5)) return false;
+  for(const k of ['spawnDelay','spawnInterval']) if(e[k]!==undefined && (e[k]<.1||e[k]>120)) return false;
+  if(e.skeletonStage!==undefined && (!Number.isInteger(e.skeletonStage)||e.skeletonStage<8||e.skeletonStage>10)) return false;
   if(!Number.isFinite(e.x)||!Number.isFinite(e.y)||e.x<0||e.x>l.width||e.y<0||e.y>600) return false;
   for(const k of ['w','h','rx','ry','radius']) if(e[k]!==undefined&&e[k]<1) return false;
   if(e.kind==='wall'&&(!e.w||!e.h)) return false;

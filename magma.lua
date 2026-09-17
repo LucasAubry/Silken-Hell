@@ -1,11 +1,10 @@
--- Infernal brood: authored nests, disposable pursuers, persistent poison per attempt.
-local M={spawners={},pools={},bursts={},occupied={},buckets={}}
+-- Infernal brood: authored nests and explosive pursuers.
+local M={spawners={},pools={},bursts={}}
 function M.reset()
-    if M.canvas then M.canvas:release() end
-    M.canvas=nil; M.spawners={}; M.pools={}; M.bursts={}; M.occupied={}; M.buckets={}; M.clock=0
+    M.spawners={}; M.pools={}; M.bursts={}; M.clock=0
 end
-function M.addSpawner(x,y)
-    local p={x=x,y=y,rx=31,ry=23,clock=2.2+#M.spawners*.85,interval=6.5}
+function M.addSpawner(x,y,delay,interval)
+    local p={x=x,y=y,rx=31,ry=23,clock=delay or 1,interval=interval or 3,spawnDelay=delay or 1,spawnInterval=interval or 3}
     M.spawners[#M.spawners+1]=p; return p
 end
 function M.populate(n)
@@ -37,35 +36,14 @@ function M.spawn(x,y,speed)
     if App.state=='playing' then Bestiary.discover('magma_larva') end
     return m
 end
-local function bucket(x,y) return math.floor(x/64)..':'..math.floor(y/64) end
-function M.poison(x,y)
-    -- Coalesce repeat impacts in tiny cells without ever expiring existing poison.
-    local key=math.floor(x/16)..':'..math.floor(y/16)
-    if M.occupied[key] then return end
-    M.occupied[key]=true
-    local p={x=x,y=y,rx=39,ry=28}; M.pools[#M.pools+1]=p
-    for by=math.floor((y-34)/64),math.floor((y+34)/64) do for bx=math.floor((x-45)/64),math.floor((x+45)/64) do
-        local k=bx..':'..by; M.buckets[k]=M.buckets[k] or {}; table.insert(M.buckets[k],p)
-    end end
-    local g=love.graphics
-    g.push('all'); g.origin(); g.setShader(); g.setScissor(); g.setBlendMode('alpha')
-    if not M.canvas then M.canvas=g.newCanvas(Arena.width,600); g.setCanvas(M.canvas); g.clear(0,0,0,0) else g.setCanvas(M.canvas) end
-    g.setColor(.6,1,.5,.94); Art.draw('magma_pool',x,y,96,0,72)
-    g.pop()
-end
-function M.contact()
-    if player.reset or player.tunnelTravel then return end
-    local x,y=player.x+15,player.y+12
-    for _,p in ipairs(M.buckets[bucket(x,y)] or {}) do
-        if Hazards.inEllipse(x,y,p,5) then Hazards.kill(); return end
-    end
-end
+-- A nest is a traversable decoration; only its larvae deal contact damage.
+function M.contact() end
 function M.explode(m)
     if m.spent then return end
     m.spent=true
     -- A custom carrier must release its tear before its body is removed.
     if m.has_larme and not objet.larme_dropped then objet.larme_dropped=true; objet.larme.x=m.x-15; objet.larme.y=m.y+35 end
-    M.poison(m.x,m.y); M.bursts[#M.bursts+1]={x=m.x,y=m.y,age=0}
+    M.bursts[#M.bursts+1]={x=m.x,y=m.y,age=0}
     if (player.x+15-m.x)^2+(player.y+12-m.y)^2<43^2 then Hazards.kill() end
 end
 function M.update(dt)
@@ -88,12 +66,10 @@ function M.update(dt)
 end
 function M.drawGround()
     local g=love.graphics
-    if M.canvas then g.setColor(1,1,1); g.setBlendMode('alpha','premultiplied'); g.draw(M.canvas); g.setBlendMode('alpha') end
     for _,p in ipairs(M.spawners) do
-        g.setColor(1,1,1); Art.draw('magma_pool',p.x,p.y,p.rx*2+10,0,p.ry*2+10)
-        local pulse=.5+.5*math.sin(M.clock*4+p.x)
-        g.setColor(.65,1,.12,.3+pulse*.3); g.circle('line',p.x,p.y,4+pulse*3)
-        if p.clock<.8 then g.setColor(.8,1,.25,(.8-p.clock)*.7); g.ellipse('line',p.x,p.y,p.rx+3,p.ry+3) end
+        -- A quiet hatch animation; the nest itself has no damaging collision.
+        local hatch=p.clock<.8 and math.sin(M.clock*12)*.02 or 0
+        g.setColor(1,1,1); Art.draw('magma_nest',p.x,p.y,(p.rx*2+10)*(1+hatch),0,(p.ry*2+10)*(1-hatch))
     end
     for _,b in ipairs(M.bursts) do
         local t=b.age/.55
@@ -106,9 +82,7 @@ function M.drawGround()
 end
 function M.resize(ratio)
     for _,list in ipairs({M.spawners,M.bursts}) do for _,p in ipairs(list) do p.x=p.x*ratio end end
-    local old=M.pools; M.pools={}; M.occupied={}; M.buckets={}
-    if M.canvas then M.canvas:release(); M.canvas=nil end
-    for _,p in ipairs(old) do M.poison(p.x*ratio,p.y) end
+
 end
 MobBehaviors.magma_larva={
     update=function(m,dt)

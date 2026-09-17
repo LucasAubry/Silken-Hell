@@ -50,8 +50,8 @@ function T.run()
     level(7,2); local p=levels[2].larme_position[1]; player.x=p.x; player.y=p.y+27; Abyss.update(0)
     assert(player.illuminated==6,'Cercle illumine le joueur')
     level(7,10); assert(Abyss.boss and not Campaign.canCollect())
-    local x,y=Abyss.bones[1].x,Abyss.bones[1].y; local hx,hy=Abyss.head.x,Abyss.head.y; Abyss.motionTime=2; Abyss.buildBones(); assert(Abyss.bones[1].x==x and Abyss.bones[1].y==y and (Abyss.head.x~=hx or Abyss.head.y~=hy),'Os fixes, tête mobile')
-    assert(Abyss.bones[4].x-Abyss.bones[1].x>=130,'Os suffisamment espacés')
+    local x,y=Abyss.bones[1].x,Abyss.bones[1].y; local hx,hy=Abyss.head.x,Abyss.head.y; Abyss.motionTime=2; Abyss.buildBones(); assert(Abyss.bones[1].x==x and Abyss.bones[1].y~=y and Abyss.head.x==hx and Abyss.head.y==hy,'Corps oscillant, tête fixe')
+    assert(Abyss.bones[4].x-Abyss.bones[1].x>=190,'Os suffisamment espacés')
     T.defeatAbyss()
     for _,w in ipairs({1,2,4,5,6,7}) do for n=1,10 do
         level(w,n)
@@ -78,7 +78,7 @@ function T.run()
     end)
     if original then love.filesystem.write('custom_levels.json',original) else love.filesystem.remove('custom_levels.json') end
     assert(ok,err)
-    for _,key in ipairs({'luminous_jelly','electric_vent_idle','electric_vent_charge','electric_vent_active','electric_vent_spent'}) do
+    for _,key in ipairs({'electric_vent_idle','electric_vent_charge','electric_vent_active','electric_vent_spent'}) do
         local d=love.image.newImageData('assets/sprites/'..key..'.png'); local _,_,_,a=d:getPixel(0,0); assert(a==0,'PNG alpha '..key); d:release()
     end
     print('PASS expansion: crabes/encre, cercles lumineux, Léviathan, protection pièges, chargement éditeur')

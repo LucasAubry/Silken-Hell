@@ -9,6 +9,10 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv("SILKEN_TRIO_QA")=="1" then require("tests.wasp_trio").visual();return end
+    if os.getenv("SILKEN_INK_LAVA_QA")=="1" then require("tests.ink_lava").visual(); return end
+    if os.getenv("SILKEN_DEPTH_QA")=="1" then require("tests.fire_scoring").visual(); return end
+    if os.getenv("SILKEN_ATMOSPHERE_QA")=="1" then require("tests.abyss_atmosphere").visual(); return end
     if os.getenv("SILKEN_RENAISSANCE_QA")=="1" then require("tests.renaissance").visual(); return end
     if os.getenv("SILKEN_ABYSS_BREATH_QA")=="1" then require("tests.abyss_breath").visual(); return end
     if os.getenv("SILKEN_MAGMA_QA")=="1" then require("tests.magma").visual(); return end
@@ -28,6 +32,11 @@ function T.run()
     if os.getenv("SILKEN_ASSET_QA")=="1" then require("tests.assets").run(); return end
     Profile.unlocked=2; Profile.scores={}; Profile.name='Test'; Profile.country='FR'; Online.country='FR'
     App.start(1)
+    require("tests.wasp_trio").run()
+    require("tests.ink_lava").run()
+    require("tests.editor_rates").run()
+    require("tests.fire_scoring").run()
+    require("tests.abyss_atmosphere").run()
     require("tests.renaissance").run()
     require("tests.abyss_breath").run()
     require("tests.magma").run()
@@ -44,7 +53,7 @@ function T.run()
     require('tests.world_revision').run()
     require('tests.expansion').run()
     require('tests.workshop_editor').run()
-    for _,name in ipairs({'merle','wasp','wasp_ground','nest','lava','black_feather'}) do
+    for _,name in ipairs({'nest','lava','black_feather'}) do
         local d=love.image.newImageData('assets/sprites/'..name..'.png')
         local _,_,_,a=d:getPixel(0,0); assert(a==0,'PNG transparent '..name); d:release()
     end
@@ -89,26 +98,9 @@ function T.run()
     for _=1,12 do damageBird() end
     assert(Raven.defeated and Campaign.canCollect())
     level(2,10); Wasp.reset(true)
-    player.x=Wasp.x-15; player.y=Wasp.y+33; player.dashing=true; player.moveY=-1
-    Wasp.contact(); assert(Wasp.hp==10 and not player.reset,'Intouchable en vol')
-    local wx=Wasp.x; player.x=60; player.y=500; Wasp.update(.1); assert(Wasp.x~=wx)
-    Wasp.phaseTime=0; Wasp.update(.01); assert(Wasp.phase=='landing')
-    Wasp.phaseTime=0; Wasp.update(.01); assert(Wasp.phase=='landed')
-    Wasp.fire('venom'); assert(Wasp.projectiles[#Wasp.projectiles].kind=='venom')
-    Wasp.projectiles={{x=player.x+15,y=player.y+12,vx=0,vy=0,life=1,kind='venom'}}; Wasp.shot=100
-    Wasp.update(.01); assert(player.venom==3 and Hazards.speed()<.5 and not player.reset,'Venin ralentit sans tuer')
-    player.venom=0; assert(Hazards.speed()==1)
-    Wasp.phase='flying'; Wasp.phaseTime=5; Wasp.summon=0; Wasp.update(.01); assert(#Wasp.minions==2)
-    local interval=Wasp.interval()
-    Wasp.minions={}; Wasp.projectiles={}
-    for _=1,10 do
-        Wasp.phase='landed'; local sx,sy=Wasp.stinger(); player.x=sx-15; player.y=Wasp.y-12
-        player.dashing=true; local dx,dy=Wasp.stingerVector(); player.moveX=-dx; player.moveY=-dy
-        local hp=Wasp.hp; Wasp.contact(); assert(Wasp.hp==hp-1 and Wasp.phase=='flying')
-    end
-    assert(Wasp.defeated and Campaign.canCollect() and Wasp.interval()<interval)
-    level(2,10); Wasp.reset(true); Wasp.phase='landed'; local sx,sy=Wasp.stinger(); player.x=sx-15; player.y=sy-12
-    player.dashing=false; Wasp.contact(); assert(not player.reset and Wasp.hp==9,'Contact au sol sans sprint sûr')
+    Wasp.projectiles={{x=player.x+15,y=player.y+12,vx=0,vy=0,life=1,kind='venom'}}
+    Wasp.update(.01);assert(player.venom==3 and not player.reset,'Venin hérité ralentit sans tuer')
+    require('tests.wasp_trio').defeat(Wasp);assert(Wasp.defeated and Campaign.canCollect())
     level(2,3); local p=Hazards.lava[1]; player.x=p.x-15; player.y=p.y-12; Hazards.contact(); assert(player.reset,'Lave mortelle')
     reset_level(); assert(player.venom==0 and not player.reset)
     -- Progression and scores still finish each world once.
@@ -118,7 +110,7 @@ function T.run()
             player.level=n; reset_level(); mobs={}; Campaign.carrier=nil; objet.larme_dropped=true
             if Raven.active then for _=1,12 do damageBird() end end
             if Wasp.active then
-                for _=1,10 do Wasp.phase='landed'; local sx,sy=Wasp.stinger(); player.x=sx-15; player.y=sy-12; player.dashing=true; local dx,dy=Wasp.stingerVector(); player.moveX=-dx; player.moveY=-dy; Wasp.contact() end
+                require('tests.wasp_trio').defeat(Wasp)
             end
             player.x=objet.larme.x; player.y=objet.larme.y; love.update(.01)
         end

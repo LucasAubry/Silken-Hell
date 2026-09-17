@@ -39,10 +39,10 @@ function R.spawn(w,n)
             if n>=5 then add('lanternfish',390,130,46) end
         end
     elseif w==5 then
-        add('worm',120,120+a,70+n*3); add('mole',650,450-a,90+n*3)
+        add('worm',120,120+a,78+n*3.5); add('mole',650,450-a,98+n*3.5)
         if n>=3 then add('worm',650,120,90) end
-        if n>=6 then add('mole',180,470,110) end
-        if n>=8 then add('worm',400,100,110) end
+        if n>=4 then add('mole',180,470,116) end
+        if n>=7 then add('worm',400,100,110) end
     elseif w==6 then
         add('gull',110,110+a,122+n*5); add('gull',650,450-a,115+n*5)
         add('gull',400,100,115+n*4)
@@ -84,23 +84,24 @@ function R.reset(w,n)
     else
         for _,p in ipairs({{.24,220},{.76,405}}) do R.tornadoes[#R.tornadoes+1]={x=Arena.width*p[1],y=p[2],cooldown=0} end
         g.clear(.055,.10,.20)
-        g.setColor(.75,.84,.93); g.rectangle('fill',28,28,Arena.width-56,544,22)
+        g.setColor(.40,.57,.72); g.rectangle('fill',28,28,Arena.width-56,544,22)
         -- Overlapping cloud banks, with broad highlights instead of a tile grid.
         g.setScissor(28,28,Arena.width-56,544)
         for i=1,160 do
             local u=math.sin(i*127.1)*43758.5453; local v=math.sin(i*311.7)*19341.371
             local x=28+(u-math.floor(u))*(Arena.width-56); local y=28+(v-math.floor(v))*544
             local rx=45+i%5*11; local ry=24+i%3*8
-            g.setColor(.57,.71,.85,.18); g.ellipse('fill',x+8,y+12,rx,ry)
-            g.setColor(.87,.93,.98,.42); g.ellipse('fill',x,y,rx,ry)
-            g.setColor(.97,.99,1,.22); g.ellipse('fill',x-12,y-8,rx*.65,ry*.7)
+            g.setColor(.33,.42,.68,.32); g.ellipse('fill',x+8,y+12,rx,ry)
+            local warm=(math.sin(i*2.1+n*.7)+1)*.5
+            g.setColor(.55+warm*.2,.66-warm*.08,.81+warm*.04,.4); g.ellipse('fill',x,y,rx,ry)
+            g.setColor(.83,.80,.94,.17); g.ellipse('fill',x-12,y-8,rx*.65,ry*.7)
         end
         g.setScissor()
         for x=46,Arena.width-35,43 do
-            g.setColor(.85,.92,.97); g.ellipse('fill',x,36,30,13); g.ellipse('fill',x,564,30,13)
+            g.setColor(.62,.74,.86); g.ellipse('fill',x,36,30,13); g.ellipse('fill',x,564,30,13)
         end
         for y=48,559,38 do
-            g.setColor(.85,.92,.97); g.ellipse('fill',35,y,14,28); g.ellipse('fill',Arena.width-35,y,14,28)
+            g.setColor(.62,.74,.86); g.ellipse('fill',35,y,14,28); g.ellipse('fill',Arena.width-35,y,14,28)
         end
         for i=1,math.min(6,2+math.floor(n/2)) do
             local p={x=Arena.width*(i%2==0 and .68 or .32),y=145+math.floor((i-1)/2)*145+(n%3-1)*15,rx=39,ry=28,seed=i*1.7+n}
@@ -233,6 +234,7 @@ function R.update(dt)
     R.contact()
 end
 function R.updateLightning(dt)
+    if Campaign.biome~=6 then R.lightning={}; return end
     R.lightningClock=R.lightningClock-dt
     if R.lightningClock<=0 then
         R.lightningClock=math.max(1.25,2.5-R.level*.085)+love.math.random()*.35
@@ -384,7 +386,7 @@ function R.molePhase(age)
     else return 'dig',1-(t-4.3)/.7 end
 end
 function R.contact()
-    if R.fallAt(player.x+15,player.y+12) then player.falling=true; Hazards.kill() end
+    if R.fallAt(player.x+15,player.y+12) then Hazards.kill(); if player.reset then player.falling=true end end
     if Campaign.biome==7 or R.custom then for _,p in ipairs(R.vents) do
         local t=(R.clock+p.phase)%6
         if t>=3 and t<4.2 and Hazards.inEllipse(player.x+15,player.y+12,p,4) then Hazards.kill() end

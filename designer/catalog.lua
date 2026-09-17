@@ -18,7 +18,7 @@ for _,v in ipairs({
 add('mob','piege','Piège de capture','catalog_trap',1)
 add('mob','scie','Roue enchaînée','wheel',1,{speed=2,rota=1,radius=60})
 add('mob','magma_larva','Larve de magma','magma_larva',2,{speed=245})
-add('magma_spawner',nil,'Flaque d’invocation','magma_pool',2,{rx=31,ry=23})
+add('magma_spawner',nil,'Nid de larves','magma_nest',2,{rx=31,ry=23,spawnDelay=1,spawnInterval=3})
 add('lava',nil,'Flaque de lave','lava',2,{rx=42,ry=27})
 add('vent',nil,'Anémone électrique','electric_vent_idle',7,{rx=30,ry=23,phase=0})
 add('tunnel',nil,'Tunnel (par paire)','earth_tunnel',5)
@@ -28,5 +28,5 @@ add('rain',nil,'Pluie',nil,6,{phase=0})
 add('current',nil,'Courant marin',nil,4,{rx=50,ry=150,dx=1})
 add('light',nil,'Source de lumière','tear_ring',7)
 add('nest',nil,'Nid du Merle','nest',1,{rx=34,ry=25})
-for _,v in ipairs({{'storm','Séraphin des orages','storm_down',6},{'merle','Le Merle noir','merle_down',1},{'wasp','Guêpe solitaire','wasp_down',2},{'hedgehog','Hérisson','hedgehog_down',5},{'octopus','Poulpe','octopus_extended_down',4},{'skeleton_fish','Léviathan','skeleton_head',7}}) do add('boss',v[1],v[2],v[3],v[4]) end
+for _,v in ipairs({{'storm','Séraphin des orages','storm_down',6},{'merle','Le Merle noir','merle_down',1},{'wasp','Trois Sœurs de braise','wasp_down',2},{'hedgehog','Hérisson','hedgehog_down',5},{'octopus','Poulpe','octopus_extended_down',4},{'skeleton_fish','Léviathan','skeleton_head',7}}) do add('boss',v[1],v[2],v[3],v[4],{movementRate=1,attackRate=1}) end
 return C

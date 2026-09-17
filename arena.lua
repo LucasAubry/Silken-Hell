@@ -111,7 +111,7 @@ function A.navGraph(m)
     local key=table.concat({ox,oy,w,h},':'); if A.graphs[key] then return A.graphs[key] end
     local graph={nodes={},edges={},rects={}}; A.graphs[key]=graph
     local blocks={}; for _,r in ipairs(A.walls) do blocks[#blocks+1]=r end
-    for _,p in ipairs(Hazards.lava) do blocks[#blocks+1]={x=p.x-p.rx,y=p.y-p.ry,w=p.rx*2,h=p.ry*2} end
+    -- Lava is traversable by creatures; only solid walls shape their routes.
     for _,r in ipairs(blocks) do graph.rects[#graph.rects+1]={x=r.x-ox-w,y=r.y-oy-h,xx=r.x+r.w-ox,yy=r.y+r.h-oy} end
     function graph.clear(x,y)
         if x+ox<22 or y+oy<22 or x+ox+w>A.width-22 or y+oy+h>578 then return false end

@@ -4,7 +4,7 @@ local files={storm='storm',merle='raven',wasp='wasp',hedgehog='hedgehog',octopus
 function B.reset() B.items={} end
 function B.any() return #B.items>0 end
 function B.alive()
-    for _,item in ipairs(B.items) do if not item.boss.defeated then return true end end
+    for _,item in ipairs(B.items) do if item.boss.boss~=false and not item.boss.defeated then return true end end
     return false
 end
 function B.load(entries,nests,lights)
@@ -19,7 +19,7 @@ function B.load(entries,nests,lights)
             for k,v in pairs(saved) do MobBehaviors[k]=v end
             local px,py=player.x,player.y; local count=#mobs
             if e.type=='skeleton_fish' then
-                boss.reset(7,10); boss.instance=true; boss.origin={x=e.x,y=e.y}; boss.buildBones()
+                boss.reset(7,e.skeletonStage or 10); boss.instance=true; boss.origin={x=e.x,y=e.y}; boss.buildBones()
                 boss.lightSites=#lights>0 and require('json').decode(require('json').encode(lights)) or {{x=90,y=110},{x=Arena.width-90,y=490}}
             else boss.reset(false); boss.active=true; boss.x=e.x; boss.y=e.y end
             while #mobs>count do table.remove(mobs) end
@@ -28,10 +28,11 @@ function B.load(entries,nests,lights)
                 boss.nests=#nests>=2 and require('json').decode(require('json').encode(nests)) or {{x=90,y=130,rx=34,ry=25},{x=Arena.width-90,y=470,rx=34,ry=25}}
                 local n=boss.nests[1]; boss.eggs={{x=n.x,y=n.y,spot=1,glow=.35}}
             end
+            boss.movementRate=e.movementRate or 1; boss.attackRate=e.attackRate or 1
             B.items[#B.items+1]={kind=e.type,boss=boss}
         end
     end
-    if B.any() then objet.larme.taken=true end
+    if B.alive() then objet.larme.taken=true end
 end
 function B.update(dt)
     for _,item in ipairs(B.items) do
@@ -94,16 +95,21 @@ function B.drawInk(w,h)
 end
 function B.hud()
     local hp,maxHp,count=0,0,0
-    for _,item in ipairs(B.items) do hp=hp+item.boss.hp; maxHp=maxHp+item.boss.maxHp; if not item.boss.defeated then count=count+1 end end
-    return {active=B.any(),defeated=count==0,hp=hp,maxHp=maxHp,flash=0,name=count..' boss · '..hp..' PV'}
+    for _,item in ipairs(B.items) do if item.boss.boss~=false then
+        hp=hp+item.boss.hp; maxHp=maxHp+item.boss.maxHp; if not item.boss.defeated then count=count+1 end
+    end end
+    return {active=maxHp>0,defeated=count==0,hp=hp,maxHp=maxHp,flash=0,name=count..' boss · '..hp..' PV'}
 end
 function B.resize(ratio)
     for _,item in ipairs(B.items) do
-        local b=item.boss; if b.x then b.x=b.x*ratio end
+        local b=item.boss
+        if item.kind=='wasp' then b.resize(ratio) else
+        if b.x then b.x=b.x*ratio end
         if b.head then b.head.x=b.head.x*ratio end
         if b.origin then b.origin.x=b.origin.x*ratio; b.buildBones() end
-        for _,key in ipairs({'projectiles','strikes','nests','eggs','chicks','minions','pools','shots','skins','crabs','wounds','lightSites','threads'}) do
-            for _,p in ipairs(b[key] or {}) do if p.x then p.x=p.x*ratio end; if p.cx then p.cx=p.cx*ratio end; if p.tx then p.tx=p.tx*ratio end end
+        for _,key in ipairs({'projectiles','strikes','nests','eggs','chicks','minions','pools','shots','skins','crabs','wounds','lightSites','threads','inkPools','blasts','eruptions'}) do
+            for _,p in ipairs(b[key] or {}) do if p.x then p.x=p.x*ratio end; if p.cx then p.cx=p.cx*ratio end; if p.tx then p.tx=p.tx*ratio end; if p.fromX then p.fromX=p.fromX*ratio end end
+        end
         end
     end
 end

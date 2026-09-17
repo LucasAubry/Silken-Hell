@@ -7,7 +7,7 @@ function T.defeat()
     elseif Hedgehog.active then for _=1,Hedgehog.maxHp do Hedgehog.finishRound() end
     elseif Octopus.active then for _=1,8 do require('tests.octopus_revision').clearWave() end
     elseif Abyss.boss then require('tests.expansion').defeatAbyss()
-    elseif Wasp.active then for _=1,10 do Wasp.phase='landed'; player.x=Wasp.x-15; player.y=Wasp.y-12; Wasp.contact() end end
+    elseif Wasp.active then require('tests.wasp_trio').defeat(Wasp) end
 end
 function T.run()
     local disabled=LevelLayouts.disabled; LevelLayouts.disabled=true; Profile.unlocked=7

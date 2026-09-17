@@ -16,9 +16,12 @@ function S.validate(l)
     local spawn=0
     for _,e in ipairs(l.entities) do
         if type(e)~='table' or not kinds[e.kind] or (e.kind=='mob' and not mobs[e.type]) or (e.kind=='boss' and not bosses[e.type]) then return false,'Objet inconnu.' end
-        for _,key in ipairs({'x','y','speed','w','h','rx','ry','radius','phase','dx','rota','seed','schoolId'}) do
+        for _,key in ipairs({'x','y','speed','w','h','rx','ry','radius','phase','dx','rota','seed','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage'}) do
             local v=e[key]; if v~=nil and (type(v)~='number' or v~=v or math.abs(v)>10000) then return false,'Valeur numérique invalide.' end
         end
+        for _,key in ipairs({'movementRate','attackRate'}) do if e[key] and (e[key]<.1 or e[key]>5) then return false,'Multiplicateur entre 0,1 et 5.' end end
+        for _,key in ipairs({'spawnDelay','spawnInterval'}) do if e[key] and (e[key]<.1 or e[key]>120) then return false,'Délai entre 0,1 et 120 secondes.' end end
+        if e.skeletonStage and (e.skeletonStage%1~=0 or e.skeletonStage<8 or e.skeletonStage>10) then return false,'Stade du squelette invalide.' end
         if not e.x or not e.y or e.x<0 or e.x>l.width or e.y<0 or e.y>600 then return false,'Un objet sort du terrain.' end
         for _,key in ipairs({'w','h','rx','ry','radius'}) do if e[key] and e[key]<1 then return false,'Les dimensions doivent être positives.' end end
         if e.kind=='wall' and (not e.w or not e.h) then return false,'Dimensions du mur manquantes.' end

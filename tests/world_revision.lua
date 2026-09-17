@@ -33,7 +33,7 @@ function T.run()
     player.illuminated=6; x=fish.x; MobBehaviors.abyss_fish.update(fish,.1); assert(fish.x>x,'Le poisson charge le joueur éclairé')
     player.illuminated=0; Abyss.threads={{x=player.x+15,y=player.y+12,vx=0,vy=0,life=1,age=0,seed=0}}
     Abyss.update(.01); assert(player.illuminated==6 and not player.reset,'Fil lumineux révèle sans tuer')
-    level(7,8); assert(Abyss.giant and #Abyss.bones>=11); Abyss.contact(); assert(not player.reset,'Départ loin du squelette')
+    level(7,9); assert(Abyss.giant and #Abyss.bones>=8); Abyss.contact(); assert(not player.reset,'Départ loin du squelette')
     local first,second=Abyss.bones[1],Abyss.bones[4]; local gap=(first.x+second.x)/2
     player.x=gap-15
     for y=100,450,3 do player.y=y; Abyss.contact(); assert(not player.reset,'Passage réel entre les os') end
@@ -44,6 +44,7 @@ function T.run()
         end end
     end
     assert(hit,'Contact sur un os mortel')
+    level(7,10); objet.larme.taken=false
     player.reset=false; player.x=Arena.width-75; player.y=505; Abyss.clock=5.49
     local x,y=player.x,player.y; local tx,ty=objet.larme.x,objet.larme.y; Abyss.update(.02)
     assert(Abyss.open and (player.x~=x or player.y~=y),'Bouche ouverte aspire le joueur')

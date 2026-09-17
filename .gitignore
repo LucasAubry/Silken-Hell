@@ -6,3 +6,8 @@ server/.dev.vars
 game.love.tmp
 .DS_Store
 *.log
+
+# Local build/editor scratch files
+*.updated
+__pycache__/
+*.pyc

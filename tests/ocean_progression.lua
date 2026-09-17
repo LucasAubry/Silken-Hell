@@ -35,7 +35,7 @@ function T.run()
     level(4,10); assert(Octopus.active and not Campaign.canCollect()); player.x=70; player.y=500
     local cx,cy=Octopus.x,Octopus.y; local spin=Octopus.spin
     Octopus.update(.01); assert(Octopus.spin==spin and Octopus.x==cx and Octopus.y==cy)
-    Octopus.projectiles={{x=player.x+15,y=player.y+12,vx=0,vy=0,life=2}}; Octopus.update(.01)
+    Octopus.inkPools={{x=player.x+15,y=player.y+12,rx=38,ry=27,life=6,seed=1}}; Octopus.update(.01)
     assert(#Octopus.blots==7 and not player.reset,'Encre obscurcit sans tuer')
     local hit=false; for yy=Octopus.y-200,Octopus.y+200,6 do for xx=Octopus.x-200,Octopus.x+200,6 do if not hit and (xx-Octopus.x)^2+(yy-Octopus.y)^2>100^2 and Octopus.touches(xx,yy) then player.x=xx-15; player.y=yy-12; hit=true end end end; assert(hit); Octopus.contact(); assert(Octopus.rider and not player.reset,'Tentacules accrochent le joueur')
     reset_level()
@@ -53,7 +53,7 @@ function T.run()
         assert(not Realms.fallAt(p.x+math.cos(a)*p.rx*(r+.15),p.y+math.sin(a)*p.ry*(r+.15)))
     end
     assert(max-min>.4,'Contours irréguliers du Ciel')
-    for _,d in ipairs({'up','down','left','right'}) do local img=Art.imageData('assets/sprites/directional/octopus_extended_'..d..'.png')
+    for _,d in ipairs({'down'}) do local img=Art.imageData('assets/sprites/directional/octopus_extended_'..d..'.png')
         local _,_,_,a=img:getPixel(0,0); assert(a==0,'Poulpe alpha '..d); img:release()
     end
     Profile.scores={}; Profile.unlocked=6

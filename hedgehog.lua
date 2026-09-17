@@ -17,7 +17,7 @@ function H.roll()
     local dx,dy=math.cos(angle),math.sin(angle)
     if math.abs(dx)<.28 then dx=dx<0 and -.28 or .28 end
     if math.abs(dy)<.28 then dy=dy<0 and -.28 or .28 end
-    local length=math.sqrt(dx*dx+dy*dy); local speed=410+(H.stage-1)*18
+    local length=math.sqrt(dx*dx+dy*dy); local speed=(410+(H.stage-1)*18)*(H.movementRate or 1)
     H.vx=dx/length*speed; H.vy=dy/length*speed
 end
 function H.requiredBounces()
@@ -51,7 +51,7 @@ function H.update(dt)
     if not H.active or H.defeated then return end
     H.flash=math.max(0,H.flash-dt); H.bounceGrace=math.max(0,H.bounceGrace-dt)
     if H.phase=='standing' then
-        H.phaseTime=H.phaseTime-dt; H.shot=H.shot-dt
+        H.phaseTime=H.phaseTime-dt; H.shot=H.shot-dt*(H.attackRate or 1)
         if H.phaseTime<=0 then H.roll()
         elseif H.shot<=0 then H.fire(); H.shot=1.25 end
     elseif H.phase=='stunned' then
@@ -60,7 +60,7 @@ function H.update(dt)
             H.phase='standing'; H.phaseTime=.65; H.shot=.05
         end
     else
-        local speed=410+(H.stage-1)*18
+        local speed=(410+(H.stage-1)*18)*(H.movementRate or 1)
         local current=math.atan2(H.vy,H.vx); local target=math.atan2(player.y+12-H.y,player.x+15-H.x)
         local delta=(target-current+math.pi)%(math.pi*2)-math.pi
         local angle=current+math.max(-dt*1.35,math.min(dt*1.35,delta))

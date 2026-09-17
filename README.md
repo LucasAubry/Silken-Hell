@@ -1,80 +1,68 @@
 # Silken Hell
 
-## Lancer sur Mac
-Double-cliquer **Jouer à Silken Hell.app** dans le Finder pour reconstruire et ouvrir la version actuelle du projet à chaque clic. **Lancer Silken Hell.command** fait la même chose. Le premier lancement installe le moteur officiel LÖVE 11.5 si nécessaire. Le lanceur met à jour `~/Library/Application Support/Silken Hell/Silken Hell.love`, hors iCloud, pour garder toutes les textures disponibles. Il n'utilise pas l'ancien export web du dossier `game/`.
+Jeu d’esquive en Lua avec LÖVE 11.5, éditeur de niveaux et classements/Workshop Cloudflare dédiés.
 
-Le jeu démarre en plein écran. **F11** ou le bouton dans **Paramètres** permet de passer en fenêtre. La largeur réelle du terrain suit celle de l’écran, avec des murs sur ses bords. Le timer et les morts sont accompagnés d’un sablier et d’un crâne ; aucune consigne ne recouvre le bas du terrain.
+## Lancer le jeu
 
-## Jouer
-Saisir un pseudo avant chaque partie. Le pays est détecté automatiquement depuis la connexion Internet par le serveur Cloudflare. Aucun code pays à saisir. Avec un VPN, le pays correspond à sa sortie Internet. Si la connexion est indisponible, on peut jouer et conserver un score local.
+Double-cliquer **Jouer à Silken Hell.app** ou **Lancer Silken Hell.command**. Le lanceur reconstruit le jeu depuis les sources à chaque ouverture et installe LÖVE au premier lancement si nécessaire. Le cache se trouve dans `~/Library/Application Support/Silken Hell/Silken Hell.love`.
 
-Flèches pour se déplacer, Espace pour le dash, Échap pour la pause. Le dash nécessite une touche de déplacement : seul, il ne déclenche aucun mouvement ni traînée. Les touches et les volumes se règlent dans Paramètres. F11 et Échap restent réservées. Le bouton en haut à droite remet le monde courant au niveau 1, avec temps et morts à zéro. La pause et la perte de focus arrêtent le chronomètre et l’oxygène.
+Flèches pour se déplacer, Espace pour le dash, Échap pour la pause. Un dash nécessite une direction. Touches et volumes se règlent dans les paramètres ; F11 gère le plein écran. Le bouton de recommencement remet le monde courant au niveau 1. Le jeu se met en pause lorsqu’il perd le focus.
 
-Le Paradis conserve ses dispositions sans murs intérieurs. Les niveaux 8 et 9 sont complétés : anges, serpents, lames tournantes et pièges forment deux épreuves distinctes avant le Merle. Les niveaux 5, 7, 8 et 9 contiennent un ange porteur : l’attirer dans un piège libère sa larme, qui reste au sol. Les cercles indiquent toutes les destinations des larmes ordinaires.
+## Mondes et boss
 
-Au niveau 10 du Paradis, **le Merle noir** reste au centre. Ses yeux sont noirs cerclés de jaune. Il tire des plumes noires en continu ; sa cadence accélère tous les deux PV perdus. À quatre PV ou moins, il tire trois plumes en largeur. Les nids éloignés ralentissent le joueur et divisent les tirs. Un seul nid contient un œuf : guider une plume sur cet œuf retire une vie au boss, invoque un petit merle qui tourne autour du nid natal et fait apparaître un œuf dans un autre nid. La larme apparaît après sa défaite.
+Ordre : **Paradis → Ciel → Terre → Océan → Abysse → Enfer → Renaissance**. Les six premiers mondes ont dix niveaux ; Renaissance enchaîne leurs six boss, dans cet ordre, avec une ambiance rouge, noire et blanche.
 
-Au niveau 10 de l’Enfer, **le Serpent des mues** rampe, se roule en boule en tournant, puis se déplie pour charger. Après la charge, son contour doré indique une ouverture : le toucher retire un PV sans tuer le joueur. À cinq PV, il mue et devient violet/vert. Sa peau abandonnée reste au sol et immobilise pendant 1,5 seconde. Sa seconde forme crache du poison et charge plus vite ; les flaques mortelles rétrécissent puis disparaissent en sept secondes. La défaite libère la larme.
+- **Paradis** : anges, serpents, captures et roues. Attirer un porteur de larme dans un piège la libère. Le Merle noir reste au centre et tire des plumes en continu. Guider ses plumes vers l’œuf d’un nid le blesse ; ses salves s’accélèrent et deviennent triples à quatre PV.
+- **Ciel** : vent variable, trous et rebords mortels, tornades, pluie et foudre. Les mouettes électrifiées deviennent jaunes et laissent une traînée dangereuse. Boss : le Séraphin des orages, vulnérable pendant ses accalmies.
+- **Terre** : tunnels empruntables par le joueur et les monstres, vers et taupes. Le Hérisson a sept PV, douze piques par salve, deux rebonds et cinq taupes au maximum. Il est étourdi lorsqu’il perd une vie.
+- **Océan** : poissons-lames, méduses et crabes. Une bulle entoure l’araignée ; aucune jauge d’oxygène. Le Poulpe invoque régulièrement des crabes qui poursuivent le joueur en évitant ses bras. Son encre tombe au sol : un crabe encré devient fou puis explose et projette ses voisins. Huit impacts de crabes détruisent une tentacule. Le joueur peut s’accrocher à une tentacule, mais toucher un crabe reste mortel.
+- **Abysse** : obscurité, lueurs bleues, poissons-lanternes et pieuvres lumineuses. Les fils bleus chargent l’araignée sans la tuer. Les poissons la poursuivent lorsqu’elle est éclairée. La queue du Léviathan apparaît au niveau 8, ses os au niveau 9 et sa tête au niveau 10. Entrer chargé dans sa bouche pendant l’aspiration lui retire une vie lorsqu’il recrache le joueur. Les cercles éclairent uniquement lorsqu’on reste dessus. Aucun oxygène à gérer.
+- **Enfer** : lave, goules, serpents indépendants et nids de larves. Les nids sont inoffensifs au contact ; leurs larves poursuivent et explosent sans laisser de flaque. Les monstres traversent la lave, brûlent et laissent des traînées mortelles. Boss : **Les Trois Sœurs de braise**, trois abeilles à trois PV chacune. Elles chargent en séquence ; une seule se fatigue à la fois et peut alors être touchée. Chaque élimination accélère les survivantes. Seule la dernière invoque des mini-abeilles. Les lacs annoncent des éruptions de braises.
 
-Les six biomes jouables comportent chacun dix niveaux. Ordre : **Paradis → Ciel → Terre → Océan → Abysse → Enfer → Renaissance**. Renaissance est réservée. Les identifiants internes des anciens mondes restent stables pour conserver les scores. Les anciennes sauvegardes migrent vers une progression par position dans cet ordre, en préservant les mondes déjà accessibles.
+La lumière diminue progressivement au fil des mondes et des niveaux. La foudre ambiante est réservée au Ciel ; les attaques électriques des créatures conservent leurs mécaniques.
 
-- **Océan** : poissons-lames en bancs et méduses électriques. Une réserve d’oxygène de cinq secondes est affichée au-dessus de l’araignée. De petites bulles la remplissent puis se rechargent en trois secondes. Elles sont placées à distance de toutes les positions de larmes ; une bulle se décale si une larme est déposée dessus. À zéro, l’araignée meurt. Le niveau 10 accueille le **Poulpe des marées** : tentacules toujours dépliés, inversions fréquentes et accélération plafonnée sous la vitesse du dash. La tête suit le joueur, qui commence devant lui. Les jets d’encre visent le joueur et couvrent presque tout l’écran pendant quatre secondes. Il libère des crabes aux pinces animées : ils marchent de côté au hasard. Chaque crabe touchant un tentacule retire un des huit PV, se retourne sur le dos puis s’enfonce dans le sol. Toucher directement le poulpe ne le blesse pas.
-- **Abysse** : dix niveaux plongés dans une obscurité presque totale, avec de vrais poissons-lanternes qui éclairent localement le décor et 150 minuscules lueurs bleues errantes qui disparaissent au contact. L’oxygène fonctionne comme dans l’Océan. Les larmes sont récupérables au sol. Les évents annoncent des éruptions mortelles.
-- **Terre** : vers ondulant en zigzag, poursuivant le joueur et signalés par une minuscule ombre sous terre, puis crachant des œufs. Un œuf heurtant un mur libère trois petits vers de 26 pixels. Les taupes disparaissent sous terre ; une motte annonce leur remontée. Deux animations distinctes montrent leur sortie et leur enfouissement avec des projections de terre.
-- **Ciel** : sol de nuages, rebords et trous irréguliers mortels avec animation de chute. Les collisions suivent les contours des trous. Des averses denses frappent des positions fixes, annoncées par une ombre au sol. Le vent pousse le joueur et les monstres avec des directions changeantes, des rafales de force variable et des accalmies. Les mouettes suivent des courbes aléatoires légèrement attirées vers le joueur et tournent avant les bords.
+## Menu, sauvegardes et classements
 
-Le bestiaire sépare les **Créatures**, les **Boss** et les **Pièges**. Les petites guêpes invoquées possèdent quatre nouveaux sprites cuivrés aux yeux verts, distincts du boss (prompts dans `assets/waspling-prompts.md`).
+Le menu suit l’ambiance du monde sélectionné. Cinq skins : Soie, Perle, Braise, Écume et Royale. Le bestiaire enregistre les découvertes, avec catégories Créatures, Boss et Pièges. Histoire et Succès attendent leur contenu.
 
-## Menu et histoire
-Deux flèches autour de l’araignée permettent de choisir Soie, Perle, Braise, Écume ou Royale ; ce choix est sauvegardé. Le bestiaire enregistre les créatures rencontrées et explique leurs comportements. Un « i » signale les nouvelles découvertes et disparaît à l’ouverture. Le bouton **Histoire** ouvre un écran vide : ajouter le texte dans `story.lua` activera son défilement.
+Un pseudo est demandé avant la partie. Cloudflare détecte le pays de la connexion ; avec un VPN, il s’agit du pays de sortie. Les panneaux affichent les dix meilleurs scores mondiaux et nationaux, avec chrono, morts et skin. Un clic ouvre tous les scores paginés. Le meilleur score par pseudo est conservé.
 
-## Classements Cloudflare
-- Worker dédié : `silken-hell-api`.
-- API : https://silken-hell-api.leafco-dev.workers.dev
-- Base D1 dédiée : `silken-hell-scores`.
-- Configuration et migrations dans `server/` ; aucun lien avec les ressources GET OUT.
+Le classement et le chronomètre final incluent **0,05 seconde par mort**. Le temps brut reste enregistré séparément pour éviter toute double pénalité. Renaissance utilise un seul chrono pour ses six combats.
 
-Les classements sont séparés par monde. Le panneau de droite regroupe les pays ; celui de gauche filtre le pays détecté. Les dix meilleurs joueurs sont affichés avec pseudo, chrono, morts et skin utilisé pendant la partie. Cliquer sur un panneau ouvre tous les joueurs, par pages de dix. Le meilleur score de chaque pseudo est retenu, même sur plusieurs installations : plusieurs pseudos joués sur le même PC restent visibles. Le tri utilise le chrono puis les morts. Les vues sont rafraîchies toutes les trente secondes et à la fin d’un monde.
+Les réglages, découvertes, déblocages et scores locaux sont dans `~/Library/Application Support/LOVE/silken-hell`. Les scores démarrés hors ligne restent locaux. Une partie connectée interrompue peut reprendre ses envois en attente.
 
-Chaque partie connectée reçoit un identifiant serveur. Les dix larmes sont déclarées dans l'ordre ; le score n'est publié qu'à la dixième. Le serveur contrôle l'ordre, les compteurs, le format des données, le temps écoulé et les soumissions répétées. Ces contrôles ne remplacent pas un moteur de jeu autoritaire côté serveur et n'empêchent pas toute triche d'un client modifié.
+## Éditeur et Workshop
 
-Les requêtes HTTPS s'exécutent dans un thread séparé via le `curl` fourni sur Mac. Une coupure après la création d'une partie met les checkpoints en attente et les conserve pour réessayer, y compris au prochain lancement. Une partie démarrée sans serveur reste locale. Les anciennes parties locales ne sont pas publiées rétroactivement.
+**Concepteur Silken Hell.app**, **Lancer le concepteur.command** ou le bouton **Créer** ouvrent l’éditeur. Il importe les 66 niveaux et permet de mélanger créatures, boss, décors et biomes. Les propriétés incluent les vitesses de déplacement et d’attaque des boss ainsi que le délai et l’intervalle des nids de larves.
 
-Seuls le pseudo, le code pays, le monde, le temps, les morts et une empreinte de l'identité anonyme du jeu sont stockés dans D1. L'application ne stocke pas l'adresse IP dans D1. Le service utilise l'IP transmise à Cloudflare pour le pays et la limitation des requêtes. Les parties abandonnées sont nettoyées après deux jours ; les scores terminés sont conservés.
+**Appliquer** enregistre les niveaux personnalisés ; les aperçus rechargent leurs données sans redémarrage. Le Workshop permet de publier une carte, de jouer aux cartes partagées et de leur attribuer une étoile.
 
-## Sauvegarde
-LÖVE sauvegarde réglages, déblocages, scores locaux, identité anonyme et envois en attente dans `~/Library/Application Support/LOVE/silken-hell`. L'identité anonyme permet d'associer les meilleurs scores à cette installation ; elle n'est pas partagée avec GET OUT.
+Les fichiers `custom_levels.json` et `designer/default_levels.json` sont des données utiles : ne pas les supprimer lors d’un nettoyage.
 
-## Développement et tests
-- `love .` : lancer les sources (elles doivent être disponibles localement si le dossier est dans iCloud).
-- `make package` : produire `game.love` à partir des sources et assets.
-- `SILKEN_TEST=1 love game.love` : tests isolés de la progression, de la sauvegarde, des écrans et du terrain.
-- `cd server && npm test` : tests API avec une base SQLite éphémère.
-- `cd server && npx wrangler deploy` : déployer uniquement le Worker Silken Hell.
+## Développement et vérification
 
-`SILKEN_ONLINE_TEST=1` active un test HTTPS réel avec une identité de sauvegarde isolée. Il crée un score `SilkenGameQA` ; le run ID est sauvegardé dans le dossier de test pour permettre son nettoyage ciblé après validation.
+- `love .` : jouer depuis les sources.
+- `make package` : construire `game.love`, y compris l’éditeur intégré.
+- `SILKEN_TEST=1 love game.love` : tests isolés du jeu.
+- `SILKEN_DESIGNER_TEST=1 SILKEN_PROJECT="$PWD" love designer` : tests de l’éditeur.
+- `cd server && npm test` : tests API et Workshop.
 
-## Ajustements de l’Enfer et vues directionnelles
+Les tests utilisent des sauvegardes séparées. `SILKEN_ONLINE_TEST=1` active un test réel de l’API qui crée un score `SilkenGameQA` à nettoyer après validation.
 
-Les murs et les dispositions de l’Enfer sont rétablis. Le premier côté des larmes ordinaires varie entre les niveaux ; une mort conserve ce choix. La charge des goules dure trois secondes. Les serpents se déplacent indépendamment de la position du joueur et rebondissent sur les murs en tournant sur eux-mêmes. Les roues tournent au bout d’une chaîne autour d’un pivot, avec une collision sur leur tête mobile. Les larmes sont toujours dessinées derrière les monstres. En Enfer, les larmes et les effets sont rouges. Les ennemis du Paradis sont accélérés de 8 %.
+## Serveur
 
-Les nouveaux personnages utilisent quatre PNG distincts (face, dos, gauche, droite), dans `assets/sprites/directional/`. La guêpe possède quatre vues en vol et quatre au sol. Elle redécolle depuis sa position courante et approche progressivement son point d’atterrissage. Les petites guêpes possèdent leurs propres vues et restent jusqu’à la fin du niveau, même après la mort du boss. L’araignée originale conserve ses quatre textures d’origine.
+Worker : `silken-hell-api`. Base D1 : `silken-hell-scores`. API : https://silken-hell-api.leafco-dev.workers.dev
 
-Le niveau 10 de Terre accueille le **Hérisson des profondeurs** : 10 PV, seize piques par salve debout, puis neuf séries de 1 à 9 rebonds en boule. Une série achevée retire un PV ; le neuvième impact de la dernière série est fatal (les deux PV restants). Le nombre de taupes suit les PV perdus : 0 à 10 PV, 2 à 9 PV, 4 à 8 PV, etc. Les pauses durent 1,15 seconde après chaque série et les rebonds vont de 480 à 656 pixels par seconde. Les rebonds n’ajoutent aucune taupe supplémentaire. La larme apparaît à sa mort. Les huit PNG et leurs prompts imagegen sont dans `assets/sprites/directional/hedgehog*.png` et `assets/hedgehog-prompts.md`. Les huit PNG du poulpe sont conservés, mais le combat utilise maintenant uniquement la forme dépliée, avec la tête et les tentacules animés séparément. Ses collisions suivent la silhouette transparente des tentacules et leur rotation. L’encre utilise un vrai sprite de projection irrégulière. Prompts de la refonte : `assets/marine-revision-prompts.md`.
+La configuration, les migrations et les instructions sont dans `server/`. Ces ressources sont indépendantes de GET OUT. `npm run deploy` depuis `server/` déploie le Worker ; un push Git ne déclenche pas cette commande.
 
-`SILKEN_TEST=1 SILKEN_ASSET_QA=1 love .` vérifie l’alpha et affiche une planche des 24 vues.
+Le serveur vérifie l’ordre des niveaux, les compteurs, le temps et les soumissions répétées. Le moteur reste côté client : ces contrôles ne garantissent pas l’absence de triche.
 
-## Pièges et passages
-Les captures et les roues restent uniquement au Paradis. Les porteurs des autres mondes sont remplacés par des larmes ordinaires, afin que chaque niveau reste terminable. La lave et les attaques des monstres restent dangereuses.
+## Organisation et assets
 
-Dans le Ciel, le PNG du tourbillon forme une tornade animée. Elle fait tourner le joueur pendant 0,65 seconde, puis le projette brièvement sur le côté, perpendiculairement à sa direction d’arrivée. En Terre, chaque niveau contient deux tunnels PNG reliés. Le joueur et les monstres y entrent et en sortent avec une animation de 0,44 seconde. Une fois téléporté, il faut quitter la sortie avant de pouvoir revenir, ce qui évite les boucles. Le placement respecte les murs et les points des larmes. Les taupes sont 40 % plus rapides au sol et sous terre, y compris celles invoquées par le hérisson.
+- Modules Lua à la racine ; dispositions du Paradis dans `levels/`.
+- `assets/sprites/` : PNG actifs ; vues directionnelles dans `directional/`.
+- `assets/art-metadata.json` : limites alpha et masques précalculés.
+- `texture/` : textures d’origine encore utilisées.
+- `designer/`, `server/`, `tests/`, `tools/` : éditeur, API, vérifications et empaquetage.
 
-## Terrain et Serpent des mues
-
-La Terre contient davantage de murs. Leur placement réserve les empreintes des captures, roues, lave, points de larmes et départ ; les murs sont déplacés ou omis lorsqu’ils se chevaucheraient. Les ennemis poursuivants calculent un chemin autour des murs et de la lave. Les pièges restent traversables afin de les capturer. Le graphe de navigation est partagé et mis en cache par taille de monstre. Les cercles de larmes font 70 pixels visibles (sans les marges transparentes de la texture) dans tous les mondes ; ils sont masqués pendant les niveaux de boss.
-
-Le serpent utilise 28 PNG directionnels : ramper, boule et charge dans chaque forme, plus le crachat en seconde forme. Une image supplémentaire représente la mue. Les images sont créées avec imagegen ; les prompts sont dans `assets/hell-serpent-prompts.md`. L’ancienne guêpe reste disponible dans le code et dans les découvertes du bestiaire, mais n’est plus le boss de l’Enfer.
-
-Le Merle noir tire à nouveau en continu : la pause de 1,5 seconde après dix plumes est supprimée. Le hérisson lance seize piques par salve. PNG du tunnel : `assets/sprites/earth_tunnel.png` ; prompt : `assets/earth-tunnel-prompt.md`.
-
-Sprites des crabes : `assets/sprites/crab_open.png`, `crab_closed.png`, `crab_dead.png`. Générés avec imagegen intégré ; prompts dans `assets/crab-prompts.md`. Vérifications spécifiques : `tests/octopus_revision.lua`.
+Les prompts des images sont conservés dans `assets/` pour pouvoir les reproduire. Les anciennes poses du poulpe, sprites remplacés, interfaces inutilisées et l’export web obsolète ont été retirés. Les archives générées, métadonnées Finder et caches ne sont pas versionnés.

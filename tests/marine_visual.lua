@@ -1,10 +1,10 @@
 local T={}
 local function level(w,n) App.start(w); player.level=n; reset_level(); timer=18.7 end
 function T.run()
-    for _,form in ipairs({'extended','folded'}) do
-        local data=Art.imageData('assets/sprites/directional/octopus_'..form..'_up.png')
+    for _,form in ipairs({'extended'}) do
+        local data=Art.imageData('assets/sprites/directional/octopus_'..form..'_down.png')
         local _,_,_,alpha=data:getPixel(0,0)
-        assert(alpha==0,'Alpha vue de dos du poulpe'); data:release()
+        assert(alpha==0,'Alpha silhouette du poulpe'); data:release()
     end
     Profile.unlocked=6; local tick=0
     love.update=function(dt)
@@ -18,8 +18,8 @@ function T.run()
         if tick==25 then level(6,8); App.capture='marine-clouds.png' end
         if tick==29 then
             local keys={}
-            for _,kind in ipairs({'octopus_extended','octopus_folded','lanternfish'}) do for _,dir in ipairs({'down','up','left','right'}) do keys[#keys+1]=kind..'_'..dir end end
-            for _,key in ipairs({'coral_snare','root_snare','cloud_snare','abyss_snare','ink_splatter'}) do keys[#keys+1]=key end
+            for _,kind in ipairs({'lanternfish'}) do for _,dir in ipairs({'down','up','left','right'}) do keys[#keys+1]=kind..'_'..dir end end
+            for _,key in ipairs({'cloud_snare','ink_splatter'}) do keys[#keys+1]=key end
             local captured=false
             love.draw=function()
                 local g=love.graphics; g.clear(.14,.17,.2); g.origin()

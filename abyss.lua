@@ -12,8 +12,8 @@ function A.spawn(n)
     for i=1,2+math.floor(n/4) do add('abyss_fish',Arena.width*(.15+(i-1)*.2),i%2==0 and 420 or 140,70) end
 end
 function A.reset(w,n)
-    A.active=w==7; A.clock=0; A.threads={}; A.bones={}; A.open=false; A.head=nil; A.swallowed=nil; A.cargo={}; A.ejected={}; A.spitFlash=0; A.breathAt=5.5; A.motionTime=0
-    A.giant=A.active and n>=7; A.boss=A.active and n==10; A.origin={x=Arena.width/2,y=280}; player.illuminated=0; player.electrified=0; player.abyssHeld=nil; player.abyssSpit=nil; player.abyssGrace=0
+    A.active=w==7; A.clock=0; A.threads={}; A.bones={}; A.open=false; A.head=nil; A.swallowed=nil; A.cargo={}; A.ejected={}; A.spitFlash=0; A.breathAt=5.5; A.motionTime=0; A.spinTime=0; A.spinAngle=0
+    A.skeletonStage=n; A.giant=A.active and n>=8; A.boss=A.active and n==10; A.origin={x=Arena.width/2,y=280}; player.illuminated=0; player.electrified=0; player.abyssHeld=nil; player.abyssSpit=nil; player.abyssGrace=0
     A.hp=8; A.maxHp=8; A.defeated=false; A.flash=0; A.hitGrace=0; A.lightLock=false; A.name="Le Léviathan des Abysses"
     A.lightSites={{x=Arena.width*.12,y=105},{x=Arena.width*.88,y=495},{x=Arena.width*.12,y=495},{x=Arena.width*.88,y=105}}
     if A.boss then A.spawn(2); objet.larme.taken=true end
@@ -29,21 +29,22 @@ function A.buildBones()
         local dx,dy=(spot.u-.5)*w,(spot.v-.5)*h
         A.bones[#A.bones+1]={key=key,x=x,y=y,w=w,h=h,angle=a,gx=x+math.cos(a)*dx-math.sin(a)*dy,gy=y+math.sin(a)*dx+math.cos(a)*dy}
     end
-    local span=Arena.width*.55; local count=math.max(3,math.floor(span/145))
+    local span=Arena.width*.48; local count=math.max(3,math.floor(span/205)+1)
     local shift=A.origin.x-Arena.width/2
     local swim=A.origin.y-280
-    for i=1,count do
-        local x=Arena.width*.2+(i-1)*span/count+shift; local y=280+swim
-        local h=105+25*math.sin(i/count*math.pi)
-        bone('skeleton_spine',x,y,22,28)
-        bone('skeleton_rib',x,y-h/2-20,22,h,-.12)
-        bone('skeleton_rib',x,y+h/2+20,22,h,math.pi+.12)
+    for i=1,(A.skeletonStage>=9 and count or 0) do
+        local x=Arena.width*.2+(i-1)*span/(count-1)+shift; local y=280+swim+math.sin(A.motionTime*1.3+i*.8)*(1-i/(count+1))*16
+        local h=95+18*math.sin(i/count*math.pi)
+        bone('skeleton_spine',x,y,22,28,A.spinAngle or 0)
+        bone('skeleton_rib',x,y-h/2-20,18,h,-.12+(A.spinAngle or 0))
+        bone('skeleton_rib',x,y+h/2+20,18,h,math.pi+.12-(A.spinAngle or 0))
     end
-    bone('skeleton_tail',Arena.width*.095+shift,280+swim,110,160)
-    if not A.head or (not A.open and not A.swallowed) then
-        A.head={x=math.max(115,math.min(Arena.width-145,Arena.width*.79+shift+math.sin(A.motionTime*.7)*Arena.width*.07)),
-            y=math.max(125,math.min(455,280+swim+math.sin(A.motionTime*.9)*135)),w=170,h=150}
-    end
+    bone('skeleton_tail',Arena.width*.095+shift,280+swim+math.sin(A.motionTime*1.3)*12,100,145)
+    A.head=nil
+    if A.skeletonStage<10 then return end
+    -- The skull is anchored to the same skeleton origin; only the body undulates.
+    A.head={x=math.max(115,math.min(Arena.width-145,Arena.width*.79+shift)),
+        y=math.max(125,math.min(455,280+swim)),w=170,h=150}
     bone(A.open and 'skeleton_open' or 'skeleton_head',A.head.x,A.head.y,A.head.w,A.head.h)
 end
 function A.boneTouches(b,x,y)
@@ -73,24 +74,33 @@ end
 function A.charge(seconds)
     player.electrified=math.max(player.electrified or 0,seconds or 6); A.refreshLight()
 end
+function A.isPulling()
+    local function pulling(b) return b.active and b.giant and b.open and not b.defeated end
+    if pulling(A) then return true end
+    if Bosses then for _,item in ipairs(Bosses.items) do
+        if item.kind=='skeleton_fish' and pulling(item.boss) then return true end
+    end end
+    return false
+end
 function A.contact()
     if not A.giant or A.defeated or player.reset or player.abyssHeld or (player.abyssGrace or 0)>0 then return end
-    local mouthX,mouthY=A.mouth()
+    local mouthX,mouthY=0,0
+    if A.head then mouthX,mouthY=A.mouth() end
     local inMouth=A.open and (player.x+15-mouthX)^2+(player.y+12-mouthY)^2<34^2
     if inMouth and A.boss then
         if (player.electrified or 0)>0 then
             A.swallowed={time=0}; player.abyssHeld=A; player.electrified=0
             player.dashing=false; player.has_moved=false; player.whirl=nil; player.throw=nil; player.tunnelTravel=nil
             player.x=mouthX-15; player.y=mouthY-12; A.refreshLight()
-        else Hazards.kill() end
+        else Hazards.kill('bone') end
         return
     end
     for _,b in ipairs(A.bones) do
         -- The open mouth has an accessible throat; the skull and teeth remain solid.
-        local throat=A.boss and A.open and b==A.bones[#A.bones] and player.x+15>A.head.x+24 and math.abs(player.y+12-mouthY)<46
-        if not throat and math.abs(player.x+15-b.x)<b.w/2+40 and math.abs(player.y+12-b.y)<b.h/2+40 then
+        local throat=A.boss and A.open and b==A.bones[#A.bones] and player.x+15>A.head.x+24 and math.abs(player.y+12-mouthY)<85
+        if not throat and math.abs(player.x+15-b.x)<math.sqrt(b.w*b.w+b.h*b.h)/2+40 and math.abs(player.y+12-b.y)<math.sqrt(b.w*b.w+b.h*b.h)/2+40 then
             for y=player.y+2,player.y+22,4 do for x=player.x+2,player.x+28,4 do
-                if A.boneTouches(b,x,y) then Hazards.kill(); return end
+                if A.boneTouches(b,x,y) then Hazards.kill('bone'); return end
             end end
         end
     end
@@ -113,7 +123,7 @@ function A.pullEntity(m,dt,body)
     local tx,ty=A.mouth()
     local dx,dy=tx-(m.x+(body==player and 15 or 0)),ty-(m.y+(body==player and 12 or 0))
     local d=math.sqrt(dx*dx+dy*dy); if d<1 then return end
-    local step=math.min(d,(180+210*math.max(0,1-d/Arena.width))*dt)
+    local step=math.min(d,(240+d*.38)*dt)
     if body then
         local steps=math.max(1,math.ceil(step/5))
         for _=1,steps do
@@ -129,16 +139,16 @@ function A.pullEntity(m,dt,body)
     end
 end
 function A.safeExit()
-    local mx,my=A.mouth(); local best,bx,by=math.huge,Arena.width-80,510
-    -- Find a nearby spit landing clear of walls, bones, enemies and permanent pools.
+    local mx,my=A.mouth(); local choices,bx,by=0,Arena.width-80,510
+    -- Choose a safe landing across the arena, rather than directly in front of the mouth.
     for y=85,535,18 do for x=55,Arena.width-55,18 do
         local d=(x-mx)^2+(y-my)^2
-        if d>=95^2 and d<best and not Arena.blocked(x-17,y-14,34,28) then
+        if d>=150^2 and not Arena.blocked(x-17,y-14,34,28) then
             local safe=true
             for _,b in ipairs(A.bones) do if math.abs(x-b.x)<b.w/2+36 and math.abs(y-b.y)<b.h/2+32 then safe=false; break end end
             for _,m in ipairs(mobs) do if not m.abyssHeld and (x-m.x)^2+(y-m.y)^2<75^2 then safe=false; break end end
             for _,p in ipairs(Magma and Magma.pools or {}) do if Hazards.inEllipse(x,y,p,25) then safe=false; break end end
-            if safe then best,bx,by=d,x,y end
+            if safe then choices=choices+1; if love.math.random(choices)==1 then bx,by=x,y end end
         end
     end end
     return bx,by
@@ -149,17 +159,19 @@ function A.spit()
     if captured then targetX,targetY=A.safeExit(); player.abyssHeld=nil; player.abyssGrace=1.25 end
     for i,c in ipairs(A.cargo) do
         local m=c.entity; m.abyssHeld=nil
-        -- Expel captured entities in a fan, away from the player's landing.
-        local angle=-math.pi*.8+(i%7)*math.pi*.23
-        local x,y=mx+math.cos(angle)*110,my+math.sin(angle)*110
-        x=math.max(40,math.min(Arena.width-40,x)); y=math.max(70,math.min(540,y))
+        -- Stratified full-arena scatter, including the far side of the skeleton.
+        local u=((i-1)*.61803398875+A.clock*.071)%1
+        local v=((i-1)*.41421356237+A.clock*.113)%1
+        local x,y=55+u*(Arena.width-110),85+v*450
+        if captured and (x-targetX)^2+(y-targetY)^2<90^2 then y=85+(y+180-85)%450 end
+        local angle=math.atan2(y-my,x-mx)
         if c.body then local xx,yy=Arena.clearSpot(x-16,y-13,32,26); x,y=xx+16,yy+13 end
         m.x=x; m.y=y
         if m.life then m.life=math.max(m.life,1.5) end
         if m.vx then local speed=math.sqrt(m.vx*m.vx+(m.vy or 0)^2); m.vx=math.cos(angle)*speed; m.vy=math.sin(angle)*speed end
         A.ejected[#A.ejected+1]={x=mx,y=my,tx=x,ty=y,age=0}
     end
-    A.cargo={}; A.swallowed=nil; A.open=false; A.breathAt=A.clock+5.5; A.spitFlash=.55
+    A.cargo={}; A.swallowed=nil; A.open=false; A.breathAt=A.clock+5.5; A.spitFlash=.55; A.spinTime=3.2; A.spinAngle=0
     if captured then
         player.abyssSpit={fromX=mx-15,fromY=my-12,toX=targetX-15,toY=targetY-12,time=0}
         A.hurt()
@@ -167,8 +179,11 @@ function A.spit()
 end
 function A.update(dt)
     if not A.active then return end
-    if not A.open then A.motionTime=A.motionTime+dt end
-    A.clock=A.clock+dt; A.flash=math.max(0,A.flash-dt); A.spitFlash=math.max(0,A.spitFlash-dt)
+    A.motionTime=A.motionTime+dt*(A.movementRate or 1)
+    A.spinTime=math.max(0,(A.spinTime or 0)-dt)
+    local spin=1-A.spinTime/3.2
+    A.spinAngle=A.spinTime>0 and (spin*spin*(3-2*spin)*math.pi*2) or 0
+    A.clock=A.clock+dt*(A.attackRate or 1); A.flash=math.max(0,A.flash-dt); A.spitFlash=math.max(0,A.spitFlash-dt)
     A.hitGrace=math.max(0,A.hitGrace-dt)
     if not A.instance then player.electrified=math.max(0,(player.electrified or 0)-dt) end
     A.refreshLight()
@@ -186,6 +201,7 @@ function A.update(dt)
         end
     end
     for i=#A.ejected,1,-1 do local p=A.ejected[i]; p.age=p.age+dt; if p.age>.4 then table.remove(A.ejected,i) end end
+    if A.giant and not A.boss then A.open=false; A.buildBones(); A.contact(); A.refreshLight(); return end
     if A.giant then
         local wasOpen=A.open
         if A.swallowed then

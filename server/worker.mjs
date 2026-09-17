@@ -1,3 +1,4 @@
+const DEATH_PENALTY_MS=50;
 import {workshop} from './workshop.mjs';
 const reply=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 const fail=(status,error)=>{throw Object.assign(new Error(error),{status});};
@@ -46,15 +47,15 @@ export default {
         if(local && country==='ZZ') return reply({world,country,scores:[],page,total:0,hasMore:false});
         // One best run per nickname and world, across all installations.
         const ranked=`SELECT * FROM (
-          SELECT *,ROW_NUMBER() OVER(PARTITION BY name ORDER BY elapsed_ms,deaths,completed_at,run_id) AS best
+          SELECT *,ROW_NUMBER() OVER(PARTITION BY name ORDER BY (elapsed_ms+deaths*${DEATH_PENALTY_MS}),deaths,completed_at,run_id) AS best
           FROM scores WHERE world=?
         ) WHERE best=1 ${local?'AND country=?':''}`;
         const args=local?[world,country]:[world];
         const [{results},count]=await Promise.all([
-          env.DB.prepare(`SELECT name,country,elapsed_ms,deaths,skin FROM (${ranked}) ORDER BY elapsed_ms,deaths,completed_at,run_id LIMIT 10 OFFSET ?`).bind(...args,(page-1)*10).all(),
+          env.DB.prepare(`SELECT name,country,elapsed_ms,deaths,skin FROM (${ranked}) ORDER BY (elapsed_ms+deaths*${DEATH_PENALTY_MS}),deaths,completed_at,run_id LIMIT 10 OFFSET ?`).bind(...args,(page-1)*10).all(),
           env.DB.prepare(`SELECT COUNT(*) AS total FROM (${ranked})`).bind(...args).first()
         ]);
-        return reply({world,country,page,total:count.total,hasMore:page*10<count.total,scores:results.map(s=>({name:s.name,country:s.country,time:s.elapsed_ms/1000,deaths:s.deaths,skin:s.skin}))});
+        return reply({world,country,page,total:count.total,hasMore:page*10<count.total,scores:results.map(s=>({name:s.name,country:s.country,time:(s.elapsed_ms+s.deaths*DEATH_PENALTY_MS)/1000,rawTime:s.elapsed_ms/1000,penalty:s.deaths*DEATH_PENALTY_MS/1000,deaths:s.deaths,skin:s.skin}))});
       }
       if(request.method==='POST' && path==='/v1/runs') {
         const owner=await ownerOf(request), b=await bodyOf(request);

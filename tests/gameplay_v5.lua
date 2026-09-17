@@ -61,10 +61,8 @@ function T.run()
     player.x=rotor.tipX-15; player.y=rotor.tipY-12; MobBehaviors.scie.update(rotor,0)
     assert(player.reset,'Collision sur la tête mobile')
     for _,d in ipairs({'up','down','left','right'}) do
-        level(2,10); Wasp.reset(true); Wasp.phase='landed'; Wasp.dir=d
-        local sx,sy=Wasp.stinger(); local dx,dy=Wasp.stingerVector()
-        player.x=sx-15; player.y=sy-12; player.dashing=true; player.moveX=-dx; player.moveY=-dy
-        Wasp.contact(); assert(Wasp.hp==9,'Dard orienté '..d)
+        level(2,10);Wasp.reset(true);local b=Wasp.bees[1];b.dir=d
+        require('tests.wasp_trio').hit(Wasp,b);assert(Wasp.hp==8,'Contact sûr direction '..d)
     end
     print('PASS v5: murs/chemins Enfer, côtés variés, charge longue, serpents indépendants, pièges orbitaux, plans de rendu et contact guêpe directionnel')
 end

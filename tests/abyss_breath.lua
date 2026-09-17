@@ -23,8 +23,8 @@ function T.run()
     level(10); local old={}; for i,b in ipairs(Abyss.bones) do old[i]={x=b.x,y=b.y,angle=b.angle} end
     local hx,hy=Abyss.head.x,Abyss.head.y
     Abyss.update(.4)
-    for i=1,#old-1 do local b=Abyss.bones[i]; assert(b.x==old[i].x and b.y==old[i].y and b.angle==old[i].angle,'Os immobiles') end
-    assert(Abyss.head.x~=hx or Abyss.head.y~=hy,'Tête détachée mobile')
+    assert(Abyss.bones[1].y~=old[1].y,'Corps oscillant')
+    assert(Abyss.head.x==hx and Abyss.head.y==hy,'Tête fixe attachée au squelette')
     -- A charged body cannot damage the boss by touching a rib.
     local b=Abyss.bones[1]; local found=false
     for y=b.y-14,b.y+14,2 do for x=b.x-11,b.x+11,2 do
@@ -62,7 +62,7 @@ function T.run()
     assert(first~=last); mouth(first); Abyss.charge(6); first.contact(); first.update(.61)
     assert(first.hp==7 and last.hp==8 and not last.swallowed,'Rencontres indépendantes')
     LevelLayouts.disabled=disabled; Campaign.select(1); player.level=1; reset_level()
-    print('PASS abyss breath: transient circles, electric charge, fixed bones, head movement, suction, charged swallow/spit, cargo, defeat, reset, duplicate bosses')
+    print('PASS abyss breath: transient circles, electric charge, oscillating bones, fixed head, suction, charged swallow/spit, cargo, defeat, reset, duplicate bosses')
 end
 function T.visual()
     local tick=0

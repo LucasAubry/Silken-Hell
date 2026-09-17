@@ -37,7 +37,11 @@ function P.save()
 end
 function P.ranking(world,country)
     local result={}
-    for _,s in ipairs(P.scores) do if s.world==world then result[#result+1]=s end end
+    for _,s in ipairs(P.scores) do if s.world==world then
+        local row={}; for k,v in pairs(s) do row[k]=v end
+        row.rawTime=s.time; row.penalty=Scoring.penalty(s.deaths); row.time=Scoring.total(s.time,s.deaths)
+        result[#result+1]=row
+    end end
     table.sort(result,function(a,b) if a.time==b.time then return a.deaths<b.deaths end return a.time<b.time end)
     local best,seen={},{}
     for _,score in ipairs(result) do if not seen[score.name] then seen[score.name]=true; if not country or score.country==country then best[#best+1]=score end end end

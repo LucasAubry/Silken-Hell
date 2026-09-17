@@ -33,13 +33,14 @@ function T.run()
             assert(Art.images[key]); love.draw()
         end
     end
-    for _,name in ipairs({'octopus_extended','octopus_folded','lanternfish'}) do for _,dir in ipairs({'up','down','left','right'}) do
+    local sprite=Art.imageData('assets/sprites/directional/octopus_extended_down.png');local _,_,_,alpha=sprite:getPixel(0,0);assert(alpha==0);sprite:release()
+    for _,name in ipairs({'lanternfish'}) do for _,dir in ipairs({'up','down','left','right'}) do
         local data=Art.imageData('assets/sprites/directional/'..name..'_'..dir..'.png')
         local _,_,_,a=data:getPixel(0,0); assert(a==0,'PNG transparent '..name..' '..dir); data:release()
     end end
-    for _,name in ipairs({'coral_snare','root_snare','cloud_snare','abyss_snare','ink_splatter'}) do
+    for _,name in ipairs({'cloud_snare','ink_splatter'}) do
         local data=Art.imageData('assets/sprites/'..name..'.png'); local _,_,_,a=data:getPixel(0,0); assert(a==0,name); data:release()
     end
-    print('PASS révision marine : bulle de tête sans asphyxie Océan/Abysse, obscurité/lampes, huit formes poulpe, décors naturels et PNG transparents')
+    print('PASS révision marine : bulle de tête sans asphyxie Océan/Abysse, obscurité/lampes, silhouette du poulpe, décors naturels et PNG transparents')
 end
 return T

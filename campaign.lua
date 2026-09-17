@@ -174,7 +174,7 @@ function C.clearGroundSites()
     end
 end
 function C.drawCircles()
-    if Bosses.any() or Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active then return end
+    if Bosses.hud().active or Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active then return end
     local g=love.graphics
     for _,p in ipairs(levels[player.level].larme_position) do
         g.setColor(Worlds.color(C.world).tear)
@@ -192,7 +192,7 @@ function C.draw()
             g.setColor(1,0.08+i%3*0.025,0.08,0.35); g.circle('fill',x,y,1+i%2)
         end
     end
-    Hazards.draw(); Realms.drawGround(); Ocean.drawGround(); Raven.drawGround(); Wasp.drawGround(); Storm.drawGround(); Bosses.drawGround(); Arena.drawWalls(hell)
+    Hazards.draw(); Realms.drawGround(); Ocean.drawGround(); Octopus.drawGround(); Raven.drawGround(); Wasp.drawGround(); Storm.drawGround(); Bosses.drawGround(); Arena.drawWalls(hell)
     C.drawTear()
     g.setColor(1,1,1)
 end
@@ -218,7 +218,7 @@ function C.updateTear(dt)
             if m.dir=='up' then dy=-1 elseif m.dir=='left' then dx,dy=-1,0 elseif m.dir=='right' then dx,dy=1,0 end
             objet.larme.x=m.x-15-dx*36; objet.larme.y=m.y-20-dy*36
         end
-    elseif not Bosses.any() and not (Abyss and Abyss.active and Abyss.open) and not Raven.active and not Wasp.active and not Hedgehog.active and not Octopus.active and not Storm.active and not (Abyss and Abyss.boss) then select_tp_larme(dt) end
+    elseif not Bosses.hud().active and not (Abyss and Abyss.active and Abyss.open) and not Raven.active and not Wasp.active and not Hedgehog.active and not Octopus.active and not Storm.active and not (Abyss and Abyss.boss) then select_tp_larme(dt) end
 end
 function C.canCollect()
     return not Bosses.alive() and not objet.larme.taken and (not C.carrier or objet.larme_dropped)

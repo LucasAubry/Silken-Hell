@@ -1,18 +1,6 @@
 local T={}
 local function level(w,n) Campaign.select(w); player.level=n; reset_level(); App.state='playing' end
 function T.run()
-    level(2,10); Wasp.reset(true); Wasp.phase='landed'; Wasp.phaseTime=.001; Wasp.x=180; Wasp.y=120
-    player.x=700; player.y=500; local x,y=Wasp.x,Wasp.y
-    Wasp.update(.01); assert(Wasp.x==x and Wasp.y==y,'Décollage sans déplacement instantané')
-    Wasp.update(.01); assert((Wasp.x-x)^2+(Wasp.y-y)^2<=1.151^2,'Vol continu après attente au sol')
-    Wasp.phase='landed'; player.x=Wasp.x-15; player.y=Wasp.y-12; x,y=Wasp.x,Wasp.y
-    Wasp.contact(); assert(Wasp.x==x and Wasp.y==y,'Contact : seule la forme change')
-    player.x=-1000; player.y=-1000; Wasp.minions={{x=400,y=200,life=.01}}; Wasp.summon=100; Wasp.shot=100
-    for _=1,1000 do Wasp.update(.01) end
-    assert(#Wasp.minions==1,'Petites guêpes présentes après dix secondes')
-    Wasp.hp=1; Wasp.phase='landed'; player.x=Wasp.x-15; player.y=Wasp.y-12; Wasp.contact()
-    assert(Wasp.defeated and #Wasp.minions==1,'Petites guêpes survivent au boss')
-    x=Wasp.minions[1].x; player.x=-1000; Wasp.update(.1); assert(Wasp.minions[1].x~=x)
     level(5,10); assert(Hedgehog.active and Hedgehog.hp==7 and not Campaign.canCollect())
     assert(Bestiary.seen.hedgehog)
     Hedgehog.fire(); assert(#Hedgehog.projectiles==12,'Salve espacée de douze piques')

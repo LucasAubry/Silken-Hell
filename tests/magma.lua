@@ -16,7 +16,9 @@ function T.run()
     assert(#Magma.spawners==0,'Pas de spawner ajouté aux autres mondes')
     Arena.interior={}; while #Arena.walls>4 do table.remove(Arena.walls) end
     mobs={}; Magma.reset(); player.x=700; player.y=400; player.reset=false
-    local s=Magma.addSpawner(220,200); Magma.update(2.19); assert(#mobs==0)
+    local s=Magma.addSpawner(220,200)
+    player.x=s.x-15;player.y=s.y-12;Magma.contact();assert(not player.reset,'Nid inoffensif au contact')
+    player.x=700;player.y=400;Magma.update(.99); assert(#mobs==0)
     Magma.update(.02); assert(#mobs==1 and mobs[1].type=='magma_larva','Invocation différée')
     local obstacle={x=400,y=250,w=36,h=190}; Arena.walls[#Arena.walls+1]=obstacle; Arena.navigationVersion=Arena.navigationVersion+1
     local probe={x=330,y=350,hitBox_width=18,hitBox_height=18,hitBox_offset_x=-9,hitBox_offset_y=-9}
@@ -24,33 +26,34 @@ function T.run()
     assert(probe.x>480,'Chemin trouvé autour du mur'); table.remove(Arena.walls); Arena.navigationVersion=Arena.navigationVersion+1
     local m=mobs[1]; local x=m.x; MobBehaviors.magma_larva.update(m,.1); assert(m.x>x and m.age>0,'Poursuite rapide')
     m.age=3.59; MobBehaviors.magma_larva.update(m,.02)
-    assert(m.spent and #Magma.pools==1 and not player.reset,'Explosion retardée et flaque')
+    assert(m.spent and #Magma.pools==0 and #Magma.bursts==1 and not player.reset,'Explosion sans flaque')
     Magma.update(.01); assert(#mobs==0,'Larve retirée après explosion')
-    local p=Magma.pools[1]; Magma.spawners={}; Magma.update(600)
-    assert(#Magma.pools==1,'Le poison n’expire jamais pendant une tentative')
-    player.x=p.x-15; player.y=p.y-12; Magma.contact(); assert(player.reset,'Poison mortel')
+    Magma.spawners={}; Magma.update(1)
+    assert(#Magma.pools==0 and #Magma.bursts==0 and not Magma.canvas,'Aucun résidu après explosion')
+    local blast=Magma.spawn(player.x+15,player.y+12); Magma.explode(blast)
+    assert(player.reset and #Magma.pools==0,'Explosion mortelle à proximité sans poison')
     player.reset=false; player.x=700; player.y=400
-    Magma.poison(p.x,p.y); assert(#Magma.pools==1,'Impacts identiques fusionnés sans fuite mémoire')
-    Magma.resize(.9); assert(#Magma.pools==1 and math.abs(Magma.pools[1].x-p.x*.9)<.01)
-    Magma.drawGround()
+    Magma.resize(.9); Magma.drawGround()
     reset_level(); assert(#Magma.pools==0 and #Magma.bursts==0 and not Magma.canvas,'Nettoyage au recommencement')
     local layout={world=4,level=1,width=Arena.width,height=600,entities={{kind='spawn',x=700,y=400},{kind='magma_spawner',x=200,y=200},{kind='mob',type='magma_larva',x=300,y=200,speed=245}}}
     assert(LayoutSchema.validate(layout)); LevelLayouts.apply(layout)
     assert(#Magma.spawners==1 and #mobs==1,'Objets utilisables dans tous les biomes')
     MobBehaviors.magma_larva.draw(mobs[1]); Magma.drawGround()
-    local d=love.image.newImageData('assets/sprites/magma_pool.png'); local _,_,_,a=d:getPixel(0,0); assert(a==0,'Transparence flaque'); d:release()
+    local d,a
+    d=love.image.newImageData('assets/sprites/magma_nest.png'); _,_,_,a=d:getPixel(0,0);assert(a==0,'Transparence nid');d:release()
     d=love.image.newImageData('assets/sprites/magma_larva.png'); _,_,_,a=d:getPixel(0,0); assert(a==0,'Transparence larve'); d:release()
     LevelLayouts.disabled=disabled; App.sessionLayout=nil; Campaign.select(1); player.level=1; reset_level()
-    print('PASS magma: native levels, clearance, spawn, chase, fuse, permanent poison, reset, resize, editor, alpha')
+    print('PASS magma: native levels, clearance, spawn, chase, fuse, blast without poison, reset, resize, editor, alpha')
 end
 function T.visual()
+    love.focus=function() end
     local tick=0
     love.update=function()
         tick=tick+1
         if tick==1 then
             LevelLayouts.disabled=true; Campaign.select(2); player.level=5; reset_level(); App.state='playing'
             for i,p in ipairs(Magma.spawners) do local m=Magma.spawn(Arena.width*.4+i*45,250); m.angle=-.8; m.age=2.4+i*.25 end
-            Magma.poison(Arena.width*.52,420); Magma.poison(Arena.width*.6,380)
+            Magma.explode(Magma.spawn(Arena.width*.52,420))
             App.capture='magma-hell.png'
         elseif tick==5 then love.event.quit() end
     end

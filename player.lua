@@ -52,17 +52,4 @@ function draw_player(direction)
     love.graphics.setColor(1,1,1)
 end
 
-function load_hud()
-	hud = {}
-	hud.time_cardant = love.graphics.newImage("texture/hud/time_cadrant.png")
-	hud.cadrant_demon = love.graphics.newImage("texture/hud/cadrant_demon.png")
-	hud.cadrant_demon2 = love.graphics.newImage("texture/hud/cadrant_demon2.png")
-	hud.cadrant_croix = love.graphics.newImage("texture/hud/cadrant_croix.png")
-	hud.cadrant_ange = love.graphics.newImage("texture/hud/cadrant_ange.png")
-	hud.hud = love.graphics.newImage("texture/hud/hud.png")
-end
-
-
-
-
 return player

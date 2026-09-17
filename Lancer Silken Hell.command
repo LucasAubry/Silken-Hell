@@ -26,7 +26,7 @@ if [[ -f "$CACHE_DIR/Silken Hell.love" ]]; then
   cp "$CACHE_DIR/Silken Hell.love" "$BUILD_DIR/game.love"
 fi
 # Synchronise aussi les suppressions, sans relire les textures inchangées.
-/usr/bin/zip -q -FS -r "$BUILD_DIR/game.love" ./*.lua ./*.glsl police.ttf levels assets texture tests designer || {
+/usr/bin/zip -q -FS -r "$BUILD_DIR/game.love" ./*.lua ./*.glsl police.ttf levels assets texture tests designer -x '*/.DS_Store' '*.tmp' '*.updated' '*.pyc' '*/__pycache__/*' || {
   RESULT=$?
   if [[ "$RESULT" != 12 ]]; then exit "$RESULT"; fi
 }

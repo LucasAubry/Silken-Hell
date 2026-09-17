@@ -16,7 +16,7 @@ function T.run()
         assert(Bosses.items[4].kind=='wasp','Ancien serpent importé comme abeille')
         assert(#Bosses.items==7 and Realms.custom and #Realms.schools==1,'Toutes les rencontres importées')
         local first,second=Bosses.items[2].boss,Bosses.items[3].boss
-        first.hp=4; assert(second.hp==10 and first.projectiles~=second.projectiles,'Boss identiques indépendants')
+        first.hp=4; assert(second.hp==9 and first.projectiles~=second.projectiles,'Boss identiques indépendants')
         Hazards.kill=function() end
         for _=1,12 do love.update(.016) end
         love.draw()
@@ -27,7 +27,7 @@ function T.run()
         local b=Bosses.items[1].boss; b.defeated=false; b.hp=1; assert(not Campaign.canCollect(),'Un boss vivant bloque la sortie')
         Hazards.kill=kill
         local deaths=player.death; Hazards.kill(); love.update(.016)
-        assert(player.death==deaths+1 and #Bosses.items==7 and Bosses.items[2].boss.hp==10,'Recommencement complet des rencontres')
+        assert(player.death==deaths+1 and #Bosses.items==7 and Bosses.items[2].boss.hp==9,'Recommencement complet des rencontres')
     end
     Hazards.kill=kill
     -- Reuse resources and load the newest preview request without restarting LÖVE.

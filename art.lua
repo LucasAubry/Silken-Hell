@@ -83,22 +83,23 @@ function A.drawSwimmer(key,x,y,size,angle,time)
 end
 function A.load()
     A.add('magma_larva','assets/sprites/magma_larva.png')
-    A.add('magma_pool','assets/sprites/magma_pool.png')
+    A.add('magma_nest','assets/sprites/magma_nest.png')
+    A.add('octopus_extended_down','assets/sprites/directional/octopus_extended_down.png')
     A.add('abyss_octopus','assets/sprites/abyss_octopus.png')
-    for _,name in ipairs({'merle','wasp_ground','wasp','nest','lava','black_feather','raven','wheel','serpent','imp','wall','spider','feather'}) do A.add(name,'assets/sprites/'..name..'.png') end
-    for _,name in ipairs({'storm','spider','imp','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','gull','waspling','hedgehog','hedgehog_ball','octopus_extended','octopus_folded','lanternfish'}) do
+    for _,name in ipairs({'nest','lava','black_feather','wheel','wall','feather'}) do A.add(name,'assets/sprites/'..name..'.png') end
+    for _,name in ipairs({'storm','spider','imp','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','gull','waspling','hedgehog','hedgehog_ball','lanternfish'}) do
         for _,dir in ipairs({'up','down','left','right'}) do
             A.add(name..'_'..dir,'assets/sprites/directional/'..name..'_'..dir..'.png')
         end
     end
-    for _,name in ipairs({'coral_snare','root_snare','cloud_snare','abyss_snare','ink_splatter'}) do A.add(name,'assets/sprites/'..name..'.png') end
+    for _,name in ipairs({'cloud_snare','ink_splatter'}) do A.add(name,'assets/sprites/'..name..'.png') end
     A.add('skull','texture/hud/death.png'); A.add('clock','texture/hud/time.png')
     A.add('catalog_ange','texture/mob/ange_down.png'); A.add('catalog_snake','texture/mob/snake_down.png'); A.add('catalog_trap','texture/mob/piege.png')
     A.add('original','texture/spider_down.png')
     A.add('earth_tunnel','assets/sprites/earth_tunnel.png')
     for _,key in ipairs({'skeleton_head','skeleton_open','skeleton_rib','skeleton_spine','skeleton_tail','abyss_fish'}) do A.add(key,'assets/sprites/'..key..'.png') end
     for _,pose in ipairs({'open','closed','dead'}) do A.add('crab_'..pose,'assets/sprites/crab_'..pose..'.png') end
-    for _,key in ipairs({'luminous_jelly','electric_vent_idle','electric_vent_charge','electric_vent_active','electric_vent_spent'}) do A.add(key,'assets/sprites/'..key..'.png') end
+    for _,key in ipairs({'electric_vent_idle','electric_vent_charge','electric_vent_active','electric_vent_spent'}) do A.add(key,'assets/sprites/'..key..'.png') end
     A.add('tear_ring','texture/aureole.png')
 end
 function A.draw(key,x,y,width,angle,height)

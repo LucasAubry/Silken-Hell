@@ -8,6 +8,7 @@ require 'mob'
 require 'effect'
 local utf8=require 'utf8'
 Worlds=require 'worlds'
+Scoring=require 'scoring'
 Profile=require 'profile'
 Audio=require 'audio'
 Campaign=require 'campaign'
@@ -28,6 +29,7 @@ Characters=require 'characters'
 Bestiary=require 'bestiary'
 Realms=require 'realms'
 BiomeFloor=require 'biome_floor'
+Atmosphere=require 'atmosphere'
 LevelLayouts=require 'level_layouts'
 Abyss=require 'abyss'
 Bosses=require 'boss_instances'
@@ -37,6 +39,7 @@ Workshop=require 'workshop'
 Creator=require 'creator'
 require 'infernal'
 Magma=require 'magma'
+Burning=require 'burning'
 App={state='menu',selectedWorld=1}
 mobs={}; larme_indexes={}; direction='down'
 shader_effect_timer=0; shader_duration=0.3
@@ -153,6 +156,7 @@ function love.update(dt)
         if not m.abyssHeld and behavior and behavior.update then behavior.update(m,dt) end
         if player.reset then break end
     end
+    Burning.update(dt)
     Magma.update(dt)
     Realms.update(dt)
     Ocean.update(dt)
@@ -185,6 +189,7 @@ function love.draw()
         draw_shadow_dash()
         for _,m in ipairs(mobs) do if m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
         Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false); love.graphics.setColor(1,1,1); draw_player(direction); Ocean.drawBubble(); Wasp.draw(true); Bosses.draw(true); Abyss.drawBones()
+        Burning.drawMobs(); Atmosphere.draw()
         Realms.drawDarkness(); Realms.drawFireflies(); Abyss.drawLights(); Bosses.drawLights(); BossFX.draw()
         love.graphics.setCanvas()
     end
@@ -304,11 +309,7 @@ function love.resize(w,h)
         for _,m in ipairs(Raven.chicks) do m.cx=m.cx*ratio; m.x=m.x*ratio end
     end
     for _,p in ipairs(Hazards.lava) do p.x=p.x*ratio end
-    if Wasp.active then
-        Wasp.x=Wasp.x*ratio
-        if Wasp.landingX then Wasp.landingX=Wasp.landingX*ratio; Wasp.landingStartX=Wasp.landingStartX*ratio end
-        for _,list in ipairs({Wasp.projectiles,Wasp.minions}) do for _,p in ipairs(list) do p.x=p.x*ratio end end
-    end
+    if Wasp.active then Wasp.resize(ratio) end
     if not custom then Arena.reconcile() end
     if Hedgehog.active then
         Hedgehog.x=Hedgehog.x*ratio
@@ -317,7 +318,7 @@ function love.resize(w,h)
     end
     if Octopus.active then
         Octopus.x=Octopus.x*ratio
-        for _,list in ipairs({Octopus.projectiles,Octopus.crabs,Octopus.wounds}) do for _,p in ipairs(list) do p.x=p.x*ratio; if p.tx then p.tx=p.tx*ratio end end end
+        for _,list in ipairs({Octopus.projectiles,Octopus.crabs,Octopus.wounds,Octopus.inkPools,Octopus.blasts}) do for _,p in ipairs(list) do p.x=p.x*ratio; if p.tx then p.tx=p.tx*ratio end; if p.fromX then p.fromX=p.fromX*ratio end end end
     end
     for _,b in ipairs(Ocean.bubbles) do b.x=b.x*ratio end
     if Campaign.biome>=4 or custom then
@@ -339,7 +340,7 @@ function love.resize(w,h)
         if Abyss.giant then Abyss.buildBones() end
     end
     local spit=player.abyssSpit; if spit then spit.fromX=spit.fromX*ratio; spit.toX=spit.toX*ratio end
-    Magma.resize(ratio)
+    Magma.resize(ratio); Burning.resize(ratio)
     if Storm.active then
         Storm.x=Storm.x*ratio
         for _,list in ipairs({Storm.projectiles,Storm.strikes}) do for _,p in ipairs(list) do p.x=p.x*ratio end end

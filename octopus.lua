@@ -4,6 +4,7 @@ function O.reset(active)
     O.x=Arena.width/2; O.y=300; O.angle=0; O.faceAngle=0; O.spin=1; O.clock=0
     O.angularVelocity=.32; O.shot=2; O.summon=1.2; O.extension=1
     O.rider=nil; O.escape=nil; O.grace=0; O.waveActive=false; O.waveId=0; O.dashHeld=false
+    O.inkPools={}; O.blasts={}; O.inkCount=0; O.poolCooldown=0
     O.projectiles={}; O.blots={}; O.crabs={}; O.wounds={}; player.ink=0
     O.arms={8,8,8,8,8,8,8,8}
     if active then player.x=O.x-15; player.y=535; player.lastMoveX=0; player.lastMoveY=-1 end
@@ -67,8 +68,60 @@ function O.touches(x,y)
     return a.mask[math.floor(yy/a.h*192)*192+math.floor(xx/a.w*192)] or false
 end
 function O.ink()
-    local a=math.atan2(player.y+12-O.y,player.x+15-O.x)
-    O.projectiles[#O.projectiles+1]={x=O.x+math.cos(a)*65,y=O.y+math.sin(a)*65,vx=math.cos(a)*210,vy=math.sin(a)*210,life=6}
+    O.inkCount=O.inkCount+1
+    local a=O.inkCount*2.39996323
+    local radius=215+(O.inkCount%3)*25
+    local x=math.max(55,math.min(Arena.width-55,O.x+math.cos(a)*radius))
+    local y=math.max(70,math.min(530,O.y+math.sin(a)*radius))
+    x,y=Arena.clearSpot(x-20,y-15,40,30)
+    O.projectiles[#O.projectiles+1]={x=O.x,y=O.y,fromX=O.x,fromY=O.y,tx=x+20,ty=y+15,age=0,life=.85}
+end
+function O.explodeCrab(c)
+    if c.dead then return end
+    c.dead=0; c.frenzy=nil
+    O.blasts[#O.blasts+1]={x=c.x,y=c.y,age=0}
+    BossFX.burst(c.x,c.y,{.5,.3,.8},3)
+    for _,other in ipairs(O.crabs) do
+        if other~=c and not other.dead and not other.launch then
+            local dx,dy=other.x-c.x,other.y-c.y; local d=math.sqrt(dx*dx+dy*dy)
+            if d<185 then
+                if d<1 then dx,dy,d=math.cos(other.age or 0),math.sin(other.age or 0),1 end
+                other.fling={vx=dx/d*580,vy=dy/d*580,time=.65}
+            end
+        end
+    end
+end
+function O.updateInk(dt)
+    O.poolCooldown=math.max(0,O.poolCooldown-dt)
+    for i=#O.projectiles,1,-1 do local p=O.projectiles[i]
+        p.age=(p.age or 0)+dt
+        if p.tx then
+            local t=math.min(1,p.age/.85);p.x=p.fromX+(p.tx-p.fromX)*t;p.y=p.fromY+(p.ty-p.fromY)*t
+            if t==1 then
+                if #O.inkPools>=12 then table.remove(O.inkPools,1) end
+                O.inkPools[#O.inkPools+1]={x=p.tx,y=p.ty,rx=38,ry=27,life=6,seed=O.inkCount}
+                table.remove(O.projectiles,i)
+            end
+        else table.remove(O.projectiles,i) end
+    end
+    for i=#O.inkPools,1,-1 do local p=O.inkPools[i]; p.life=p.life-dt
+        if p.life<=0 then table.remove(O.inkPools,i)
+        elseif O.poolCooldown==0 and Hazards.inEllipse(player.x+15,player.y+12,p,0) then O.splash();O.poolCooldown=4 end
+    end
+    for i=#O.blasts,1,-1 do local p=O.blasts[i];p.age=p.age+dt;if p.age>.5 then table.remove(O.blasts,i) end end
+end
+function O.drawGround()
+    if not O.active then return end
+    local g=love.graphics;g.push('all')
+    for _,p in ipairs(O.inkPools) do
+        g.setColor(.07,.015,.1,math.min(1,p.life));Art.drawTinted('ink_splatter',p.x,p.y,p.rx*2.5,p.seed)
+        g.setColor(.45,.2,.65,.35);g.ellipse('line',p.x,p.y,p.rx,p.ry)
+    end
+    for _,p in ipairs(O.projectiles) do if p.tx then
+        g.setColor(.35,.1,.55,.5);g.ellipse('line',p.tx,p.ty,38,27)
+    end end
+    for _,p in ipairs(O.blasts) do g.setColor(.7,.4,1,1-p.age*2);g.ellipse('line',p.x,p.y,185*p.age*2,130*p.age*2) end
+    g.pop()
 end
 function O.splash()
     O.blots={}; player.ink=4
@@ -90,26 +143,26 @@ function O.hurt(crab,arm)
         if O.rider and O.rider.arm==arm then O.detach() end
         Audio.play('pick')
     end
-    if O.liveCrabs()==0 then O.waveActive=false; O.summon=1.3 end
+    if O.liveCrabs()==0 then O.waveActive=false end
     if O.hp==0 then
-        O.defeated=true; O.projectiles={}; O.blots={}; O.rider=nil; O.escape=nil
+        O.defeated=true; O.projectiles={}; O.blots={}; O.inkPools={}; O.blasts={}; O.rider=nil; O.escape=nil
         for _,c in ipairs(O.crabs) do if not c.dead then c.dead=0 end end
         objet.larme.taken=false; objet.larme.x=O.x-15; objet.larme.y=O.y-20
     end
 end
 function O.releaseCrabs()
-    if O.defeated or O.waveActive then return end
+    if O.defeated or O.liveCrabs()>=32 then return end
     O.waveActive=true; O.waveId=O.waveId+1
     local aim=math.atan2(player.y+12-O.y,player.x+15-O.x)
     local distance=math.max(205,math.min(310,math.sqrt((player.x+15-O.x)^2+(player.y+12-O.y)^2)))
-    local count=O.hp<=4 and 12 or 8
+    local count=math.min(32-O.liveCrabs(),O.hp<=4 and 12 or 8)
     for i=1,count do
         local a=aim+(i-(count+1)/2)*.16
         local tx=math.max(45,math.min(Arena.width-45,O.x+math.cos(a)*distance))
         local ty=math.max(50,math.min(550,O.y+math.sin(a)*distance))
         local x,y=Arena.clearSpot(tx-14,ty-12,28,24)
         O.crabs[#O.crabs+1]={x=O.x,y=O.y,tx=x+14,ty=y+12,launch=0,angle=a,age=i*.2,
-            wave=O.waveId,speed=85+(8-O.hp)*4,vx=math.cos(a),vy=math.sin(a),
+            wave=O.waveId,speed=170+(8-O.hp)*6,vx=math.cos(a),vy=math.sin(a),
             hitBox_width=28,hitBox_height=24,hitBox_offset_x=-14,hitBox_offset_y=-12}
     end
     Bestiary.discover('crab'); Bestiary.save()
@@ -134,7 +187,17 @@ function O.updateCrabs(dt)
             c.x=O.x+(c.tx-O.x)*t; c.y=O.y+(c.ty-O.y)*t
             if t==1 then c.launch=nil; O.crabContact(c) end
         else
-            O.walkCrab(c,dt,function() O.crabContact(c) end)
+            if not c.frenzy then for _,p in ipairs(O.inkPools) do if Hazards.inEllipse(c.x,c.y,p,0) then c.frenzy=.85;break end end end
+            if c.frenzy then c.frenzy=c.frenzy-dt;if c.frenzy<=0 then O.explodeCrab(c) end end
+            if not c.dead and c.fling then
+                local f=c.fling;local steps=math.max(1,math.ceil(580*dt/4))
+                for _=1,steps do
+                    local hx,hy=Arena.move(c,f.vx*dt/steps,f.vy*dt/steps)
+                    if hx then f.vx=-f.vx*.65 end;if hy then f.vy=-f.vy*.65 end
+                    O.crabContact(c);if c.dead or player.reset then break end
+                end
+                f.time=f.time-dt;if f.time<=0 then c.fling=nil end
+            elseif not c.dead then O.walkCrab(c,dt,function() O.crabContact(c) end) end
         end
         if player.reset then return end
     end
@@ -149,26 +212,33 @@ function O.walkCrab(c,dt,contact)
     -- Bend the pursuit around the body; a fast rotating arm can still catch them.
     if O.active and not O.defeated then
         local dx,dy=c.x-O.x,c.y-O.y; local distance=math.sqrt(dx*dx+dy*dy)
-        if distance>1 and distance<235 then
+        if distance>1 and distance<285 then
             local nx,ny=dx/distance,dy/distance
             local inward=c.vx*nx+c.vy*ny
             if inward<0 then
                 c.orbitSide=c.orbitSide or ((c.vx*(-ny)+c.vy*nx)>=0 and 1 or -1)
-                local strength=math.min(1,(235-distance)/65)
+                local strength=math.min(1,(285-distance)/75)
                 c.vx=c.vx-nx*inward*strength-ny*c.orbitSide*strength*.8
                 c.vy=c.vy-ny*inward*strength+nx*c.orbitSide*strength*.8
             end
-            if distance<115 then c.vx=c.vx+nx*2; c.vy=c.vy+ny*2 end
+            if distance<210 then c.vx=c.vx+nx*2; c.vy=c.vy+ny*2 end
             local n=math.sqrt(c.vx*c.vx+c.vy*c.vy)
             if n>0 then c.vx,c.vy=c.vx/n,c.vy/n end
         else c.orbitSide=nil end
     end
     c.angle=math.atan2(c.vy,c.vx); c.dir=Art.direction(c.vx,c.vy,c.dir)
-    local speed=c.speed*((player.ink or 0)>0 and 1.75 or 1)
+    local speed=c.speed*(c.frenzy and 1.4 or 1)*((player.ink or 0)>0 and 1.75 or 1)
     local steps=math.max(1,math.ceil(speed*dt/4))
     for _=1,steps do
         local hx,hy=Arena.move(c,c.vx*speed*dt/steps,c.vy*speed*dt/steps)
         if hx then c.vx=-c.vx end; if hy then c.vy=-c.vy end
+        if O.active and not O.defeated then
+            local dx,dy=c.x-O.x,c.y-O.y;local d=math.sqrt(dx*dx+dy*dy)
+            if d>0 and d<205 then
+                local tx,ty=O.x+dx/d*205,O.y+dy/d*205
+                if not Arena.blocked(tx-14,ty-12,28,24) then c.x=tx;c.y=ty end
+            end
+        end
         contact(); if c.dead or player.reset then break end
     end
 end
@@ -208,15 +278,13 @@ function O.update(dt)
     O.clock=O.clock+dt; O.flash=math.max(0,O.flash-dt); O.grace=math.max(0,O.grace-dt)
     O.faceAngle=O.angle
     local speed=O.rider and O.maxSpin() or .32+(1-O.hp/O.maxHp)*.24
-    local target=O.spin*speed; local acceleration=(O.rider and 7 or 4)*dt
+    local target=O.spin*speed*(O.movementRate or 1); local acceleration=(O.rider and 7 or 4)*dt
     O.angularVelocity=O.angularVelocity+math.max(-acceleration,math.min(acceleration,target-O.angularVelocity))
     O.angularVelocity=math.max(-O.maxSpin(),math.min(O.maxSpin(),O.angularVelocity))
-    O.shot=O.shot-dt
+    O.shot=O.shot-dt*(O.attackRate or 1)
     if O.shot<=0 then O.ink(); O.shot=2.6-(1-O.hp/O.maxHp)*.5 end
-    if not O.waveActive then
-        O.summon=O.summon-dt
-        if O.summon<=0 then O.releaseCrabs() end
-    end
+    O.summon=O.summon-dt*(O.attackRate or 1)
+    if O.summon<=0 then O.releaseCrabs(); O.summon=5 end
     local steps=math.max(1,math.ceil(dt/.006))
     for _=1,steps do
         O.angle=O.angle+O.angularVelocity*dt/steps; O.moveRider(); O.contact()
@@ -229,15 +297,7 @@ function O.update(dt)
         if O.rider.time<=0 then O.detach() end
     end
     O.updateCrabs(dt)
-    for i=#O.projectiles,1,-1 do local p=O.projectiles[i]; p.life=p.life-dt; local dead=p.life<=0
-        for _=1,steps do
-            if dead then break end
-            p.x=p.x+p.vx*dt/steps; p.y=p.y+p.vy*dt/steps
-            if (player.x+15-p.x)^2+(player.y+12-p.y)^2<25^2 then O.splash(); dead=true end
-            if Arena.blocked(p.x-5,p.y-5,10,10) then dead=true end
-        end
-        if dead then table.remove(O.projectiles,i) end
-    end
+    O.updateInk(dt)
     for _,list in ipairs({O.blots,O.wounds}) do for i=#list,1,-1 do
         list[i].life=list[i].life-dt; if list[i].life<=0 then table.remove(list,i) end
     end end
@@ -259,7 +319,7 @@ function O.drawCrabs()
             a.sink=a.sink or g.newQuad(qx,qy,qw,qh,iw,ih); a.sink:setViewport(qx,qy,qw,math.max(1,qh*amount),iw,ih)
             local scale=46/math.max(qw,qh); g.setColor(1,1,1,amount)
             g.draw(a.image,a.sink,-qw*scale/2,qh*scale/2-qh*amount*scale,0,scale,scale)
-        else g.setColor(1,1,1); Art.draw(math.floor(c.age*6)%2==0 and 'crab_open' or 'crab_closed',0,0,46) end
+        else g.setColor(1,c.frenzy and .3 or 1,c.frenzy and .5 or 1); Art.draw(math.floor(c.age*(c.frenzy and 24 or 6))%2==0 and 'crab_open' or 'crab_closed',0,0,46) end
         g.pop()
     end
 end
@@ -295,7 +355,7 @@ function O.draw()
     end
     O.drawCrabs()
     for _,p in ipairs(O.projectiles) do
-        g.setColor(.65,.5,.85); Art.draw('ink_splatter',p.x,p.y,34,math.atan2(p.vy,p.vx))
+        g.setColor(.65,.5,.85); Art.draw('ink_splatter',p.x,p.y-math.sin(math.min(1,(p.age or 0)/.85)*math.pi)*75,34,(p.age or 0)*4)
     end
     for _,p in ipairs(O.wounds) do
         for i=1,8 do local a=i*math.pi/4; local d=(.55-p.life)*48
