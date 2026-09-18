@@ -3,6 +3,7 @@ from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 import tempfile
 import shutil
+import re
 
 root = Path(__file__).resolve().parents[1]
 paths = set()
@@ -10,7 +11,7 @@ for pattern in ('*.lua', '*.glsl', '*.ttf', 'levels/**/*.lua', 'assets/**/*',
                 'texture/**/*.png', 'tests/*.lua', 'designer/**/*'):
     for path in root.glob(pattern):
         if (path.is_file() and not any(part.startswith('.') or part == '__pycache__' for part in path.relative_to(root).parts)
-                and path.suffix not in ('.tmp', '.updated', '.pyc', '.log')):
+                and not re.search(r' \d+\.[^.]+$', path.name) and path.suffix not in ('.tmp', '.updated', '.pyc', '.log')):
             paths.add(path)
 # Build outside iCloud, then publish a complete archive atomically.
 with tempfile.TemporaryDirectory(prefix='silken-build-') as folder:
@@ -21,4 +22,9 @@ with tempfile.TemporaryDirectory(prefix='silken-build-') as folder:
     staged = root / 'game.love.tmp'
     shutil.copyfile(output, staged)
     staged.replace(root / 'game.love')
+    cache = Path.home() / 'Library/Application Support/Silken Hell'
+    cache.mkdir(parents=True, exist_ok=True)
+    staged = cache / 'Silken Hell.love.new'
+    shutil.copyfile(output, staged)
+    staged.replace(cache / 'Silken Hell.love')
 print(f'game.love : {len(paths)} fichiers, jeu et éditeur à jour')

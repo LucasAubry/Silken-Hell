@@ -1,13 +1,13 @@
 const worlds=[1,2,3,4,5,6,7];
-const kinds=new Set(['magma_spawner','spawn','tear','wall','mob','boss','nest','light','lava','vent','hole','tunnel','tornado','current','rain']);
+const kinds=new Set(['abyss_part','magma_spawner','spawn','tear','wall','mob','boss','nest','light','lava','vent','hole','tunnel','tornado','current','rain']);
 const mobs=new Set(['magma_larva','ange','snake','piege','scie','spinner','imp','crab','abyss_fish','light_jelly','lanternfish','waspling','larva','blackbird_chick','fish','mole','worm','gull','jelly']);
-const bosses=new Set(['storm','merle','hellserpent','wasp','hedgehog','octopus','skeleton_fish']);
+const bosses=new Set(['skeleton_head','storm','merle','hellserpent','wasp','hedgehog','octopus','skeleton_fish']);
 export function validateLayout(l) {
  if(!l || !worlds.includes(l.world) || !Number.isInteger(l.level) || l.level<1 || l.level>(l.world===3?6:10) || !Number.isFinite(l.width) || l.width<400 || l.width>4000 || l.height!==600 || !Array.isArray(l.entities) || l.entities.length>1000) return false;
  let spawn=0;
  for(const e of l.entities) {
-  if(!e || !kinds.has(e.kind) || (e.kind==='mob'&&!mobs.has(e.type)) || (e.kind==='boss'&&!bosses.has(e.type))) return false;
-  for(const k of ['x','y','speed','w','h','rx','ry','radius','phase','dx','rota','seed','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage']) if(e[k]!==undefined && (!Number.isFinite(e[k]) || Math.abs(e[k])>10000)) return false;
+  if(!e || !kinds.has(e.kind) || (e.kind==='mob'&&!mobs.has(e.type)) || (e.kind==='boss'&&!bosses.has(e.type)) || (e.kind==='abyss_part'&&!['skeleton_tail','skeleton_rib','skeleton_spine'].includes(e.type))) return false;
+  for(const k of ['x','y','speed','w','h','rx','ry','radius','phase','dx','rota','seed','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage','rotation']) if(e[k]!==undefined && (!Number.isFinite(e[k]) || Math.abs(e[k])>10000)) return false;
   for(const k of ['movementRate','attackRate']) if(e[k]!==undefined && (e[k]<.1||e[k]>5)) return false;
   for(const k of ['spawnDelay','spawnInterval']) if(e[k]!==undefined && (e[k]<.1||e[k]>120)) return false;
   if(e.skeletonStage!==undefined && (!Number.isInteger(e.skeletonStage)||e.skeletonStage<8||e.skeletonStage>10)) return false;

@@ -51,10 +51,12 @@ local function entity(e,ghost)
     elseif e.kind=='rain' then g.setColor(.25,.6,1,.8); for i=-1,1 do g.line(e.x+i*8,e.y-18,e.x+i*8-5,e.y+7) end
     elseif e.kind=='current' then g.setColor(.2,.85,1,.2); g.ellipse('fill',e.x,e.y,e.rx,e.ry); text(e.dx==1 and '>' or '<',e.x-6,e.y-9,18)
     elseif c.art and Art.images[c.art] then
-        local size=e.kind=='boss' and (e.type=='octopus' and 360 or e.type=='skeleton_fish' and 170 or 105) or e.kind=='spawn' and 55 or (e.kind=='tear' or e.kind=='light') and 44 or e.kind=='lava' and e.rx*2 or e.kind=='tunnel' and 95 or 60
+        local size=e.kind=='boss' and (e.type=='octopus' and 360 or (e.type=='skeleton_fish' or e.type=='skeleton_head') and 170 or 105) or e.kind=='spawn' and 55 or (e.kind=='tear' or e.kind=='light') and 44 or e.kind=='lava' and e.rx*2 or e.kind=='tunnel' and 95 or 60
         if e.kind=='tear' or e.kind=='light' then g.setColor(Worlds.color(M.world).tear) end
         if e.type=='gull' and e.electric then g.setColor(1,.88,.15) end
         if e.kind=='tear' or e.kind=='light' then Art.drawTinted(c.art,e.x,e.y,size)
+        elseif e.kind=='abyss_part' then Art.draw(c.art,e.x,e.y,e.w,(e.rotation or 0)*math.pi/180,e.h)
+        elseif e.type=='skeleton_head' then Art.draw(c.art,e.x,e.y,170,0,150)
         elseif e.type=='skeleton_fish' then
             local width=M.layout.width; local span=width*.48; local count=math.max(3,math.floor(span/205)+1)
             for i=1,((e.skeletonStage or 10)>=9 and count or 0) do
@@ -71,7 +73,7 @@ local function entity(e,ghost)
     if e.has_larme then g.setColor(Worlds.color(M.world).tear); g.circle('fill',e.x+21,e.y+20,6) end
     if e==M.selected then
         g.setColor(color.accent); g.setLineWidth(2)
-        local w,h=e.kind=='wall' and e.w+8 or 70,e.kind=='wall' and e.h+8 or 70
+        local w,h=e.w and e.w+8 or e.type=='skeleton_head' and 178 or 70,e.h and e.h+8 or e.type=='skeleton_head' and 158 or 70
         g.rectangle('line',e.x-w/2,e.y-h/2,w,h,4); g.setLineWidth(1)
     end
 end
@@ -142,8 +144,8 @@ function love.draw()
     for i=1,max do local c=palette[i+state.scroll]; if c then
         local y=324+(i-1)*68
         button('',14,y,220,60,function() state.tool=c; M.selected=nil; state.input=nil end,state.tool==c)
-        if c.art then g.setColor(1,1,1); Art.draw(c.art,45,y+29,42) end
-        text(c.name,77,y+15,14,nil,145); text(c.kind=='boss' and 'Rencontre' or c.kind=='mob' and 'Créature' or 'Placement',77,y+36,12,color.muted)
+        if c.art then g.setColor(1,1,1); local a=Art.images[c.art]; local width=math.min(42,44*a.w/a.h); Art.draw(c.art,45,y+29,width) end
+        text(c.name,77,y+8,12,nil,145); text(c.kind=='boss' and 'Rencontre' or c.kind=='mob' and 'Créature' or 'Placement',77,y+36,12,color.muted)
     end end
     text('Molette : parcourir la liste',20,h-54,12,color.muted)
     local x,y,scale=bounds(); state.canvas={x=x,y=y,s=scale}
@@ -165,9 +167,9 @@ function love.draw()
         text(catalog(e).name,right,208,18,nil,210)
         local defaults=e.kind=='boss' and {movementRate=1,attackRate=1} or e.kind=='magma_spawner' and {spawnDelay=1,spawnInterval=3} or {}
         local row=0
-        for _,f in ipairs({'x','y','w','h','rx','ry','speed','phase','dx','rota','radius','spawnDelay','spawnInterval','movementRate','attackRate'}) do if e[f]~=nil or defaults[f]~=nil then
+        for _,f in ipairs({'x','y','w','h','rx','ry','speed','phase','dx','rota','radius','spawnDelay','spawnInterval','movementRate','attackRate','rotation'}) do if e[f]~=nil or defaults[f]~=nil then
             local value=e[f] or defaults[f]
-            local yy=250+row*43; text(({movementRate='Dépl. ×',attackRate='Attaques ×',spawnDelay='Début (s)',spawnInterval='Intervalle (s)',speed='Vitesse',radius='Rayon',phase='Phase',w='Largeur',h='Hauteur'})[f] or f:upper(),right,yy+8,12,color.muted)
+            local yy=250+row*43; text(({rotation='Angle (°)',movementRate='Dépl. ×',attackRate='Attaques ×',spawnDelay='Début (s)',spawnInterval='Intervalle (s)',speed='Vitesse',radius='Rayon',phase='Phase',w='Largeur',h='Hauteur'})[f] or f:upper(),right,yy+8,12,color.muted)
             local label=state.input==f and state.inputText..'|' or tostring(math.floor(value*100+.5)/100)
             button(label,right+88,yy,117,34,function() state.input=f; state.inputText=tostring(value); love.keyboard.setTextInput(true) end,state.input==f)
             row=row+1
@@ -199,7 +201,13 @@ function love.mousepressed(mx,my,button)
     for i=#M.layout.entities,1,-1 do local e=M.layout.entities[i]
         local rx,ry=e.kind=='wall' and e.w/2 or 26,e.kind=='wall' and e.h/2 or 26
         local ex=e.type=='skeleton_fish' and e.x+M.layout.width*.32 or e.x
-        if math.abs(x-ex)<=rx and math.abs(y-e.y)<=ry then M.selected=e; M.checkpoint(); state.drag={dx=x-e.x,dy=y-e.y}; break end
+        local dx,dy=x-ex,y-e.y
+        if e.kind=='abyss_part' then
+            local a=(e.rotation or 0)*math.pi/180
+            dx,dy=math.cos(a)*dx+math.sin(a)*dy,-math.sin(a)*dx+math.cos(a)*dy
+            rx,ry=math.max(12,e.w/2),math.max(12,e.h/2)
+        elseif e.type=='skeleton_head' then rx,ry=85,75 end
+        if math.abs(dx)<=rx and math.abs(dy)<=ry then M.selected=e; M.checkpoint(); state.drag={dx=x-e.x,dy=y-e.y}; break end
     end
 end
 function love.mousemoved(mx,my)

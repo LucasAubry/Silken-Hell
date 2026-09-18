@@ -24,7 +24,7 @@ end
 function M.select(world,level)
     M.world=world; M.level=level; M.history={}; M.future={}; M.selected=nil
     local key=M.key()
-    M.layout=require('layout_schema').migrate(M.clone(M.drafts[key] or M.applied.levels[key] or assert(M.defaults.levels[key])))
+    M.layout=require('layout_schema').splitAbyss(require('layout_schema').migrate(M.clone(M.drafts[key] or M.applied.levels[key] or assert(M.defaults.levels[key]))))
 end
 function M.persist()
     M.drafts[M.key()]=M.clone(M.layout); M.dirty[M.key()]=true
@@ -68,6 +68,6 @@ function M.apply()
     return true,exported and 'Appliqué au jeu. Recharge ce niveau pour voir les changements.' or 'Appliqué au jeu ; export dans le projet indisponible.'
 end
 function M.restore()
-    M.checkpoint(); M.layout=M.clone(M.defaults.levels[M.key()]); M.selected=nil; M.persist()
+    M.checkpoint(); M.layout=require('layout_schema').splitAbyss(M.clone(M.defaults.levels[M.key()])); M.selected=nil; M.persist()
 end
 return M

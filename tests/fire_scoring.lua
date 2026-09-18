@@ -26,9 +26,9 @@ function T.run()
         {world=2,name='Rapide',country='FR',time=10,deaths=40},
         {world=2,name='Prudent',country='FR',time=11,deaths=0},
         {world=2,name='Rapide',country='FR',time=10.5,deaths=10}}
-    local ranked=Profile.ranking(2); assert(ranked[1].name=='Prudent' and ranked[2].time==11 and ranked[2].penalty==.5)
-    assert(Profile.scores[3].time==10.5 and Profile.ranking(2)[2].time==11,'Pas de double pénalité ni de modification des sauvegardes')
-    timer=10; player.death=10; assert(Scoring.total(timer,player.death)==10.5); love.draw()
+    local ranked=Profile.ranking(2); assert(ranked[1].name=='Prudent' and math.abs(ranked[2].time-(10.5+10/3))<1e-9 and math.abs(ranked[2].penalty-10/3)<1e-9)
+    assert(Profile.scores[3].time==10.5 and math.abs(Profile.ranking(2)[2].time-(10.5+10/3))<1e-9,'Pas de double pénalité ni de modification des sauvegardes')
+    timer=10; player.death=10; assert(math.abs(Scoring.total(timer,player.death)-(10+10/3))<1e-9); love.draw()
     App.state='rankings'; UI.boardWorld=2; UI.boardPage=1; love.draw(); App.state='menu'; love.draw()
     Profile.scores=scores; LevelLayouts.disabled=disabled; level(1,1)
     print('PASS fire/scoring: depth lighting, earth difficulty, Hell 9, 1s/3s larvae, burning/trails/reset, adjusted rankings without double penalty and UI')

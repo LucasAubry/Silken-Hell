@@ -1,16 +1,20 @@
 local W={active=false,projectiles={},minions={}}
 function W.reset(active)
-    W.active=active; W.name='Les Trois Sœurs de braise'; W.hp=9; W.maxHp=9; W.defeated=false; W.flash=0
+    W.hardcore=false; W.active=active; W.name='Les Trois Sœurs de braise'; W.hp=9; W.maxHp=9; W.defeated=false; W.flash=0
     W.x=Arena.width/2; W.y=180; W.anchorX=W.x; W.anchorY=W.y; W.elapsed=0
-    W.bees={}; W.round=0; W.roundClock=0; W.roundActive=false; W.rest=.9
+    W.bees={}; W.round=0; W.roundClock=0; W.roundActive=false; W.rest=.25
     for i=1,3 do W.bees[i]={id=i,x=W.x+(i-2)*150,y=W.y+(i==2 and -35 or 25),hp=3,phase='ready',dir='down',flash=0} end
     W.eruptions={}; W.lavaClock=1.4; W.lavaIndex=0
-    W.projectiles={}; W.minions={}; W.summon=1.4; W.hitGrace=0
+    W.projectiles={}; W.minions={}; W.blasts={}; W.summon=1.4; W.hitGrace=0
 end
 function W.aliveCount()
     local n=0; for _,b in ipairs(W.bees) do if b.hp>0 then n=n+1 end end; return n
 end
-function W.tempo() return ({[3]=1,[2]=1.4,[1]=2.05,[0]=2.05})[W.aliveCount()] end
+function W.stage() return W.hp<=3 and 3 or W.hp<9 and 2 or 1 end
+function W.tempo()
+    local speed=({1,1.25,1.55})[W.stage()]*(1+.4*(3-W.aliveCount()))
+    return speed*(W.hardcore and 1 or (W.aliveCount()==1 and .88 or .96))
+end
 function W.interval() return 1/W.tempo() end
 function W.syncAnchor()
     local dx,dy=W.x-W.anchorX,W.y-W.anchorY
@@ -26,21 +30,34 @@ function W.resize(ratio)
     end end
 end
 function W.contact()
-    if not W.active or W.defeated or player.reset then return end
+    if not W.active or player.reset then return end
     W.syncAnchor()
     for _,b in ipairs(W.bees) do
-        if b.hp>0 and b.phase=='fatigued' and checkCollision(player.x,player.y,30,24,b.x-32,b.y-35,64,70) then
-            b.hp=b.hp-1; W.hp=W.hp-1; b.flash=.3;W.flash=.3;W.hitGrace=.5
+        if b.hp>0 and b.phase=='fatigued' and W.touches(b) then
+            b.hp=b.hp-1; W.hp=W.hp-1; b.flash=.3;W.flash=.3;b.contactGrace=.35
             b.phase=b.hp==0 and 'dead' or 'cooldown';b.deadTime=0
             Audio.play('pick');BossFX.burst(b.x,b.y,{1,.25,.06},b.hp==0 and 4 or 2)
-            if b.hp==0 then W.rest=math.min(W.rest,.3);W.summon=1.4 end
+            if b.hp==0 then W.rest=math.min(W.rest,.08);W.summon=1.4 end
             if W.hp==0 then
                 W.defeated=true;W.projectiles={};W.eruptions={};objet.larme.taken=false
-                objet.larme.x=b.x-15;objet.larme.y=b.y-20
+                W.dropTear()
             end
             return
         end
+        W.chargeContact(b)
+        if player.reset then return end
     end
+end
+function W.dropTear()
+    local best,bx,by=math.huge,Arena.width/2,300
+    for y=75,525,30 do for x=65,Arena.width-65,30 do
+        local safe=not Arena.blocked(x-20,y-24,40,48)
+        for _,b in ipairs(W.bees) do if (x-b.x)^2+(y-b.y)^2<100^2 then safe=false end end
+        for _,p in ipairs(Hazards.lava) do if Hazards.inEllipse(x,y,p,30) then safe=false end end
+        local d=(player.x+15-x)^2+(player.y+12-y)^2
+        if safe and d<best then best,bx,by=d,x,y end
+    end end
+    objet.larme.x=bx-15;objet.larme.y=by-20
 end
 function W.fire(kind)
     local a=math.atan2(player.y+12-W.y,player.x+15-W.x)
@@ -84,19 +101,88 @@ end
 function W.beginRound()
     W.round=W.round+1;W.roundClock=0;W.roundActive=true
     local alive={};for _,b in ipairs(W.bees) do if b.hp>0 then alive[#alive+1]=b end end
-    for slot=1,#alive do
-        local b=alive[(slot+W.round-2)%#alive+1]
-        b.phase='queued';b.delay=(slot-1)*.8
+    local attack=(W.round-1)%3+1
+    for slot,b in ipairs(alive) do
+        b.phase='queued';b.delay=(slot-1)*.06;b.attack=attack
+        b.launchLarva=slot<=W.stage()
     end
+end
+-- Reserve a direction throughout repositioning, aiming and the charge itself.
+function W.directionAvailable(bee,vx,vy)
+    for _,other in ipairs(W.bees) do
+        if other~=bee and other.hp>0 and other.attack~=3
+            and (other.phase=='position' or other.phase=='aim' or other.phase=='charge')
+            and other.vx==vx and other.vy==vy then return false end
+    end
+    return true
+end
+function W.positionAttack(b)
+    local px,py=player.x+15,player.y+12
+    if b.attack~=3 then
+        local horizontal=b.x<px and 1 or -1
+        local vertical=b.y<py and 1 or -1
+        local choices=b.attack==1 and {{horizontal,0},{-horizontal,0},{0,vertical},{0,-vertical}}
+            or {{0,vertical},{0,-vertical},{horizontal,0},{-horizontal,0}}
+        local chosen
+        for _,v in ipairs(choices) do if W.directionAvailable(b,v[1],v[2]) then chosen=v;break end end
+        if not chosen then return end
+        b.vx,b.vy=chosen[1],chosen[2];b.attack=b.vx~=0 and 1 or 2
+        if b.attack==1 then
+            b.tx=b.vx>0 and 65 or Arena.width-65;b.ty=math.max(65,math.min(535,py))
+        else
+            b.tx=math.max(65,math.min(Arena.width-65,px));b.ty=b.vy>0 and 65 or 535
+        end
+        b.dir=Art.direction(b.vx,b.vy,b.dir)
+    else
+        b.vx,b.vy=nil,nil
+        local corners={{65,65},{Arena.width-65,65},{Arena.width-65,535},{65,535}}
+        local c=corners[(b.id+W.round-2)%4+1];b.tx,b.ty=c[1],c[2]
+    end
+    local x,y=Arena.clearSpot(b.tx-24,b.ty-24,48,48);b.tx,b.ty=x+24,y+24
+    b.phase='position'
+end
+function W.fireLarva(b)
+    local x,y=Arena.clearSpot(b.x-9,b.y-9,18,18)
+    return Magma.spawn(x+9,y+9)
+end
+function W.soloLarvae(b)
+    if W.aliveCount()~=1 then return end
+    W.fireLarva({x=b.x-20,y=b.y});W.fireLarva({x=b.x+20,y=b.y})
+end
+function W.releaseLarvae()
+    -- The whole corner volley fires together, once every surviving sister is ready.
+    local ready=false
+    for _,b in ipairs(W.bees) do if b.hp>0 then
+        if b.attack~=3 or b.phase~='aim' or b.time>0 then return end
+        ready=true
+    end end
+    if not ready then return end
+    for _,b in ipairs(W.bees) do if b.hp>0 then
+        if W.aliveCount()==1 then W.soloLarvae(b) elseif b.launchLarva then W.fireLarva(b) end
+        b.phase='hiding';b.time=.22
+    end end
 end
 function W.approach(b,x,y,speed,dt)
     local dx,dy=x-b.x,y-b.y;local d=math.sqrt(dx*dx+dy*dy)
     local step=math.min(d,speed*dt)
-    if d>.01 then b.x=b.x+dx/d*step;b.y=b.y+dy/d*step;b.dir=Art.direction(dx,dy,b.dir) end
+    if d>.01 then
+        b.dir=Art.direction(dx,dy,b.dir)
+        local steps=math.max(1,math.ceil(step/4))
+        for _=1,steps do
+            b.x=b.x+dx/d*step/steps;b.y=b.y+dy/d*step/steps
+            W.chargeContact(b);if player.reset then return false end
+        end
+    end
     return d<=speed*dt+.01
 end
+function W.touches(b)
+    local grounded=b.hp<=0 or b.phase=='fatigued'
+    local y=b.y+(grounded and 0 or -10)
+    return checkCollision(player.x,player.y,30,24,b.x-26,y-32,52,64)
+end
 function W.chargeContact(b)
-    if W.hitGrace<=0 and (player.x+15-b.x)^2+(player.y+12-b.y)^2<30^2 then Hazards.kill() end
+    if b.hp>0 and b.phase=='fatigued' then return end
+    if W.hitGrace<=0 and (b.contactGrace or 0)<=0 and W.touches(b) then Hazards.kill() end
 end
 function W.updateBees(dt)
     local tempo=W.tempo();local cadence=tempo*(W.attackRate or 1);local move=W.movementRate or 1
@@ -105,66 +191,52 @@ function W.updateBees(dt)
         if W.rest<=0 then W.beginRound() end
     end
     W.roundClock=W.roundClock+dt*cadence
-    local resting=false
-    for _,b in ipairs(W.bees) do if b.hp>0 and (b.phase=='landing' or b.phase=='fatigued') then resting=true end end
     for _,b in ipairs(W.bees) do
-        b.flash=math.max(0,b.flash-dt)
+        b.flash=math.max(0,b.flash-dt);b.contactGrace=math.max(0,(b.contactGrace or 0)-dt)
         if b.hp<=0 then b.deadTime=(b.deadTime or 0)+dt
-        else
-            if b.phase=='queued' and W.roundClock>=b.delay then
-                b.phase='aim';b.time=.78
-                local a=math.atan2(player.y+12-b.y,player.x+15-b.x)
-                local d=math.sqrt((player.x+15-b.x)^2+(player.y+12-b.y)^2)+90
-                b.tx=math.max(55,math.min(Arena.width-55,b.x+math.cos(a)*d))
-                b.ty=math.max(75,math.min(525,b.y+math.sin(a)*d))
-                b.dir=Art.direction(b.tx-b.x,b.ty-b.y,b.dir)
-            elseif b.phase=='aim' then
-                b.time=b.time-dt*cadence
-                if b.time<=0 then b.phase='charge';BossFX.burst(b.x,b.y,{1,.4,.1},1) end
-            elseif b.phase=='charge' then
-                local speed=430*tempo*move;local steps=math.max(1,math.ceil(speed*dt/4))
-                for _=1,steps do
-                    local arrived=W.approach(b,b.tx,b.ty,speed,dt/steps);W.chargeContact(b)
-                    if arrived then b.phase='waiting';break end
-                    if player.reset then break end
-                end
-            elseif b.phase=='waiting' and not resting then
-                -- A shared slot guarantees that only one sister can be vulnerable.
-                resting=true;b.phase='landing';b.tx,b.ty=W.landingSpot(b)
-            elseif b.phase=='landing' then
-                if W.approach(b,b.tx,b.ty,300*move,dt) then b.phase='fatigued';b.time=math.max(1.4,2.8/tempo) end
-            elseif b.phase=='fatigued' then
-                b.time=b.time-dt
-                if b.time<=0 then b.phase='cooldown' end
-            elseif b.phase=='ready' or b.phase=='queued' or b.phase=='cooldown' or b.phase=='waiting' then
-                local tx=math.max(65,math.min(Arena.width-65,W.x+(b.id-2)*150+math.sin(W.elapsed*.65+b.id)*35))
-                local ty=math.max(85,math.min(500,W.y+(b.id==2 and -35 or 25)+math.cos(W.elapsed+b.id)*25))
-                W.approach(b,tx,ty,105*tempo*move,dt)
+        elseif b.phase=='queued' then
+            if W.roundClock>=b.delay then W.positionAttack(b) end
+        elseif b.phase=='position' then
+            if W.approach(b,b.tx,b.ty,1080*tempo*move,dt) then
+                b.phase='aim';b.time=b.attack==3 and .12 or .4
             end
+        elseif b.phase=='aim' then
+            b.time=b.time-dt*(b.attack==3 and cadence or 1)
+            if b.time<=0 then
+                if b.attack==3 then
+                    W.releaseLarvae()
+                else W.soloLarvae(b);b.phase='charge' end
+            end
+        elseif b.phase=='charge' then
+            local speed=1400*tempo*move;local steps=math.max(1,math.ceil(speed*dt/4))
+            for _=1,steps do
+                local x,y=b.x+b.vx*speed*dt/steps,b.y+b.vy*speed*dt/steps
+                if Arena.blocked(x-24,y-24,48,48) then
+                    b.phase='fatigued';b.time=1.65;BossFX.burst(b.x,b.y,{1,.7,.2},2);break
+                end
+                b.x,b.y=x,y;W.chargeContact(b)
+                if player.reset then break end
+            end
+        elseif b.phase=='fatigued' then
+            b.time=b.time-dt;if b.time<=0 then b.phase='cooldown' end
+        elseif b.phase=='hiding' then
+            b.time=b.time-dt*cadence;if b.time<=0 then b.phase='cooldown' end
         end
     end
     W.contact()
     local complete=W.roundActive
     for _,b in ipairs(W.bees) do if b.hp>0 and b.phase~='cooldown' then complete=false end end
-    if complete then W.roundActive=false;W.rest=.65 end
-    if W.aliveCount()==1 then
-        W.summon=W.summon-dt*cadence
-        if W.summon<=0 then
-            if #W.minions<6 then
-                local last;for _,b in ipairs(W.bees) do if b.hp>0 then last=b end end
-                W.minions[#W.minions+1]={x=last.x-40,y=last.y,dir='down'}
-                W.minions[#W.minions+1]={x=last.x+40,y=last.y,dir='down'}
-                Bestiary.discover('waspling');Bestiary.save()
-            end
-            W.summon=5
-        end
-    end
+    if complete then W.roundActive=false;W.rest=.1 end
 end
 function W.update(dt)
     if not W.active then return end
     W.syncAnchor();W.hitGrace=math.max(0,W.hitGrace-dt);W.elapsed=W.elapsed+dt;W.flash=math.max(0,W.flash-dt)
     if not W.defeated then W.updateBees(dt);W.updateLava(dt)
-    else for _,b in ipairs(W.bees) do b.deadTime=(b.deadTime or 0)+dt end end
+    else
+        for _,b in ipairs(W.bees) do b.deadTime=(b.deadTime or 0)+dt;b.contactGrace=math.max(0,(b.contactGrace or 0)-dt) end
+        W.contact()
+    end
+    for i=#W.blasts,1,-1 do local p=W.blasts[i];p.life=p.life-dt;if p.life<=0 then table.remove(W.blasts,i) end end
     for i=#W.projectiles,1,-1 do
         local p=W.projectiles[i]; p.life=p.life-dt; local dead=p.life<=0
         local steps=math.max(1,math.ceil(math.sqrt(p.vx*p.vx+p.vy*p.vy)*dt/4))
@@ -188,32 +260,50 @@ function W.drawGround()
     if not W.active or W.defeated then return end
     W.syncAnchor()
     local g=love.graphics;g.push('all')
-    for _,b in ipairs(W.bees) do if b.hp>0 then
-        g.setColor(0,0,0,.23);g.ellipse('fill',b.x,b.y+20,32,14)
-        if b.phase=='aim' then
-            g.setColor(1,.45,.12,.65);g.setLineWidth(2);g.line(b.x,b.y,b.tx,b.ty)
-            g.circle('line',b.tx,b.ty,18)
-        elseif b.phase=='fatigued' then
-            g.setColor(1,.85,.3,.35+.2*math.sin(W.elapsed*7));g.ellipse('fill',b.x,b.y,39,28)
-        end
-    end end
     for _,p in ipairs(W.eruptions) do
         g.setColor(1,.7,.12,.45+p.age*.4);g.setLineWidth(2)
         g.ellipse('line',p.x,p.y,p.rx+8+p.age*8,p.ry+8+p.age*8)
     end
     g.pop()
 end
+function W.lavaMaterial(time)
+    local g=love.graphics
+                W.lavaShader=W.lavaShader or g.newShader([[
+                    extern float pulse;
+                    vec4 effect(vec4 color,Image tex,vec2 uv,vec2 screen) {
+                        vec4 p=Texel(tex,uv);float light=max(p.r,max(p.g,p.b));
+                        float seam=smoothstep(.18,.7,light)*(.75+.25*sin(uv.y*75.0+uv.x*31.0));
+                        vec3 lava=mix(vec3(.025,.012,.018),vec3(1.0,.09,.008),seam);
+                        lava+=vec3(.3,.16,.015)*pow(seam,3.0)*pulse;
+                        return vec4(lava,p.a)*color;
+                    }
+                ]])
+                W.lavaShader:send('pulse',.8+.2*math.sin((time or W.elapsed)*6))
+    return W.lavaShader
+end
 function W.draw(airborne)
     if not W.active then return end
     local g=love.graphics
     for _,b in ipairs(W.bees) do
         local flying=b.phase~='fatigued' and b.phase~='dead'
-        if airborne==flying and (b.hp>0 or (b.deadTime or 0)<.6) then
-            local alpha=b.hp>0 and 1 or math.max(0,1-(b.deadTime or 0)/.6)
-            g.setColor(1,1-b.flash*.6,1-b.flash*.6,alpha)
+        if airborne==flying then
+            local alpha=b.hp>0 and (b.phase=='hiding' and .28 or 1) or 1
+            g.setColor(b.hp<=0 and .55 or 1,b.hp<=0 and .3 or 1-b.flash*.6,b.hp<=0 and .25 or 1-b.flash*.6,alpha)
+            local previous=g.getShader()
+            if W.hardcore then
+                g.setColor(1,1,1,alpha);g.setShader(W.lavaMaterial())
+            end
             Art.drawFacing(flying and 'wasp' or 'wasp_ground',b.dir,b.x,b.y+(flying and -10+math.sin(W.elapsed*36+b.id)*2 or 0),flying and 96 or 80)
+            g.setShader(previous)
+            if W.hardcore and b.hp>0 then
+                g.push('all');g.setBlendMode('add')
+                for i=1,4 do local y=b.y-22+i*9
+                    g.setColor(1,.18,.015,.12);g.circle('fill',b.x,y,8)
+                    g.setColor(1,.55,.08,.85);g.circle('fill',b.x,y,2)
+                end
+                g.pop()
+            end
             if b.hp>0 then
-                for i=1,3 do g.setColor(i<=b.hp and 1 or .25,i<=b.hp and .55 or .1,.1,.9);g.circle('fill',b.x+(i-2)*10,b.y+38,3) end
                 if b.phase=='fatigued' then
                     g.setColor(1,.9,.4);for i=1,3 do local a=W.elapsed*3+i*math.pi*2/3;g.circle('fill',b.x+math.cos(a)*21,b.y-37+math.sin(a)*5,2) end
                 end
@@ -221,6 +311,7 @@ function W.draw(airborne)
         end
     end
     if airborne then
+        for _,p in ipairs(W.blasts) do g.setColor(1,.45,.1,p.life/.35);g.circle('line',p.x,p.y,48*(1-p.life/.35)) end
         for _,m in ipairs(W.minions) do g.setColor(1,1,1); Art.drawFacing('waspling',m.dir,m.x,m.y,34) end
         for _,p in ipairs(W.projectiles) do
             if p.kind=='ember' then

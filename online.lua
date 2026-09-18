@@ -4,7 +4,7 @@ local config=require 'online_config'
 local function saveOutbox()
     local rows={}
     for _,r in ipairs(N.runs) do
-        if r.id and not r.failed and #r.pending>0 then rows[#rows+1]={id=r.id,world=r.world,pending=r.pending} end
+        if not r.failed and #r.pending>0 then rows[#rows+1]={id=r.id,name=r.name,skin=r.skin,startedAtMs=r.startedAtMs,world=r.world,pending=r.pending} end
     end
     love.filesystem.write('online-outbox.json',json.encode(rows))
 end
@@ -74,27 +74,34 @@ function N.init()
     end
     local ok,rows=pcall(json.decode,love.filesystem.read('online-outbox.json') or '[]')
     if ok and type(rows)=='table' then
-        for _,r in ipairs(rows) do if type(r.id)=='string' and type(r.pending)=='table' and Worlds.playable(r.world) then N.runs[#N.runs+1]=r end end
+        for _,r in ipairs(rows) do if (type(r.id)=='string' or type(r.name)=='string') and type(r.pending)=='table' and Worlds.playable(r.world) then N.runs[#N.runs+1]=r end end
     end
     N.thread=love.thread.newThread('network_thread.lua'); N.thread:start()
     N.locate(); N.refresh(1)
 end
+function N.begin(run)
+    if run.starting or run.id or run.failed or (run.retryAt and N.clock<run.retryAt) then return end
+    run.starting=true
+    request('/v1/runs',{world=run.world,name=run.name,skin=run.skin or 1,startedAtMs=run.startedAtMs},function(data,code)
+        run.starting=false
+        if code==201 and type(data.id)=='string' then
+            run.id=data.id;run.retryAt=nil;saveOutbox()
+            if N.current==run then N.scoreStatus='Partie classée';N.country=data.country or N.country end
+            N.flush(run)
+        elseif code==0 or code>=500 or code==429 then
+            run.retryAt=N.clock+15;saveOutbox()
+            if N.current==run then N.scoreStatus='Score en attente de connexion' end
+        else
+            run.failed=true
+            if N.current==run then N.scoreStatus='Score local : '..(data.error or 'connexion indisponible') end
+        end
+    end)
+end
 function N.start(world,name,skin)
     N.current=nil; N.scoreStatus='Partie hors ligne'
     if not N.enabled then return end
-    local run={world=world,pending={},starting=true}; N.runs[#N.runs+1]=run; N.current=run
-    N.scoreStatus='Connexion au classement…'
-    request('/v1/runs',{world=world,name=name,skin=skin or 1},function(data,code)
-        run.starting=false
-        if code==201 and type(data.id)=='string' then
-            run.id=data.id
-            if N.current==run then N.scoreStatus='Partie classée'; N.country=data.country or N.country end
-            N.flush(run)
-        else
-            run.failed=true
-            if N.current==run then N.scoreStatus='Score conservé en local (connexion indisponible)' end
-        end
-    end)
+    local run={world=world,name=name,skin=skin or 1,startedAtMs=os.time()*1000,pending={}};N.runs[#N.runs+1]=run;N.current=run
+    N.scoreStatus='Connexion au classement…';N.begin(run)
 end
 function N.checkpoint(level,time,deaths)
     local r=N.current
@@ -104,7 +111,8 @@ function N.checkpoint(level,time,deaths)
     saveOutbox(); N.flush(r)
 end
 function N.flush(r)
-    if not r.id or r.busy or r.failed or #r.pending==0 or (r.retryAt and N.clock<r.retryAt) then return end
+    if not r.id then N.begin(r);return end
+    if r.busy or r.failed or #r.pending==0 or (r.retryAt and N.clock<r.retryAt) then return end
     r.busy=true
     local checkpoint=r.pending[1]
     request('/v1/runs/'..r.id..'/checkpoint',checkpoint,function(data,code)

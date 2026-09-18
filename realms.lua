@@ -54,8 +54,11 @@ function R.reset(w,n)
     R.custom=false; R.world=w; R.level=n; R.clock=0; R.tunnels={}; R.tornadoes={}; player.whirl=nil; player.throw=nil; player.tunnelLock=false; player.tunnelTravel=nil; R.fireflies={}; R.wind={x=0,y=0,time=0,stage=0,tx=0,ty=0}; R.clouds={}; R.rain={}; R.rainClock=.25; R.current={}
     R.electricTrails={}; R.bolts={}; R.eggs={}; R.larvae={}; R.holes={}; R.rainSites={}; R.rainWave=0; R.vents={}; R.lightning={}; R.lightningClock=.35; player.illuminated=0
     if w<4 then return end
-    if R.floor then R.floor:release() end
-    R.floor=love.graphics.newCanvas(Arena.width,600)
+    -- Reuse the ocean floor across deaths instead of releasing a GPU canvas
+    -- that may still be referenced by the previous frame.
+    if not R.floor or R.floor:getWidth()~=Arena.width then
+        R.floor=love.graphics.newCanvas(Arena.width,600)
+    end
     local g=love.graphics; g.push('all'); g.setCanvas(R.floor); g.clear(Worlds.color(w).floor)
     if w==4 or w==7 then
         for y=0,600,24 do for x=0,Arena.width,32 do
@@ -420,7 +423,8 @@ function R.updateProjectiles(dt)
                 dead=true
             else
                 p.x=x; p.y=y
-                if checkCollision(x-3,y-3,6,6,player.x,player.y,30,24) then Hazards.kill(); dead=true end
+                local radius=list==R.bolts and 5 or 3
+                if checkCollision(x-radius,y-radius,radius*2,radius*2,player.x,player.y,30,24) then Hazards.kill(); dead=true end
             end
         end end
         if dead then table.remove(list,i) end
@@ -448,7 +452,7 @@ function R.drawCreatures()
         g.setColor(1,.94,.75); g.circle('fill',p.x-1,p.y-2,1.5)
     end
     for _,p in ipairs(R.bolts) do if not p.abyssHeld then
-        local a=math.atan2(p.vy,p.vx); g.push(); g.translate(p.x,p.y); g.rotate(a)
+        local a=math.atan2(p.vy,p.vx); g.push(); g.translate(p.x,p.y); g.rotate(a); g.scale(1.35)
         local bend=math.sin(R.clock*42+p.seed)*3
         g.setColor(.1,.5,1,.22); g.setLineWidth(4); g.line(-19,0,-13,bend,-7,-bend,0,0)
         g.setColor(.3,.8,1); g.setLineWidth(1); g.line(-19,0,-13,bend,-7,-bend,0,0)
@@ -483,9 +487,9 @@ function R.drawDarkness()
     local g=love.graphics
     R.darkShader=R.darkShader or g.newShader('assets/abyss-darkness.glsl')
     local exposed=(player.illuminated or 0)>0
-    local lights={{player.x+15,player.y+12,exposed and 315 or 52,exposed and 1.35 or .23}}
+    local lights={{player.x+15,player.y+12,exposed and Abyss.playerLightRadius() or 52,exposed and (player.circleLight and .8 or .65+.12*math.max(0,(player.charges or 0)-1)) or .23}}
     for _,m in ipairs(mobs) do if m.type=='lanternfish' then lights[#lights+1]={m.x,m.y-15,145,1} end end
-    Abyss.addLights(lights); Bosses.addLights(lights)
+    Abyss.addLights(lights); Bosses.addLights(lights); AbyssTerrain.addLights(lights)
     while #lights>24 do table.remove(lights) end
     for _,m in ipairs(mobs) do if m.type=='light_jelly' and #lights<24 then lights[#lights+1]={m.x,m.y,60,.5} end end
     for _,b in ipairs(Ocean.bubbles) do

@@ -17,3 +17,5 @@ Chaque application sauvegarde la version précédente dans le dossier de sauvega
 L’éditeur fonctionne hors ligne, séparément du jeu. Les versions personnalisées ne publient pas de scores au classement. Renaissance reste réservée.
 
 Depuis le jeu, **Créer** ouvre cette application. Dans **Workshop → Publier ma carte**, choisis un niveau appliqué, indique son titre et ton pseudo, puis publie-le. Les autres joueurs peuvent le jouer et lui donner une étoile ; les cartes les plus étoilées apparaissent en tête. Republier le même emplacement met à jour sa carte.
+
+Dans les Abysses, la tête du Léviathan se place dans **Boss**. La queue, les côtes et les vertèbres se placent séparément dans **Terrain** : largeur, hauteur et angle sont réglables. Ces morceaux gardent leurs collisions dangereuses, sans vie ni combat de boss, et restent après la mort de la tête. Les anciens squelettes sont séparés automatiquement à leur ouverture dans le concepteur.

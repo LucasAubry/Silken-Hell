@@ -40,7 +40,7 @@ end
 
 function isTouching(a, b)
     if Abyss and Abyss.isPulling() and ((a==player and b~=objet.larme) or (b==player and a~=objet.larme)) then return false end
-    if a.abyssHeld or b.abyssHeld then return false end
+    if a.abyssHeld or b.abyssHeld or (player.abyssSpit and (a==player or b==player)) then return false end
     if (player.abyssGrace or 0)>0 and ((a==player and b~=objet.larme) or (b==player and a~=objet.larme)) then return false end
 	local ax = a.x + (a.hitBox_offset_x or 0)
 	local ay = a.y + (a.hitBox_offset_y or 0)

@@ -1,7 +1,7 @@
 local H={lava={}}
 function H.kill(source)
-    if source~='bone' and Abyss and Abyss.isPulling() then return end
-    if not player.reset and not player.tunnelTravel and not player.abyssHeld and (player.abyssGrace or 0)<=0 then player.reset=true; player.death=player.death+1; activateShaderEffect() end
+    if Abyss and Abyss.isPulling() then return end
+    if not player.reset and not player.tunnelTravel and not player.abyssHeld and not player.abyssSpit and (player.abyssGrace or 0)<=0 then player.reset=true; player.death=player.death+1; Profile.record('deaths'); activateShaderEffect() end
 end
 function H.reset(hell,n)
     Burning.reset()
@@ -14,7 +14,7 @@ function H.inEllipse(x,y,p,pad)
     return ((x-p.x)/(p.rx+(pad or 0)))^2+((y-p.y)/(p.ry+(pad or 0)))^2<1
 end
 function H.contact()
-    Realms.contact(); Abyss.contact(); Bosses.contact(); Magma.contact(); Burning.contact()
+    Realms.contact(); Abyss.contact(); AbyssTerrain.contact(); Bosses.contact(); Magma.contact(); Burning.contact()
     for _,p in ipairs(H.lava) do if H.inEllipse(player.x+15,player.y+12,p,5) then H.kill(); return end end
     if Wasp then Wasp.contact() end
     Storm.contact()

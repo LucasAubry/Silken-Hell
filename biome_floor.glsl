@@ -60,10 +60,14 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   c+=vec3(.73,.69,.68)*wings*feathers*.19;
   float shafts=pow(max(0.0,sin(a*17.0+clock*.035)),22.0)*exp(-r*3.0);
   c+=vec3(.8,.25,.3)*shafts*.16;
- } else if(biome==2.0) {
+ } else if(biome==2.0 || biome==8.0) {
   float fissure=1.0-smoothstep(.009,.045,cells(p*8.0+terrain).y);
   c=mix(vec3(.055,.028,.030),vec3(.14,.075,.062),terrain)+(grain-.5)*.025;
-  c+=vec3(.34,.055,.007)*fissure*(.65+.15*sin(clock*.8+p.x*4.0));
+  if(biome==8.0) {
+    c=mix(c,vec3(.085,.075,.085),.3);
+    c+=vec3(.62,.65,.70)*fissure*(.65+.10*sin(clock*.6+p.x*4.0));
+    c+=vec3(.11,.12,.15)*pow(max(0.0,sin(p.x*5.0+terrain*1.5)),12.0);
+  } else c+=vec3(.34,.055,.007)*fissure*(.65+.15*sin(clock*.8+p.x*4.0));
  } else {
   float marble=pow(abs(sin(p.x*8.0+p.y*5.0+fbm(p*4.0)*13.0)),18.0);
   c=mix(vec3(.77,.78,.73),vec3(.96,.93,.82),terrain);

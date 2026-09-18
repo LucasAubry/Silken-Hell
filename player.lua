@@ -52,4 +52,7 @@ function draw_player(direction)
     love.graphics.setColor(1,1,1)
 end
 
+function draw_player_beacon()
+    if Campaign.biome==7 then Ocean.drawBubble(true) end
+end
 return player

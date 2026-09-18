@@ -16,7 +16,7 @@ end
 function A.settings(world,level)
     local depth=math.max(0,math.min(1,((level or 1)-1)/9))
     local rank=math.min(7,Worlds.rank(world))
-    return {transmission=math.max(.12,1-(rank-1)*.13)*(1-depth*.42),depth=depth,seed=(level or 1)*1.731+world*.43}
+    return {transmission=math.min(1,math.max(.12,1-(rank-1)*.13)*(1-depth*.42)+(world==2 and .06 or 0)),depth=depth,seed=(level or 1)*1.731+world*.43}
 end
 function A.draw()
     local world=Campaign.world==3 and 3 or Campaign.biome

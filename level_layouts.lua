@@ -1,6 +1,6 @@
 local json=require 'json'
 local L={disabled=false}
-local fields={'x','y','speed','rota','radius','phase','rx','ry','dx','seed','w','h','electric','has_larme','elite','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage'}
+local fields={'x','y','speed','rota','radius','phase','rx','ry','dx','seed','w','h','electric','has_larme','elite','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage','rotation'}
 local function copy(t)
     local r={}; for _,k in ipairs(fields) do if type(t[k])=="number" or type(t[k])=="boolean" then r[k]=t[k] end end; return r
 end
@@ -28,6 +28,14 @@ function L.snapshot()
     if Abyss.boss then
         for i=#out.entities,1,-1 do if out.entities[i].kind=='tear' then table.remove(out.entities,i) end end
         for _,p in ipairs(Abyss.lightSites) do put('light',p) end
+    end
+    if Realms.custom and not Abyss.boss then for _,light in ipairs(Abyss.lightSites) do put('light',light) end end
+    for _,part in ipairs(AbyssTerrain.parts) do put('abyss_part',part,part.type) end
+    for _,item in ipairs(Bosses.items) do
+        local b=item.boss
+        if item.kind=='skeleton_fish' then
+            put('boss',{x=b.origin.x,y=b.origin.y,skeletonStage=b.skeletonStage,movementRate=b.movementRate,attackRate=b.attackRate},b.headOnly and 'skeleton_head' or 'skeleton_fish')
+        else put('boss',b,item.kind) end
     end
     return out
 end
@@ -72,7 +80,7 @@ function L.apply(layout)
     if not layout or type(layout.entities)~='table' then return false end
     require('layout_schema').migrate(layout)
     local scale=Arena.width/layout.width; Realms.custom=true; L.schools={}; mobs={}; Campaign.carrier=nil; Realms.schools={}
-    Magma.reset(); Burning.reset()
+    Magma.reset(); Burning.reset(); AbyssTerrain.reset()
     Hazards.lava={}; Realms.vents={}; Realms.holes={}; Realms.tunnels={}; Realms.tornadoes={}; Realms.current={}; Realms.rainSites={}
     Arena.interior={}; while #Arena.walls>4 do table.remove(Arena.walls) end
     levels[player.level].larme_position={}; local tears=levels[player.level].larme_position
@@ -85,6 +93,7 @@ function L.apply(layout)
             local r={x=e.x-e.w*scale/2,y=e.y-e.h/2,w=e.w*scale,h=e.h}; Arena.interior[#Arena.interior+1]=r; Arena.walls[#Arena.walls+1]=r
         elseif e.kind=='magma_spawner' then Magma.addSpawner(e.x,e.y,e.spawnDelay,e.spawnInterval)
         elseif e.kind=='mob' then L.spawn(e)
+        elseif e.kind=='abyss_part' then AbyssTerrain.add(e)
         elseif e.kind=='boss' then bossEntities[#bossEntities+1]=e
         elseif e.kind=='nest' then nests[#nests+1]=e
         elseif e.kind=='light' then -- assigned below
@@ -94,15 +103,20 @@ function L.apply(layout)
         end
     end
     for _,b in ipairs({Raven,Wasp,Hedgehog,Octopus,Storm}) do b.active=false end
-    Abyss.boss=false; Abyss.giant=false
+    Abyss.boss=false; Abyss.giant=false; Abyss.bones={}; Abyss.head=nil
     local lights={}
     for _,e in ipairs(layout.entities) do if e.kind=='light' then lights[#lights+1]={x=e.x*scale,y=e.y} end end
     Abyss.lightSites=lights
     Abyss.active=Campaign.biome==7
     for _,m in ipairs(mobs) do if m.type=='light_jelly' or m.type=='abyss_fish' or m.type=='lanternfish' then Abyss.active=true end end
-    for _,e in ipairs(bossEntities) do if e.type=='skeleton_fish' then Abyss.active=true end end
-    if #lights>0 then Abyss.active=true end
+    for _,e in ipairs(bossEntities) do if e.type=='skeleton_fish' or e.type=='skeleton_head' then Abyss.active=true end end
+    if #lights>0 or #AbyssTerrain.parts>0 then Abyss.active=true end
     Bosses.load(bossEntities,nests,lights)
+    if Campaign.biome==7 and player.level==10 and Bosses.alive() then
+        local count=0
+        for _,m in ipairs(mobs) do if m.type=='light_jelly' then count=count+1 end end
+        if count<2 then Abyss.add('light_jelly',Arena.width*.3,430,38) end
+    end
     local boss=Bosses.alive()
     objet.larme.taken=boss
     local p=tears[1] or {x=Arena.width/2-15,y=280}; objet.larme.x=p.x; objet.larme.y=p.y; larme_indexes[player.level]=1

@@ -1,4 +1,4 @@
-const DEATH_PENALTY_MS=50;
+const DEATH_PENALTY_MS=1000/3;
 import {workshop} from './workshop.mjs';
 const reply=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 const fail=(status,error)=>{throw Object.assign(new Error(error),{status});};
@@ -40,16 +40,13 @@ export default {
       if(request.method==='GET' && path==='/v1/location') return reply({country:countryOf(request)});
       if(request.method==='GET' && path==='/v1/leaderboard') {
         const world=Number(url.searchParams.get('world'));
-        if(![1,2,3,4,5,6,7].includes(world)) fail(400,'Monde invalide.');
+        if(![1,2,3,4,5,6,7,9,10,11,12,13,14].includes(world)) fail(400,'Monde invalide.');
         const country=countryOf(request), local=url.searchParams.get('scope')==='country';
         const page=Number(url.searchParams.get('page') || 1);
-        if(!Number.isSafeInteger(page) || page<1 || page>1000000) fail(400,'Page invalide.');
+        if(!Number.isSafeInteger(page) || page<1) fail(400,'Page invalide.');
         if(local && country==='ZZ') return reply({world,country,scores:[],page,total:0,hasMore:false});
-        // One best run per nickname and world, across all installations.
-        const ranked=`SELECT * FROM (
-          SELECT *,ROW_NUMBER() OVER(PARTITION BY name ORDER BY (elapsed_ms+deaths*${DEATH_PENALTY_MS}),deaths,completed_at,run_id) AS best
-          FROM scores WHERE world=?
-        ) WHERE best=1 ${local?'AND country=?':''}`;
+        // Every completed run is retained, including repeat runs by the same player.
+        const ranked=`SELECT * FROM scores WHERE world=? ${local?'AND country=?':''}`;
         const args=local?[world,country]:[world];
         const [{results},count]=await Promise.all([
           env.DB.prepare(`SELECT name,country,elapsed_ms,deaths,skin FROM (${ranked}) ORDER BY (elapsed_ms+deaths*${DEATH_PENALTY_MS}),deaths,completed_at,run_id LIMIT 10 OFFSET ?`).bind(...args,(page-1)*10).all(),
@@ -61,14 +58,16 @@ export default {
         const owner=await ownerOf(request), b=await bodyOf(request);
         const name=typeof b.name==='string'?b.name.normalize('NFC').trim():'';
         if(!name || [...name].length>16 || /[\p{C}]/u.test(name)) fail(400,'Pseudo invalide (1 à 16 caractères).');
-        if(![1,2,3,4,5,6,7].includes(b.world)) fail(400,'Monde indisponible.');
+        if(![1,2,3,4,5,6,7,9,10,11,12,13,14].includes(b.world)) fail(400,'Monde indisponible.');
         const skin=b.skin===undefined?1:b.skin;
         if(!Number.isInteger(skin)||skin<1||skin>5) fail(400,'Apparence invalide.');
         const now=Date.now();
+        const startedAt=b.startedAtMs===undefined?now:b.startedAtMs;
+        if(!Number.isSafeInteger(startedAt)||startedAt>now+2500||startedAt<now-86400000) fail(400,'Date de départ invalide.');
         const recent=await env.DB.prepare('SELECT COUNT(*) AS count FROM runs WHERE owner=? AND started_at>?').bind(owner,now-60000).first();
         if(recent.count>=12) fail(429,'Trop de nouvelles parties.');
         const id=crypto.randomUUID();
-        await env.DB.prepare('INSERT INTO runs(id,owner,world,name,country,started_at,skin) VALUES(?,?,?,?,?,?,?)').bind(id,owner,b.world,name,countryOf(request),now,skin).run();
+        await env.DB.prepare('INSERT INTO runs(id,owner,world,name,country,started_at,skin) VALUES(?,?,?,?,?,?,?)').bind(id,owner,b.world,name,countryOf(request),startedAt,skin).run();
         return reply({id,country:countryOf(request)},201);
       }
       const match=path.match(/^\/v1\/runs\/([a-f0-9-]{36})\/checkpoint$/);
@@ -77,7 +76,7 @@ export default {
         const run=await env.DB.prepare('SELECT * FROM runs WHERE id=? AND owner=?').bind(match[1],owner).first();
         if(!run) fail(404,'Partie introuvable.');
         const {level,elapsedMs,deaths}=b;
-        const lastLevel=run.world===3?6:10;
+        const lastLevel=run.world>=9?1:run.world===3?6:10;
         if(!Number.isInteger(level)||level<1||level>lastLevel||!Number.isInteger(elapsedMs)||!Number.isInteger(deaths)||deaths<0||deaths>100000) fail(400,'Score invalide.');
         if(level===run.level && elapsedMs===run.elapsed_ms && deaths===run.deaths) return reply({ok:true,completed:level===lastLevel});
         if(run.level===lastLevel) fail(409,'Partie déjà terminée.');

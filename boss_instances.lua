@@ -1,6 +1,6 @@
 -- Each custom encounter owns its state, including duplicates of the same boss.
 local B={items={}}
-local files={storm='storm',merle='raven',wasp='wasp',hedgehog='hedgehog',octopus='octopus',skeleton_fish='abyss'}
+local files={skeleton_head='abyss',storm='storm',merle='raven',wasp='wasp',hedgehog='hedgehog',octopus='octopus',skeleton_fish='abyss'}
 function B.reset() B.items={} end
 function B.any() return #B.items>0 end
 function B.alive()
@@ -18,8 +18,8 @@ function B.load(entries,nests,lights)
             for k in pairs(MobBehaviors) do MobBehaviors[k]=nil end
             for k,v in pairs(saved) do MobBehaviors[k]=v end
             local px,py=player.x,player.y; local count=#mobs
-            if e.type=='skeleton_fish' then
-                boss.reset(7,e.skeletonStage or 10); boss.instance=true; boss.origin={x=e.x,y=e.y}; boss.buildBones()
+            if e.type=='skeleton_fish' or e.type=='skeleton_head' then
+                boss.reset(7,e.type=='skeleton_head' and 10 or e.skeletonStage or (Campaign.biome==7 and player.level>=8 and player.level or 10)); boss.instance=true; boss.headOnly=e.type=='skeleton_head'; boss.origin={x=e.x,y=e.y}; boss.buildBones()
                 boss.lightSites=#lights>0 and require('json').decode(require('json').encode(lights)) or {{x=90,y=110},{x=Arena.width-90,y=490}}
             else boss.reset(false); boss.active=true; boss.x=e.x; boss.y=e.y end
             while #mobs>count do table.remove(mobs) end
@@ -29,7 +29,7 @@ function B.load(entries,nests,lights)
                 local n=boss.nests[1]; boss.eggs={{x=n.x,y=n.y,spot=1,glow=.35}}
             end
             boss.movementRate=e.movementRate or 1; boss.attackRate=e.attackRate or 1
-            B.items[#B.items+1]={kind=e.type,boss=boss}
+            B.items[#B.items+1]={kind=e.type=='skeleton_head' and 'skeleton_fish' or e.type,boss=boss}
         end
     end
     if B.alive() then objet.larme.taken=true end
@@ -94,6 +94,7 @@ function B.drawInk(w,h)
     for _,item in ipairs(B.items) do if item.kind=='octopus' then item.boss.drawInk(w,h) end end
 end
 function B.hud()
+    if #B.items==1 then return B.items[1].boss.boss~=false and B.items[1].boss or {active=false} end
     local hp,maxHp,count=0,0,0
     for _,item in ipairs(B.items) do if item.boss.boss~=false then
         hp=hp+item.boss.hp; maxHp=maxHp+item.boss.maxHp; if not item.boss.defeated then count=count+1 end

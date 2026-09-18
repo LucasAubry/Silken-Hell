@@ -7,6 +7,7 @@ function C.install()
     -- Keep the authored positions and original encounters, before procedural walls were added.
     C.original=levels
     for w=1,7 do for n=1,10 do C.data[w][n]={} end end
+    for w=9,14 do C.data[w]={{}} end
     C.floor=love.graphics.newCanvas(800,600)
     love.graphics.setCanvas(C.floor); love.graphics.clear(0.105,0.035,0.04)
     for y=0,600,40 do for x=0,800,60 do
@@ -37,8 +38,9 @@ function C.positions(n)
     return points
 end
 function C.reset()
+    AbyssTerrain.reset()
     C.biome=Worlds.biome(C.world,player.level)
-    local world=C.biome; local n=C.world==3 and 10 or player.level
+    local world=C.biome; local n=(C.world==3 or Worlds.isSecret(C.world)) and 10 or player.level
     BossFX.reset()
     if Bosses then Bosses.reset() end
     local previousSide=C.lastSide
@@ -115,8 +117,12 @@ function C.reset()
     Ocean.reset(world)
     Abyss.reset(world,n)
     Magma.reset()
-    if LevelLayouts then LevelLayouts.applyCurrent() end
+    if LevelLayouts and not Worlds.isSecret(C.world) then LevelLayouts.applyCurrent() end
     if not Realms.custom then C.clearGroundSites(); if world==2 then Magma.populate(n) end end
+    if Secret then Secret.configure();if Secret.duel then Secret.duel.time=0;if Secret.duel.kind=='mob' then objet.larme.taken=true end end end
+    local hasOctopus=Octopus.active
+    for _,item in ipairs(Bosses.items) do if item.kind=='octopus' then hasOctopus=true end end
+    if hasOctopus then for i=#mobs,1,-1 do if mobs[i].type=='jelly' then table.remove(mobs,i) end end end
     BossFX.update(0)
     C.updateTear(0)
     if App.state=='playing' then Bestiary.encounter() end
@@ -178,6 +184,7 @@ function C.drawCircles()
     local g=love.graphics
     for _,p in ipairs(levels[player.level].larme_position) do
         g.setColor(Worlds.color(C.world).tear)
+        if C.biome==7 then g.setColor(.3,.7,1,Abyss.siteVisibility(p.x+15,p.y+39)) end
         Art.drawTinted('tear_ring',p.x+15,p.y+39,44)
     end
     g.setColor(1,1,1)
@@ -201,7 +208,7 @@ function C.drawTear()
     local g=love.graphics
     if not objet.larme.taken then
         local x,y=objet.larme.x,objet.larme.y+math.sin(larme_float_timer*2)*4
-        local tint=Worlds.color(C.world).tear
+        local tint=Worlds.color(C.biome).tear
         g.setColor(tint); g.draw(particleSystem,x+15,y+20)
         g.draw(objet.larme.img,x,y,0,objet.larme.size)
     end

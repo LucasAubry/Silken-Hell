@@ -18,18 +18,10 @@ fi
 CACHE_DIR="$HOME/Library/Application Support/Silken Hell"
 mkdir -p "$CACHE_DIR"
 printf '%s\n' "$GAME_DIR" > "$CACHE_DIR/project-path.txt"
-cd "$GAME_DIR"
-echo 'Préparation du jeu…'
-BUILD_DIR=$(mktemp -d "$CACHE_DIR/build.XXXXXX")
-trap 'rm -rf "$BUILD_DIR"' EXIT
-if [[ -f "$CACHE_DIR/Silken Hell.love" ]]; then
-  cp "$CACHE_DIR/Silken Hell.love" "$BUILD_DIR/game.love"
+# Lancer une version publiée, sans reconstruire ni télécharger les fichiers iCloud.
+if [[ ! -s "$CACHE_DIR/Silken Hell.love" ]]; then
+  cp "$GAME_DIR/game.love" "$CACHE_DIR/Silken Hell.love.new"
+  mv -f "$CACHE_DIR/Silken Hell.love.new" "$CACHE_DIR/Silken Hell.love"
 fi
-# Synchronise aussi les suppressions, sans relire les textures inchangées.
-/usr/bin/zip -q -FS -r "$BUILD_DIR/game.love" ./*.lua ./*.glsl police.ttf levels assets texture tests designer -x '*/.DS_Store' '*.tmp' '*.updated' '*.pyc' '*/__pycache__/*' || {
-  RESULT=$?
-  if [[ "$RESULT" != 12 ]]; then exit "$RESULT"; fi
-}
-mv -f "$BUILD_DIR/game.love" "$CACHE_DIR/Silken Hell.love"
 if [[ "${SILKEN_PREPARE_ONLY:-0}" == 1 ]]; then exit 0; fi
-open -n -a "$RUNTIME" --args "$CACHE_DIR/Silken Hell.love"
+exec "$RUNTIME/Contents/MacOS/love" "$CACHE_DIR/Silken Hell.love"

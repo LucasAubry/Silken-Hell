@@ -1,6 +1,6 @@
 #import <AppKit/AppKit.h>
 
-// Rebuild from the project beside this app on every Finder launch.
+// Launch the published local archive without rebuilding cloud files.
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         NSString *project = [NSBundle.mainBundle.bundlePath stringByDeletingLastPathComponent];

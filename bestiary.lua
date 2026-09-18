@@ -9,15 +9,15 @@ local B={seen={},unread={},dirty=false,entries={
  {id='magma_larva',name='Larve de magma',art='magma_larva',world=2,text='Elle te poursuit très vite et contourne les murs. Elle clignote avant d’exploser après quelques secondes, ou dès qu’elle te touche. Son explosion est mortelle à proximité, sans laisser de flaque.'},
  {id='imp',name='Goule de braise',art='imp_down',world=2,text='Elle poursuit sa cible, puis accélère pendant trois secondes. Elle contourne les murs.'},
  {id='spinner',name='Serpent tournoyant',art='serpent_down',world=2,text='Il tourne sur lui-même et se déplace indépendamment de toi. Il rebondit sur les murs sans poursuivre le joueur.'},
- {id='wasp',boss=true,name='Les Trois Sœurs de braise',art='wasp_down',world=2,text='Trois abeilles chargent en séquence après avoir annoncé leur trajectoire. Une seule se fatigue à la fois : touche-la au sol pour lui enlever une vie. Chacune résiste à trois coups. Chaque sœur éliminée accélère les survivantes ; la dernière devient extrêmement rapide et invoque des petites abeilles. Les lacs de lave déclenchent des éruptions annoncées.'},
+ {id='wasp',boss=true,name='Les Trois Sœurs de braise',art='wasp_down',world=2,text='Trois abeilles, trois vies chacune. Elles s’alignent horizontalement ou verticalement attendent 0,4 seconde puis chargent tout droit, sans annoncer leur trajectoire. Un choc contre un mur les met KO : touche-les pour retirer une vie. Depuis les coins, une, deux puis trois sœurs lancent des larves de magma identiques à celles des nids. Les transitions sont rapides et deux sœurs ne chargent jamais dans le même sens en même temps. Chaque sœur éliminée accélère les survivantes et laisse un corps mortel au sol. La dernière lâche deux larves de magma au début de chaque attaque. Leur vol est très rapide et leur contact est mortel sauf pendant le KO.'},
  {id='waspling',name='Petite guêpe',art='waspling_down',world=2,text='Petite guêpe cuivrée aux yeux verts, invoquée uniquement par la dernière sœur survivante. Elle reste présente jusqu’à la fin du niveau, même après la mort du boss. Son contact est mortel.'},
  {id='storm',boss=true,name='Séraphin des orages',art='storm_down',world=6,text='Ce papillon céleste survole les nuages, lance des éclats et annonce ses frappes de foudre au sol. Après une tempête, ses ailes se posent et une lumière dorée apparaît : touche son corps pendant cette accalmie pour lui retirer une vie. Il reprend ensuite son envol.'},
  {id='hedgehog',boss=true,name='Hérisson des profondeurs',art='hedgehog_down',world=5,text='Il lance douze piques rapides et espacées en cercle. La première manche commence avec une taupe et un rebond. Chaque nouvelle manche ajoute une taupe et un rebond, avec un maximum de deux rebonds et cinq taupes. Il a sept vies. Chaque série terminée lui coûte une vie. Il rebondit sans pause contre les murs et est brièvement étourdi uniquement lorsqu’il perd une vie.'},
- {id='octopus',boss=true,name='Le Poulpe des marées',art='octopus_extended_down',world=4,text='Il lance des vagues de nombreux crabes qui te poursuivent. Touche une tentacule pour t’y accrocher et accélérer sa rotation : ses bras détruisent les crabes, mais toucher toi-même un crabe reste mortel. Un dash avec une direction te décroche ; sinon, tu es libéré après un court tour. Chaque tentacule supporte huit impacts de crabes. Elle rougit puis disparaît définitivement ; le poulpe perd alors une vie et inverse sa rotation. Détruis les huit tentacules. Son corps central reste dangereux. Il invoque des crabes régulièrement et projette son encre au sol. Les crabes encrés s’agitent puis explosent, propulsant leurs voisins.'},
- {id='crab',name='Crabe des marées',art='crab_open',world=4,text='Il est lancé vers ta position, annoncée au sol, puis te poursuit en te regardant. Il court plus vite quand tu es couvert d’encre. Lorsque tu es accroché au poulpe, il garde sa direction au lieu de te suivre. Il évite les tentacules : utilise les explosions des crabes encrés pour le projeter dessus. Toucher une tentacule le tue. Son contact est mortel même lorsque tu es accroché. Il contourne naturellement le poulpe. Chaque collision abîme une tentacule ; huit impacts la détruisent.'},
+ {id='octopus',boss=true,name='Le Poulpe des marées',art='octopus_extended_down',world=4,text='Il lance des crabes qui te poursuivent et des flaques d’encre qui durent sept secondes. Un crabe encré devient noir et erre sans te suivre. Fonce sur un crabe noir pour le propulser à l’opposé du point de contact. Un mur le fait exploser ; un tentacule le fait exploser et étourdit le poulpe pendant trois secondes, sans lui retirer de vie. Pendant ce délai, fonce sur une extrémité lumineuse pour t’y attacher, puis entraîne-la dans un coin éclairé afin de l’arracher. Sinon, le poulpe se réveille et le lien se détache. Chaque tentacule arraché retire une vie : il faut arracher les huit. Son corps reste mortel ; ses tentacules sont mortels quand il tourne. À quatre vies, il accélère fortement et projette une rafale d’encre pendant trois secondes. Les crabes ordinaires sont mortels ; les noirs se repoussent uniquement en fonçant.'},
+ {id='crab',name='Crabe des marées',art='crab_open',world=4,text='Il te poursuit jusqu’à toucher de l’encre : devenu noir, il erre au hasard. Fonce sur lui pour le propulser à l’opposé du contact ; sans élan, il reste mortel. Il explose contre un mur ou un tentacule. Un impact sur un tentacule étourdit le poulpe trois secondes. Une explosion repousse les crabes voisins, mais les crabes n’explosent pas simplement en se touchant.'},
  {id='abyss_fish',name='Gueule des profondeurs',art='abyss_fish',world=7,text='Il t’évite dans le noir. Il charge tant que tu es éclairé : sur un cercle, ou pendant les six secondes qui suivent une électrocution.'},
- {id='light_jelly',name='Pieuvre abyssale',art='abyss_octopus',world=7,text='Elle ondule en nageant et crache des fils de lumière. Ils ne tuent pas directement : ils illuminent ton corps pendant six secondes et attirent tous les poissons.'},
- {id='skeleton_fish',boss=true,name='Léviathan d’ivoire',art='skeleton_head',world=7,text='Sa queue apparaît au niveau 8, ses os au niveau 9, puis sa tête au niveau 10 pour le combat. Sa tête reste fixe et son corps ondule. Sa bouche aspire avec force et te protège des autres ennemis pendant l’aspiration, mais pas des os. Il recrache ses prises sur toute l’arène ; ses os se mettent alors à tourner. Fais-toi électrocuter par un fil bleu, puis entre dans sa bouche ouverte : elle te recrache et perd une vie. Les cercles éclairent seulement tant que tu restes dessus et ne chargent pas ton corps. Sans charge électrique, la bouche et les os sont mortels.'},
+ {id='light_jelly',name='Pieuvre abyssale',art='abyss_octopus',world=7,text='Son contact et chaque éclair ajoutent une charge, jusqu’à trois, pour six secondes, renouvelées à chaque impact. Plus tu accumules de charges, plus tu brilles, plus les poissons te repèrent de loin et plus ils te poursuivent vite.'},
+ {id='skeleton_fish',boss=true,name='Léviathan d’ivoire',art='skeleton_head',world=7,text='Sa queue apparaît au niveau 8, ses os au niveau 9, puis sa tête au niveau 10 pour le combat. Il possède dix vies. Sa tête flotte doucement, ses yeux te suivent et son corps ondule. Sa bouche aspire avec force et te rend invulnérable jusqu’au rejet. Il recrache ses prises sur toute l’arène ; ses os se mettent alors à tourner. Fais-toi électrocuter par un fil bleu, puis entre dans sa bouche ouverte : elle te recrache et perd une vie par charge avalée. Toucher sa queue avec une charge la consomme et déclenche son aspiration. Les cercles éclairent seulement tant que tu restes dessus et ne chargent pas ton corps. Sans charge électrique, être avalé ne blesse pas le boss. Hors aspiration, les os sont mortels.'},
  {id='electric_gull',name='Mouette électrique',art='gull_down',world=6,text='Frappée par la foudre, elle devient jaune et conserve une petite aura jaune mortelle. Son passage laisse une traînée électrique qui tue au contact et disparaît après 2,2 secondes.'},
  {id='lanternfish',name='Poisson-lanterne',art='lanternfish_down',world=7,text='Sa lanterne éclaire les Abysses. Il t’évite dans le noir, mais te charge si une méduse t’illumine.'},
  {id='cloud_snare',trap=true,name='Tornade',art='cloud_snare',world=6,text='Elle tourne sans arrêt. La toucher fait tournoyer l’araignée, puis la projette très violemment vers un bord. Attention aux trous et aux bords !'},
@@ -50,9 +50,36 @@ function B.list(category)
     for i,e in ipairs(B.entries) do if B.category(e)==category then rows[#rows+1]={index=i,entry=e} end end
     return rows
 end
-function B.open()
+function B.currentBoss()
+    local found,distance
+    for _,item in ipairs(Bosses.items) do local b=item.boss
+        if b.active and b.boss~=false and not b.defeated then
+            local x,y=b.x or (b.origin and b.origin.x) or 0,b.y or (b.origin and b.origin.y) or 0
+            local d=(player.x-x)^2+(player.y-y)^2
+            if not distance or d<distance then found,distance=item,d end
+        end
+    end
+    if found then return found.kind,found.boss end
+    for _,pair in ipairs({{'merle',Raven},{'storm',Storm},{'wasp',Wasp},{'hedgehog',Hedgehog},{'octopus',Octopus},{'skeleton_fish',Abyss}}) do
+        local b=pair[2];if b.active and b.boss~=false and not b.defeated and (pair[1]~='skeleton_fish' or b.boss) then return pair[1],b end
+    end
+end
+function B.openBoss()
+    local id,boss=B.currentBoss()
+    if id then B.discover(id);B.save() end
+    B.open(id,boss and boss.hardcore)
+end
+function B.description(e,hardcore)
+    if not hardcore then return e.text end
+    if e.id=='wasp' then
+        return 'LES SŒURS DE LAVE — HARDCORE\n\nTrois sœurs noires et rouges, trois vies chacune. Elles gardent les vitesses originales : 4 % de plus que les sœurs normales, et environ 14 % de plus pour la dernière survivante.\n\n'..e.text..'\n\nAccès : porte droite du Sanctuaire. Ce combat dispose de son propre classement et du succès Plus rapide que Gillou.'
+    end
+    return 'Cette version hardcore n’est pas encore disponible. Pour le moment, seules les Sœurs de lave se trouvent derrière la porte hardcore du Sanctuaire.\n\nVERSION NORMALE\n\n'..e.text
+end
+function B.open(id,hardcore)
+    UI.bestScroll=0;UI.bestHardcore=hardcore or false
     UI.bestReturn=App.state; UI.bestPage=1; UI.bestCategory=UI.bestCategory or 'creatures'
-    for i,e in ipairs(B.entries) do if e.id==B.latest then UI.bestSelected=i; UI.bestCategory=B.category(e) end end
+    for i,e in ipairs(B.entries) do if e.id==(id or B.latest) then UI.bestSelected=i; UI.bestCategory=B.category(e) end end
     for i,row in ipairs(B.list(UI.bestCategory)) do if row.index==UI.bestSelected then UI.bestPage=math.floor((i-1)/8)+1 end end
     B.unread={}; B.dirty=true; B.save(); App.state='bestiary'
 end

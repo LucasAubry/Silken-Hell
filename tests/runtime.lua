@@ -9,6 +9,17 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv("SILKEN_REWORK_TEST")=="1" then require("tests.octopus_rework").run();return end
+    if os.getenv("SILKEN_OCTOPUS_INFO_TEST")=="1" then require("tests.octopus_info").run();return end
+    if os.getenv("SILKEN_STATS_TEST")=="1" then require("tests.stats_light").run();return end
+    if os.getenv("SILKEN_FINAL_TEST")=="1" then require("tests.final_revision").run();return end
+    if os.getenv("SILKEN_PAD_TEST")=="1" then require("tests.controller_revision").run();return end
+    if os.getenv("SILKEN_CONTROLS_TEST")=="1" then require("tests.controls_revision").run();return end
+    if os.getenv("SILKEN_SECRET_TEST")=="1" then require("tests.secret_revision").run();return end
+    if os.getenv("SILKEN_SECRET_QA")=="1" then require("tests.secret_revision").visual();return end
+    if os.getenv("SILKEN_ABYSS_EDITOR_TEST")=="1" then require("tests.abyss_editor").run();love.event.quit();return end
+    if os.getenv("SILKEN_REQUEST_QA")=="1" then require("tests.requested_bosses").visual();return end
+    if os.getenv("SILKEN_REQUEST_TEST")=="1" then require("tests.requested_bosses").run();return end
     if os.getenv("SILKEN_TRIO_QA")=="1" then require("tests.wasp_trio").visual();return end
     if os.getenv("SILKEN_INK_LAVA_QA")=="1" then require("tests.ink_lava").visual(); return end
     if os.getenv("SILKEN_DEPTH_QA")=="1" then require("tests.fire_scoring").visual(); return end

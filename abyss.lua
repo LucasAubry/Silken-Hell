@@ -1,6 +1,8 @@
 local A={threads={},bones={},clock=0,active=false}
 local function add(kind,x,y,speed)
-    mobs[#mobs+1]={type=kind,x=x,y=y,speed=speed,age=0,dir='right',heading=love.math.random()*math.pi*2,turn=0,
+    local offset=0
+    if kind=='light_jelly' then for _,m in ipairs(mobs) do if m.type==kind then offset=offset+1.5 end end end
+    mobs[#mobs+1]={type=kind,x=x,y=y,speed=speed,age=0,shotOffset=offset,dir='right',heading=love.math.random()*math.pi*2,turn=0,
         hitBox_width=32,hitBox_height=26,hitBox_offset_x=-16,hitBox_offset_y=-13}
 end
 A.add=add
@@ -13,10 +15,10 @@ function A.spawn(n)
 end
 function A.reset(w,n)
     A.active=w==7; A.clock=0; A.threads={}; A.bones={}; A.open=false; A.head=nil; A.swallowed=nil; A.cargo={}; A.ejected={}; A.spitFlash=0; A.breathAt=5.5; A.motionTime=0; A.spinTime=0; A.spinAngle=0
-    A.skeletonStage=n; A.giant=A.active and n>=8; A.boss=A.active and n==10; A.origin={x=Arena.width/2,y=280}; player.illuminated=0; player.electrified=0; player.abyssHeld=nil; player.abyssSpit=nil; player.abyssGrace=0
-    A.hp=8; A.maxHp=8; A.defeated=false; A.flash=0; A.hitGrace=0; A.lightLock=false; A.name="Le Léviathan des Abysses"
+    A.tailTouch=false; A.tailSafe=false; A.headOnly=false; A.skeletonStage=n; A.giant=A.active and n>=8; A.boss=A.active and n==10; A.origin={x=Arena.width/2,y=280}; player.illuminated=0; player.electrified=0; player.charges=0; player.abyssHeld=nil; player.abyssSpit=nil; player.abyssGrace=0
+    A.hp=10; A.maxHp=10; A.defeated=false; A.flash=0; A.hitGrace=0; A.lightLock=false; A.name="Le Léviathan des Abysses"
     A.lightSites={{x=Arena.width*.12,y=105},{x=Arena.width*.88,y=495},{x=Arena.width*.12,y=495},{x=Arena.width*.88,y=105}}
-    if A.boss then A.spawn(2); objet.larme.taken=true end
+    if A.boss then A.spawn(2); add('light_jelly',Arena.width*.3,430,38); objet.larme.taken=true end
     if not A.giant then return end
     A.buildBones()
     player.x=Arena.width*.5-15; player.y=515
@@ -28,6 +30,11 @@ function A.buildBones()
         local spot=Art.images[key].glow or {u=.5,v=.5}; local a=angle or 0
         local dx,dy=(spot.u-.5)*w,(spot.v-.5)*h
         A.bones[#A.bones+1]={key=key,x=x,y=y,w=w,h=h,angle=a,gx=x+math.cos(a)*dx-math.sin(a)*dy,gy=y+math.sin(a)*dx+math.cos(a)*dy}
+    end
+    if A.headOnly then
+        A.head={x=A.origin.x,y=A.origin.y+math.sin(A.motionTime*1.7)*7,w=170,h=150}
+        bone(A.open and 'skeleton_open' or 'skeleton_head',A.head.x,A.head.y,A.head.w,A.head.h)
+        return
     end
     local span=Arena.width*.48; local count=math.max(3,math.floor(span/205)+1)
     local shift=A.origin.x-Arena.width/2
@@ -44,7 +51,7 @@ function A.buildBones()
     if A.skeletonStage<10 then return end
     -- The skull is anchored to the same skeleton origin; only the body undulates.
     A.head={x=math.max(115,math.min(Arena.width-145,Arena.width*.79+shift)),
-        y=math.max(125,math.min(455,280+swim)),w=170,h=150}
+        y=math.max(125,math.min(455,280+swim+math.sin(A.motionTime*1.7)*7)),w=170,h=150}
     bone(A.open and 'skeleton_open' or 'skeleton_head',A.head.x,A.head.y,A.head.w,A.head.h)
 end
 function A.boneTouches(b,x,y)
@@ -57,7 +64,7 @@ end
 function A.mouth() return A.head.x+65,A.head.y+15 end
 local function onSites(boss)
     if not boss.active or boss.defeated then return false end
-    local special=boss.boss or (Realms.custom and #boss.lightSites>0)
+    local special=#boss.lightSites>0 and (boss.boss or Realms.custom)
     local sites=special and boss.lightSites or (levels[player.level] and levels[player.level].larme_position or {})
     for _,p in ipairs(sites) do
         local x,y=special and p.x or p.x+15,special and p.y or p.y+39
@@ -66,12 +73,14 @@ local function onSites(boss)
     return false
 end
 function A.refreshLight()
+    if player.abyssSpit or player.abyssHeld then player.circleLight=false;player.illuminated=0;return end
     local onSite=not player.abyssHeld and onSites(A)
     if Bosses then for _,item in ipairs(Bosses.items) do if not player.abyssHeld and item.kind=='skeleton_fish' and onSites(item.boss) then onSite=true end end end
     player.circleLight=onSite
     player.illuminated=math.max(onSite and 6 or 0,player.electrified or 0)
 end
 function A.charge(seconds)
+    player.charges=math.min(3,(player.charges or 0)+1)
     player.electrified=math.max(player.electrified or 0,seconds or 6); A.refreshLight()
 end
 function A.isPulling()
@@ -82,14 +91,45 @@ function A.isPulling()
     end end
     return false
 end
+function A.overlapsBone(b)
+    local radius=math.sqrt(b.w*b.w+b.h*b.h)/2+30
+    if (player.x+15-b.x)^2+(player.y+12-b.y)^2>=radius^2 then return false end
+    for y=player.y+2,player.y+22,4 do for x=player.x+2,player.x+28,4 do
+        if A.boneTouches(b,x,y) then return true end
+    end end
+    return false
+end
+function A.triggerTail(owner,b)
+    local touching=A.overlapsBone(b)
+    if not touching then owner.tailTouch=false;owner.tailSafe=false;return false end
+    if not owner.tailTouch and (player.charges or 0)>0 then
+        local target,distance
+        local function consider(boss)
+            if boss.active and boss.boss and boss.head and not boss.defeated then
+                local d=(b.x-boss.head.x)^2+(b.y-boss.head.y)^2
+                if not distance or d<distance then target,distance=boss,d end
+            end
+        end
+        consider(A)
+        if Bosses then for _,item in ipairs(Bosses.items) do if item.kind=='skeleton_fish' then consider(item.boss) end end end
+        if target then
+            player.charges=player.charges-1
+            if player.charges==0 then player.electrified=0 end
+            target.open=true;target.breathAt=target.clock;target.buildBones();owner.tailSafe=true;A.refreshLight()
+        end
+    end
+    owner.tailTouch=true
+    return owner.tailSafe
+end
 function A.contact()
     if not A.giant or A.defeated or player.reset or player.abyssHeld or (player.abyssGrace or 0)>0 then return end
+    for _,bone in ipairs(A.bones) do if bone.key=='skeleton_tail' and A.triggerTail(A,bone) then return end end
     local mouthX,mouthY=0,0
     if A.head then mouthX,mouthY=A.mouth() end
     local inMouth=A.open and (player.x+15-mouthX)^2+(player.y+12-mouthY)^2<34^2
     if inMouth and A.boss then
-        if (player.electrified or 0)>0 then
-            A.swallowed={time=0}; player.abyssHeld=A; player.electrified=0
+        if A.open then
+            A.swallowed={time=0,charged=player.charges or 0}; player.abyssHeld=A; player.electrified=0; player.charges=0
             player.dashing=false; player.has_moved=false; player.whirl=nil; player.throw=nil; player.tunnelTravel=nil
             player.x=mouthX-15; player.y=mouthY-12; A.refreshLight()
         else Hazards.kill('bone') end
@@ -105,8 +145,8 @@ function A.contact()
         end
     end
 end
-function A.hurt()
-    A.hp=math.max(0,A.hp-1); A.flash=.35; Audio.play('pick')
+function A.hurt(amount)
+    A.hp=math.max(0,A.hp-(amount or 1)); A.flash=.35; Audio.play('pick')
     if A.hp==0 then
         A.defeated=true; A.giant=false; A.open=false; A.bones={}; A.threads={}
         objet.larme.taken=false; objet.larme.x=Arena.width/2-15; objet.larme.y=280
@@ -146,6 +186,7 @@ function A.safeExit()
         if d>=150^2 and not Arena.blocked(x-17,y-14,34,28) then
             local safe=true
             for _,b in ipairs(A.bones) do if math.abs(x-b.x)<b.w/2+36 and math.abs(y-b.y)<b.h/2+32 then safe=false; break end end
+            for _,p in ipairs(A.lightSites) do if (x-p.x)^2+(y-p.y)^2<45^2 then safe=false;break end end
             for _,m in ipairs(mobs) do if not m.abyssHeld and (x-m.x)^2+(y-m.y)^2<75^2 then safe=false; break end end
             for _,p in ipairs(Magma and Magma.pools or {}) do if Hazards.inEllipse(x,y,p,25) then safe=false; break end end
             if safe then choices=choices+1; if love.math.random(choices)==1 then bx,by=x,y end end
@@ -156,6 +197,7 @@ end
 function A.spit()
     local mx,my=A.mouth(); local targetX,targetY
     local captured=A.swallowed~=nil
+    local charged=captured and A.swallowed.charged
     if captured then targetX,targetY=A.safeExit(); player.abyssHeld=nil; player.abyssGrace=1.25 end
     for i,c in ipairs(A.cargo) do
         local m=c.entity; m.abyssHeld=nil
@@ -173,8 +215,9 @@ function A.spit()
     end
     A.cargo={}; A.swallowed=nil; A.open=false; A.breathAt=A.clock+5.5; A.spitFlash=.55; A.spinTime=3.2; A.spinAngle=0
     if captured then
+        player.electrified=0;player.charges=0;player.illuminated=0;player.circleLight=false
         player.abyssSpit={fromX=mx-15,fromY=my-12,toX=targetX-15,toY=targetY-12,time=0}
-        A.hurt()
+        if charged and charged>0 then A.hurt(charged) end
     end
 end
 function A.update(dt)
@@ -185,7 +228,10 @@ function A.update(dt)
     A.spinAngle=A.spinTime>0 and (spin*spin*(3-2*spin)*math.pi*2) or 0
     A.clock=A.clock+dt*(A.attackRate or 1); A.flash=math.max(0,A.flash-dt); A.spitFlash=math.max(0,A.spitFlash-dt)
     A.hitGrace=math.max(0,A.hitGrace-dt)
-    if not A.instance then player.electrified=math.max(0,(player.electrified or 0)-dt) end
+    if not A.instance then
+        player.electrified=math.max(0,(player.electrified or 0)-dt)
+        if player.electrified==0 then player.charges=0 end
+    end
     A.refreshLight()
     for i=#A.threads,1,-1 do local p=A.threads[i]
         if not p.abyssHeld then
@@ -229,17 +275,31 @@ function A.updatePlayer(dt)
     if s then
         s.time=s.time+dt; local t=math.min(1,s.time/.28); local eased=1-(1-t)^2
         player.x=s.fromX+(s.toX-s.fromX)*eased; player.y=s.fromY+(s.toY-s.fromY)*eased
-        if t==1 then player.abyssSpit=nil end
+        if t==1 then player.abyssSpit=nil;player.abyssGrace=math.max(player.abyssGrace or 0,.25) end
     end
+end
+function A.siteVisibility(x,y)
+    local visibility=0
+    local function light(lx,ly,r)
+        local d=math.sqrt((x-lx)^2+(y-ly)^2)
+        visibility=math.max(visibility,math.max(0,math.min(1,(r-d)/35)))
+    end
+    if (player.illuminated or 0)>0 and not player.abyssHeld then light(player.x+15,player.y+12,A.playerLightRadius()) end
+    for _,m in ipairs(mobs) do if not m.abyssHeld and m.type=='lanternfish' then light(m.x,m.y-15,145) end end
+    return visibility
 end
 function A.drawSites()
     if (not A.boss and not (Realms.custom and #A.lightSites>0)) or A.defeated then return end
     local g=love.graphics
     for _,p in ipairs(A.lightSites) do
-        g.setColor(Worlds.color(7).tear); Art.drawTinted('tear_ring',p.x,p.y,44)
-        g.setColor(.2,.5,1,.15); g.circle('fill',p.x,p.y,23)
+        local alpha=A.siteVisibility(p.x,p.y)
+        g.setColor(.3,.7,1,alpha); Art.drawTinted('tear_ring',p.x,p.y,44)
+        g.setColor(.2,.5,1,.15*alpha); g.circle('fill',p.x,p.y,23)
     end
     g.setColor(1,1,1)
+end
+function A.playerLightRadius()
+    return player.circleLight and 240 or 150+45*math.max(0,(player.charges or 0)-1)
 end
 function A.drawBones()
     if not A.giant or A.defeated then return end
@@ -247,6 +307,12 @@ function A.drawBones()
     for _,b in ipairs(A.bones) do
         g.setColor(.015,.025,.05,.55); Art.draw(b.key,b.x+7,b.y+10,b.w,b.angle,b.h)
         g.setColor(1,1-A.flash,1-A.flash); Art.draw(b.key,b.x,b.y,b.w,b.angle,b.h)
+        if b.key=='skeleton_head' or b.key=='skeleton_open' then
+            local ex,ey=b.gx,b.gy;local dx,dy=player.x+15-ex,player.y+12-ey;local d=math.max(1,math.sqrt(dx*dx+dy*dy))
+            g.setColor(.01,.11,.16,.9);g.circle('fill',ex,ey,5)
+            g.setColor(.2,.9,1,.95);g.circle('fill',ex+dx/d*2.5,ey+dy/d*2.5,2.4)
+            g.setColor(.85,1,1);g.circle('fill',ex+dx/d*2.5,ey+dy/d*2.5,1)
+        end
     end
 end
 function A.addLights(lights)
@@ -264,13 +330,15 @@ function A.drawLights()
     local g=love.graphics; g.push('all'); g.setBlendMode('add')
     for _,b in ipairs(A.bones) do
         g.setColor(.04,.55,1,.12); g.circle('fill',b.gx,b.gy,7)
-        g.setColor(.25,.85,1,.8); g.circle('fill',b.gx,b.gy,1.8)
+        local ex,ey=b.gx,b.gy
+        if b.key=='skeleton_head' or b.key=='skeleton_open' then local dx,dy=player.x+15-ex,player.y+12-ey;local d=math.max(1,math.sqrt(dx*dx+dy*dy));ex,ey=ex+dx/d*2.5,ey+dy/d*2.5 end
+        g.setColor(.25,.85,1,.8); g.circle('fill',ex,ey,1.8)
     end
     for _,p in ipairs(A.threads) do if not p.abyssHeld then
         local a=math.atan2(p.vy,p.vx); g.push(); g.translate(p.x,p.y); g.rotate(a)
-        g.setColor(.2,.65,1,.3); g.setLineWidth(5)
+        g.setColor(.2,.65,1,.3); g.setLineWidth(7)
         g.line(-32,math.sin(p.age*12+p.seed)*4,-20,-4,-10,3,0,0)
-        g.setColor(.65,.95,1,1); g.setLineWidth(1); g.line(-32,math.sin(p.age*12+p.seed)*4,-20,-4,-10,3,0,0); g.pop()
+        g.setColor(.65,.95,1,1); g.setLineWidth(2); g.line(-32,math.sin(p.age*12+p.seed)*4,-20,-4,-10,3,0,0); g.pop()
     end end
     if (player.illuminated or 0)>0 and not player.abyssHeld then
         for _,m in ipairs(mobs) do if m.type=='abyss_fish' then
@@ -278,10 +346,11 @@ function A.drawLights()
             g.setColor(.3,.75,1,.14); g.circle('fill',x,y,4)
             g.setColor(.65,.9,1,.8); g.circle('fill',x,y,1.4)
         end end
-        for r=4,1,-1 do g.setColor(.15,.65,1,.045); g.ellipse('fill',player.x+15,player.y+12,23+r*13,18+r*10) end
-        g.setColor(.35,.9,1,.38); g.ellipse('fill',player.x+15,player.y+12,35,27)
-        g.setColor(.75,1,1,.95); g.setLineWidth(2); g.ellipse('line',player.x+15,player.y+12,31,24); g.setLineWidth(1)
-        for i=1,8 do local a=i*math.pi/4+A.clock; g.setColor(.5,.9,1,.8)
+        for r=4,1,-1 do g.setColor(.15,.65,1,.006*math.min(3,player.charges or 0)); g.ellipse('fill',player.x+15,player.y+12,23+r*13+5*(player.charges or 0),18+r*10+4*(player.charges or 0)) end
+        local brightness=player.circleLight and .7 or math.min(1,.22+.18*math.max(0,(player.charges or 0)-1))
+        g.setColor(.35,.9,1,.38*brightness); g.ellipse('fill',player.x+15,player.y+12,35,27)
+        g.setColor(.75,1,1,.95*brightness); g.setLineWidth(2); g.ellipse('line',player.x+15,player.y+12,31,24); g.setLineWidth(1)
+        for i=1,8 do local a=i*math.pi/4+A.clock; g.setColor(.5,.9,1,.8*brightness)
             g.circle('fill',player.x+15+math.cos(a)*29,player.y+12+math.sin(a)*20,1.5)
         end
     end
@@ -310,21 +379,25 @@ local function update(m,dt)
     if m.type=='light_jelly' then
         local vx,vy=math.cos(m.age*.6),math.sin(m.age*.7)
         Arena.move(m,vx*m.speed*dt,vy*m.speed*dt); m.angle=math.atan2(vy,vx)-math.pi/2
-        if math.floor(before/3)<math.floor(m.age/3) then A.emit(m) end
+        if math.floor((before+(m.shotOffset or 0))/3)<math.floor((m.age+(m.shotOffset or 0))/3) then A.emit(m) end
     else
         local dx,dy=player.x+15-m.x,player.y+12-m.y; local d=math.max(1,math.sqrt(dx*dx+dy*dy))
         local vx,vy,speed
-        if (player.illuminated or 0)>0 then vx,vy,speed=dx/d,dy/d,285
-        elseif d<240 then vx,vy,speed=-dx/d,-dy/d,m.speed*1.4
+        if (player.illuminated or 0)>0 and d<300+120*(player.charges or 0) then vx,vy,speed=dx/d,dy/d,95+12*(player.charges or 0)
+        elseif d<240 then vx,vy,speed=-dx/d,-dy/d,m.speed*.355
         else
             m.turn=m.turn-dt; if m.turn<=0 then m.heading=love.math.random()*math.pi*2; m.turn=1+love.math.random()*2 end
-            vx,vy,speed=math.cos(m.heading),math.sin(m.heading),m.speed*.6
+            vx,vy,speed=math.cos(m.heading),math.sin(m.heading),m.speed*.35
         end
         local hx,hy=Arena.move(m,vx*speed*dt,vy*speed*dt)
         if hx or hy then m.heading=m.heading+math.pi/2 end
         m.angle=math.atan2(vy,vx); m.dir=Art.direction(vx,vy,m.dir)
     end
-    if isTouching(player,m) then Hazards.kill() end
+    if m.type=='light_jelly' then
+        local touching=not player.abyssHeld and checkCollision(player.x,player.y,30,24,m.x-22,m.y-22,44,44)
+        if touching and not m.touchingPlayer then A.charge(6) end
+        m.touchingPlayer=touching
+    elseif isTouching(player,m) then Hazards.kill() end
 end
 local function draw(m)
     if m.abyssHeld then return end

@@ -1,6 +1,6 @@
 local B={active=false,projectiles={},eggs={},nests={},chicks={},name='Le Merle noir'}
 local function hitPlayer()
-    if not player.reset then player.reset=true; player.death=player.death+1; activateShaderEffect(); Audio.play('death') end
+    if not player.reset then player.reset=true; player.death=player.death+1; Profile.record('deaths'); activateShaderEffect(); Audio.play('death') end
 end
 function B.reset(active)
     B.active=active; B.projectiles={}; B.eggs={}; B.nests={}; B.chicks={}; B.hp=12; B.maxHp=12; B.elapsed=0; B.shot=0.24; B.flash=0; B.defeated=false

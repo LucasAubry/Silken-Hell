@@ -1,5 +1,5 @@
 local function die()
-    if not player.reset then player.reset=true; player.death=player.death+1; activateShaderEffect() end
+    if not player.reset then player.reset=true; player.death=player.death+1; Profile.record('deaths'); activateShaderEffect() end
 end
 function spawn_spinner(x,y,speed)
     mobs[#mobs+1]={type='spinner',x=x,y=y,speed=speed,rotation=(x+y)*.017,

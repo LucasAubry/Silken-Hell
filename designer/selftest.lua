@@ -18,6 +18,16 @@ function T.run(M,state,select,apply,preview)
         local found=false; for _,e in ipairs(M.defaults.levels['7:'..n].entities) do if e.type=='skeleton_fish' then assert(e.skeletonStage==n); found=true end end
         assert(found,'Squelette progressif importé')
     end
+    select(7,10)
+    local head,parts=false,0
+    for _,e in ipairs(M.layout.entities) do
+        assert(e.type~='skeleton_fish','Ancien squelette séparé')
+        if e.type=='skeleton_head' then head=true elseif e.kind=='abyss_part' then parts=parts+1 end
+    end
+    assert(head and parts>1,'Tête boss et terrain séparés dans le modèle')
+    local part=M.add({kind='abyss_part',type='skeleton_rib',w=24,h=120,rotation=90},400,320)
+    assert(M.validate(M.layout));M.undo(false);M.undo(true)
+    assert(M.layout.entities[#M.layout.entities].rotation==90,'Rotation conservée par annuler/rétablir')
     select(4,1); M.add({kind='magma_spawner',rx=31,ry=23,spawnDelay=.5,spawnInterval=2},180,220); M.add({kind='mob',type='magma_larva',speed=245},280,220); assert(M.validate(M.layout)); M.undo(false); M.undo(false)
     select(2,10)
     local found=false; for _,e in ipairs(M.layout.entities) do if e.kind=='boss' then assert(e.type=='wasp'); found=true end end
@@ -59,7 +69,8 @@ function T.run(M,state,select,apply,preview)
     state.testUpdate=function()
         tick=tick+1
         if tick==2 then love.graphics.captureScreenshot('designer-ocean.png')
-        elseif tick==5 then select(7,10); state.category='Pièges'; state.scroll=0
+        elseif tick==5 then select(7,10); state.category='Terrain'; state.scroll=3;state.all=false
+            for _,e in ipairs(M.layout.entities) do if e.kind=='abyss_part' and e.type=='skeleton_rib' then M.selected=e;break end end
         elseif tick==7 then love.graphics.captureScreenshot('designer-abyss.png')
         elseif tick==10 then select(2,10); for _,e in ipairs(M.layout.entities) do if e.kind=='boss' then M.selected=e; break end end
         elseif tick==12 then love.graphics.captureScreenshot('designer-boss-rates.png')
