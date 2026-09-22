@@ -81,7 +81,19 @@ function A.drawSwimmer(key,x,y,size,angle,time)
     local scale=size/math.max(a.w,a.h)
     love.graphics.draw(a.swimMesh,x,y,angle,scale,scale)
 end
+function A.drawLarva(x,y,size,angle,time)
+    local g=love.graphics;g.push('all');g.translate(x,y);g.rotate(angle or 0)
+    for i=5,0,-1 do
+        local xx=(i-2.5)*size*.12;local yy=math.sin((time or 0)*8+i*.8)*size*.065
+        g.setColor(.35,.18,.11);g.ellipse('fill',xx,yy,size*.11,size*.14)
+        g.setColor(.92,.72,.46);g.ellipse('fill',xx,yy-size*.015,size*.085,size*.11)
+    end
+    g.setColor(.08,.055,.035);g.circle('fill',-size*.32,-size*.055,size*.026);g.circle('fill',-size*.32,size*.055,size*.026)
+    g.pop()
+end
 function A.load()
+    A.add('map_cloud','assets/sprites/map_cloud.png')
+    A.add('cave_wall','assets/sprites/cave_wall-v2.png')
     A.add('magma_larva','assets/sprites/magma_larva.png')
     A.add('magma_nest','assets/sprites/magma_nest.png')
     A.add('octopus_extended_down','assets/sprites/directional/octopus_extended_down.png')

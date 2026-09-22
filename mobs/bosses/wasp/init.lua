@@ -2,7 +2,7 @@ local W={active=false,projectiles={},minions={}}
 function W.reset(active)
     W.hardcore=false; W.active=active; W.name='Les Trois Sœurs de braise'; W.hp=9; W.maxHp=9; W.defeated=false; W.flash=0
     W.x=Arena.width/2; W.y=180; W.anchorX=W.x; W.anchorY=W.y; W.elapsed=0
-    W.bees={}; W.round=0; W.roundClock=0; W.roundActive=false; W.rest=.25
+    W.combo=nil; W.bees={}; W.round=0; W.roundClock=0; W.roundActive=false; W.rest=.25
     for i=1,3 do W.bees[i]={id=i,x=W.x+(i-2)*150,y=W.y+(i==2 and -35 or 25),hp=3,phase='ready',dir='down',flash=0} end
     W.eruptions={}; W.lavaClock=1.4; W.lavaIndex=0
     W.projectiles={}; W.minions={}; W.blasts={}; W.summon=1.4; W.hitGrace=0
@@ -30,11 +30,21 @@ function W.resize(ratio)
     end end
 end
 function W.contact()
-    if not W.active or player.reset then return end
+    if not W.active or W.defeated or player.reset then return end
     W.syncAnchor()
     for _,b in ipairs(W.bees) do
         if b.hp>0 and b.phase=='fatigued' and W.touches(b) then
-            b.hp=b.hp-1; W.hp=W.hp-1; b.flash=.3;W.flash=.3;b.contactGrace=.35
+            if not W.combo then
+                local all=true;for _,sister in ipairs(W.bees) do if sister.hp<=0 or sister.phase~='fatigued' then all=false end end
+                if all then W.combo={hits={},round=W.round} end
+            end
+            if W.combo then
+                W.combo.hits[b.id]=true
+                if W.combo.hits[1] and W.combo.hits[2] and W.combo.hits[3] then
+                    Profile.achievements.gillou=true;Profile.save()
+                end
+            end
+            b.hp=b.hp-1; W.hp=W.hp-1; b.flash=.3;W.flash=.3;b.contactGrace=.85;W.hitGrace=.85
             b.phase=b.hp==0 and 'dead' or 'cooldown';b.deadTime=0
             Audio.play('pick');BossFX.burst(b.x,b.y,{1,.25,.06},b.hp==0 and 4 or 2)
             if b.hp==0 then W.rest=math.min(W.rest,.08);W.summon=1.4 end
@@ -99,7 +109,7 @@ function W.landingSpot(bee)
     return bx,by
 end
 function W.beginRound()
-    W.round=W.round+1;W.roundClock=0;W.roundActive=true
+    W.combo=nil;W.round=W.round+1;W.roundClock=0;W.roundActive=true
     local alive={};for _,b in ipairs(W.bees) do if b.hp>0 then alive[#alive+1]=b end end
     local attack=(W.round-1)%3+1
     for slot,b in ipairs(alive) do
@@ -181,7 +191,7 @@ function W.touches(b)
     return checkCollision(player.x,player.y,30,24,b.x-26,y-32,52,64)
 end
 function W.chargeContact(b)
-    if b.hp>0 and b.phase=='fatigued' then return end
+    if b.hp<=0 or b.phase=='fatigued' then return end
     if W.hitGrace<=0 and (b.contactGrace or 0)<=0 and W.touches(b) then Hazards.kill() end
 end
 function W.updateBees(dt)
@@ -197,8 +207,8 @@ function W.updateBees(dt)
         elseif b.phase=='queued' then
             if W.roundClock>=b.delay then W.positionAttack(b) end
         elseif b.phase=='position' then
-            if W.approach(b,b.tx,b.ty,1080*tempo*move,dt) then
-                b.phase='aim';b.time=b.attack==3 and .12 or .4
+            if W.approach(b,b.tx,b.ty,1165*tempo*move,dt) then
+                b.phase='aim';b.time=b.attack==3 and .7 or .4
             end
         elseif b.phase=='aim' then
             b.time=b.time-dt*(b.attack==3 and cadence or 1)
@@ -208,7 +218,7 @@ function W.updateBees(dt)
                 else W.soloLarvae(b);b.phase='charge' end
             end
         elseif b.phase=='charge' then
-            local speed=1400*tempo*move;local steps=math.max(1,math.ceil(speed*dt/4))
+            local speed=1510*tempo*move;local steps=math.max(1,math.ceil(speed*dt/4))
             for _=1,steps do
                 local x,y=b.x+b.vx*speed*dt/steps,b.y+b.vy*speed*dt/steps
                 if Arena.blocked(x-24,y-24,48,48) then
@@ -218,7 +228,7 @@ function W.updateBees(dt)
                 if player.reset then break end
             end
         elseif b.phase=='fatigued' then
-            b.time=b.time-dt;if b.time<=0 then b.phase='cooldown' end
+            b.time=b.time-dt;if b.time<=0 then b.phase='cooldown';W.combo=nil end
         elseif b.phase=='hiding' then
             b.time=b.time-dt*cadence;if b.time<=0 then b.phase='cooldown' end
         end
@@ -260,6 +270,14 @@ function W.drawGround()
     if not W.active or W.defeated then return end
     W.syncAnchor()
     local g=love.graphics;g.push('all')
+    for _,b in ipairs(W.bees) do
+        if b.hp>0 and (b.phase=='position' or b.phase=='aim') and ((b.attack==3 and b.launchLarva) or W.aliveCount()==1) then
+            local x,y=b.tx or b.x,b.ty or b.y
+            g.setColor(1,.55,.12,.55+.25*math.sin(W.elapsed*12));g.setLineWidth(2)
+            g.circle('line',x,y,38);g.line(x-10,y,x+10,y);g.line(x,y-10,x,y+10)
+            g.setFont(UI.fonts.small);g.printf('INVOCATION',x-65,y+42,130,'center')
+        end
+    end
     for _,p in ipairs(W.eruptions) do
         g.setColor(1,.7,.12,.45+p.age*.4);g.setLineWidth(2)
         g.ellipse('line',p.x,p.y,p.rx+8+p.age*8,p.ry+8+p.age*8)

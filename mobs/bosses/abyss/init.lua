@@ -18,7 +18,8 @@ function A.reset(w,n)
     A.tailTouch=false; A.tailSafe=false; A.headOnly=false; A.skeletonStage=n; A.giant=A.active and n>=8; A.boss=A.active and n==10; A.origin={x=Arena.width/2,y=280}; player.illuminated=0; player.electrified=0; player.charges=0; player.abyssHeld=nil; player.abyssSpit=nil; player.abyssGrace=0
     A.hp=10; A.maxHp=10; A.defeated=false; A.flash=0; A.hitGrace=0; A.lightLock=false; A.name="Le Léviathan des Abysses"
     A.lightSites={{x=Arena.width*.12,y=105},{x=Arena.width*.88,y=495},{x=Arena.width*.12,y=495},{x=Arena.width*.88,y=105}}
-    if A.boss then A.spawn(2); add('light_jelly',Arena.width*.3,430,38); objet.larme.taken=true end
+    A.phase=nil;A.phaseTime=0;A.plankton={};A.nextShot=.65;A.volley=0
+    if A.boss then objet.larme.taken=true end
     if not A.giant then return end
     A.buildBones()
     player.x=Arena.width*.5-15; player.y=515
@@ -58,6 +59,7 @@ function A.boneTouches(b,x,y)
     local a=Art.images[b.key]; if not a or not a.mask then return false end
     local dx,dy=x-b.x,y-b.y; local c,s=math.cos(b.angle),math.sin(b.angle)
     local u=(c*dx+s*dy)/b.w+.5; local v=(-s*dx+c*dy)/b.h+.5
+    if b.flip then u=1-u end
     if u<0 or u>=1 or v<0 or v>=1 then return false end
     return a.mask[math.floor(v*192)*192+math.floor(u*192)] or false
 end
@@ -84,7 +86,7 @@ function A.charge(seconds)
     player.electrified=math.max(player.electrified or 0,seconds or 6); A.refreshLight()
 end
 function A.isPulling()
-    local function pulling(b) return b.active and b.giant and b.open and not b.defeated end
+    local function pulling(b) return b.active and b.giant and b.open and (not b.phase or b.phase=='suction') and not b.defeated end
     if pulling(A) then return true end
     if Bosses then for _,item in ipairs(Bosses.items) do
         if item.kind=='skeleton_fish' and pulling(item.boss) then return true end
@@ -148,7 +150,7 @@ end
 function A.hurt(amount)
     A.hp=math.max(0,A.hp-(amount or 1)); A.flash=.35; Audio.play('pick')
     if A.hp==0 then
-        A.defeated=true; A.giant=false; A.open=false; A.bones={}; A.threads={}
+        A.defeated=true; A.giant=false; A.open=false; A.bones={}; A.threads={}; A.plankton={}
         objet.larme.taken=false; objet.larme.x=Arena.width/2-15; objet.larme.y=280
     end
 end
@@ -305,8 +307,8 @@ function A.drawBones()
     if not A.giant or A.defeated then return end
     local g=love.graphics
     for _,b in ipairs(A.bones) do
-        g.setColor(.015,.025,.05,.55); Art.draw(b.key,b.x+7,b.y+10,b.w,b.angle,b.h)
-        g.setColor(1,1-A.flash,1-A.flash); Art.draw(b.key,b.x,b.y,b.w,b.angle,b.h)
+        g.setColor(.015,.025,.05,.55); Art.draw(b.key,b.x+7,b.y+10,(b.flip and -b.w or b.w),b.angle,b.h)
+        g.setColor(1,1-A.flash,1-A.flash); Art.draw(b.key,b.x,b.y,(b.flip and -b.w or b.w),b.angle,b.h)
         if b.key=='skeleton_head' or b.key=='skeleton_open' then
             local ex,ey=b.gx,b.gy;local dx,dy=player.x+15-ex,player.y+12-ey;local d=math.max(1,math.sqrt(dx*dx+dy*dy))
             g.setColor(.01,.11,.16,.9);g.circle('fill',ex,ey,5)
@@ -336,9 +338,9 @@ function A.drawLights()
     end
     for _,p in ipairs(A.threads) do if not p.abyssHeld then
         local a=math.atan2(p.vy,p.vx); g.push(); g.translate(p.x,p.y); g.rotate(a)
-        g.setColor(.2,.65,1,.3); g.setLineWidth(7)
+        g.setColor(p.red and 1 or .2,p.red and .13 or .65,p.red and .22 or 1,.3); g.setLineWidth(7)
         g.line(-32,math.sin(p.age*12+p.seed)*4,-20,-4,-10,3,0,0)
-        g.setColor(.65,.95,1,1); g.setLineWidth(2); g.line(-32,math.sin(p.age*12+p.seed)*4,-20,-4,-10,3,0,0); g.pop()
+        g.setColor(p.red and 1 or .65,p.red and .35 or .95,p.red and .3 or 1,1); g.setLineWidth(2); g.line(-32,math.sin(p.age*12+p.seed)*4,-20,-4,-10,3,0,0); g.pop()
     end end
     if (player.illuminated or 0)>0 and not player.abyssHeld then
         for _,m in ipairs(mobs) do if m.type=='abyss_fish' then
@@ -364,7 +366,7 @@ function A.drawLights()
         local t=p.age/.4; g.setColor(.4,.8,1,(1-t)*.6)
         g.circle('fill',p.x+(p.tx-p.x)*t,p.y+(p.ty-p.y)*t,3)
     end
-    if A.giant and A.open then
+    if A.giant and A.open and not A.phase then
         for i=1,40 do
             local t=(A.clock*.7+i/40)%1; local a=i*2.4; local r=(1-t)*350
             local x=A.head.x+65+math.cos(a)*r; local y=A.head.y+15+math.sin(a)*r*.6
@@ -373,41 +375,15 @@ function A.drawLights()
     end
     g.pop()
 end
-local function update(m,dt)
-    if m.is_frozen or m.abyssHeld then return end
-    local before=m.age; m.age=m.age+dt
-    if m.type=='light_jelly' then
-        local vx,vy=math.cos(m.age*.6),math.sin(m.age*.7)
-        Arena.move(m,vx*m.speed*dt,vy*m.speed*dt); m.angle=math.atan2(vy,vx)-math.pi/2
-        if math.floor((before+(m.shotOffset or 0))/3)<math.floor((m.age+(m.shotOffset or 0))/3) then A.emit(m) end
-    else
-        local dx,dy=player.x+15-m.x,player.y+12-m.y; local d=math.max(1,math.sqrt(dx*dx+dy*dy))
-        local vx,vy,speed
-        if (player.illuminated or 0)>0 and d<300+120*(player.charges or 0) then vx,vy,speed=dx/d,dy/d,95+12*(player.charges or 0)
-        elseif d<240 then vx,vy,speed=-dx/d,-dy/d,m.speed*.355
-        else
-            m.turn=m.turn-dt; if m.turn<=0 then m.heading=love.math.random()*math.pi*2; m.turn=1+love.math.random()*2 end
-            vx,vy,speed=math.cos(m.heading),math.sin(m.heading),m.speed*.35
-        end
-        local hx,hy=Arena.move(m,vx*speed*dt,vy*speed*dt)
-        if hx or hy then m.heading=m.heading+math.pi/2 end
-        m.angle=math.atan2(vy,vx); m.dir=Art.direction(vx,vy,m.dir)
-    end
-    if m.type=='light_jelly' then
-        local touching=not player.abyssHeld and checkCollision(player.x,player.y,30,24,m.x-22,m.y-22,44,44)
-        if touching and not m.touchingPlayer then A.charge(6) end
-        m.touchingPlayer=touching
-    elseif isTouching(player,m) then Hazards.kill() end
+local Encounter=require('mobs.bosses.abyss.encounter')(A)
+for name,replacement in pairs({buildBones=Encounter.build,mouth=Encounter.mouth,contact=Encounter.contact,update=Encounter.update,spit=Encounter.spit}) do
+    local previous=A[name]
+    A[name]=function(...) if Encounter.enabled() then return replacement(...) end;return previous(...) end
 end
-local function draw(m)
-    if m.abyssHeld then return end
-    local g=love.graphics; g.setColor(1,1,1)
-    if m.type=='abyss_fish' then Art.draw('abyss_fish',m.x,m.y,85,m.angle or 0)
-    elseif m.type=='light_jelly' then
-        g.setColor(1,1,1); Art.drawSwimmer('abyss_octopus',m.x,m.y,78,m.angle or 0,m.age)
-        g.setColor(.4,.85,1,.35); g.circle('line',m.x,m.y,27+math.sin(m.age*3)*3)
-    else Art.drawFacing('lanternfish',m.dir,m.x,m.y,68) end
-    g.setColor(1,1,1)
-end
-for _,kind in ipairs({'abyss_fish','light_jelly','lanternfish'}) do MobBehaviors[kind]={update=update,draw=draw} end
+local oldDrawLights=A.drawLights
+A.drawLights=function() oldDrawLights();if Encounter.enabled() and A.active then love.graphics.push('all');Encounter.draw();love.graphics.pop() end end
+A.setPhase=Encounter.enter
+MobBehaviors.abyss_fish=require('mobs.abyss_fish')(A)
+MobBehaviors.light_jelly=require('mobs.light_jelly')(A)
+MobBehaviors.lanternfish=require('mobs.lanternfish.abyss')(A)
 return A

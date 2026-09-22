@@ -19,7 +19,7 @@ CACHE_DIR="$HOME/Library/Application Support/Silken Hell"
 mkdir -p "$CACHE_DIR"
 printf '%s\n' "$GAME_DIR" > "$CACHE_DIR/project-path.txt"
 # Lancer une version publiée, sans reconstruire ni télécharger les fichiers iCloud.
-if [[ ! -s "$CACHE_DIR/Silken Hell.love" ]]; then
+if [[ ! -s "$CACHE_DIR/Silken Hell.love" || "$GAME_DIR/game.love" -nt "$CACHE_DIR/Silken Hell.love" ]]; then
   cp "$GAME_DIR/game.love" "$CACHE_DIR/Silken Hell.love.new"
   mv -f "$CACHE_DIR/Silken Hell.love.new" "$CACHE_DIR/Silken Hell.love"
 fi

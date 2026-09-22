@@ -17,7 +17,7 @@ function H.roll()
     local dx,dy=math.cos(angle),math.sin(angle)
     if math.abs(dx)<.28 then dx=dx<0 and -.28 or .28 end
     if math.abs(dy)<.28 then dy=dy<0 and -.28 or .28 end
-    local length=math.sqrt(dx*dx+dy*dy); local speed=(410+(H.stage-1)*18)*(H.movementRate or 1)
+    local length=math.sqrt(dx*dx+dy*dy); local speed=(475+(H.stage-1)*22)*(H.movementRate or 1)
     H.vx=dx/length*speed; H.vy=dy/length*speed
 end
 function H.requiredBounces()
@@ -43,7 +43,7 @@ function H.finishRound()
 end
 function H.fire()
     local phase=H.stage*.21
-    for i=0,11 do local a=i*math.pi*2/12+phase
+    for i=0,17 do local a=i*math.pi*2/18+phase
         H.projectiles[#H.projectiles+1]={x=H.x,y=H.y,vx=math.cos(a)*300,vy=math.sin(a)*300,life=5}
     end
 end
@@ -60,7 +60,7 @@ function H.update(dt)
             H.phase='standing'; H.phaseTime=.65; H.shot=.05
         end
     else
-        local speed=(410+(H.stage-1)*18)*(H.movementRate or 1)
+        local speed=(475+(H.stage-1)*22)*(H.movementRate or 1)
         local current=math.atan2(H.vy,H.vx); local target=math.atan2(player.y+12-H.y,player.x+15-H.x)
         local delta=(target-current+math.pi)%(math.pi*2)-math.pi
         local angle=current+math.max(-dt*1.35,math.min(dt*1.35,delta))

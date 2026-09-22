@@ -20,7 +20,7 @@ function update_shadow_dash(dt)
     for i = #ghosts, 1, -1 do
         local g = ghosts[i]
         g.time = g.time + dt
-        g.alpha = g.alpha - dt * 2
+        g.alpha = g.alpha - dt * 2.4
         if g.alpha <= 0 then
             table.remove(ghosts, i)
         end
@@ -58,12 +58,12 @@ end
 function add_ghost(dt)
     ghost_timer = ghost_timer or 0
     ghost_timer = ghost_timer + dt
-    if ghost_timer >= 0.05 then
+    if ghost_timer >= 0.06 and player.dashing then
         table.insert(ghosts, {
             x = player.x,
             y = player.y,
             direction = direction,
-            alpha = 0.4,
+            alpha = 0.26,
             time = 0
         })
         ghost_timer = 0

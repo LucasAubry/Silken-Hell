@@ -1,5 +1,6 @@
 local H={lava={}}
 function H.kill(source)
+    if Aftermath and (Aftermath.cleared or Aftermath.ready()) then return end
     if Abyss and Abyss.isPulling() then return end
     if not player.reset and not player.tunnelTravel and not player.abyssHeld and not player.abyssSpit and (player.abyssGrace or 0)<=0 then player.reset=true; player.death=player.death+1; Profile.record('deaths'); activateShaderEffect() end
 end
@@ -21,7 +22,7 @@ function H.contact()
 end
 function H.speed()
     local factor=player.venom>0 and 0.42 or 1
-    if Raven.active then for _,n in ipairs(Raven.nests) do if H.inEllipse(player.x+15,player.y+12,n,0) then factor=math.min(factor,0.14) end end end
+    if Raven.active then for _,n in ipairs(Raven.nests) do if H.inEllipse(player.x+15,player.y+12,n,0) then factor=math.min(factor,0.40) end end end
     return math.min(factor,Realms.speed(),Bosses.speed())
 end
 function H.draw()

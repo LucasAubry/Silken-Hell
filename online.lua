@@ -4,7 +4,7 @@ local config=require 'online_config'
 local function saveOutbox()
     local rows={}
     for _,r in ipairs(N.runs) do
-        if not r.failed and #r.pending>0 then rows[#rows+1]={id=r.id,name=r.name,skin=r.skin,startedAtMs=r.startedAtMs,world=r.world,pending=r.pending} end
+        if not r.failed and (#r.pending>0 or r.replay and not r.replayUploaded) then rows[#rows+1]={id=r.id,name=r.name,skin=r.skin,startedAtMs=r.startedAtMs,world=r.world,pending=r.pending,replay=r.replay,replayUploaded=r.replayUploaded} end
     end
     love.filesystem.write('online-outbox.json',json.encode(rows))
 end
@@ -15,6 +15,7 @@ local function request(path,body,callback)
 end
 N.request=request
 function N.refresh(world)
+    if not Worlds.canViewScores(world) then return end
     if not N.enabled then return end
     local b=N.boards[world] or {}; N.boards[world]=b
     if b.loading then return end
@@ -29,6 +30,7 @@ function N.refresh(world)
 end
 N.pages={}
 function N.page(world,country,page)
+    if not Worlds.canViewScores(world) then return {scores={},total=0,hasMore=false},'locked' end
     page=page or 1
     if not N.enabled then
         local all=Profile.ranking(world,country and Profile.country or nil); local rows={}
@@ -44,9 +46,15 @@ function N.page(world,country,page)
             if code==200 and type(data.scores)=='table' then entry.data=data else entry.error=true end
         end)
     end
+    if entry.error and not entry.data then
+        local all=Profile.ranking(world,country and Profile.country or nil);local rows={}
+        for i=(page-1)*10+1,math.min(page*10,#all) do rows[#rows+1]=all[i] end
+        return {scores=rows,total=#all,hasMore=page*10<#all},'local'
+    end
     return entry.data or {scores={},total=0,hasMore=false},entry.error and 'offline' or entry.loading and 'loading' or 'online'
 end
 function N.scores(world,country)
+    if not Worlds.canViewScores(world) then return {},'locked' end
     if not N.enabled then return Profile.ranking(world,country and Profile.country or nil),'local' end
     local b=N.boards[world]
     if not b or (not b.loading and N.clock-(b.requested or -60)>30) then N.refresh(world); b=N.boards[world] end
@@ -98,12 +106,14 @@ function N.begin(run)
     end)
 end
 function N.start(world,name,skin)
+    if Replay and Replay.playing then return end
     N.current=nil; N.scoreStatus='Partie hors ligne'
     if not N.enabled then return end
     local run={world=world,name=name,skin=skin or 1,startedAtMs=os.time()*1000,pending={}};N.runs[#N.runs+1]=run;N.current=run
     N.scoreStatus='Connexion au classement…';N.begin(run)
 end
 function N.checkpoint(level,time,deaths)
+    if Replay and Replay.playing then return end
     local r=N.current
     if not N.enabled or not r or r.failed then return end
     r.pending[#r.pending+1]={level=level,elapsedMs=math.floor(time*1000+0.5),deaths=deaths}
@@ -112,6 +122,7 @@ function N.checkpoint(level,time,deaths)
 end
 function N.flush(r)
     if not r.id then N.begin(r);return end
+    if #r.pending==0 and r.replay and not r.replayUploaded then N.uploadReplay(r);return end
     if r.busy or r.failed or #r.pending==0 or (r.retryAt and N.clock<r.retryAt) then return end
     r.busy=true
     local checkpoint=r.pending[1]
@@ -132,6 +143,21 @@ function N.flush(r)
             r.failed=true; saveOutbox()
             if N.current==r then N.scoreStatus='Score local uniquement : '..(data.error or 'validation refusée') end
         end
+    end)
+end
+function N.attachReplay(id)
+    if not N.current then return end
+    N.current.replay=id;saveOutbox();N.flush(N.current)
+end
+function N.uploadReplay(r)
+    if r.busy or r.failed or (r.retryAt and N.clock<r.retryAt) then return end
+    local ok,data=pcall(json.decode,love.filesystem.read('replays/'..r.replay..'.json') or '')
+    if not ok then return end
+    r.busy=true
+    request('/v1/runs/'..r.id..'/replay',{replay=data},function(result,code)
+        r.busy=false
+        if code==200 or code==201 then r.replayUploaded=true;N.pages={};saveOutbox()
+        else r.retryAt=N.clock+60;N.scoreStatus='Score enregistré · replay conservé localement, envoi en attente' end
     end)
 end
 function N.update(dt)

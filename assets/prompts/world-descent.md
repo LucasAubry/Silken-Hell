@@ -1,0 +1,5 @@
+# Fond continu du sélecteur
+
+Outil : imagegen intégré. PNG opaque copié sans modification vers assets/sprites/world_descent.png.
+
+Use case: stylized-concept. Asset type: opaque full-bleed vertical scrolling background PNG for a small 2D pixel-art spider game. Portrait aspect ratio 1:3. A simple stylized pixel-art terrain map with chunky pixel clusters and broad flat shaded shapes. Restrained detail, 3 tones per region, matte muted colors, no photorealism, no intricate painting. Connected terrain across the ENTIRE canvas width, NO islands or platforms, NO empty backdrop. Top to bottom eight large regions with soft irregular transitions: olive forest floor with a few chunky roots, slate blue mountain stone, warm brown cave earth, muted turquoise water, dark navy deep water, dark burnt orange lava rock, burgundy demonic stone, charcoal and pale gray sanctuary stone. Keep center and right side especially quiet and low contrast, few simple rocks at the edges. Regions evenly distributed vertically. No characters, no lettering, no markers, no paths, no UI, no circles. Low-detail pixel game background, large readable textures, not realistic concept art.

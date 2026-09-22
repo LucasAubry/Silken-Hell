@@ -1,0 +1,1 @@
+{"entities": [{"kind": "spawn", "y": 440, "x": 240.0, "id": "e1"}, {"y": 300, "attackRate": 1, "id": "e16", "kind": "boss", "movementRate": 1, "x": 805, "type": "skeleton_fish", "skeletonStage": 10}], "level": 10, "width": 960, "height": 600, "world": 7}

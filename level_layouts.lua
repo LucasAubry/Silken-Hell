@@ -1,6 +1,6 @@
 local json=require 'json'
 local L={disabled=false}
-local fields={'x','y','speed','rota','radius','phase','rx','ry','dx','seed','w','h','electric','has_larme','elite','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage','rotation'}
+local fields={'x','y','speed','rota','radius','phase','rx','ry','dx','seed','w','h','electric','has_larme','elite','startUnderground','customName','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage','rotation'}
 local function copy(t)
     local r={}; for _,k in ipairs(fields) do if type(t[k])=="number" or type(t[k])=="boolean" then r[k]=t[k] end end; return r
 end
@@ -40,6 +40,7 @@ function L.snapshot()
     return out
 end
 function L.read()
+    if Replay and Replay.data and (Replay.playing or Replay.recording) then return Replay.data.layouts end
     if L.disabled then return {} end
     if App and App.sessionLayout then local l=App.sessionLayout; return {[l.world..':'..l.level]=l} end
     local data=love.filesystem.read('custom_levels.json')
@@ -70,7 +71,7 @@ function L.spawn(e)
         Realms.add(kind,e.x,e.y,e.speed or 80,e.elite)
         if kind=='mole' then mobs[#mobs].speed=e.speed or 140 end
     else return end
-    local m=mobs[#mobs]; m.has_larme=e.has_larme or false; m.electric=e.electric
+    local m=mobs[#mobs]; if (kind=='worm' or kind=='mole') and e.startUnderground~=nil then m.age=e.startUnderground and 0 or (kind=='mole' and 2.7 or 1.6) end; m.startUnderground=e.startUnderground; m.has_larme=e.has_larme or false; m.electric=e.electric
     if m.has_larme then Campaign.carrier=m; objet.larme_dropped=false end
     if m.type=='scie' then setup_rotor(m) elseif m.type=='spinner' then setup_spinner(m) end
     if m.imgs then m.img=m.imgs.down or m.imgs.up end
@@ -99,7 +100,7 @@ function L.apply(layout)
         elseif e.kind=='light' then -- assigned below
         else
             local list=({magma_spawner=Magma.spawners,lava=Hazards.lava,vent=Realms.vents,hole=Realms.holes,tunnel=Realms.tunnels,tornado=Realms.tornadoes,current=Realms.current,rain=Realms.rainSites})[e.kind]
-            if list then e.rx=e.rx or 35; e.ry=e.ry or 25; e.phase=e.phase or 0; e.seed=e.seed or 1; e.cooldown=0; e.dx=e.dx or 1; list[#list+1]=e end
+            if list and not (e.kind=='rain' and Campaign.biome==5) then e.rx=e.rx or 35; e.ry=e.ry or 25; e.phase=e.phase or 0; e.seed=e.seed or 1; e.cooldown=0; e.dx=e.dx or 1; list[#list+1]=e end
         end
     end
     for _,b in ipairs({Raven,Wasp,Hedgehog,Octopus,Storm}) do b.active=false end
@@ -112,7 +113,9 @@ function L.apply(layout)
     for _,e in ipairs(bossEntities) do if e.type=='skeleton_fish' or e.type=='skeleton_head' then Abyss.active=true end end
     if #lights>0 or #AbyssTerrain.parts>0 then Abyss.active=true end
     Bosses.load(bossEntities,nests,lights)
-    if Campaign.biome==7 and player.level==10 and Bosses.alive() then
+    local phasedAbyss=false
+    for _,item in ipairs(Bosses.items) do if item.kind=='skeleton_fish' and item.boss.phase then phasedAbyss=true end end
+    if Campaign.biome==7 and player.level==10 and Bosses.alive() and not phasedAbyss then
         local count=0
         for _,m in ipairs(mobs) do if m.type=='light_jelly' then count=count+1 end end
         if count<2 then Abyss.add('light_jelly',Arena.width*.3,430,38) end
@@ -124,25 +127,9 @@ function L.apply(layout)
     Arena.navigationVersion=(Arena.navigationVersion or 0)+1
     return true
 end
-for _,kind in ipairs({'waspling','larva','blackbird_chick'}) do
-    MobBehaviors[kind]={
-        update=function(m,dt)
-            m.age=m.age+dt; Realms.capture(m); if m.is_frozen then return end
-            if m.type=='blackbird_chick' then
-                m.x=m.cx+math.cos(m.age*1.6)*m.radius; m.y=m.cy+math.sin(m.age*1.6)*m.radius*.75
-                m.dir=Art.direction(-math.sin(m.age*1.6),math.cos(m.age*1.6))
-            else
-                m.dir=Art.direction(player.x+15-m.x,player.y+12-m.y,m.dir)
-                Arena.navigate(m,player.x+15,player.y+12,m.speed,dt)
-            end
-            if isTouching(player,m) then Hazards.kill() end
-        end,
-        draw=function(m)
-            love.graphics.setColor(1,1,1)
-            Art.drawFacing(m.type=='larva' and 'worm' or m.type=='blackbird_chick' and 'merle' or 'waspling',m.dir,m.x,m.y,m.type=='larva' and 26 or 34)
-        end
-    }
-end
+MobBehaviors.waspling=require('mobs.waspling')
+MobBehaviors.larva=require('mobs.larva')
+MobBehaviors.blackbird_chick=require('mobs.blackbird_chick')
 function L.applyCurrent()
     return L.apply(L.read()[Campaign.world..':'..player.level])
 end

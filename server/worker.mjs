@@ -1,4 +1,5 @@
 const DEATH_PENALTY_MS=1000/3;
+import {replays} from './replay.mjs';
 import {workshop} from './workshop.mjs';
 const reply=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 const fail=(status,error)=>{throw Object.assign(new Error(error),{status});};
@@ -36,6 +37,7 @@ export default {
         const {success}=await env.API_LIMITER.limit({key:request.headers.get('CF-Connecting-IP') || 'unknown'});
         if(!success) return reply({error:'Trop de requêtes. Réessaie dans une minute.'},429);
       }
+      const replayResponse=await replays(request,env,{reply,fail,ownerOf,bodyOf});if(replayResponse) return replayResponse;
       const community=await workshop(request,env,{reply,fail,ownerOf,bodyOf}); if(community) return community;
       if(request.method==='GET' && path==='/v1/location') return reply({country:countryOf(request)});
       if(request.method==='GET' && path==='/v1/leaderboard') {
@@ -49,10 +51,10 @@ export default {
         const ranked=`SELECT * FROM scores WHERE world=? ${local?'AND country=?':''}`;
         const args=local?[world,country]:[world];
         const [{results},count]=await Promise.all([
-          env.DB.prepare(`SELECT name,country,elapsed_ms,deaths,skin FROM (${ranked}) ORDER BY (elapsed_ms+deaths*${DEATH_PENALTY_MS}),deaths,completed_at,run_id LIMIT 10 OFFSET ?`).bind(...args,(page-1)*10).all(),
+          env.DB.prepare(`SELECT name,country,elapsed_ms,deaths,skin,run_id,EXISTS(SELECT 1 FROM run_replays r WHERE r.run_id=s.run_id) AS has_replay FROM (${ranked}) s ORDER BY (elapsed_ms+deaths*${DEATH_PENALTY_MS}),deaths,completed_at,run_id LIMIT 10 OFFSET ?`).bind(...args,(page-1)*10).all(),
           env.DB.prepare(`SELECT COUNT(*) AS total FROM (${ranked})`).bind(...args).first()
         ]);
-        return reply({world,country,page,total:count.total,hasMore:page*10<count.total,scores:results.map(s=>({name:s.name,country:s.country,time:(s.elapsed_ms+s.deaths*DEATH_PENALTY_MS)/1000,rawTime:s.elapsed_ms/1000,penalty:s.deaths*DEATH_PENALTY_MS/1000,deaths:s.deaths,skin:s.skin}))});
+        return reply({world,country,page,total:count.total,hasMore:page*10<count.total,scores:results.map(s=>({runId:s.run_id,hasReplay:!!s.has_replay,name:s.name,country:s.country,time:(s.elapsed_ms+s.deaths*DEATH_PENALTY_MS)/1000,rawTime:s.elapsed_ms/1000,penalty:s.deaths*DEATH_PENALTY_MS/1000,deaths:s.deaths,skin:s.skin}))});
       }
       if(request.method==='POST' && path==='/v1/runs') {
         const owner=await ownerOf(request), b=await bodyOf(request);
@@ -60,7 +62,7 @@ export default {
         if(!name || [...name].length>16 || /[\p{C}]/u.test(name)) fail(400,'Pseudo invalide (1 à 16 caractères).');
         if(![1,2,3,4,5,6,7,9,10,11,12,13,14].includes(b.world)) fail(400,'Monde indisponible.');
         const skin=b.skin===undefined?1:b.skin;
-        if(!Number.isInteger(skin)||skin<1||skin>5) fail(400,'Apparence invalide.');
+        if(!Number.isInteger(skin)||skin<1||skin>14) fail(400,'Apparence invalide.');
         const now=Date.now();
         const startedAt=b.startedAtMs===undefined?now:b.startedAtMs;
         if(!Number.isSafeInteger(startedAt)||startedAt>now+2500||startedAt<now-86400000) fail(400,'Date de départ invalide.');
@@ -97,6 +99,7 @@ export default {
   },
   async scheduled(_event,env) {
     // Scores persist; abandoned run metadata is removed after two days.
+    await env.DB.prepare('DELETE FROM workshop_validations WHERE created_at<?').bind(Date.now()-86400000).run();
     await env.DB.prepare('DELETE FROM runs WHERE started_at<?').bind(Date.now()-172800000).run();
   }
 };

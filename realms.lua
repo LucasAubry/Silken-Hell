@@ -199,6 +199,7 @@ function R.updateTraversal(dt)
 end
 function R.update(dt)
     if Campaign.biome<4 and not R.custom then return end
+    if Campaign.biome==5 then R.rain={};R.rainSites={} end
     R.clock=R.clock+dt
     R.updateTraversal(dt)
     if Campaign.biome==5 or R.custom then R.separateEarth() end
@@ -237,6 +238,7 @@ function R.update(dt)
     R.contact()
 end
 function R.updateLightning(dt)
+    if Aftermath.cleared then R.lightning={};return end
     if Campaign.biome~=6 then R.lightning={}; return end
     R.lightningClock=R.lightningClock-dt
     if R.lightningClock<=0 then
@@ -414,12 +416,6 @@ function R.updateProjectiles(dt)
         for _=1,steps do if not dead then
             local x,y=p.x+p.vx*dt/steps,p.y+p.vy*dt/steps
             if Arena.blocked(x-4,y-4,8,8) then
-                if list==R.eggs and #R.larvae<36 then
-                    local sx,sy=Arena.clearSpot(p.x-8,p.y-8,16,16)
-                    for j=1,3 do R.larvae[#R.larvae+1]={x=sx+8,y=sy+8,age=j*.8,life=16,dir='down',
-                        hitBox_width=16,hitBox_height=16,hitBox_offset_x=-8,hitBox_offset_y=-8} end
-                    Bestiary.discover('larva'); Bestiary.save()
-                end
                 dead=true
             else
                 p.x=x; p.y=y
@@ -427,13 +423,20 @@ function R.updateProjectiles(dt)
                 if checkCollision(x-radius,y-radius,radius*2,radius*2,player.x,player.y,30,24) then Hazards.kill(); dead=true end
             end
         end end
-        if dead then table.remove(list,i) end
+        if dead then
+            if list==R.eggs then
+                local sx,sy=Arena.clearSpot(p.x-8,p.y-8,16,16)
+                R.larvae[#R.larvae+1]={type='larva',x=sx+8,y=sy+8,age=0,life=16,speed=72,dir='down',hitBox_width=16,hitBox_height=16,hitBox_offset_x=-8,hitBox_offset_y=-8}
+                Bestiary.discover('larva');Bestiary.save()
+            end
+            table.remove(list,i)
+        end
     end end end
     for i=#R.larvae,1,-1 do local m=R.larvae[i]; m.age=m.age+dt; m.life=m.life-dt
         R.capture(m)
         if m.is_frozen then m.freeze_timer=m.freeze_timer-dt; if m.freeze_timer<=0 then m.is_frozen=false end end
         local a=math.atan2(player.y+12-m.y,player.x+15-m.x)
-        if not m.tunnelTravel then
+        if not m.tunnelTravel and not m.is_frozen then
             m.dir=Art.direction(math.cos(a),math.sin(a)); Arena.navigate(m,player.x+15,player.y+12,72,dt)
             if isTouching(player,m) then Hazards.kill() end
         end
@@ -444,7 +447,7 @@ function R.drawCreatures()
     local g=love.graphics
     for _,m in ipairs(R.larvae) do
         local scale,dy=1,0; if m.tunnelTravel then scale,dy=R.travelPose(m) end
-        g.setColor(1,1,1,scale); Art.drawFacing('worm',m.dir,m.x,m.y+dy,26*scale)
+        g.setColor(1,1,1,scale); Art.drawLarva(m.x,m.y+dy,22*scale,math.atan2(player.y+12-m.y,player.x+15-m.x)+math.pi,m.age)
     end
     for _,p in ipairs(R.eggs) do
         g.setColor(.24,.12,.09); g.ellipse('fill',p.x,p.y,6,5)
@@ -540,7 +543,7 @@ function R.drawGround()
                 g.line(x-10*c.dx,y-3,x,y,x-10*c.dx,y+3)
             end
         end
-        for i=1,25 do local x=(i*97)%Arena.width; local y=(i*59-R.clock*15)%600
+        for i=1,(Campaign.biome==4 or Campaign.biome==7) and 25 or 0 do local x=(i*97)%Arena.width; local y=(i*59-R.clock*15)%600
             g.setColor(.55,.9,1,.22); g.circle('line',x,y,2+i%3)
         end
         for _,p in ipairs(R.vents) do
@@ -583,6 +586,7 @@ function R.drawGround()
             local t=m.age%3.5; if t>2.3 then g.setColor(.25,.95,1,.3); g.circle('line',m.x,m.y,26+math.sin(t*18)*3) end
         elseif m.type=='mole' then
             local phase,t=R.molePhase(m.age)
+            if phase=='hidden' then g.setColor(.035,.02,.01,.45);g.ellipse('fill',m.x,m.y+8,22,10) end
             if phase=='warning' or phase=='emerge' or phase=='dig' then
                 g.setColor(.085,.04,.025); g.ellipse('fill',m.x,m.y+10,23,11)
                 g.setColor(.52,.33,.16); g.ellipse('line',m.x,m.y+10,25,12)
@@ -611,103 +615,51 @@ end
 function R.drawWall(r)
     local g=love.graphics; local w=Campaign.biome
     if w==6 then return end
+    if w==5 then
+        local horizontal=r.w>=r.h;local length=horizontal and r.w or r.h;local thickness=horizontal and r.h or r.w
+        local count=math.max(1,math.ceil(length/math.max(40,thickness*3)));local span=length/count
+        for i=1,count do
+            local x=horizontal and r.x+(i-.5)*span or r.x+r.w/2
+            local y=horizontal and r.y+r.h/2 or r.y+(i-.5)*span
+            g.setColor(1,1,1);Art.draw('cave_wall',x,y,span+3,horizontal and 0 or math.pi/2,thickness)
+        end
+        return
+    end
+    if w==4 or w==7 then
+        local c=w==4 and {.36,.78,.72} or {.34,.4,.7};g.setColor(c)
+        local horizontal=r.w>=r.h
+        Art.draw('wall',r.x+r.w/2,r.y+r.h/2,horizontal and r.w or r.h,horizontal and 0 or math.pi/2,(horizontal and r.h or r.w)+3)
+        local count=math.floor(math.max(r.w,r.h)/30)
+        for i=1,count do
+            local x=horizontal and r.x+i*r.w/(count+1) or r.x+r.w/2
+            local y=horizontal and r.y+r.h/2 or r.y+i*r.h/(count+1)
+            g.setColor(c[1],c[2],c[3],.3+.18*math.sin(UI.clock*.7+i))
+            g.circle('fill',x,y,2);g.line(x-4,y,x+4,y)
+        end
+        g.setColor(1,1,1);return
+    end
     local c=w==7 and {.15,.12,.34} or w==4 and {.12,.42,.44} or w==5 and {.36,.22,.10} or {.75,.83,.89}
     g.setColor(c); g.rectangle('fill',r.x,r.y,r.w,r.h)
     g.setColor(c[1]*.6,c[2]*.6,c[3]*.6); g.rectangle('line',r.x+1,r.y+1,r.w-2,r.h-2)
     g.setColor(1,1,1,.16); g.line(r.x+2,r.y+2,r.x+r.w-2,r.y+2)
     g.setColor(1,1,1)
 end
+function R.underground(m)
+    if m.type=='worm' then return R.wormPhase(m.age or 0)=='hidden' end
+    if m.type=='mole' then local p=R.molePhase(m.age or 0);return p=='hidden' or p=='warning' end
+    return false
+end
 function R.capture(m)
+    if m.is_frozen or m.tunnelTravel or R.underground(m) then return end
     for _,t in ipairs(mobs) do if (t.type=='piege' or t.capture) and not t.active and isTouching(m,t) then
         freeze(m,2); t.active=true
         if m.has_larme and not objet.larme_dropped then objet.larme_dropped=true; objet.larme.x=m.x-15; objet.larme.y=m.y+35 end
     end end
 end
-local function update(m,dt)
-    R.capture(m); if m.is_frozen or m.tunnelTravel then return end
-    local before=m.age
-    m.age=m.age+dt; local vx,vy=m.vx,m.vy; local speed=m.speed
-    local dangerous=true
-    if m.type=='fish' then
-        local s=m.school; local dash=s.age%3>=2.3
-        vx,vy=math.cos(s.angle),math.sin(s.angle); speed=dash and 440 or 13
-        if not dash then
-            local leaderIndex=s.members[2] and 2 or 1
-            local leader=s.members[leaderIndex] or m; local offset=(m.slot-leaderIndex)*29
-            vx=vx+(leader.x+offset-m.x)*.12; vy=vy+(leader.y+math.abs(m.slot-leaderIndex)*24-m.y)*.12
-            local length=math.max(1,math.sqrt(vx*vx+vy*vy)); vx=vx/length; vy=vy/length
-        end
-    elseif m.type=='jelly' then
-        vx,vy=math.cos(m.age*.7+m.x*.001),math.sin(m.age*.8); speed=speed*.65
-        if math.floor((before+.5)/3.5)<math.floor((m.age+.5)/3.5) then R.zap(m) end
-    elseif m.type=='worm' then
-        local a=math.atan2(player.y+12-m.y,player.x+15-m.x)
-        vx,vy=math.cos(a),math.sin(a)
-        dangerous=m.age%4>=1.2
-        if not dangerous then speed=speed*1.3 else speed=speed*.3 end
-        if math.floor((before+2.8)/4)<math.floor((m.age+2.8)/4) then R.spit(m) end
-    elseif m.type=='lanternfish' then
-        vx,vy=math.cos(m.age*.45+m.phase),math.sin(m.age*.6+m.phase)*.65
-    elseif m.type=='mole' then
-        local t=m.age%5; local phase,amount=R.molePhase(m.age); dangerous=phase=='surface' or (phase=='emerge' and amount>.65)
-        if t<.05 or not m.targetX then m.targetX=player.x+15; m.targetY=player.y+12 end
-        if t<1.7 then
-            local a=math.atan2(m.targetY-m.y,m.targetX-m.x); vx,vy=math.cos(a),math.sin(a); speed=196
-        elseif phase~='surface' then speed=0
-        else local a=math.atan2(player.y+12-m.y,player.x+15-m.x); vx,vy=math.cos(a),math.sin(a) end
-    elseif m.type=='gull' then
-        R.moveGull(m,dt)
-        if dangerous and isTouching(player,m) then Hazards.kill() end
-        return
-    end
-    if m.has_larme and not objet.larme_dropped then
-        local a=math.atan2(player.y+12-m.y,player.x+15-m.x)
-        vx,vy=math.cos(a),math.sin(a); speed=math.min(speed,m.type=='mole' and 140 or 95)
-    end
-    m.dir=Art.direction(vx,vy,m.dir)
-    local hx,hy=false,false
-    if m.type=='mole' or m.type=='worm' or m.has_larme then
-        local tx,ty=player.x+15,player.y+12
-        if m.type=='mole' and m.age%5<1.7 then tx,ty=m.targetX,m.targetY end
-        Arena.navigate(m,tx,ty,speed,dt)
-    else
-        hx,hy=Arena.move(m,vx*speed*dt,vy*speed*dt)
-        if (hx or hy) and m.type~='fish' then
-            Arena.navigate(m,m.x+vx*180,m.y+vy*180,speed,dt)
-        end
-    end
-    if hx then m.vx=-m.vx; m.phase=m.phase+math.pi end
-    if hy then m.vy=-m.vy; m.phase=-m.phase+1 end
-    if dangerous and isTouching(player,m) then Hazards.kill() end
-end
-local function draw(m)
-    local phase,amount=R.molePhase(m.age)
-    if m.type=='gull' and m.electric then
-        local g=love.graphics; g.setColor(1,.78,.05,.18); g.circle('fill',m.x,m.y,30)
-        g.setColor(1,.92,.2,.95); g.setLineWidth(2)
-        for j=0,23 do local a=j*math.pi/12; local b=(j+1)*math.pi/12; local r=28+math.sin(m.age*30+j)*2
-            g.line(m.x+math.cos(a)*r,m.y+math.sin(a)*r,m.x+math.cos(b)*30,m.y+math.sin(b)*30) end
-        g.setLineWidth(1)
-    end
-    if m.type=='worm' then phase,amount=R.wormPhase(m.age) end
-    if m.tunnelTravel then
-        local scale,dy=R.travelPose(m); love.graphics.setColor(1,1,1,scale)
-        Art.drawFacing(m.type,m.dir,m.x,m.y+dy,62*scale); love.graphics.setColor(1,1,1); return
-    end
-    local hidden=(m.type=='mole' and (phase=='hidden' or phase=='warning')) or (m.type=='worm' and m.age%4<1.2)
-    if hidden then return end
-    if m.type=='fish' and m.school.age%3>2.05 then
-        love.graphics.setColor(1,.5,.15,.5); love.graphics.circle('line',m.x,m.y,20)
-    end
-    love.graphics.setColor(m.is_frozen and {.55,.75,1} or {1,1,1})
-    if Campaign.biome==7 and not m.is_frozen then love.graphics.setColor(.75,.62,1) end
-    if m.type=='gull' and m.electric then love.graphics.setColor(1,.88,.15) end
-    local size=m.elite and 95 or m.type=='gull' and 75 or 62
-    if (m.type=='worm' or m.type=='mole') and (phase=='dig' or phase=='emerge') then
-        Art.drawBurrowing(m.type,m.dir,m.x+math.sin(m.age*35)*(phase=='dig' and 2 or .7),m.y,size,amount)
-    elseif m.type=='worm' then Art.drawWorm(m.dir,m.x,m.y,size,m.age)
-    else Art.drawFacing(m.type,m.dir,m.x,m.y,size) end
-    love.graphics.setColor(1,1,1)
-end
-for _,kind in ipairs({'fish','jelly','worm','mole','gull','lanternfish'}) do MobBehaviors[kind]={update=update,draw=draw} end
+MobBehaviors.fish=require('mobs.fish')(R)
+MobBehaviors.jelly=require('mobs.jelly')(R)
+MobBehaviors.worm=require('mobs.worm')(R)
+MobBehaviors.lanternfish=require('mobs.lanternfish')(R)
+MobBehaviors.mole=require('mobs.mole')(R)
+MobBehaviors.gull=require('mobs.gull')(R)
 return R

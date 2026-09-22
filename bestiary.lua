@@ -4,7 +4,7 @@ local B={seen={},unread={},dirty=false,entries={
  {id='snake',name='Serpent céleste',art='catalog_snake',world=1,text='Il avance lorsque tu bouges. Les pièges peuvent l’immobiliser ; le toucher est mortel.'},
  {id='scie',trap=true,name='Roue enchaînée',art='wheel',world=1,text='Sa lame tourne au bout d’une chaîne. Évite la tête mobile et traverse lorsque son passage est libre.'},
  {id='piege',trap=true,name='Piège de capture',art='catalog_trap',world=1,text='Il immobilise brièvement sa première victime. Un monstre porteur piégé lâche sa larme. Le piège se réarme après six secondes.'},
- {id='merle',boss=true,name='Le Merle noir',art='merle_down',world=1,text='Il tire sans pause et accélère tous les deux PV perdus. À quatre PV, chaque salve comporte trois plumes. Guide-les vers l’unique œuf dans un nid éloigné. Un œuf brisé lui retire une vie, libère un petit merle et fait apparaître un nouvel œuf. Les nids ralentissent et divisent les tirs.'},
+ {id='merle',boss=true,name='L’Œuf du Merle',art='merle_down',world=1,text='Fonce dans le gros œuf central pour lui retirer une vie, puis éloigne-toi avant le prochain coup. Chaque impact brise un petit œuf dans chacun des six nids fixes. Trois oiseaux tirent immédiatement une plume puis tournent près de leur nid avec des tirs espacés ; trois autres chargent sans ligne d’avertissement. Leurs points de départ sont toujours les mêmes. Brise la coquille en six impacts pour libérer la larme.'},
  {id='magma_spawner',trap=true,name='Nid de larves',art='magma_nest',world=2,text='Un petit nid d’œufs qui fait naître des larves de magma. Tu peux marcher dessus sans danger : seules les larves et leurs explosions sont mortelles. Les œufs remuent avant une éclosion.'},
  {id='magma_larva',name='Larve de magma',art='magma_larva',world=2,text='Elle te poursuit très vite et contourne les murs. Elle clignote avant d’exploser après quelques secondes, ou dès qu’elle te touche. Son explosion est mortelle à proximité, sans laisser de flaque.'},
  {id='imp',name='Goule de braise',art='imp_down',world=2,text='Elle poursuit sa cible, puis accélère pendant trois secondes. Elle contourne les murs.'},
@@ -13,7 +13,7 @@ local B={seen={},unread={},dirty=false,entries={
  {id='waspling',name='Petite guêpe',art='waspling_down',world=2,text='Petite guêpe cuivrée aux yeux verts, invoquée uniquement par la dernière sœur survivante. Elle reste présente jusqu’à la fin du niveau, même après la mort du boss. Son contact est mortel.'},
  {id='storm',boss=true,name='Séraphin des orages',art='storm_down',world=6,text='Ce papillon céleste survole les nuages, lance des éclats et annonce ses frappes de foudre au sol. Après une tempête, ses ailes se posent et une lumière dorée apparaît : touche son corps pendant cette accalmie pour lui retirer une vie. Il reprend ensuite son envol.'},
  {id='hedgehog',boss=true,name='Hérisson des profondeurs',art='hedgehog_down',world=5,text='Il lance douze piques rapides et espacées en cercle. La première manche commence avec une taupe et un rebond. Chaque nouvelle manche ajoute une taupe et un rebond, avec un maximum de deux rebonds et cinq taupes. Il a sept vies. Chaque série terminée lui coûte une vie. Il rebondit sans pause contre les murs et est brièvement étourdi uniquement lorsqu’il perd une vie.'},
- {id='octopus',boss=true,name='Le Poulpe des marées',art='octopus_extended_down',world=4,text='Il lance des crabes qui te poursuivent et des flaques d’encre qui durent sept secondes. Un crabe encré devient noir et erre sans te suivre. Fonce sur un crabe noir pour le propulser à l’opposé du point de contact. Un mur le fait exploser ; un tentacule le fait exploser et étourdit le poulpe pendant trois secondes, sans lui retirer de vie. Pendant ce délai, fonce sur une extrémité lumineuse pour t’y attacher, puis entraîne-la dans un coin éclairé afin de l’arracher. Sinon, le poulpe se réveille et le lien se détache. Chaque tentacule arraché retire une vie : il faut arracher les huit. Son corps reste mortel ; ses tentacules sont mortels quand il tourne. À quatre vies, il accélère fortement et projette une rafale d’encre pendant trois secondes. Les crabes ordinaires sont mortels ; les noirs se repoussent uniquement en fonçant.'},
+ {id='octopus',boss=true,name='Le Poulpe des marées',art='octopus_extended_down',world=4,text='Il lance trois crabes par vague, avec huit secondes entre les vagues, et des flaques d’encre qui durent sept secondes. Un crabe encré devient noir et erre sans te suivre. Fonce sur un crabe noir pour le propulser à l’opposé du point de contact. Un mur le fait exploser ; un tentacule le fait exploser et étourdit le poulpe pendant trois secondes, sans lui retirer de vie. Pendant ce délai, fonce sur une extrémité lumineuse pour t’y attacher, puis entraîne-la dans un coin éclairé afin de l’arracher. Sinon, le poulpe se réveille et le lien se détache. Chaque tentacule arraché retire une vie : il faut arracher les huit. Son corps reste mortel ; ses tentacules sont mortels quand il tourne. À quatre vies, il accélère fortement et projette une rafale d’encre pendant trois secondes. Les crabes ordinaires sont mortels ; les noirs se repoussent uniquement en fonçant.'},
  {id='crab',name='Crabe des marées',art='crab_open',world=4,text='Il te poursuit jusqu’à toucher de l’encre : devenu noir, il erre au hasard. Fonce sur lui pour le propulser à l’opposé du contact ; sans élan, il reste mortel. Il explose contre un mur ou un tentacule. Un impact sur un tentacule étourdit le poulpe trois secondes. Une explosion repousse les crabes voisins, mais les crabes n’explosent pas simplement en se touchant.'},
  {id='abyss_fish',name='Gueule des profondeurs',art='abyss_fish',world=7,text='Il t’évite dans le noir. Il charge tant que tu es éclairé : sur un cercle, ou pendant les six secondes qui suivent une électrocution.'},
  {id='light_jelly',name='Pieuvre abyssale',art='abyss_octopus',world=7,text='Son contact et chaque éclair ajoutent une charge, jusqu’à trois, pour six secondes, renouvelées à chaque impact. Plus tu accumules de charges, plus tu brilles, plus les poissons te repèrent de loin et plus ils te poursuivent vite.'},
@@ -30,7 +30,7 @@ local B={seen={},unread={},dirty=false,entries={
  {id='gull',name='Mouette des vents',art='gull_down',world=6,text='Elle se dirige vers la larme puis tourne autour. Le vent la pousse ; la foudre peut la transformer en mouette électrique.'},
  {id='rain',trap=true,name='Averse acérée',art='rain',world=6,text='Des averses frappent des emplacements fixes. Les ombres bleues annoncent les impacts. Évite également les trous et le bord du sol de nuages.'},
  {id='larva',name='Minuscule ver',art='worm_down',world=5,text='Né d’un œuf projeté contre un mur, il poursuit simplement l’araignée. Petit, mais mortel au contact.'},
- {id='blackbird_chick',name='Petit merle noir',art='merle_down',world=1,text='Il apparaît lorsqu’un œuf est brisé, puis tourne autour de son nid d’origine. Son contact est mortel.'}
+ {id='blackbird_chick',name='Petit merle noir',art='merle_down',world=1,text='Il éclot dans un nid quand le gros œuf est frappé. Certains tournent et tirent des plumes, les autres visent puis chargent. Son contact est mortel.'}
 }}
 function B.load()
     local ok,data=pcall(json.decode,love.filesystem.read('bestiary.json') or '{}')
@@ -41,6 +41,7 @@ function B.load()
 end
 function B.save() if B.dirty then love.filesystem.write('bestiary.json',json.encode({seen=B.seen,unread=B.unread})); B.dirty=false end end
 function B.discover(id)
+    if Replay and Replay.playing then return false end
     for _,e in ipairs(B.entries) do if e.id==id and not B.seen[id] then B.seen[id]=true; B.unread[id]=true; B.latest=id; B.dirty=true; return true end end
 end
 function B.pending() for _,value in pairs(B.unread) do if value then return true end end; return false end
@@ -70,11 +71,11 @@ function B.openBoss()
     B.open(id,boss and boss.hardcore)
 end
 function B.description(e,hardcore)
-    if not hardcore then return e.text end
+    if not démon then return e.text end
     if e.id=='wasp' then
-        return 'LES SŒURS DE LAVE — HARDCORE\n\nTrois sœurs noires et rouges, trois vies chacune. Elles gardent les vitesses originales : 4 % de plus que les sœurs normales, et environ 14 % de plus pour la dernière survivante.\n\n'..e.text..'\n\nAccès : porte droite du Sanctuaire. Ce combat dispose de son propre classement et du succès Plus rapide que Gillou.'
+        return 'LES SŒURS DE LAVE — MODE DÉMON\n\nTrois sœurs noires et rouges, trois vies chacune. Elles gardent les vitesses originales : 4 % de plus que les sœurs normales, et environ 14 % de plus pour la dernière survivante.\n\n'..e.text..'\n\nAccès : porte droite du Sanctuaire. Ce combat dispose de son propre classement. Gillou récompense trois touches pendant un même KO des sœurs.'
     end
-    return 'Cette version hardcore n’est pas encore disponible. Pour le moment, seules les Sœurs de lave se trouvent derrière la porte hardcore du Sanctuaire.\n\nVERSION NORMALE\n\n'..e.text
+    return 'Cette version démon n’est pas encore disponible. Pour le moment, seules les Sœurs de lave se trouvent derrière la porte démon du Sanctuaire.\n\nVERSION NORMALE\n\n'..e.text
 end
 function B.open(id,hardcore)
     UI.bestScroll=0;UI.bestHardcore=hardcore or false

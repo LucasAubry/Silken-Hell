@@ -4,14 +4,18 @@ function A.maxanceTime() return Scoring.total(552.732,95) end
 function A.gillouTime() return Scoring.total(2264.85,513) end
 A.list={
     {id='gillou',name='Plus rapide que Gillou',description=function()
-        return 'Vaincre les Sœurs de lave hardcore en moins de '..UI.time(A.gillouTime())..', pénalités comprises.'
+        return 'Toucher les trois abeilles pendant le même KO, avant que l’une se réveille.'
     end},
     {id='maxance',name='Maxance',description=function()
         return 'Terminer le Paradis avec au moins 95 morts et un chrono final de 9:44.40 ou plus.'
     end}
 }
+for _,world in ipairs({1,6,5,4,7,2,3}) do
+    local w=world
+    A.list[#A.list+1]={id='flawless'..w,name=(Worlds.names[w] or 'Monde')..' sans faute',description=function() return 'Terminer '..Worlds.names[w]..' sans mourir.' end}
+end
 function A.check(score,unlocked)
-    if score.world==14 and Scoring.total(score.time,score.deaths)<A.gillouTime() then unlocked.gillou=true end
+    if score.deaths==0 and not Worlds.isSecret(score.world) then unlocked['flawless'..score.world]=true end
     if score.world==1 and score.deaths>=95 and Scoring.total(score.time,score.deaths)>=A.maxanceTime() then unlocked.maxance=true end
 end
 return A

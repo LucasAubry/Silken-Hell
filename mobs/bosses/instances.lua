@@ -1,6 +1,6 @@
 -- Each custom encounter owns its state, including duplicates of the same boss.
 local B={items={}}
-local files={skeleton_head='abyss',storm='storm',merle='raven',wasp='wasp',hedgehog='hedgehog',octopus='octopus',skeleton_fish='abyss'}
+local files={skeleton_head='mobs/bosses/abyss/init',storm='mobs/bosses/storm/init',merle='mobs/bosses/raven/init',wasp='mobs/bosses/wasp/init',hedgehog='mobs/bosses/hedgehog/init',octopus='mobs/bosses/octopus/init',skeleton_fish='mobs/bosses/abyss/init'}
 function B.reset() B.items={} end
 function B.any() return #B.items>0 end
 function B.alive()
@@ -25,9 +25,9 @@ function B.load(entries,nests,lights)
             while #mobs>count do table.remove(mobs) end
             player.x,player.y=px,py
             if e.type=='merle' then
-                boss.nests=#nests>=2 and require('json').decode(require('json').encode(nests)) or {{x=90,y=130,rx=34,ry=25},{x=Arena.width-90,y=470,rx=34,ry=25}}
-                local n=boss.nests[1]; boss.eggs={{x=n.x,y=n.y,spot=1,glow=.35}}
+                boss.setupNests(#nests>=2 and require('json').decode(require('json').encode(nests)) or nil)
             end
+            boss.name=e.customName or boss.name
             boss.movementRate=e.movementRate or 1; boss.attackRate=e.attackRate or 1
             B.items[#B.items+1]={kind=e.type=='skeleton_head' and 'skeleton_fish' or e.type,boss=boss}
         end
@@ -50,7 +50,7 @@ end
 function B.speed()
     local factor=1
     for _,item in ipairs(B.items) do if item.kind=='merle' then
-        for _,n in ipairs(item.boss.nests) do if Hazards.inEllipse(player.x+15,player.y+12,n,0) then factor=.14 end end
+        for _,n in ipairs(item.boss.nests) do if Hazards.inEllipse(player.x+15,player.y+12,n,0) then factor=.40 end end
     end end
     return factor
 end
@@ -108,7 +108,7 @@ function B.resize(ratio)
         if b.x then b.x=b.x*ratio end
         if b.head then b.head.x=b.head.x*ratio end
         if b.origin then b.origin.x=b.origin.x*ratio; b.buildBones() end
-        for _,key in ipairs({'projectiles','strikes','nests','eggs','chicks','minions','pools','shots','skins','crabs','wounds','lightSites','threads','inkPools','blasts','eruptions'}) do
+        for _,key in ipairs({'projectiles','strikes','nests','eggs','chicks','minions','pools','shots','skins','crabs','wounds','lightSites','threads','plankton','corpses','inkPools','blasts','eruptions'}) do
             for _,p in ipairs(b[key] or {}) do if p.x then p.x=p.x*ratio end; if p.cx then p.cx=p.cx*ratio end; if p.tx then p.tx=p.tx*ratio end; if p.fromX then p.fromX=p.fromX*ratio end end
         end
         end

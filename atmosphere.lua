@@ -16,7 +16,40 @@ end
 function A.settings(world,level)
     local depth=math.max(0,math.min(1,((level or 1)-1)/9))
     local rank=math.min(7,Worlds.rank(world))
-    return {transmission=math.min(1,math.max(.12,1-(rank-1)*.13)*(1-depth*.42)+(world==2 and .06 or 0)),depth=depth,seed=(level or 1)*1.731+world*.43}
+    return {transmission=math.min(1,math.max(.12,1-(rank-1)*.13)*(1-depth*.42)+(world==2 and .06 or world==5 and .42 or world==4 and .25 or 0)),depth=depth,seed=(level or 1)*1.731+world*.43}
+end
+local function variation(seed)
+    local v=math.sin(seed*127.1+311.7)*43758.5453
+    return v-math.floor(v)
+end
+-- Quiet background drips: independent pauses, heights and accelerated falls.
+function A.drawDrops()
+    if Campaign.biome~=5 or Campaign.world==3 then return end
+    local g=love.graphics;local t=UI.clock
+    g.push('all');g.setShader();g.setBlendMode('alpha');g.setLineWidth(.6)
+    for i=1,7 do
+        local period=6+variation(i)*7
+        local elapsed=t+variation(i+80)*period
+        local cycle=math.floor(elapsed/period);local age=elapsed%period
+        local seed=i*31+cycle*173
+        local delay=variation(seed+1)*.8
+        local duration=.65+variation(seed+2)*.6
+        local u=(age-delay)/duration
+        local x=40+variation(seed+3)*(Arena.width-80)
+        local start=30+variation(seed+4)*18
+        local floor=math.min(565,start+90+variation(seed+5)*210)
+        local drift=(variation(seed+6)-.5)*7
+        if u>=0 and u<1 then
+            local y=start+(floor-start)*u*u
+            x=x+drift*u+math.sin(u*math.pi)*1.2
+            g.setColor(.52,.72,.77,.33);g.line(x,y,x,y+1.3)
+        elseif u>=1 and age-delay-duration<.3 then
+            local fade=(age-delay-duration)/.3
+            g.setColor(.40,.65,.71,(1-fade)*.14)
+            g.line(x+drift-1, floor, x+drift+1, floor)
+        end
+    end
+    g.pop()
 end
 function A.draw()
     local world=Campaign.world==3 and 3 or Campaign.biome
@@ -38,9 +71,15 @@ function A.draw()
     while #lights<8 do lights[#lights+1]={0,0,1,0} end
     A.shader:send('localLights',unpack(lights))
     g.setShader(A.shader); g.rectangle('fill',0,0,Arena.width,600); g.setShader()
+    if world==5 then
+        A.mist=A.mist or g.newShader('assets/cave_mist.glsl')
+        A.mist:send('clock',t);A.mist:send('dimensions',{Arena.width,600})
+        A.mist:send('traveler',{player.x+15,player.y+12})
+        g.setShader(A.mist);g.setColor(1,1,1);g.rectangle('fill',0,0,Arena.width,600);g.setShader()
+    end
     g.setBlendMode('add')
     -- Bounded, deterministic motes: no growing particle arrays or per-frame random state.
-    local count=world==6 and 38 or 76
+    local count=world==5 and 0 or world==6 and 38 or 76
     for i=1,count do
         local seed=i*2.39996323+settings.seed
         local speed=world==2 and 17 or world==4 and 7 or 3

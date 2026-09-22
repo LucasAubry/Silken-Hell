@@ -7,13 +7,12 @@ import re
 
 root = Path(__file__).resolve().parents[1]
 paths = set()
-for pattern in ('*.lua', '*.glsl', '*.ttf', 'levels/**/*.lua', 'assets/**/*',
-                'texture/**/*.png', 'tests/*.lua', 'designer/**/*'):
+for pattern in ('*.lua', '*.glsl', '*.ttf', 'levels/**/*.lua', 'mobs/**/*.lua', 'assets/**/*',
+                'texture/**/*.png', 'tests/*.lua', 'tests/*.json', 'designer/**/*', 'music et song/**/*.mp3'):
     for path in root.glob(pattern):
         if (path.is_file() and not any(part.startswith('.') or part == '__pycache__' for part in path.relative_to(root).parts)
                 and not re.search(r' \d+\.[^.]+$', path.name) and path.suffix not in ('.tmp', '.updated', '.pyc', '.log')):
             paths.add(path)
-# Build outside iCloud, then publish a complete archive atomically.
 with tempfile.TemporaryDirectory(prefix='silken-build-') as folder:
     output = Path(folder) / 'game.love'
     with ZipFile(output, 'w', ZIP_DEFLATED) as archive:

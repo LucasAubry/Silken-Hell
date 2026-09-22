@@ -36,13 +36,16 @@ function S.updateDuel(dt)
     if Campaign.biome==7 and player.circleLight and (player.charges or 0)==0 then Abyss.charge(6) end
     if S.duel.kind=='mob' then
         S.duel.time=S.duel.time+dt;objet.larme.taken=true
-        if S.duel.time>=20 then App.state='customVictory' end
+        if S.duel.time>=20 then App.state='customVictory';if Replay and not Replay.playing then Replay.finish() end end
     end
 end
 function S.position(i)
     return Arena.width*(.23+((i-1)%3)*.27),i<=3 and 175 or 425
 end
 function S.open()
+    if Replay then Replay.recording=false end
+    if not Worlds.canEnter(8) and os.getenv('SILKEN_TEST')~='1' then return end
+    App.practice=nil
     App.selectedWorld=8
     App.sessionLayout=nil;App.singleLevel=false;App.workshopMap=nil;App.custom=false
     S.duel=nil;S.page=1;S.category=S.category or 'boss';S.refresh()
@@ -81,7 +84,7 @@ function S.drawWorld()
     g.setColor(.055,.025,.02);g.rectangle('fill',Arena.width-36,248,36,104)
     g.setColor(1,1,.94);g.line(Arena.width-30,260,Arena.width-15,260,Arena.width-15,340,Arena.width-30,340)
     g.circle('fill',Arena.width-24,300,3)
-    UI.text(S.hardcore and 'Normal' or 'Hardcore',Arena.width-125,360,'small',{1,.7,.3},110,'center')
+    UI.text(S.hardcore and 'Normal' or 'Mode démon',Arena.width-125,360,'small',{1,.7,.3},110,'center')
     for i,p in ipairs(S.portals) do local x,y=S.position(i)
         g.setColor(.1,.065,.075);g.ellipse('fill',x,y+18,65,31)
         g.setColor(.9,.9,.84);g.ellipse('line',x,y+18,65,31)
@@ -97,7 +100,7 @@ function S.drawWorld()
     g.setColor(1,1,1);Characters.draw(S.x,S.y,62,S.facing or 'down')
 end
 function S.draw()
-    UI.text(S.hardcore and 'SANCTUAIRE · HARDCORE' or 'LE SANCTUAIRE',300,24,'heading',{1,1,.94},600,'center')
+    UI.text(S.hardcore and 'SANCTUAIRE · MODE DÉMON' or 'LE SANCTUAIRE',300,24,'heading',{1,1,.94},600,'center')
     UI.text('Approche une miniature pour entrer dans son duel.',300,68,'small',{.8,.85,.9},600,'center')
     if not S.hardcore then
         UI.button(S.category=='mobs' and 'Voir les boss' or 'Voir les créatures',100,655,240,40,function() S.category=S.category=='mobs' and 'boss' or 'mobs';S.page=1;S.refresh() end)

@@ -1,6 +1,7 @@
 local U={buttons={},focus='name',boardWorld=1,clock=0}
 local g=love.graphics
 local utf8=require 'utf8'
+local BossHUD=require 'boss_hud'
 local gold={0.82,0.72,0.49}; local muted={0.47,0.59,0.61}; local white={0.91,0.91,0.83}
 function U.load()
     U.fonts={tiny=g.newFont(10),small=g.newFont(12),body=g.newFont(16),medium=g.newFont(22),title=g.newFont('police.ttf',82),heading=g.newFont(28)}
@@ -45,7 +46,7 @@ function U.button(label,x,y,w,h,callback,disabled,primary)
         end
     end
     U.text(label,x+12,y+(h-20)/2,'body',disabled and muted or primary and {1,0.93,0.7} or white,w-24,'center')
-    U.buttons[#U.buttons+1]={x=x,y=y,w=w,h=h,run=callback,disabled=disabled}
+    U.buttons[#U.buttons+1]={x=x,y=y,w=w,h=h,run=callback,disabled=disabled,sound=(label:lower():find('retour') or label:lower():find('quitter')) and 'back' or 'go'}
 end
 function U.mouse(x,y)
     if not x then x,y=love.mouse.getPosition() end
@@ -55,15 +56,15 @@ end
 function U.click(x,y)
     for i=#U.buttons,1,-1 do local b=U.buttons[i]
         if x>=b.x and x<=b.x+b.w and y>=b.y and y<=b.y+b.h then
-            if not b.disabled then Audio.play('click'); b.run() end; return
+            if not b.disabled then Audio.play(b.sound or 'go'); b.run() end; return
         end
     end
 end
 function U.theme()
-    local w=Worlds.biome(App.selectedWorld or 1,1); local palette=Worlds.color(w)
+    local w=App.selectedWorld==8 and 8 or Worlds.biome(App.selectedWorld or 1,1); local palette=Worlds.color(w)
     U.shader:send('time',U.clock); U.shader:send('biome',w)
     U.shader:send('deep',palette.floor); U.shader:send('fog',palette.ink)
-    local tint=({[1]={1,.83,.47},[2]={1,.22,.08},[3]={1,.3,.4},[4]={.15,.9,1},[5]={.75,.46,.22},[6]={.65,.87,1},[7]={.45,.48,1}})[w] or {1,.83,.47}
+    local tint=({[1]={1,.83,.47},[2]={1,.22,.08},[3]={1,.3,.4},[4]={.15,.9,1},[5]={.75,.46,.22},[6]={.65,.87,1},[7]={.45,.48,1},[8]={.72,.55,1}})[w] or {1,.83,.47}
     U.shader:send('accent',tint)
     for i=1,3 do gold[i]=tint[i]*.8+.12 end
     return w,tint
@@ -71,26 +72,17 @@ end
 function U.background()
     local w,tint=U.theme()
     g.setShader(U.shader); g.setColor(1,1,1); g.draw(U.pixel,0,0,0,1200,750); g.setShader()
-    -- Feathered wings and an orbiting halo, drawn as native vector assets.
-    g.push(); g.translate(600,265+math.sin(U.clock*0.55)*5)
-    if w==1 or w==6 or w==3 then for side=-1,1,2 do
-        for i=1,13 do
-            local x=side*(20+i*11); local y=28+i*1.2
-            g.setColor(0.72,0.78,0.70,0.10+(13-i)*0.011)
-            g.polygon('fill',side*10,48,x,y-35,x+side*(48+i*1.8),y-80+i*2,x+side*14,y+18)
-            g.setColor(0.8,0.75,0.55,0.17); g.line(side*10,48,x+side*40,y-55)
-        end
-    end
-    end
-    g.setColor(gold); g.ellipse('line',0,-32,28,8)
-
-    g.pop()
     -- The actual player sprite is the menu's living centerpiece.
     if player and Art.images.original then
         local x=600+math.sin(U.clock*0.32)*9
         local y=247+math.sin(U.clock*0.9)*7
         g.setBlendMode('add')
-        for i=10,1,-1 do g.setColor(tint[1],tint[2],tint[3],0.006*i); g.ellipse('fill',x,y+38,45+i*8,18+i*4) end
+        if not U.halo then
+            local vertices={{0,0,0,0,1,1,1,.26}}
+            for i=0,64 do local a=i*math.pi/32;vertices[#vertices+1]={math.cos(a),math.sin(a),0,0,1,1,1,0} end
+            U.halo=g.newMesh(vertices,'fan','static')
+        end
+        g.setColor(tint[1],tint[2],tint[3],.55+.06*math.sin(U.clock*.8));g.draw(U.halo,x,y,0,155,115)
         g.setBlendMode('alpha')
         g.setColor(0.86,0.80,0.57,0.5); g.line(x,62,x,y-80)
         g.setColor(1,1,1); Characters.draw(x,y,216,'down')
@@ -109,6 +101,7 @@ end
 function U.time(t) return string.format('%02d:%05.2f',math.floor(t/60),t%60) end
 function U.board(x,y,w,country)
     U.panel(x,y,w,410)
+    if not Worlds.canViewScores(U.boardWorld) then U.text('Classement voilé',x+16,y+16,'medium',gold);U.text('Termine ce monde pour découvrir ses records.',x+24,y+180,'body',muted,w-48,'center');return end
     local function open() U.boardCountry=country; U.boardPage=1; App.state='rankings' end
     U.buttons[#U.buttons+1]={x=x,y=y,w=w,h=410,run=open}
     U.text(country and U.countryName() or 'Monde',x+16,y+14,'medium')
@@ -131,18 +124,24 @@ function U.board(x,y,w,country)
 end
 function U.worldTabs(y)
     local list=Worlds.isSecret(U.boardWorld) and {9,10,11,12,13,14} or Worlds.order
-    for i,n in ipairs(list) do local name=Worlds.names[n]
-        U.button(name,48+(i-1)*159,y,150,38,function() U.boardWorld=n; U.boardPage=1; Online.refresh(n) end,false,U.boardWorld==n)
+    for i,n in ipairs(list) do local name=Worlds.canViewScores(n) and Worlds.names[n] or '???'
+        U.button(name,48+(i-1)*159,y,150,38,function() U.boardWorld=n; U.boardPage=1; Online.refresh(n) end,not Worlds.canViewScores(n),U.boardWorld==n)
     end
 end
 function U.rankings()
-    U.button(Worlds.isSecret(U.boardWorld) and 'Mondes classiques' or 'Hardcore',950,92,205,36,function() U.boardWorld=Worlds.isSecret(U.boardWorld) and 1 or 14;U.boardPage=1 end)
+    U.button(Worlds.isSecret(U.boardWorld) and 'Mondes classiques' or 'Mode démon',950,92,205,36,function() U.boardWorld=Worlds.isSecret(U.boardWorld) and 1 or 14;U.boardPage=1 end)
     U.text('Classement des âmes',300,90,'heading',gold,600,'center'); U.worldTabs(145)
-    U.button('Monde',340,194,250,34,function() U.boardCountry=false; U.boardPage=1 end,false,not U.boardCountry)
-    U.button(U.countryName(),610,194,250,34,function() U.boardCountry=true; U.boardPage=1 end,false,U.boardCountry)
+    U.button('Monde',220,194,240,34,function() U.boardLocal=false;U.boardCountry=false;U.boardPage=1 end,false,not U.boardLocal and not U.boardCountry)
+    U.button(U.countryName(),480,194,240,34,function() U.boardLocal=false;U.boardCountry=true;U.boardPage=1 end,false,not U.boardLocal and U.boardCountry)
+    U.button('Cet appareil',740,194,240,34,function() U.boardLocal=true;U.boardPage=1 end,false,U.boardLocal)
     U.boardPage=U.boardPage or 1
-    local data,status=Online.page(U.boardWorld,U.boardCountry,U.boardPage)
-    U.panel(200,244,800,352)
+    local data,status
+    if U.boardLocal then
+        local all=Profile.ranking(U.boardWorld);local rows={}
+        for i=(U.boardPage-1)*10+1,math.min(U.boardPage*10,#all) do rows[#rows+1]=all[i] end
+        data={scores=rows,total=#all,hasMore=U.boardPage*10<#all};status='local'
+    else data,status=Online.page(U.boardWorld,U.boardCountry,U.boardPage) end
+    U.panel(150,244,970,352)
     U.text('Rang',224,255,'small',muted); U.text('Joueur',330,255,'small',muted)
     U.text('Chrono',724,255,'small',muted); U.text('Morts · pénalité',843,255,'small',muted)
     for i,s in ipairs(data.scores) do local y=287+(i-1)*29
@@ -150,12 +149,14 @@ function U.rankings()
         g.setColor(1,1,1); Characters.portrait(s.skin or 1,300,y+9,26)
         U.text(s.name,330,y,'body',white); U.text(U.time(s.time),724,y,'body',gold)
         U.text(tostring(s.deaths)..' ('..Scoring.label(s.deaths)..')',843,y,'small',white)
+        U.button('Visionner',990,y-2,112,25,function() Replay.watch(s) end,not (s.replay or s.hasReplay))
     end
     if #data.scores==0 then U.text(status=='loading' and 'Connexion…' or status=='offline' and 'Connexion indisponible' or 'Aucun score',300,407,'body',muted,600,'center') end
     U.text(string.format('Page %d / %d  ·  %d records',U.boardPage,math.max(1,math.ceil((data.total or 0)/10)),data.total or 0),370,610,'body',gold,460,'center')
     U.button('Précédente',200,605,160,36,function() U.boardPage=U.boardPage-1 end,U.boardPage==1 or status=='loading')
     U.button('Suivante',840,605,160,36,function() U.boardPage=U.boardPage+1 end,not data.hasMore or status=='loading')
-    U.button('Retour',490,657,220,38,function() App.state='menu' end)
+    U.text(Replay.status or '',190,641,'small',muted,820,'center')
+    U.button('Retour',490,675,220,38,function() App.state='menu' end)
 end
 function U.countryName()
     local names={FR='France',BE='Belgique',CH='Suisse',CA='Canada',US='États-Unis',GB='Royaume-Uni',DE='Allemagne',ES='Espagne',IT='Italie',PT='Portugal',MA='Maroc',DZ='Algérie',TN='Tunisie'}
@@ -172,7 +173,7 @@ function U.menu()
     U.button('PARAMÈTRES',425,511,170,38,function() App.state='settings'; U.returnTo='menu' end)
     U.button('HISTOIRE',605,511,170,38,function() App.state='story'; U.storyOffset=0 end)
     U.button('BESTIAIRE',425,557,170,38,Bestiary.open)
-    U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,function() App.state='worlds' end)
+    U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open)
     U.button('SUCCÈS',605,557,170,38,function() App.state='achievements' end)
     U.button('WORKSHOP',425,603,170,38,Workshop.open)
     U.button('CRÉER',605,603,170,38,Creator.open)
@@ -222,18 +223,7 @@ function U.settings()
     U.button(love.window.getFullscreen() and 'Plein écran : activé  ·  F11' or 'Plein écran : désactivé  ·  F11',360,574,480,35,App.toggleFullscreen)
     U.button('Retour',360,632,480,40,function() U.binding=nil; App.state=U.returnTo or 'menu'; Profile.save() end,false,true)
 end
-function U.worlds()
-    U.text('Choisis ton monde',300,95,'heading',white,600,'center')
-    for i,n in ipairs(Worlds.selection) do local name=Worlds.names[n]; local x=60+((i-1)%4)*270; local y=i<=4 and 170 or 385
-        U.panel(x,y,255,195)
-        U.text(string.format('MONDE %02d',i),x+24,y+20,'small',gold)
-        U.text(name,x+24,y+52,'heading',Worlds.color(n).tear)
-        local locked=not Worlds.canEnter(n)
-        local prev=Worlds.previous(n)
-        U.button((locked and 'Termine '..(Worlds.names[prev] or 'le Paradis') or 'Sélectionner'),x+16,y+130,223,42,function() App.selectedWorld=n;if n~=8 then U.boardWorld=n;Online.refresh(n) end;App.state='menu' end,locked,n==App.selectedWorld)
-    end
-    U.button('Retour',490,651,220,38,function() App.state='menu' end)
-end
+function U.worlds() WorldMap.draw() end
 function U.bestiaryIcon(entry,x,y,size)
     g.setColor(1,1,1)
     if entry.id=='electric_gull' then g.setColor(1,.88,.15) end
@@ -271,7 +261,7 @@ function U.bestiary()
         U.text(U.bestHardcore and e.id=='wasp' and 'Les Sœurs de lave' or e.name,490,332,'heading',white,570,'center')
         U.text(Worlds.names[e.world],490,373,'small',gold,570,'center')
         if e.boss then
-            U.button(U.bestHardcore and 'Voir la version normale' or 'Voir la version hardcore',585,399,390,34,function() U.bestHardcore=not U.bestHardcore;U.bestScroll=0 end)
+            U.button(U.bestHardcore and 'Voir la version normale' or 'Voir la version démon',585,399,390,34,function() U.bestHardcore=not U.bestHardcore;U.bestScroll=0 end)
         end
         local content=Bestiary.description(e,U.bestHardcore and e.boss)
         local font=U.fonts.body;local _,lines=font:getWrap(content,490)
@@ -318,6 +308,7 @@ function U.iconButton(cx,cy,kind,callback)
     U.buttons[#U.buttons+1]={x=cx-20,y=cy-20,w=40,h=40,run=callback}
 end
 function U.gameHud()
+    if App.practice and not Replay.playing then U.text('Entraînement · non classé',640,22,'small',{.8,.85,.9}) end
     if Campaign.biome==7 then U.text('Charges : '..(player.charges or 0),790,22,'small',{.4,.9,1}) end
     g.setColor(1,1,1); Art.draw('clock',49,31,25)
     U.outlined(U.time(Scoring.total(timer,player.death)),70,17,'medium',nil,144)
@@ -325,34 +316,18 @@ function U.gameHud()
     U.outlined(tostring(player.death),267,17,'medium',nil,65)
     U.text(Scoring.label(player.death),335,24,'small',gold)
     U.outlined(string.format('%02d',player.level),564,16,'medium',nil,72)
-    U.iconButton(1090,31,'pause',function() App.state='pause' end)
-    U.iconButton(1150,31,'restart',App.restartCurrent)
-    local bossId=Bestiary.currentBoss()
-    if bossId or Bestiary.pending() then U.button('i',1008,13,36,36,Bestiary.openBoss,false,true) end
-    if bossId then U.button('HC',940,13,58,36,function() Bestiary.openBoss();U.bestHardcore=true;U.bestScroll=0 end) end
-    local boss=Bosses.any() and Bosses.hud() or Raven.active and Raven or Wasp.active and Wasp or Storm.active and Storm or Hedgehog.active and Hedgehog or (Abyss.boss and Abyss) or Octopus
-    if boss.active and not boss.defeated then
-        U.outlined(boss.name,335,45,'medium',nil,530)
-        local x,y,w,h=335,77,530,18
-        g.setColor(0.12,0.045,0.09,0.92); bevel('fill',x-4,y-4,w+8,h+8,8)
-        g.setColor(0.86,0.7,0.34); bevel('line',x-4,y-4,w+8,h+8,8)
-        if boss.bees then
-            local gap=12;local width=(w-gap*2)/3
-            for index,bee in ipairs(boss.bees) do
-                local left=x+(index-1)*(width+gap)
-                g.setColor(.22,.08,.1);g.rectangle('fill',left,y,width,h)
-                g.setColor(.8,.25,.13);g.rectangle('fill',left,y,width*bee.hp/3,h)
-                g.setColor(1,.65,.3);g.rectangle('fill',left,y,width*bee.hp/3,3)
-                for j=1,2 do g.setColor(.12,.04,.06);g.line(left+width*j/3,y,left+width*j/3,y+h) end
-            end
-        else
-            local fill=w*boss.hp/boss.maxHp
-            g.setColor(0.5+boss.flash,0.13,0.19);g.rectangle('fill',x,y,fill,h)
-            g.setColor(1,.59,.33);g.rectangle('fill',x,y,fill,3)
-            for i=1,math.min(20,boss.maxHp)-1 do local xx=x+w*i/math.min(20,boss.maxHp);g.setColor(.18,.055,.1);g.line(xx,y+1,xx,y+h-1) end
-        end
-        g.setColor(1,1,1); Art.draw('feather',x-23,y+9,32,-0.7); Art.draw('feather',x+w+23,y+9,32,0.7)
+    if Replay.playing then
+        U.iconButton(1090,31,'pause',function() Replay.paused=not Replay.paused end)
+        U.button('Quitter',1118,13,75,36,function() Replay.stop() end)
+    else
+        U.iconButton(1090,31,'pause',function() App.state='pause' end)
+        U.iconButton(1150,31,'restart',App.restartCurrent)
     end
+    local bossId=Bestiary.currentBoss()
+    if not Replay.playing and (bossId or Bestiary.pending()) then U.button('i',1008,13,36,36,Bestiary.openBoss,false,true) end
+    if bossId and not Replay.playing then U.button('Démon',904,13,94,36,function() Bestiary.openBoss();U.bestHardcore=true;U.bestScroll=0 end) end
+    local boss=Bosses.any() and Bosses.hud() or Raven.active and Raven or Wasp.active and Wasp or Storm.active and Storm or Hedgehog.active and Hedgehog or (Abyss.boss and Abyss) or Octopus
+    BossHUD.draw(boss)
 end
 function U.story()
     U.panel(230,105,740,563)
@@ -368,21 +343,20 @@ function U.story()
         g.setColor(white); g.draw(U.storyText,280,596-(U.storyOffset or 0))
         g.setScissor()
     end
-    for i,a in ipairs(Achievements.list) do
-            local y=282+(i-1)*151; local unlocked=Profile.achievements[a.id]
-            U.panel(270,y,660,137)
-            U.text(a.name,292,y+17,'heading',unlocked and gold or white,616)
-            U.text(a.description(),292,y+59,'body',muted,616)
-            U.text(unlocked and 'DÉBLOQUÉ' or 'À DÉBLOQUER',292,y+111,'small',unlocked and gold or muted,616)
-        end
-        U.button('Retour',440,610,320,40,function() App.state='menu' end)
+    U.button('Retour',440,610,320,40,function() App.state='menu' end)
+end
+function U.difficulty(level,extra,x,y)
+    level=level or 1;local colors={{1,1,1},{1,.88,.71},{1,.65,.42},{1,.36,.24},{1,.12,.12}}
+    local c=colors[level] or colors[1]
+    for i=1,level do local xx=x+(i-1)*13;g.setColor(c);g.circle('fill',xx,y+4,4);g.polygon('fill',xx-4,y+3,xx,y-5,xx+4,y+3) end
+    if (extra or 0)>0 then U.text('+'..extra,x+level*13,y-5,'small',c) end
 end
 function U.workshop()
     U.panel(90,82,1020,610)
     U.text('WORKSHOP',125,101,'heading',white,950,'center')
     if Workshop.publishing then
         for i=1,5 do local row=Workshop.localRows[(Workshop.localPage-1)*5+i]; if row then
-            U.button(Worlds.names[row.layout.world]..' · Niveau '..row.layout.level,125,167+(i-1)*61,400,48,function() Workshop.selectLocal(row) end,false,Workshop.selected==row)
+            U.button('Carte '..((Workshop.localPage-1)*5+i)..' · '..Worlds.names[row.layout.biome or row.layout.world],125,167+(i-1)*61,400,48,function() Workshop.selectLocal(row) end,false,Workshop.selected==row)
         end end
         U.button('Précédent',125,480,190,36,function() Workshop.localPage=Workshop.localPage-1 end,Workshop.localPage==1)
         U.button('Suivant',330,480,195,36,function() Workshop.localPage=Workshop.localPage+1 end,Workshop.localPage*5>=#Workshop.localRows)
@@ -391,18 +365,27 @@ function U.workshop()
             U.button(Workshop.title..(Workshop.focus=='title' and '|' or ''),560,205,510,48,function() Workshop.focus='title'; love.keyboard.setTextInput(true) end)
             U.text('Ton pseudo',567,275,'small',gold)
             U.button(Workshop.author..(Workshop.focus=='author' and '|' or ''),560,303,510,44,function() Workshop.focus='author'; love.keyboard.setTextInput(true) end)
-            U.button('PUBLIER LA CARTE',560,395,510,48,Workshop.publish,Workshop.busy,true)
-            U.button('Tester avant de publier',560,460,510,42,function() Workshop.playLayout(Workshop.selected.layout) end,Workshop.busy)
+            U.button('Biome : '..Worlds.names[Workshop.biome],125,535,400,35,function() Workshop.biome=Worlds.order[Worlds.rank(Workshop.biome)%#Worlds.order+1] end)
+            U.button('Difficulté '..Workshop.difficulty..'/5',560,363,510,35,function() Workshop.difficulty=Workshop.difficulty%5+1 end)
+            U.difficulty(Workshop.difficulty,tonumber(Workshop.difficultyExtra) or 0,576,421)
+            if Workshop.difficulty==5 then U.button('Rouge + '..Workshop.difficultyExtra,755,409,315,34,function() Workshop.focus='difficultyExtra';love.keyboard.setTextInput(true) end) end
+            U.button('PUBLIER LA CARTE',560,525,510,43,Workshop.publish,Workshop.busy or not Workshop.canPublish(),true)
+            U.button('Terminer la carte pour la valider',560,460,510,42,Workshop.testPublication,Workshop.busy)
         end
         U.button('Retour au Workshop',400,631,400,40,Workshop.open)
     else
         U.button('Publier ma carte',125,149,300,40,Workshop.chooseLocal)
         U.button('Créer une carte',440,149,300,40,Creator.open)
         U.button('Actualiser',755,149,315,40,Workshop.refresh,Workshop.busy)
+        U.button(Workshop.filterBiome==0 and 'Tous les biomes' or Worlds.names[Workshop.filterBiome],125,198,300,32,function()
+            local rank=Workshop.filterBiome==0 and 0 or Worlds.rank(Workshop.filterBiome);Workshop.filter('filterBiome',Worlds.order[rank+1] or 0)
+        end,Workshop.busy)
+        U.button(Workshop.filterDifficulty==0 and 'Toutes difficultés' or 'Difficulté '..Workshop.filterDifficulty,440,198,300,32,function() Workshop.filter('filterDifficulty',(Workshop.filterDifficulty+1)%6) end,Workshop.busy)
+        U.button(({stars='Les plus étoilées',easy='Faciles → difficiles',hard='Difficiles → faciles'})[Workshop.sort],755,198,315,32,function() Workshop.filter('sort',({stars='easy',easy='hard',hard='stars'})[Workshop.sort]) end,Workshop.busy)
         for i,row in ipairs(Workshop.rows) do
-            local y=208+(i-1)*43
-            U.text(row.title,130,y+5,'small',white,475)
-            U.text(row.author..' · '..(Worlds.names[row.world] or ''),610,y+5,'small',muted,240)
+            local y=240+(i-1)*39
+            U.text(row.title,130,y+5,'small',white,310);U.difficulty(row.difficulty,row.difficultyExtra,455,y+11)
+            U.text(row.author..' · '..(Worlds.names[row.biome or row.world] or ''),610,y+5,'small',muted,240)
             U.button('   '..row.stars,865,y,85,34,function() Workshop.star(row) end,row.voting)
             local points={}; for point=0,9 do local angle=-math.pi/2+point*math.pi/5; local radius=point%2==0 and 8 or 3.7; points[#points+1]=883+math.cos(angle)*radius; points[#points+1]=y+17+math.sin(angle)*radius end
             g.setColor(row.starred and gold or muted); g.polygon(row.starred and 'fill' or 'line',points)
@@ -417,9 +400,9 @@ function U.workshop()
 end
 function U.draw()
     U.buttons={}
-    if App.state=='playing' then U.gameHud();if Secret.duel then U.text(Secret.duel.name..(Secret.duel.kind=='mob' and (' · Survie '..math.ceil(math.max(0,20-Secret.duel.time))..' s') or ' · Duel'),300,90,'body',white,600,'center') end;return end
+    if App.state=='playing' then U.gameHud();if Replay and Replay.playing then U.text('SPECTATEUR · '..Replay.speed..'×'..(Replay.paused and ' · PAUSE' or '')..'  |  Espace : pause  ·  Gauche/droite : vitesse  ·  Échap : quitter',150,680,'small',white,900,'center') end;if Secret.duel then U.text(Secret.duel.name..(Secret.duel.kind=='mob' and (' · Survie '..math.ceil(math.max(0,20-Secret.duel.time))..' s') or ' · Duel'),300,90,'body',white,600,'center') end;return end
     if App.state=='bossWorld' then Secret.draw();return end
-    U.background()
+    if App.state=='worlds' then U.theme() else U.background() end
     if App.state=='menu' then U.menu()
     elseif App.state=='quitConfirm' then
         U.menu()
@@ -428,7 +411,7 @@ function U.draw()
         U.panel(375,270,450,240)
         U.text('Quitter Silken Hell ?',395,304,'heading',white,410,'center')
         U.button('Rester',410,378,380,44,function() App.state='menu' end,false,true)
-        U.button('Quitter le jeu',410,438,380,40,function() love.event.quit() end)
+        U.button('Quitter le jeu',410,438,380,40,function() App.quitDelay=.4 end)
     elseif App.state=='workshop' then U.workshop()
     elseif App.state=='achievements' then
         U.panel(230,105,740,563); U.text('SUCCÈS',260,130,'heading',white,680,'center')
@@ -436,20 +419,29 @@ function U.draw()
         for i,v in ipairs(totals) do local x=270+(i-1)*226
             U.panel(x,184,208,76);U.text(tostring(v[2]),x+10,194,'heading',gold,188,'center');U.text(v[1],x+10,232,'small',muted,188,'center')
         end
-        for i,a in ipairs(Achievements.list) do
-            local y=282+(i-1)*151; local unlocked=Profile.achievements[a.id]
-            U.panel(270,y,660,137)
-            U.text(a.name,292,y+17,'heading',unlocked and gold or white,616)
-            U.text(a.description(),292,y+59,'body',muted,616)
-            U.text(unlocked and 'DÉBLOQUÉ' or 'À DÉBLOQUER',292,y+111,'small',unlocked and gold or muted,616)
+        U.button(U.hideCompleted and 'Afficher les succès accomplis' or 'Masquer les succès accomplis',310,276,580,34,function() U.hideCompleted=not U.hideCompleted;U.achievementPage=1 end)
+        local row=0;local visible=0;U.achievementPage=U.achievementPage or 1
+        for _,a in ipairs(Achievements.list) do
+            local unlocked=Profile.achievements[a.id]
+            if not (unlocked and U.hideCompleted) then
+                visible=visible+1
+                if math.floor((visible-1)/2)+1==U.achievementPage then
+                local y=323+row*121;row=row+1;U.panel(270,y,660,108)
+                U.text(unlocked and a.name or 'Succès secret',292,y+12,'medium',unlocked and gold or white,616)
+                U.text(unlocked and a.description() or 'À découvrir en jouant.',292,y+46,'body',muted,616)
+                U.text(unlocked and ('DÉBLOQUÉ'..(a.id=='gillou' and ' · Skin Gillou' or a.id=='maxance' and ' · Skin Maxance' or '')) or '???',292,y+84,'small',gold,616)
+            end
+            end
         end
+        U.button('Précédent',270,575,155,30,function() U.achievementPage=U.achievementPage-1 end,U.achievementPage<=1)
+        U.button('Suivant',775,575,155,30,function() U.achievementPage=U.achievementPage+1 end,U.achievementPage*2>=visible)
         U.button('Retour',440,610,320,40,function() App.state='menu' end)
     elseif App.state=='customVictory' then
-        U.panel(300,235,600,350); U.text(Secret.duel and 'Duel terminé' or 'Carte terminée',330,265,'heading',white,540,'center')
+        U.panel(300,235,600,350); U.text(App.practice and 'Entraînement terminé' or Secret.duel and 'Duel terminé' or 'Carte terminée',330,265,'heading',white,540,'center')
         U.text(U.time(Scoring.total(timer,player.death))..' · '..player.death..' morts ('..Scoring.label(player.death)..')',330,325,'body',gold,540,'center')
         if App.workshopMap then U.button('Donner une étoile',375,380,450,42,function() Workshop.star(App.workshopMap) end,App.workshopMap.starred) end
         U.button('Rejouer',375,441,450,42,App.restartCurrent)
-        U.button(Secret.duel and 'Retour au Sanctuaire' or 'Retour au Workshop',375,497,450,42,function() if Secret.duel then Secret.open() else App.leaveCustom(); Workshop.open() end end)
+        U.button(App.practice and 'Retour aux mondes' or Secret.duel and 'Retour au Sanctuaire' or 'Retour au Workshop',375,497,450,42,function() if Workshop.validationRun then Workshop.resumePublication() elseif App.practice then App.leaveCustom();App.state='worlds' elseif Secret.duel then Secret.open() else App.leaveCustom(); Workshop.open() end end)
     elseif App.state=='entry' then U.entry()
     elseif App.state=='settings' then U.settings()
     elseif App.state=='worlds' then U.worlds()
@@ -470,7 +462,7 @@ function U.draw()
         U.panel(355,350,490,300)
         U.text(Worlds.names[Campaign.world]..' · accompli',375,373,'heading',white,450,'center')
         U.text(Profile.name..'  ·  '..U.time(Scoring.total(timer,player.death))..'  ·  '..player.death..' morts ('..Scoring.label(player.death)..')',380,423,'body',gold,440,'center')
-        U.text(Worlds.isSecret(Campaign.world) and 'Défi hardcore terminé.' or Worlds.next(Campaign.world) and Worlds.names[Worlds.next(Campaign.world)]..' est débloqué.' or 'Tous les mondes sont accomplis.',385,466,'body',muted,430,'center')
+        U.text(Worlds.isSecret(Campaign.world) and 'Défi démon terminé.' or Worlds.next(Campaign.world) and Worlds.names[Worlds.next(Campaign.world)]..' est débloqué.' or 'Tous les mondes sont accomplis.',385,466,'body',muted,430,'center')
         U.text(Online.scoreStatus,375,507,'small',gold,450,'center')
         U.button(Worlds.next(Campaign.world) and 'Entrer : '..Worlds.names[Worlds.next(Campaign.world)] or 'Rejouer : '..Worlds.names[Campaign.world],385,536,430,44,function() App.openEntry(Worlds.next(Campaign.world) or Campaign.world) end,false,true)
         U.button(Worlds.isSecret(Campaign.world) and 'Retour au Sanctuaire' or 'Menu & classements',385,592,430,35,function() U.boardWorld=Campaign.world;if Worlds.isSecret(Campaign.world) then Secret.open() else App.state='menu' end end)

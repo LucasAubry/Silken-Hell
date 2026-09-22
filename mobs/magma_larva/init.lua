@@ -88,7 +88,7 @@ MobBehaviors.magma_larva={
     update=function(m,dt)
         if m.spent then return end
         Realms.capture(m)
-        if m.tunnelTravel then return end
+        if m.tunnelTravel or m.is_frozen then return end
         m.age=m.age+dt
         if m.age>=m.fuse then M.explode(m); return end
         if not m.is_frozen then

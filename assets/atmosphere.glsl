@@ -28,10 +28,15 @@ vec4 effect(vec4 color,Image texture,vec2 uv,vec2 pixel) {
         local+=max(0.0,1.0-d)*max(0.0,1.0-d)*localLights[i].w;
     }
     float rays=shafts*transmission;
-    if(biome==5.0) rays*=.035; // Almost imperceptible shafts over circular pools of light.
+    float haze=.5+.5*sin(p.x*12.0+sin(p.y*8.0+clock*.13)+clock*.09);
+    patches+=haze*.055;
+    if(biome==1.0 || biome==6.0) rays*=1.12;
+
+    if(biome==4.0) rays*=1.35;
+    if(biome==5.0) { rays*=.14;patches=haze*.1; } // Almost imperceptible shafts over circular pools of light.
     if(biome==2.0) rays=patches*.18; // Ember light rises from the floor in Hell.
     float lit=clamp(rays*.7+patches*(biome==5.0?.95:.35)*transmission+local,0.0,1.0);
-    float shade=biome==5.0?.32:biome==4.0?.27:biome==2.0?.22:.13;
+    float shade=biome==5.0?.08:biome==4.0?.12:biome==2.0?.22:.13;
     shade+=(1.0-transmission)*.16+depth*.045;
     float edge=length((p-.5)*vec2(1.0,.8));
     shade+=smoothstep(.3,.7,edge)*.09;

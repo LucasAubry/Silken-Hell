@@ -39,6 +39,7 @@ end
 
 
 function isTouching(a, b)
+    if (a==player and b~=objet.larme and (b.is_frozen or b.tunnelTravel)) or (b==player and a~=objet.larme and (a.is_frozen or a.tunnelTravel)) then return false end
     if Abyss and Abyss.isPulling() and ((a==player and b~=objet.larme) or (b==player and a~=objet.larme)) then return false end
     if a.abyssHeld or b.abyssHeld or (player.abyssSpit and (a==player or b==player)) then return false end
     if (player.abyssGrace or 0)>0 and ((a==player and b~=objet.larme) or (b==player and a~=objet.larme)) then return false end

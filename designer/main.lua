@@ -1,7 +1,7 @@
 local g=love.graphics
 local M,C,json,Worlds,Art,Biome
 local state={all=true,world=1,level=1,category='Mobs',tool=nil,grid=true,snap=true,scroll=0,buttons={},status='Choisis un objet à gauche, puis clique sur le terrain.',clock=0}
-local color={bg={.035,.046,.065},panel={.06,.077,.10},line={.15,.19,.23},text={.87,.90,.91},muted={.49,.57,.62},accent={.35,.85,.72}}
+local color={bg={.018,.025,.035},panel={.035,.055,.069},line={.30,.27,.18},text={.92,.90,.82},muted={.58,.62,.62},accent={.89,.75,.46}}
 local function q(s) return "'"..s:gsub("'","'\\''").."'" end
 local function text(s,x,y,size,c,w)
     g.setFont(state.fonts[size or 14]); g.setColor(c or color.text)
@@ -15,8 +15,8 @@ local function button(label,x,y,w,h,fn,active)
     state.buttons[#state.buttons+1]={x=x,y=y,w=w,h=h,fn=fn}
 end
 local function catalog(e)
-    for _,c in ipairs(C) do if c.kind==e.kind and c.type==e.type then return c end end
-    return {name=e.type or e.kind}
+    for _,c in ipairs(C) do if c.kind==e.kind and c.type==e.type then if e.customName then local copy={};for k,v in pairs(c) do copy[k]=v end;copy.name=e.customName;return copy end;return c end end
+    return {name=e.customName or e.type or e.kind}
 end
 local function backdrop()
     if state.background then state.background:release() end
@@ -46,6 +46,7 @@ end
 local function snapped(v) return state.snap and math.floor(v/10+.5)*10 or math.floor(v+.5) end
 local function entity(e,ghost)
     local c=catalog(e); g.setColor(1,1,1,ghost and .45 or 1)
+    if e.type=='larva' then Art.drawLarva(e.x,e.y,22,0,state.clock);return end
     if e.kind=='wall' then g.setColor(.29,.31,.33,ghost and .5 or 1); g.rectangle('fill',e.x-e.w/2,e.y-e.h/2,e.w,e.h); g.setColor(.65,.64,.56); g.rectangle('line',e.x-e.w/2,e.y-e.h/2,e.w,e.h)
     elseif e.kind=='hole' then g.setColor(.025,.04,.08); g.ellipse('fill',e.x,e.y,e.rx,e.ry); g.setColor(.5,.65,.8); g.ellipse('line',e.x,e.y,e.rx,e.ry)
     elseif e.kind=='rain' then g.setColor(.25,.6,1,.8); for i=-1,1 do g.line(e.x+i*8,e.y-18,e.x+i*8-5,e.y+7) end
@@ -117,6 +118,10 @@ function love.load()
     loadArt()
     local save=os.getenv('HOME')..'/Library/Application Support/LOVE/'..(os.getenv('SILKEN_DESIGNER_TEST')=='1' and 'silken-hell-tests' or 'silken-hell')
     M.init(project,save); backdrop()
+    local ok,templates=pcall(json.decode,love.filesystem.read('creature-templates.json') or '[]')
+    if ok and type(templates)=='table' then for _,t in ipairs(templates) do if t.kind=='mob' or t.kind=='boss' then C[#C+1]=t end end end
+    state.templates=ok and type(templates)=='table' and templates or {}
+    state.editorSound=love.audio.newSource('music et song/song/editeur start.mp3','static');state.editorSound:setVolume(.65);state.editorSound:play()
     if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require('selftest').run(M,state,select,apply,preview) end
 end
 function love.draw()
@@ -144,7 +149,7 @@ function love.draw()
     for i=1,max do local c=palette[i+state.scroll]; if c then
         local y=324+(i-1)*68
         button('',14,y,220,60,function() state.tool=c; M.selected=nil; state.input=nil end,state.tool==c)
-        if c.art then g.setColor(1,1,1); local a=Art.images[c.art]; local width=math.min(42,44*a.w/a.h); Art.draw(c.art,45,y+29,width) end
+        if c.type=='larva' then Art.drawLarva(45,y+29,22,0,state.clock) elseif c.art then g.setColor(1,1,1); local a=Art.images[c.art]; local width=math.min(42,44*a.w/a.h); Art.draw(c.art,45,y+29,width) end
         text(c.name,77,y+8,12,nil,145); text(c.kind=='boss' and 'Rencontre' or c.kind=='mob' and 'Créature' or 'Placement',77,y+36,12,color.muted)
     end end
     text('Molette : parcourir la liste',20,h-54,12,color.muted)
@@ -165,19 +170,23 @@ function love.draw()
     local e=M.selected
     if e then
         text(catalog(e).name,right,208,18,nil,210)
+        if e.kind=='mob' or e.kind=='boss' then
+            button('Créer '..(e.kind=='boss' and 'ce boss' or 'ce monstre'),right,232,207,28,function() state.input='templateName';state.inputText=e.customName or catalog(e).name;love.keyboard.setTextInput(true) end)
+        end
         local defaults=e.kind=='boss' and {movementRate=1,attackRate=1} or e.kind=='magma_spawner' and {spawnDelay=1,spawnInterval=3} or {}
         local row=0
         for _,f in ipairs({'x','y','w','h','rx','ry','speed','phase','dx','rota','radius','spawnDelay','spawnInterval','movementRate','attackRate','rotation'}) do if e[f]~=nil or defaults[f]~=nil then
             local value=e[f] or defaults[f]
-            local yy=250+row*43; text(({rotation='Angle (°)',movementRate='Dépl. ×',attackRate='Attaques ×',spawnDelay='Début (s)',spawnInterval='Intervalle (s)',speed='Vitesse',radius='Rayon',phase='Phase',w='Largeur',h='Hauteur'})[f] or f:upper(),right,yy+8,12,color.muted)
+            local yy=272+row*39; text(({rotation='Angle (°)',movementRate='Dépl. ×',attackRate='Attaques ×',spawnDelay='Début (s)',spawnInterval='Intervalle (s)',speed='Vitesse',radius='Rayon',phase='Phase',w='Largeur',h='Hauteur'})[f] or f:upper(),right,yy+8,12,color.muted)
             local label=state.input==f and state.inputText..'|' or tostring(math.floor(value*100+.5)/100)
             button(label,right+88,yy,117,34,function() state.input=f; state.inputText=tostring(value); love.keyboard.setTextInput(true) end,state.input==f)
             row=row+1
         end end
-        local yy=258+row*43
+        local yy=280+row*39
         if e.kind=='mob' and e.type~='piege' and e.type~='scie' then
             button(e.has_larme and 'Porte une larme : oui' or 'Porte une larme : non',right,yy,207,32,function() M.checkpoint(); e.has_larme=not e.has_larme; M.persist() end,e.has_larme); yy=yy+42
         end
+        if e.type=='mole' or e.type=='worm' then button(e.startUnderground and 'Départ : sous terre' or 'Départ : en surface',right,yy,207,32,function() M.checkpoint();e.startUnderground=not e.startUnderground;M.persist() end,e.startUnderground);yy=yy+42 end
         if e.type=='gull' then button(e.electric and 'Électrique : oui' or 'Électrique : non',right,yy,207,32,function() M.checkpoint(); e.electric=not e.electric; M.persist() end,e.electric); yy=yy+42 end
         button('Dupliquer',right,yy,99,34,function() local t=M.clone(e); M.add(t,math.min(M.layout.width-40,e.x+30),math.min(560,e.y+30)) end)
         button('Supprimer',right+108,yy,99,34,M.delete)
@@ -189,6 +198,14 @@ function love.draw()
     text('Les niveaux personnalisés ne sont pas classés.',right,h-66,12,color.muted,210)
     g.setColor(.025,.034,.047); g.rectangle('fill',0,h-30,w,30)
     text(state.status,18,h-23,12,state.error and {1,.46,.4} or color.muted,w-30)
+    if state.input=='templateName' then
+        g.setColor(0,0,0,.7);g.rectangle('fill',0,0,w,h)
+        g.setColor(color.panel);g.rectangle('fill',w/2-260,h/2-110,520,220,8)
+        g.setColor(color.accent);g.rectangle('line',w/2-260,h/2-110,520,220,8)
+        text('NOM DE LA CRÉATION',w/2-230,h/2-80,22,color.accent)
+        text(state.inputText..'|',w/2-230,h/2-20,18,color.text,460)
+        text('Entrée : enregistrer · Échap : annuler',w/2-230,h/2+65,14,color.muted,460)
+    end
 end
 function love.mousepressed(mx,my,button)
     for _,b in ipairs(state.buttons) do if mx>=b.x and mx<=b.x+b.w and my>=b.y and my<=b.y+b.h then if button==1 then b.fn() end; return end end
@@ -218,11 +235,20 @@ function love.mousemoved(mx,my)
 end
 function love.mousereleased() if state.drag then M.persist(); state.drag=nil end end
 function love.wheelmoved(x,y) if love.mouse.getX()<250 then state.scroll=math.max(0,state.scroll-y) end end
-function love.textinput(s) if state.input then state.inputText=state.inputText..s:gsub('[^%d%.%-]','') end end
+function love.textinput(s) if state.input then if state.input=='templateName' then state.inputText=(state.inputText..s:gsub('[%c]','')):sub(1,60) else state.inputText=state.inputText..s:gsub('[^%d%.%-]','') end end end
 function love.keypressed(key)
     if state.input then
         if key=='backspace' then state.inputText=state.inputText:sub(1,-2)
         elseif key=='return' or key=='kpenter' then
+            if state.input=='templateName' and M.selected then
+                local name=state.inputText:match('^%s*(.-)%s*$')
+                if name~='' then
+                    M.checkpoint();M.selected.customName=name;M.persist()
+                    local t=M.clone(M.selected);local base=catalog(M.selected);t.id=nil;t.x=nil;t.y=nil;t.art=base.art;t.name=name;t.world=M.world
+                    C[#C+1]=t;state.templates[#state.templates+1]=t
+                    love.filesystem.write('creature-templates.json',json.encode(state.templates));state.status='Création enregistrée dans la bibliothèque : '..name
+                end
+            end
             local v=tonumber(state.inputText)
             if v and M.selected then M.checkpoint(); M.selected[state.input]=v; M.persist() end
             state.input=nil; love.keyboard.setTextInput(false)

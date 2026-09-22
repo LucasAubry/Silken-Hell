@@ -31,14 +31,19 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   float edge=cells(water+drift).y;
   float caustic=pow(1.0-smoothstep(.0,.10,edge),2.0);
   float ripples=sin(p.y*39.0+fbm(p*4.0)*9.0+clock*.6)*.5+.5;
-  c=mix(vec3(.018,.14,.21),vec3(.04,.34,.39),terrain);
-  c+=vec3(.13,.34,.30)*caustic*.32+vec3(.015,.025,.022)*ripples;
+  c=mix(vec3(.025,.21,.29),vec3(.065,.43,.47),terrain);
+  c+=vec3(.13,.34,.30)*caustic*.58+vec3(.015,.025,.022)*ripples;
+  if(biome==4.0) {
+   float shaft=pow(max(0.0,sin(p.x*8.0+p.y*1.7+sin(clock*.12)*.4)),12.0);
+   float glimmer=pow(max(0.0,sin(p.x*27.0-p.y*18.0+clock*.45)),20.0)*caustic;
+   c+=vec3(.065,.14,.13)*shaft*(1.0-pixel.y/dimensions.y*.55)+vec3(.14,.22,.18)*glimmer*.3;
+  }
   if(biome==7.0) c=mix(vec3(.009,.018,.035),vec3(.035,.085,.12),terrain)+vec3(.035,.07,.09)*caustic*.17;
  } else if(biome==5.0) {
   vec2 q=p*11.0+vec2(terrain,fbm(p*8.0+17.0))*.8;
   vec2 rock=cells(q);
   float cracks=1.0-smoothstep(.012,.04,rock.y);
-  c=mix(vec3(.16,.079,.036),vec3(.36,.22,.105),terrain);
+  c=mix(vec3(.22,.12,.062),vec3(.44,.29,.16),terrain);
   c*=1.0-cracks*.19;
   c+=(grain-.5)*.065;
   float pebble=1.0-smoothstep(.075,.15,cells(p*33.0).x);

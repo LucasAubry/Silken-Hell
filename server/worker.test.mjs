@@ -8,7 +8,11 @@ function database() {
   return {prepare(sql) {return {bind(...args){return {async first(){return db.prepare(sql).get(...args)},async all(){return {results:db.prepare(sql).all(...args)}},async run(){return db.prepare(sql).run(...args)}}}}},async batch(writes){db.exec('BEGIN');try {const results=await Promise.all(writes.map(w=>w.run()));db.exec('COMMIT');return results;}catch(e){db.exec('ROLLBACK');throw e;}}};
 }
 const token='a'.repeat(64);
-function call(env,path,{body,country='FR',auth=token}={}) {
+async function call(env,path,{body,country='FR',auth=token,raw=false}={}) {
+  if(!raw&&path==='/v1/workshop'&&body?.layout&&!body.proof) {
+    const proof=await call(env,'/v1/workshop/validate',{auth,body:{layout:body.layout,replay:fixtureReplay(body.layout)}});
+    if(proof.status===201) body={...body,proof:(await proof.json()).id};
+  }
   const req=new Request('https://test'+path,{method:body===undefined?'GET':'POST',headers:{Authorization:'Bearer '+auth,'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});
   Object.defineProperty(req,'cf',{value:{country}}); return worker.fetch(req,env);
 }
@@ -38,7 +42,7 @@ test('payload and rate limit are bounded',async()=>{
 });
 test('new worlds store the run skin and reject invalid skins',async()=>{
  const env={DB:database()};
- for(const skin of [0,6,1.5,'2',null]) assert.equal((await call(env,'/v1/runs',{body:{name:'Test',world:4,skin}})).status,400);
+ for(const skin of [0,15,1.5,'2',null]) assert.equal((await call(env,'/v1/runs',{body:{name:'Test',world:4,skin}})).status,400);
  for(const world of [4,5,6,7]) {
   const skin=world%5+1; const start=await call(env,'/v1/runs',{body:{name:'Abysses',world,skin}}); assert.equal(start.status,201);
   const run=await start.json();
@@ -91,7 +95,7 @@ test('a nickname keeps its best time across computers, with the matching skin an
   await env.DB.prepare('INSERT INTO scores VALUES(?,?,?,?,?,?,?,?,?)').bind(id,owner,1,'Même pseudo',country,ms,deaths,1,skin).run();
  }
  const data=await (await call(env,'/v1/leaderboard?world=1')).json();
- assert.equal(data.total,3); assert.deepEqual(data.scores.slice(0,1),[{name:'Même pseudo',country:'BE',time:16,rawTime:15,penalty:1,deaths:3,skin:4}]);
+ assert.equal(data.total,3); assert.deepEqual(data.scores.slice(0,1),[{runId:'better',hasReplay:false,name:'Même pseudo',country:'BE',time:16,rawTime:15,penalty:1,deaths:3,skin:4}]);
  const local=await (await call(env,'/v1/leaderboard?world=1&scope=country',{country:'BE'})).json();
  assert.equal(local.total,1); assert.equal(local.scores[0].time,16);
 });
@@ -222,4 +226,46 @@ test('delayed connection preserves the original clock and migration preserves al
  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM scores').get().n,1);
  db.exec("INSERT INTO scores VALUES('hardcore','owner',14,'gillou','ZZ',2264850,513,124,2)");
  assert.equal(db.prepare('SELECT elapsed_ms+deaths*1000/3 AS total FROM scores WHERE world=14').get().total,2435850);
+});
+test('Workshop filters biomes and difficulty across pages, sorts red overflow, and validates limits',async()=>{
+ const env={DB:database()};
+ const layout={world:1,level:1,width:960,height:600,entities:[{kind:'spawn',x:60,y:60},{kind:'mob',type:'mole',x:200,y:200,startUnderground:true,customName:'Gardien enfoui'}]};
+ for(const extra of [999,4,25]) {
+  assert.equal((await call(env,'/v1/workshop',{body:{title:'Rouge '+extra,author:'QA',layout:{...layout,biome:5,difficulty:5,difficultyExtra:extra}}})).status,201);
+ }
+ assert.equal((await call(env,'/v1/workshop',{body:{title:'Simple',author:'QA',layout:{...layout,biome:4,difficulty:1}}})).status,201);
+ const hard=await (await call(env,'/v1/workshop?biome=5&difficulty=5&sort=hard')).json();
+ assert.equal(hard.total,3);assert.deepEqual(hard.maps.map(m=>m.difficultyExtra),[999,25,4]);assert.ok(hard.maps.every(m=>m.biome===5&&m.world===1));
+ const easy=await (await call(env,'/v1/workshop?sort=easy')).json();assert.equal(easy.maps[0].difficulty,1);
+ for(const difficultyExtra of [-1,1000,1.5,'5']) assert.equal((await call(env,'/v1/workshop',{body:{title:'Invalid',author:'QA',layout:{...layout,difficulty:5,difficultyExtra}}})).status,400);
+ for(const query of ['biome=99','difficulty=6','sort=sql']) assert.equal((await call(env,'/v1/workshop?'+query)).status,400);
+});
+test('biome and achievement skin IDs survive score publication',async()=>{
+ const env={DB:database()};const response=await call(env,'/v1/runs',{body:{world:14,name:'SkinQA',skin:14}});assert.equal(response.status,201);
+ const run=await response.json();assert.equal((await call(env,'/v1/runs/'+run.id+'/checkpoint',{body:{level:1,elapsedMs:100,deaths:0}})).status,200);
+ const board=await (await call(env,'/v1/leaderboard?world=14')).json();assert.equal(board.scores[0].skin,14);
+});
+
+function fixtureReplay(layout) {return {version:1,build:'a'.repeat(64),completed:true,world:layout.world,seed:123,width:960,height:600,skin:1,startLevel:layout.level,single:true,layouts:{[layout.world+':'+layout.level]:layout},inputs:[[60,0,0,0]],checks:[[60,layout.level,100,100,0,true]],frames:60,time:1,deaths:0};}
+test('publishing requires an owner-bound completion of the exact map',async()=>{
+ const env={DB:database()},body={title:'Test',author:'Test',layout:map};
+ assert.equal((await call(env,'/v1/workshop',{body,raw:true})).status,403);
+ const unfinished=fixtureReplay(map);unfinished.completed=false;
+ assert.equal((await call(env,'/v1/workshop/validate',{body:{layout:map,replay:unfinished}})).status,400);
+ const response=await call(env,'/v1/workshop/validate',{body:{layout:map,replay:fixtureReplay(map)}});assert.equal(response.status,201);const proof=(await response.json()).id;
+ assert.equal((await call(env,'/v1/workshop',{body:{...body,proof},auth:'b'.repeat(64)})).status,403);
+ assert.equal((await call(env,'/v1/workshop',{body:{...body,proof,layout:{...map,width:1000}}})).status,403);
+ assert.equal((await call(env,'/v1/workshop',{body:{...body,proof}})).status,201);
+});
+test('completed run replay upload, ownership, leaderboard discovery and download',async()=>{
+ const env={DB:database()};const run=await (await call(env,'/v1/runs',{body:{world:1,name:'Replay'}})).json();
+ for(let level=1;level<=10;level++) await call(env,'/v1/runs/'+run.id+'/checkpoint',{body:{level,elapsedMs:level*100,deaths:0}});
+ const replay={...fixtureReplay(map),single:false,layouts:{},checks:[[60,10,100,100,0,true]]};
+ const path='/v1/runs/'+run.id+'/replay';
+ assert.equal((await call(env,path,{auth:'b'.repeat(64),body:{replay}})).status,404);
+ assert.equal((await call(env,path,{body:{replay:{...replay,time:2}}})).status,400);
+ assert.equal((await call(env,path,{body:{replay}})).status,201);
+ const row=(await (await call(env,'/v1/leaderboard?world=1')).json()).scores[0];assert.equal(row.hasReplay,true);assert.equal(row.runId,run.id);
+ assert.deepEqual((await (await call(env,'/v1/replays/'+run.id)).json()).replay,replay);
+ assert.equal((await call(env,path,{body:{replay}})).status,201);
 });

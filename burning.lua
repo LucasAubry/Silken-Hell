@@ -4,7 +4,7 @@ function B.update(dt)
     B.clock=B.clock+dt
     for i=#B.trails,1,-1 do local p=B.trails[i]; p.life=p.life-dt; if p.life<=0 then table.remove(B.trails,i) end end
     for _,m in ipairs(mobs) do
-        if not m.ground and m.type~='piege' and m.type~='scie' and not m.abyssHeld and not m.spent then
+        if not m.ground and m.type~='piege' and m.type~='scie' and not m.abyssHeld and not m.spent and not m.is_frozen and not Realms.underground(m) then
             local inLava=false
             for _,p in ipairs(Hazards.lava) do if Hazards.inEllipse(m.x,m.y,p,0) then inLava=true; break end end
             m.burnTime=inLava and 5 or math.max(0,(m.burnTime or 0)-dt)
@@ -13,7 +13,7 @@ function B.update(dt)
                 if m.burnTrail<=0 then
                     m.burnTrail=.12
                     if #B.trails>=384 then table.remove(B.trails,1) end
-                    B.trails[#B.trails+1]={x=m.x,y=m.y,life=2.8,seed=B.clock+m.x}
+                    B.trails[#B.trails+1]={x=m.x,y=m.y,life=2.8,seed=B.clock+m.x,source=m}
                 end
             end
         end
@@ -22,7 +22,7 @@ function B.update(dt)
 end
 function B.contact()
     for _,p in ipairs(B.trails) do
-        if (player.x+15-p.x)^2+(player.y+12-p.y)^2<(12*math.min(1,p.life/.4)+8)^2 then Hazards.kill(); return end
+        if (not p.source or (not p.source.is_frozen and not Realms.underground(p.source))) and (player.x+15-p.x)^2+(player.y+12-p.y)^2<(12*math.min(1,p.life/.4)+8)^2 then Hazards.kill(); return end
     end
 end
 local function flame(x,y,size,seed,alpha)
@@ -44,7 +44,7 @@ function B.drawGround()
 end
 function B.drawMobs()
     local g=love.graphics; g.push('all')
-    for _,m in ipairs(mobs) do if (m.burnTime or 0)>0 and not m.abyssHeld and not m.spent then
+    for _,m in ipairs(mobs) do if (m.burnTime or 0)>0 and not m.abyssHeld and not m.spent and not m.is_frozen and not Realms.underground(m) then
         local fade=math.min(1,m.burnTime)
         for i=1,3 do flame(m.x+(i-2)*9,m.y+7,5+i%2,m.x+i*2,fade*.8) end
         for i=1,4 do local t=(B.clock*1.6+i*.27)%1

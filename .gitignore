@@ -11,3 +11,11 @@ game.love.tmp
 *.updated
 __pycache__/
 *.pyc
+
+# Finder/iCloud numbered copies and local migration backups
+game [0-9]*.love
+* [0-9]*.lua
+server/* [0-9]*.*
+server/migrations/* [0-9]*.sql
+/custom_levels.before-*.json
+/archive/

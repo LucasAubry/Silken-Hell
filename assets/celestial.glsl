@@ -19,6 +19,11 @@ vec4 effect(vec4 color, Image tex, vec2 uv, vec2 pixel) {
             c+=vec3(.7,.6,.63)*wings*pow(max(0.0,sin(abs(p.x)*35.0+p.y*18.0+time*.1)),7.0)*.23;
         }
         if (biome==6.0) c+=vec3(.23,.28,.33)*smoothstep(-.2,.8,mist);
+    } else if (biome==8.0) {
+        float gate=exp(-abs(length(p*vec2(.8,1.15))-.58)*55.0);
+        float arc=pow(max(0.0,cos(a*12.0+time*.06)),24.0)*exp(-abs(r-.74)*35.0);
+        float veil=sin(p.y*5.0-time*.15+sin(p.x*3.0))*0.5+0.5;
+        c+=vec3(.4,.25,.7)*gate*.7+vec3(.85,.72,1.0)*arc*.25+fog*veil*.08;
     } else if (biome==4.0 || biome==7.0) {
         float wave=sin(p.y*18.0+sin(p.x*6.0+time*.4)*2.0-time*.6);
         c+=accent*pow(max(0.0,wave),10.0)*.12;

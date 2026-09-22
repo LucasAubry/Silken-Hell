@@ -38,6 +38,14 @@ function T.run(M,state,select,apply,preview)
     for _,e in ipairs(M.layout.entities) do if e.kind=='boss' then assert(e.type=='wasp','Ancien brouillon converti') end end
     M.drafts['2:10']=oldDraft
     select(1,10); M.add({kind='nest',rx=34,ry=25},200,300); assert(M.validate(M.layout)); M.undo(false)
+    select(5,1)
+    local mole=M.add({kind='mob',type='mole',speed=111,startUnderground=true},320,260)
+    assert(M.validate(M.layout));M.undo(false);M.undo(true)
+    assert(M.layout.entities[#M.layout.entities].startUnderground,'Underground option persists through history')
+    M.selected=M.layout.entities[#M.layout.entities]
+    state.input='templateName';state.inputText='Taupe de quartz';love.keypressed('return')
+    assert(M.selected.customName=='Taupe de quartz' and state.templates[#state.templates].speed==111,'Named creature keeps its tuning')
+    assert(require('json').decode(love.filesystem.read('creature-templates.json'))[#state.templates].startUnderground,'Creation library persists')
     select(4,4); local before=#M.layout.entities
     M.add({kind='mob',type='crab',speed=123},100,300)
     assert(#M.layout.entities==before+1)

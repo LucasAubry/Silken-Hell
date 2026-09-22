@@ -38,6 +38,7 @@ function C.positions(n)
     return points
 end
 function C.reset()
+    Aftermath.reset()
     AbyssTerrain.reset()
     C.biome=Worlds.biome(C.world,player.level)
     local world=C.biome; local n=(C.world==3 or Worlds.isSecret(C.world)) and 10 or player.level
@@ -180,6 +181,7 @@ function C.clearGroundSites()
     end
 end
 function C.drawCircles()
+    if C.biome==5 then return end
     if Bosses.hud().active or Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active then return end
     local g=love.graphics
     for _,p in ipairs(levels[player.level].larme_position) do
@@ -204,19 +206,34 @@ function C.draw()
     g.setColor(1,1,1)
 end
 function C.drawTear()
-    if objet.larme.abyssHeld then return end
+    if objet.larme.abyssHeld or (C.carrier and not objet.larme_dropped and (Realms.underground(C.carrier) or C.carrier.tunnelTravel)) then return end
     local g=love.graphics
     if not objet.larme.taken then
         local x,y=objet.larme.x,objet.larme.y+math.sin(larme_float_timer*2)*4
         local tint=Worlds.color(C.biome).tear
+        if C.biome==5 then tint={.8,.94,1};g.setColor(.32,.65,1,.17);g.ellipse('fill',x+15,y+20,24,30);g.setColor(.8,.94,1,.7);g.setLineWidth(1.5);g.line(x+15,y-9,x+15,y-3);g.line(x-7,y+20,x-2,y+20);g.line(x+32,y+20,x+37,y+20) end
         g.setColor(tint); g.draw(particleSystem,x+15,y+20)
-        g.draw(objet.larme.img,x,y,0,objet.larme.size)
+        local previous=g.getShader()
+        if C.biome==5 then
+            C.tearShader=C.tearShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
+                vec4 p=Texel(tex,uv);float v=max(p.r,max(p.g,p.b));
+                return vec4(.75+.25*v,.9+.1*v,1.0,p.a)*color;
+            }]])
+            g.setShader(C.tearShader);g.setColor(1,1,1)
+        end
+        g.draw(objet.larme.img,x,y,0,objet.larme.size);g.setShader(previous)
     end
     g.setColor(1,1,1)
 end
 function C.drawMob(m)
     if m.abyssHeld then return end
-    local behavior=MobBehaviors[m.type]; if behavior and behavior.draw then behavior.draw(m) end
+    local behavior=MobBehaviors[m.type]
+    if not behavior or not behavior.draw then return end
+    if m.tunnelTravel then
+        local scale,dy=Realms.travelPose(m);local travel=m.tunnelTravel;m.tunnelTravel=nil
+        local g=love.graphics;g.push('all');g.translate(m.x,m.y+dy);g.scale(math.max(.001,scale));g.translate(-m.x,-m.y)
+        behavior.draw(m);g.pop();m.tunnelTravel=travel
+    else behavior.draw(m) end
 end
 function C.updateTear(dt)
     if C.carrier then

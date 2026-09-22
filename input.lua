@@ -20,6 +20,7 @@ function I.axes()
     return x,y
 end
 function I.move()
+    if Replay and Replay.input then return Replay.input[1],Replay.input[2] end
     local k=Profile.keys
     local x=(love.keyboard.isDown(k.right) and 1 or 0)-(love.keyboard.isDown(k.left) and 1 or 0)
     local y=(love.keyboard.isDown(k.down) and 1 or 0)-(love.keyboard.isDown(k.up) and 1 or 0)
@@ -28,6 +29,7 @@ function I.move()
     return x,y
 end
 function I.slow()
+    if Replay and Replay.input then return Replay.input[3] end
     local j=I.pad
     return love.keyboard.isDown(Profile.keys.dash) or j and j:isConnected() and (j:isGamepadDown('a','leftshoulder','rightshoulder') or j:getGamepadAxis('triggerleft')>.3 or j:getGamepadAxis('triggerright')>.3) or false
 end
@@ -51,11 +53,16 @@ function I.update(dt)
     if App.state=='playing' or App.state=='bossWorld' then return end
     I.repeatAt=math.max(0,I.repeatAt-dt)
     if math.max(math.abs(x),math.abs(y))>.5 then
+        if App.state=='worlds' and math.abs(y)>math.abs(x) then
+            if I.repeatAt==0 then WorldMap.step(y>0 and 1 or -1);I.repeatAt=.28 end
+            return
+        end
         if I.repeatAt==0 then I.navigate(math.abs(x)>math.abs(y) and (x>0 and 1 or -1) or 0,math.abs(y)>=math.abs(x) and (y>0 and 1 or -1) or 0);I.repeatAt=.18 end
     else I.repeatAt=0 end
 end
 function I.press(j,b)
     I.use(j);if I.pad~=j then return end
+    if Replay and Replay.playing then if b=='b' then Replay.stop() elseif b=='a' or b=='start' then Replay.paused=not Replay.paused end;return end
     if b=='start' or b=='b' then love.keypressed('escape');I.active=true;return end
     if App.state=='bossWorld' then
         if b=='y' then Secret.category=Secret.category=='mobs' and 'boss' or 'mobs';Secret.page=1;Secret.refresh()
@@ -64,7 +71,7 @@ function I.press(j,b)
     end
     if App.state=='playing' then if b=='y' then Bestiary.openBoss() end;return end
     if UI.binding then UI.binding=nil;return end
-    if b=='a' then local v=UI.buttons[I.index];if v and not v.disabled then Audio.play('click');v.run() end
+    if b=='a' then local v=UI.buttons[I.index];if v and not v.disabled then Audio.play(v.sound or 'go');v.run() end
     elseif b=='leftshoulder' and App.state=='menu' then Characters.cycle(-1)
     elseif b=='rightshoulder' and App.state=='menu' then Characters.cycle(1)
     elseif b=='x' and App.state=='entry' then love.keypressed('backspace');I.active=true end

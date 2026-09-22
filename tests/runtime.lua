@@ -9,6 +9,16 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv("SILKEN_BOSSES_TEST")=="1" then require("tests.bosses_three_phase").run();return end
+    if os.getenv("SILKEN_EGG_TEN_TEST")=="1" then require("tests.egg_ten").run();return end
+    if os.getenv("SILKEN_REFINEMENT_TEST")=="1" then require("tests.balance_refinement").run();return end
+    if os.getenv("SILKEN_NEST_TEST")=="1" then require("tests.nest_revision").run();return end
+    if os.getenv("SILKEN_PERFORMANCE_TEST")=="1" then require("tests.performance_revision").run();return end
+    if os.getenv("SILKEN_OCEAN_TEST")=="1" then require("tests.ocean_revision").run();return end
+    if os.getenv("SILKEN_HUD_TEST")=="1" then require("tests.boss_hud").run();return end
+    if os.getenv("SILKEN_REPLAY_TEST")=="1" then require("tests.replay_revision").run();return end
+    if os.getenv("SILKEN_OCTOPUS_PERF")=="1" then require("tests.octopus_performance").run();return end
+    if os.getenv("SILKEN_GOAL_TEST")=="1" then require("tests.goal_revision").run();return end
     if os.getenv("SILKEN_REWORK_TEST")=="1" then require("tests.octopus_rework").run();return end
     if os.getenv("SILKEN_OCTOPUS_INFO_TEST")=="1" then require("tests.octopus_info").run();return end
     if os.getenv("SILKEN_STATS_TEST")=="1" then require("tests.stats_light").run();return end
