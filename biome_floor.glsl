@@ -43,28 +43,20 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   vec2 q=p*11.0+vec2(terrain,fbm(p*8.0+17.0))*.8;
   vec2 rock=cells(q);
   float cracks=1.0-smoothstep(.012,.04,rock.y);
-  c=mix(vec3(.22,.12,.062),vec3(.44,.29,.16),terrain);
+  c=mix(vec3(.125,.071,.038),vec3(.29,.18,.093),terrain);
   c*=1.0-cracks*.19;
   c+=(grain-.5)*.065;
   float pebble=1.0-smoothstep(.075,.15,cells(p*33.0).x);
-  c=mix(c,vec3(.40,.29,.18),pebble*.4);
+  c=mix(c,vec3(.27,.18,.10),pebble*.3);
   float roots=abs(sin(p.y*14.0+fbm(vec2(p.x*4.0,p.y*.9))*16.0));
   c=mix(c,vec3(.11,.053,.024), (1.0-smoothstep(.01,.06,roots))*.4);
  } else if(biome==3.0) {
-  vec2 q=(pixel/dimensions-.5)*vec2(dimensions.x/dimensions.y,1.0);
-  float r=length(q), a=atan(q.y,q.x);
-  float cloud=fbm(q*5.0+vec2(clock*.014,-clock*.01));
-  float vein=pow(abs(sin(q.x*9.0+q.y*5.0+cloud*12.0)),22.0);
-  c=mix(vec3(.018,.012,.021),vec3(.20,.027,.047),cloud);
-  c+=vec3(.28,.025,.035)*vein;
-  float halo=exp(-abs(r-.29-sin(a*6.0+clock*.3)*.006)*180.0);
-  float outer=exp(-abs(r-.41)*240.0);
-  c+=vec3(.74,.63,.63)*halo*.28+vec3(.7,.06,.13)*outer*.3;
-  float wings=exp(-pow((abs(q.x)-.33)*5.0,2.0)-pow((q.y+.05+abs(q.x)*.32)*7.0,2.0));
-  float feathers=pow(max(0.0,sin(abs(q.x)*75.0+q.y*22.0+cloud*2.0)),7.0);
-  c+=vec3(.73,.69,.68)*wings*feathers*.19;
-  float shafts=pow(max(0.0,sin(a*17.0+clock*.035)),22.0)*exp(-r*3.0);
-  c+=vec3(.8,.25,.3)*shafts*.16;
+  float meadow=fbm(p*9.0);
+  float blades=pow(noise(p*230.0),2.0);
+  c=mix(vec3(.045,.24,.025),vec3(.28,.61,.075),meadow);
+  c+=vec3(.12,.20,.025)*blades;
+  float sun=pow(max(0.0,sin(p.x*2.8+p.y*.7+clock*.025)),8.0);
+  c+=vec3(.22,.25,.055)*sun;
  } else if(biome==2.0 || biome==8.0) {
   float fissure=1.0-smoothstep(.009,.045,cells(p*8.0+terrain).y);
   c=mix(vec3(.055,.028,.030),vec3(.14,.075,.062),terrain)+(grain-.5)*.025;

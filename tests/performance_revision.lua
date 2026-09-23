@@ -34,7 +34,7 @@ function T.run()
  -- Cache invalidation, graphics-state preservation and static cave reuse.
  BiomeFloor.draw(5,960,600,1);local cached=BiomeFloor.cache;local tick=cached.tick
  BiomeFloor.draw(5,960,600,50);assert(BiomeFloor.cache==cached and cached.tick==tick)
- BiomeFloor.draw(4,1200,600,50);assert(BiomeFloor.cache.world==4 and BiomeFloor.cache.w==600)
+ BiomeFloor.draw(4,1200,600,50);assert(BiomeFloor.cache.world==4 and BiomeFloor.cache.w==Graphics.floorHeight()*2)
  -- Custom maps and fullscreen backdrops often have different aspect ratios.
  BiomeFloor.draw(4,960,600,51);BiomeFloor.draw(4,1200,600,51)
  local newCanvas=g.newCanvas;local allocations=0

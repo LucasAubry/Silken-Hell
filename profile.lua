@@ -1,5 +1,6 @@
 local P = {name='', country='', character=1, unlocked=1, music=0.35, sound=0.65,
     stats={tears=0,deaths=0,attempts=0}, achievements={}, keys={up='up',down='down',left='left',right='right',dash='space'}, scores={}}
+local json=require 'json'
 local actions={'up','down','left','right','dash'}
 function P.load()
     P.levels={};P.completed={};P.scores={}; P.achievements={};P.stats={tears=0,deaths=0,attempts=0}
@@ -32,6 +33,8 @@ function P.load()
         local w,n,c,t,d,skin,replay=line:match('^(%d+)\t([^\t]+)\t(%u%u)\t([%d%.]+)\t(%d+)\t?(%d*)\t?([a-f0-9]*)$')
         if w and tonumber(t)>0 then table.insert(P.scores,{world=tonumber(w),name=n,country=c,time=tonumber(t),deaths=tonumber(d),skin=tonumber(skin) or 1,replay=replay and #replay==64 and replay or nil}) end
     end
+    local valid,details=pcall(json.decode,love.filesystem.read('score_details.json') or '')
+    if valid and type(details)=='table' then for _,s in ipairs(P.scores) do s.splits=details[RunDetails.key(s)] end end
     for _,score in ipairs(P.scores) do
         P.completed[score.world]=true;P.levels[score.world]=Worlds.levelCount(score.world)
         if score.world==2 then P.unlocked=math.max(P.unlocked,7) end
@@ -57,7 +60,9 @@ function P.save()
     local scores={}
     for _,s in ipairs(P.scores) do scores[#scores+1]=string.format('%d\t%s\t%s\t%.3f\t%d\t%d\t%s',s.world,s.name,s.country,s.time,s.deaths,s.skin or 1,s.replay or '') end
     local ok2=love.filesystem.write('scores.tsv',table.concat(scores,'\n'))
-    P.error=not (ok and ok2) and 'Sauvegarde impossible : vérifie les droits du dossier.' or nil
+    local details={};for _,s in ipairs(P.scores) do if s.splits then details[RunDetails.key(s)]=s.splits end end
+    local ok3=love.filesystem.write('score_details.json',json.encode(details))
+    P.error=not (ok and ok2 and ok3) and 'Sauvegarde impossible : vérifie les droits du dossier.' or nil
 end
 function P.record(kind)
     if Replay and Replay.playing then return end
@@ -91,7 +96,7 @@ function P.complete(world,time,deaths)
     if Replay and Replay.playing then return end
     P.completed=P.completed or {};P.completed[world]=true
     P.levels=P.levels or {};P.levels[world]=Worlds.levelCount(world)
-    P.scores[#P.scores+1]={world=world,name=P.name,country=P.country,time=time,deaths=deaths,skin=App.runSkin or P.character}
+    P.scores[#P.scores+1]={world=world,name=P.name,country=P.country,time=time,deaths=deaths,splits=RunDetails.snapshot(),skin=App.runSkin or P.character}
     if Replay and Replay.recording then Replay.finish(P.scores[#P.scores]) end
     Achievements.check(P.scores[#P.scores],P.achievements)
     if not Worlds.isSecret(world) then P.unlocked=math.max(P.unlocked,Worlds.rank(Worlds.next(world) or world)) end

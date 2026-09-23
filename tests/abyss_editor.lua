@@ -24,10 +24,10 @@ function T.run()
     local snap=LevelLayouts.snapshot();assert(LayoutSchema.validate(snap))
     LevelLayouts.apply(snap);boss=Bosses.items[1].boss
     assert(#Bosses.items==1 and #AbyssTerrain.parts==3 and boss.headOnly,'Aller-retour sauvegarde')
-    boss.open=true;boss.breathAt=boss.clock;boss.buildBones()
-    local mx,my=boss.mouth();player.x=mx-15;player.y=my-12;Abyss.charge(6);boss.contact();boss.update(.61)
-    assert(boss.hp==7,'Aspiration et dégâts sur tête seule')
-    for i=1,7 do boss.hurt() end
+    local beforeHp=boss.hp;boss.open=true;boss.breathAt=boss.clock;boss.buildBones()
+    local mx,my=boss.mouth();player.x=mx-15;player.y=my-12;Abyss.charge(6);boss.contact();boss.update(.61);assert(boss.swallowed,"Player waits until suction completes");for i=1,360 do boss.update(1/60);if not boss.open then break end end
+    assert(boss.hp==beforeHp-1,'One stored charge damages the head after the full suction cycle')
+    for i=1,boss.hp do boss.hurt() end
     assert(not Bosses.alive() and #AbyssTerrain.parts==3,'Le terrain reste après victoire')
     AbyssTerrain.resize(1.2);assert(AbyssTerrain.parts[1].x==192);love.draw()
     for n=8,10 do

@@ -113,7 +113,7 @@ function W.beginRound()
     local alive={};for _,b in ipairs(W.bees) do if b.hp>0 then alive[#alive+1]=b end end
     local attack=(W.round-1)%3+1
     for slot,b in ipairs(alive) do
-        b.phase='queued';b.delay=(slot-1)*.06;b.attack=attack
+        b.dashesLeft=4-#alive;b.phase='queued';b.delay=(slot-1)*.035;b.attack=attack
         b.launchLarva=slot<=W.stage()
     end
 end
@@ -208,7 +208,7 @@ function W.updateBees(dt)
             if W.roundClock>=b.delay then W.positionAttack(b) end
         elseif b.phase=='position' then
             if W.approach(b,b.tx,b.ty,1165*tempo*move,dt) then
-                b.phase='aim';b.time=b.attack==3 and .7 or .4
+                b.phase='aim';b.time=b.attack==3 and .5 or .23
             end
         elseif b.phase=='aim' then
             b.time=b.time-dt*(b.attack==3 and cadence or 1)
@@ -222,7 +222,12 @@ function W.updateBees(dt)
             for _=1,steps do
                 local x,y=b.x+b.vx*speed*dt/steps,b.y+b.vy*speed*dt/steps
                 if Arena.blocked(x-24,y-24,48,48) then
-                    b.phase='fatigued';b.time=1.65;BossFX.burst(b.x,b.y,{1,.7,.2},2);break
+                    b.dashesLeft=(b.dashesLeft or 1)-1
+                    if b.dashesLeft>0 then
+                        b.vx,b.vy=-b.vx,-b.vy;b.dir=Art.direction(b.vx,b.vy,b.dir)
+                        b.phase='aim';b.time=.20
+                    else b.phase='fatigued';b.time=1.65 end
+                    BossFX.burst(b.x,b.y,{1,.7,.2},2);break
                 end
                 b.x,b.y=x,y;W.chargeContact(b)
                 if player.reset then break end
@@ -236,7 +241,7 @@ function W.updateBees(dt)
     W.contact()
     local complete=W.roundActive
     for _,b in ipairs(W.bees) do if b.hp>0 and b.phase~='cooldown' then complete=false end end
-    if complete then W.roundActive=false;W.rest=.1 end
+    if complete then W.roundActive=false;W.rest=.04 end
 end
 function W.update(dt)
     if not W.active then return end

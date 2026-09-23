@@ -24,4 +24,8 @@ if [[ ! -s "$CACHE_DIR/Silken Hell.love" || "$GAME_DIR/game.love" -nt "$CACHE_DI
   mv -f "$CACHE_DIR/Silken Hell.love.new" "$CACHE_DIR/Silken Hell.love"
 fi
 if [[ "${SILKEN_PREPARE_ONLY:-0}" == 1 ]]; then exit 0; fi
-exec "$RUNTIME/Contents/MacOS/love" "$CACHE_DIR/Silken Hell.love"
+# Une partie conserve sa propre archive, même si une mise à jour est publiée.
+SESSION_DIR=$(mktemp -d "$CACHE_DIR/session.XXXXXX")
+trap 'rm -f "$SESSION_DIR/Silken Hell.love"; rmdir "$SESSION_DIR"' EXIT
+cp "$CACHE_DIR/Silken Hell.love" "$SESSION_DIR/Silken Hell.love"
+"$RUNTIME/Contents/MacOS/love" "$SESSION_DIR/Silken Hell.love"

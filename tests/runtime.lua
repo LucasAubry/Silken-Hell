@@ -9,6 +9,15 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv("SILKEN_ABYSS_MINES_TEST")=="1" then require("tests.abyss_mines").run();return end
+    if os.getenv("SILKEN_BOSS_RELOAD_TEST")=="1" then require("tests.boss_reload").run();return end
+    if os.getenv("SILKEN_ABYSS_LEFT_TEST")=="1" then require("tests.abyss_left").run();return end
+    if os.getenv("SILKEN_EARTH_CAGES_TEST")=="1" then require("tests.earth_cages").run();return end
+    if os.getenv("SILKEN_MAP_REFINE_TEST")=="1" then require("tests.hardcore_map_refine").run();return end
+    if os.getenv("SILKEN_HARDCORE_TEST")=="1" then require("tests.request_hardcore").run();return end
+    if os.getenv("SILKEN_POLISH_TEST")=="1" then require("tests.polish").run();return end
+    if os.getenv("SILKEN_GPU_TEST")=="1" then require("tests.perf_poulpe").run();return end
+    if os.getenv("SILKEN_SEPT23_TEST")=="1" then require("tests.sept23").run();return end
     if os.getenv("SILKEN_BOSSES_TEST")=="1" then require("tests.bosses_three_phase").run();return end
     if os.getenv("SILKEN_EGG_TEN_TEST")=="1" then require("tests.egg_ten").run();return end
     if os.getenv("SILKEN_REFINEMENT_TEST")=="1" then require("tests.balance_refinement").run();return end

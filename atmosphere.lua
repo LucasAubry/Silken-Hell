@@ -16,7 +16,7 @@ end
 function A.settings(world,level)
     local depth=math.max(0,math.min(1,((level or 1)-1)/9))
     local rank=math.min(7,Worlds.rank(world))
-    return {transmission=math.min(1,math.max(.12,1-(rank-1)*.13)*(1-depth*.42)+(world==2 and .06 or world==5 and .42 or world==4 and .25 or 0)),depth=depth,seed=(level or 1)*1.731+world*.43}
+    return {transmission=math.min(1,math.max(.12,1-(rank-1)*.13)*(1-depth*.42)+(world==2 and .06 or world==5 and .02 or world==4 and .25 or 0)),depth=depth,seed=(level or 1)*1.731+world*.43}
 end
 local function variation(seed)
     local v=math.sin(seed*127.1+311.7)*43758.5453
@@ -52,6 +52,8 @@ function A.drawDrops()
     g.pop()
 end
 function A.draw()
+    if Campaign.world==3 then return end
+    if Graphics and not Graphics.effects then return end
     local world=Campaign.world==3 and 3 or Campaign.biome
     if world==7 then return end -- Abyss light also drives gameplay and keeps its own renderer.
     local g=love.graphics; local t=UI.clock; local c=palettes[world] or palettes[1]

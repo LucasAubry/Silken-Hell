@@ -20,7 +20,7 @@ function R.build()
         end
         actorSources('mobs')
         for i=1,10 do sources[#sources+1]=assert(love.filesystem.read('levels/level_'..i..'.lua')) end
-        for _,name in ipairs({'worlds','scoring','layout_schema'}) do sources[#sources+1]=assert(love.filesystem.read(name..'.lua')) end
+        for _,name in ipairs({'worlds','scoring','layout_schema','hardcore','bone_cage','earth_mound'}) do sources[#sources+1]=assert(love.filesystem.read(name..'.lua')) end
         R.buildId=R.hash(table.concat(sources))
     end
     return R.buildId
@@ -36,7 +36,7 @@ function R.begin(world)
         R.data=nil
         local layouts=LevelLayouts.read()
         local seed=love.math.random(1,2147483646)
-        R.data={version=1,build=R.build(),world=world,seed=seed,width=Arena.width,height=600,skin=Characters.selected(),startLevel=player.level,single=not not App.singleLevel,layouts=json.decode(json.encode(layouts)),duel=Secret.duel and {kind=Secret.duel.kind,name=Secret.duel.name,time=0} or nil,inputs={},checks={},frames=0,startedAt=os.time()}
+        R.data={version=1,build=R.build(),world=world,seed=seed,width=Arena.width,height=600,skin=Characters.selected(),startLevel=player.level,single=not not App.singleLevel,hardcore=not not App.hardcore,layouts=json.decode(json.encode(layouts)),duel=Secret.duel and {kind=Secret.duel.kind,name=Secret.duel.name,time=0} or nil,inputs={},checks={},frames=0,startedAt=os.time()}
     end
     R.rng=love.math.newRandomGenerator(R.data.seed);R.recording=not R.playing;R.enter()
 end
@@ -45,7 +45,7 @@ function R.checkpoint()
 end
 function R.finish(score) R.pendingFinish=true;R.pendingScore=score end
 function R.saveFinished()
-    R.data.completed=true;R.data.frames=R.frame;R.data.time=timer;R.data.deaths=player.death
+    R.data.splits=RunDetails.snapshot();R.data.completed=true;R.data.frames=R.frame;R.data.time=timer;R.data.deaths=player.death
     local id=R.hash(R.data);love.filesystem.createDirectory('replays')
     local ok=love.filesystem.write('replays/'..id..'.json',json.encode(R.data))
     R.last=R.data;R.lastId=ok and id or nil
@@ -113,13 +113,13 @@ function R.play(data)
     local ok,why=R.validate(data);if not ok then R.status=why;return false end
     R.saved={character=Profile.character,achievements=json.decode(json.encode(Profile.achievements)),selected=App.selectedWorld}
     R.recording=false;R.playing=true;R.data=data;R.speed=1;R.paused=false
-    Secret.duel=data.duel and {kind=data.duel.kind,name=data.duel.name,time=0} or nil;App.sessionLayout=nil;App.singleLevel=data.single;App.practice=data.startLevel;App.workshopMap=nil;App.preview=false
+    Secret.duel=data.duel and {kind=data.duel.kind,name=data.duel.name,time=0} or nil;App.sessionLayout=nil;App.hardcore=data.hardcore==true;App.singleLevel=data.single;App.practice=data.startLevel;App.workshopMap=nil;App.preview=false
     App.start(data.world);R.status='';return true
 end
 function R.stop(message)
     R.playing=false;R.recording=false;R.input=nil;R.accumulator=0;R.paused=false
     if R.saved then Profile.character=R.saved.character;Profile.achievements=R.saved.achievements;App.selectedWorld=R.saved.selected;R.saved=nil end
-    Secret.duel=nil;App.sessionLayout=nil;App.singleLevel=false;App.practice=nil;App.state='rankings';R.status=message or 'Lecture arrêtée.'
+    Secret.duel=nil;App.sessionLayout=nil;App.hardcore=false;App.singleLevel=false;App.practice=nil;App.state='rankings';R.status=message or 'Lecture arrêtée.'
 end
 function R.watch(score)
     if type(score.replay)=='string' and #score.replay==64 and score.replay:match('^[a-f0-9]+$') then

@@ -113,12 +113,12 @@ function L.apply(layout)
     for _,e in ipairs(bossEntities) do if e.type=='skeleton_fish' or e.type=='skeleton_head' then Abyss.active=true end end
     if #lights>0 or #AbyssTerrain.parts>0 then Abyss.active=true end
     Bosses.load(bossEntities,nests,lights)
-    local phasedAbyss=false
-    for _,item in ipairs(Bosses.items) do if item.kind=='skeleton_fish' and item.boss.phase then phasedAbyss=true end end
-    if Campaign.biome==7 and player.level==10 and Bosses.alive() and not phasedAbyss then
-        local count=0
-        for _,m in ipairs(mobs) do if m.type=='light_jelly' then count=count+1 end end
-        if count<2 then Abyss.add('light_jelly',Arena.width*.3,430,38) end
+    local abyssBoss=false
+    for _,item in ipairs(Bosses.items) do
+        if (item.kind=='skeleton_fish' or item.kind=='skeleton_head') and item.boss.boss then abyssBoss=true end
+    end
+    if abyssBoss then
+        for i=#mobs,1,-1 do if mobs[i].type=='light_jelly' then table.remove(mobs,i) end end
     end
     local boss=Bosses.alive()
     objet.larme.taken=boss

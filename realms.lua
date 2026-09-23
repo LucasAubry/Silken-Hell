@@ -1,3 +1,4 @@
+local EarthMound=require 'earth_mound'
 local R={clouds={},rain={},current={},clock=0,schools={},bolts={},eggs={},larvae={},holes={},rainSites={}}
 local function add(kind,x,y,speed,elite)
     if kind=='fish' then
@@ -447,7 +448,7 @@ function R.drawCreatures()
     local g=love.graphics
     for _,m in ipairs(R.larvae) do
         local scale,dy=1,0; if m.tunnelTravel then scale,dy=R.travelPose(m) end
-        g.setColor(1,1,1,scale); Art.drawLarva(m.x,m.y+dy,22*scale,math.atan2(player.y+12-m.y,player.x+15-m.x)+math.pi,m.age)
+        g.setColor(1,1,1,scale); Art.drawLarva(m.x,m.y+dy,36*scale,math.atan2(player.y+12-m.y,player.x+15-m.x)+math.pi,m.age)
     end
     for _,p in ipairs(R.eggs) do
         g.setColor(.24,.12,.09); g.ellipse('fill',p.x,p.y,6,5)
@@ -475,7 +476,7 @@ function R.updateFireflies(dt)
     end end
 end
 function R.drawFireflies()
-    if Campaign.biome~=7 then return end
+    if Campaign.biome~=7 or Campaign.world==3 then return end
     local g=love.graphics; g.push('all'); g.setBlendMode('add')
     for _,p in ipairs(R.fireflies) do if not p.abyssHeld then
         local alpha=.65+.25*math.sin(R.clock*2+p.phase)
@@ -486,15 +487,16 @@ function R.drawFireflies()
     g.pop()
 end
 function R.drawDarkness()
-    if Campaign.biome~=7 then return end
+    if Campaign.biome~=7 or Campaign.world==3 then return end
     local g=love.graphics
     R.darkShader=R.darkShader or g.newShader('assets/abyss-darkness.glsl')
     local exposed=(player.illuminated or 0)>0
     local lights={{player.x+15,player.y+12,exposed and Abyss.playerLightRadius() or 52,exposed and (player.circleLight and .8 or .65+.12*math.max(0,(player.charges or 0)-1)) or .23}}
-    for _,m in ipairs(mobs) do if m.type=='lanternfish' then lights[#lights+1]={m.x,m.y-15,145,1} end end
+    if Abyss.encounterActive() then lights[1]={player.x+15,player.y+12,110,.5} end
+    for _,m in ipairs(mobs) do if m.type=='lanternfish' and not m.abyssHeld then lights[#lights+1]={m.x,m.y-15,145,1} end end
     Abyss.addLights(lights); Bosses.addLights(lights); AbyssTerrain.addLights(lights)
     while #lights>24 do table.remove(lights) end
-    for _,m in ipairs(mobs) do if m.type=='light_jelly' and #lights<24 then lights[#lights+1]={m.x,m.y,60,.5} end end
+    for _,m in ipairs(mobs) do if m.type=='light_jelly' and not m.abyssHeld and #lights<24 then lights[#lights+1]={m.x,m.y,60,.5} end end
     for _,b in ipairs(Ocean.bubbles) do
         if #lights<24 then lights[#lights+1]={b.x,b.y,26,b.cooldown==0 and .42 or .1} end
     end
@@ -502,7 +504,7 @@ function R.drawDarkness()
     R.darkShader:send('lights',unpack(lights)); g.setShader(R.darkShader); g.setColor(1,1,1)
     g.rectangle('fill',0,0,Arena.width,600); g.setShader()
     g.setBlendMode('add')
-    for _,m in ipairs(mobs) do if m.type=='lanternfish' then
+    for _,m in ipairs(mobs) do if m.type=='lanternfish' and not m.abyssHeld then
         for i=4,1,-1 do g.setColor(1,.72,.25,.03); g.circle('fill',m.x,m.y-15,i*9) end
     end end
     g.setBlendMode('alpha'); g.setColor(1,1,1)
@@ -528,8 +530,7 @@ function R.drawGround()
     end
     g.setLineWidth(1)
     for _,t in ipairs(R.tunnels) do
-        g.setColor(1,1,1); Art.draw('earth_tunnel',t.x,t.y,100,0,72)
-        g.setColor(.9,.64,.3,.45); g.ellipse('line',t.x,t.y+4,21,10)
+        EarthMound.draw(t.x,t.y)
     end
     for _,t in ipairs(R.tornadoes) do
         g.setColor(1,1,1,.7); Art.draw('cloud_snare',t.x,t.y,90,R.clock*3.8)

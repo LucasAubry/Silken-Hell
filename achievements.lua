@@ -7,7 +7,7 @@ A.list={
         return 'Toucher les trois abeilles pendant le même KO, avant que l’une se réveille.'
     end},
     {id='maxance',name='Maxance',description=function()
-        return 'Terminer le Paradis avec au moins 95 morts et un chrono final de 9:44.40 ou plus.'
+        return 'Terminer le Paradis avec au moins 95 morts.'
     end}
 }
 for _,world in ipairs({1,6,5,4,7,2,3}) do
@@ -16,6 +16,6 @@ for _,world in ipairs({1,6,5,4,7,2,3}) do
 end
 function A.check(score,unlocked)
     if score.deaths==0 and not Worlds.isSecret(score.world) then unlocked['flawless'..score.world]=true end
-    if score.world==1 and score.deaths>=95 and Scoring.total(score.time,score.deaths)>=A.maxanceTime() then unlocked.maxance=true end
+    if score.world==1 and score.deaths>=95 then unlocked.maxance=true end
 end
 return A

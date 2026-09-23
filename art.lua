@@ -61,6 +61,21 @@ function A.add(key,path)
     end
     data:release()
 end
+-- Subtle contact shadow copied from the actual transparent sprite/mesh.
+function A.shadow(...)
+    if not App or App.state~='playing' then return end
+    local g=love.graphics;local r,green,b,alpha=g.getColor()
+    if math.max(r,green,b)<.25 then return end -- Do not shadow existing dark silhouettes.
+    A.shadowShader=A.shadowShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
+        return vec4(.025,.018,.025,Texel(tex,uv).a*color.a*.13);
+    }]])
+    g.push('all');g.setShader(A.shadowShader);g.setBlendMode('alpha');g.setColor(1,1,1,alpha)
+    g.translate(2,4);g.draw(...);g.pop()
+end
+local function creature(key)
+    return key=='abyss_fish' or key=='magma_larva' or key=='abyss_octopus' or key=='wheel'
+        or key:match('^crab_') or key:match('^skeleton_') or key:match('^storm_')
+end
 -- A subdivided sprite lets the mantle pulse and the arms undulate while swimming.
 function A.drawSwimmer(key,x,y,size,angle,time)
     local a=A.images[key]; local n=12; local vertices={}
@@ -79,16 +94,31 @@ function A.drawSwimmer(key,x,y,size,angle,time)
     if not a.swimMesh then a.swimMesh=love.graphics.newMesh(vertices,'triangles','stream'); a.swimMesh:setTexture(a.image)
     else a.swimMesh:setVertices(vertices) end
     local scale=size/math.max(a.w,a.h)
+    A.shadow(a.swimMesh,x,y,angle,scale,scale)
     love.graphics.draw(a.swimMesh,x,y,angle,scale,scale)
 end
+-- A traveling contraction wave thickens and shortens each ring in turn.
 function A.drawLarva(x,y,size,angle,time)
-    local g=love.graphics;g.push('all');g.translate(x,y);g.rotate(angle or 0)
-    for i=5,0,-1 do
-        local xx=(i-2.5)*size*.12;local yy=math.sin((time or 0)*8+i*.8)*size*.065
-        g.setColor(.35,.18,.11);g.ellipse('fill',xx,yy,size*.11,size*.14)
-        g.setColor(.92,.72,.46);g.ellipse('fill',xx,yy-size*.015,size*.085,size*.11)
+    local g=love.graphics;local _,_,_,alpha=g.getColor()
+    g.push('all');g.translate(x,y);g.rotate(angle or 0)
+    local rings={};local xx=-size*.43
+    for i=0,17 do
+        local t=i/17;local wave=.5+.5*math.sin((time or 0)*5-t*math.pi*3)
+        local radius=size*(.060+.030*math.sin(math.pi*t))*(1+.22*wave)
+        local yy=math.sin(t*math.pi)*math.sin((time or 0)*1.7-t*2)*size*.028
+        rings[#rings+1]={xx,yy,radius,i};xx=xx+size*.052*(1-.2*wave)
     end
-    g.setColor(.08,.055,.035);g.circle('fill',-size*.32,-size*.055,size*.026);g.circle('fill',-size*.32,size*.055,size*.026)
+    -- The shadow follows the same articulated body, rather than a generic oval.
+    for _,p in ipairs(rings) do
+        g.setColor(.035,.018,.012,.12*alpha);g.ellipse('fill',p[1]+1.5,p[2]+2,size*.035,p[3])
+    end
+    for _,p in ipairs(rings) do
+        local band=p[4]>=4 and p[4]<=6
+        g.setColor(band and .52 or .43,band and .32 or .24,band and .22 or .16,alpha)
+        g.ellipse('fill',p[1],p[2],size*.036,p[3])
+        g.setColor(.64,.41,.28,.52*alpha)
+        g.ellipse('fill',p[1]-.2,p[2]-p[3]*.28,size*.024,p[3]*.47)
+    end
     g.pop()
 end
 function A.load()
@@ -117,6 +147,7 @@ end
 function A.draw(key,x,y,width,angle,height)
     local a=assert(A.images[key],key)
     local sx=width/a.w; local sy=height and height/a.h or sx
+    if creature(key) then A.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2) end
     love.graphics.draw(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
 end
 function A.drawTinted(key,x,y,width,angle,height)
@@ -135,6 +166,7 @@ end
 function A.drawFacing(name,dir,x,y,size)
     local key=name..'_'..(dir or 'down'); local a=assert(A.images[key],key)
     local scale=size/math.max(a.w,a.h)
+    if not name:find('spider') then A.shadow(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2) end
     love.graphics.draw(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
 end
 function A.drawWorm(dir,x,y,size,time)
@@ -148,6 +180,7 @@ function A.drawWorm(dir,x,y,size,time)
         local sw,sh=vertical and qw or qw/12,vertical and qh/12 or qh
         if not a.strips[i] then a.strips[i]=love.graphics.newQuad(sx,sy,sw,sh,iw,ih) end
         local wiggle=math.sin(time*10+t*math.pi*3)*size*.055*math.sin((t+endpoint)*math.pi/2)
+        A.shadow(a.image,a.strips[i],x-qw*scale/2+(vertical and wiggle or qw*t*scale),y-qh*scale/2+(vertical and qh*t*scale or wiggle),0,scale,scale)
         love.graphics.draw(a.image,a.strips[i],x-qw*scale/2+(vertical and wiggle or qw*t*scale),y-qh*scale/2+(vertical and qh*t*scale or wiggle),0,scale,scale)
     end
 end
@@ -158,6 +191,7 @@ function A.drawBurrowing(name,dir,x,y,size,amount)
     a.burrowQuad=a.burrowQuad or love.graphics.newQuad(qx,qy,qw,qh,iw,ih)
     a.burrowQuad:setViewport(qx,qy,qw,qh*amount,iw,ih)
     local scale=size/math.max(qw,qh)
+        A.shadow(a.image,a.burrowQuad,x-qw*scale/2,y+qh*scale/2-qh*amount*scale,0,scale,scale)
     love.graphics.draw(a.image,a.burrowQuad,x-qw*scale/2,y+qh*scale/2-qh*amount*scale,0,scale,scale)
 end
 return A

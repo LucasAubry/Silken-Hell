@@ -1,0 +1,3 @@
+Generated with built-in image_gen, 2026-09-23. Output: assets/sprites/hardcore_spider.png
+
+Use case: stylized-concept. Transparent PNG game icon for Silken Hell. A single skeletal spider, eight articulated bone legs surrounding a compact skull-like cephalothorax and ribbed bone abdomen, viewed from above, readable silhouette at 48 pixels. Detailed dark fantasy pixel art with crisp pixel clusters, warm ivory bones, muted antique gold highlights and deep brown shadows with dark outlines, matching retro dark fantasy sprites. Symmetric centered composition, entire eight legs visible, fills 85 percent of square canvas. No lettering, no H, no badge, no border, no background, no ground, no glow. Genuinely transparent alpha background.

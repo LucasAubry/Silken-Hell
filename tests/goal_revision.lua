@@ -56,7 +56,7 @@ function T.run()
     end end
     level(4,10);Octopus.releaseCrabs();assert(#Octopus.crabs==6,'Six crabs per wave')
     Octopus.enraged=true;Octopus.releaseCrabs();assert(#Octopus.crabs==14,'Eight crabs in rage')
-    for i=1,6 do Octopus.releaseCrabs() end;assert(#Octopus.crabs==32,'Bounded crab population')
+    for i=1,6 do local before=#Octopus.crabs;Octopus.releaseCrabs();local added=#Octopus.crabs-before;assert(added==0 or added>=6,'Complete waves only') end;assert(#Octopus.crabs<=32,'Bounded population')
     Octopus.enraged=false
     Octopus.stun=2;Octopus.rider={arm=1};player.x=90;player.y=480
     for arm=1,8 do

@@ -10,7 +10,8 @@ vec4 effect(vec4 color,Image tex,vec2 uv,vec2 screen) {
  vec2 p=screen/dimensions;
  vec2 drift=vec2(clock*.024,-clock*.012);
  float n=noise(p*vec2(5,9)+drift)*.6+noise(p*vec2(11,19)-drift*1.4)*.28+noise(p*vec2(23,37)+drift)*.12;
- float ribbons=smoothstep(.40,.78,n);
+ float pockets=smoothstep(.48,.76,noise(p*vec2(3,4)+vec2(-clock*.009,0)));
+ float ribbons=smoothstep(.38,.72,n)*pockets;
  float clear=smoothstep(25.0,115.0,distance(screen,traveler));
- return vec4(.44,.64,.67,ribbons*(.10+.14*p.y)*(.45+.55*clear));
+ return vec4(.27,.31,.30,ribbons*(.11+.13*p.y)*(.45+.55*clear));
 }

@@ -1,0 +1,3 @@
+Built-in image_gen edit, 2026-09-23. Reference: assets/sprites/hardcore_spider.png. Output: assets/sprites/hardcore_skull.png
+
+Edit this game icon: keep ONLY the spider’s skull head from the lower center of this image, including its small paired fangs. Remove every leg, the abdomen, rib cage, spine and all other body parts completely. Enlarge and center the isolated skull head on a genuinely transparent canvas, with 15 percent empty margin. Preserve the exact skull design, multiple dark eye sockets, warm ivory bone and antique gold details, crisp dark fantasy pixel art style and dark outline. No body, no legs, no ribs, no background, no badge, no text. Final result: just the spider skull head, readable as a compact 48-pixel game icon.

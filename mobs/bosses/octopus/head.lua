@@ -16,6 +16,7 @@ function H.draw(a,x,y,angle,scale,flash)
   if(!(p.r>p.g*1.25 && p.g>p.b*1.2)) p.rgb=mix(vec3(l*.95,l*.55,l*1.25),vec3(l*.48,l*.86,l*1.42),.35+.2*sin(uv.x*25.0+uv.y*19.0));
   return p*tint;
  }]])
+ Art.shadow(H.mesh,x,y,angle,scale,scale)
  love.graphics.push('all');love.graphics.setShader(H.shader);love.graphics.setColor(1,1-flash,1-flash)
  love.graphics.draw(H.mesh,x,y,angle,scale,scale);love.graphics.pop()
 end

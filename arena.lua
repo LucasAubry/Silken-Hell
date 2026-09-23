@@ -213,6 +213,7 @@ function A.drawFloor(hell)
     else BiomeFloor.draw(Campaign.biome,A.width,600,UI.clock) end
 end
 function A.drawWall(r,hell)
+    if Campaign.world==3 then Meadow.wall(r);return end
     local g=love.graphics
     if Campaign.biome>=4 then Realms.drawWall(r)
     elseif hell then

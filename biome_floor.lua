@@ -5,7 +5,7 @@ function B.draw(world,width,height,time)
     B.shader=B.shader or g.newShader('biome_floor.glsl')
     -- Only the background is downsampled; actors, walls, lights and UI retain
     -- their original resolution. The cave is static and keeps its fine grain.
-    local ch=world==5 and 600 or 300
+    local ch=Graphics and Graphics.floorHeight() or 360
     local cw=math.max(300,math.min(2400,math.floor(width/height*ch+.5)))
     -- Two bounded surfaces keep a custom-width arena and its letterbox
     -- backdrop resident together, instead of reallocating them every frame.
@@ -20,10 +20,10 @@ function B.draw(world,width,height,time)
         cache.canvas:setFilter('linear','linear')
     end
     B.surfaces[#B.surfaces+1]=cache;B.cache=cache
-    local tick=world==5 and 0 or math.floor((time or 0)*30)
+    local tick=world==5 and 0 or math.floor((time or 0)*(Graphics and Graphics.backgroundHz() or 60))
     if cache.tick~=tick or cache.world~=world then
         local previous=g.getCanvas();g.push('all');g.setCanvas(cache.canvas);g.origin();g.setScissor();g.clear();g.setColor(1,1,1)
-        B.shader:send('biome',world);B.shader:send('clock',tick/30);B.shader:send('dimensions',{cw,ch})
+        B.shader:send('biome',world);B.shader:send('clock',tick/(Graphics and Graphics.backgroundHz() or 60));B.shader:send('dimensions',{cw,ch})
         g.setShader(B.shader);g.rectangle('fill',0,0,cw,ch);g.setCanvas(previous);g.pop()
         cache.tick=tick;cache.world=world
     end

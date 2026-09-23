@@ -11,6 +11,7 @@ function draw_mob(m, pivotX, pivotY)
         float = math.sin(love.timer.getTime() * 4) * 5
     end
 
+    Art.shadow(img,m.x,m.y+float,m.rotation or 0,m.size,m.size,ox,oy)
     love.graphics.draw(
         img,
         m.x,

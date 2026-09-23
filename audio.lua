@@ -11,10 +11,22 @@ local function tone(seconds, frequencies, volume)
     end
     return love.audio.newSource(data,'static')
 end
+local function levelCue(descending)
+ local rate,duration=22050,.30
+ local notes=descending and {784,587.33,392} or {392,587.33,784}
+ local data=love.sound.newSoundData(math.floor(rate*duration),rate,16,1)
+ for i=0,data:getSampleCount()-1 do
+  local t=i/rate;local step=math.min(3,math.floor(t/.1)+1);local localTime=t-(step-1)*.1
+  local envelope=math.min(1,localTime/.006)*math.max(0,1-localTime/.1)^2
+  data:setSample(i,math.sin(localTime*notes[step]*math.pi*2)*envelope*.28)
+ end
+ return love.audio.newSource(data,'static')
+end
 function A.load()
     love.audio.setVolume(1)
     A.music=tone(8,{130.81,196,261.63,329.63},0.12); A.music:setLooping(true)
     A.hell=tone(8,{65.41,98,155.56},0.16); A.hell:setLooping(true)
+    A.levelUp=levelCue(false);A.levelDown=levelCue(true)
     A.pick=tone(0.35,{659.25,987.77},0.3)
     A.death=tone(0.18,{82.41,87.31},0.35)
     A.click=tone(0.09,{440,660},0.45)

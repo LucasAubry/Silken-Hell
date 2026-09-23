@@ -19,11 +19,24 @@ function I.axes()
     if j:isGamepadDown('dpup') then y=-1 elseif j:isGamepadDown('dpdown') then y=1 end
     return x,y
 end
+function I.down(binding)
+    local button=type(binding)=='string' and binding:match('^mouse:(%d+)$')
+    if button then return love.mouse.isDown(tonumber(button)) end
+    return love.keyboard.isDown(binding)
+end
+function I.bind(key)
+    local old=Profile.keys[UI.binding]
+    for action,value in pairs(Profile.keys) do if value==key then Profile.keys[action]=old end end
+    Profile.keys[UI.binding]=key;UI.binding=nil;Profile.save()
+end
+function I.label(key)
+    local b=key:match('^mouse:(%d+)$');return b and ('Souris '..b) or key:upper()
+end
 function I.move()
     if Replay and Replay.input then return Replay.input[1],Replay.input[2] end
     local k=Profile.keys
-    local x=(love.keyboard.isDown(k.right) and 1 or 0)-(love.keyboard.isDown(k.left) and 1 or 0)
-    local y=(love.keyboard.isDown(k.down) and 1 or 0)-(love.keyboard.isDown(k.up) and 1 or 0)
+    local x=(I.down(k.right) and 1 or 0)-(I.down(k.left) and 1 or 0)
+    local y=(I.down(k.down) and 1 or 0)-(I.down(k.up) and 1 or 0)
     if x==0 and y==0 then x,y=I.axes() end
     local d=math.sqrt(x*x+y*y);if d>1 then x,y=x/d,y/d end
     return x,y
@@ -31,7 +44,7 @@ end
 function I.slow()
     if Replay and Replay.input then return Replay.input[3] end
     local j=I.pad
-    return love.keyboard.isDown(Profile.keys.dash) or j and j:isConnected() and (j:isGamepadDown('a','leftshoulder','rightshoulder') or j:getGamepadAxis('triggerleft')>.3 or j:getGamepadAxis('triggerright')>.3) or false
+    return I.down(Profile.keys.dash) or j and j:isConnected() and (j:isGamepadDown('a','leftshoulder','rightshoulder') or j:getGamepadAxis('triggerleft')>.3 or j:getGamepadAxis('triggerright')>.3) or false
 end
 function I.navigate(dx,dy)
     local buttons=UI.buttons;local b=buttons[I.index]
@@ -53,8 +66,8 @@ function I.update(dt)
     if App.state=='playing' or App.state=='bossWorld' then return end
     I.repeatAt=math.max(0,I.repeatAt-dt)
     if math.max(math.abs(x),math.abs(y))>.5 then
-        if App.state=='worlds' and math.abs(y)>math.abs(x) then
-            if I.repeatAt==0 then WorldMap.step(y>0 and 1 or -1);I.repeatAt=.28 end
+        if App.state=='worlds' then
+            if I.repeatAt==0 then if math.abs(y)>math.abs(x) then WorldMap.step(y>0 and 1 or -1) else WorldMap.branch(x>0) end;I.repeatAt=.28 end
             return
         end
         if I.repeatAt==0 then I.navigate(math.abs(x)>math.abs(y) and (x>0 and 1 or -1) or 0,math.abs(y)>=math.abs(x) and (y>0 and 1 or -1) or 0);I.repeatAt=.18 end
@@ -64,6 +77,7 @@ function I.press(j,b)
     I.use(j);if I.pad~=j then return end
     if Replay and Replay.playing then if b=='b' then Replay.stop() elseif b=='a' or b=='start' then Replay.paused=not Replay.paused end;return end
     if b=='start' or b=='b' then love.keypressed('escape');I.active=true;return end
+    if App.state=='worlds' and b=='a' then App.openEntry(App.selectedWorld,WorldMap.hardcore);return end
     if App.state=='bossWorld' then
         if b=='y' then Secret.category=Secret.category=='mobs' and 'boss' or 'mobs';Secret.page=1;Secret.refresh()
         elseif b=='rightshoulder' then Secret.turnPage(1) elseif b=='leftshoulder' then Secret.turnPage(-1) end
@@ -79,7 +93,7 @@ end
 function I.draw()
     if not I.active then return end
     local b=UI.buttons[I.index]
-    if b and not b.disabled and App.state~='playing' and App.state~='bossWorld' then
+    if b and not b.disabled and App.state~='playing' and App.state~='bossWorld' and App.state~='worlds' then
         local g=love.graphics;g.setColor(1,.85,.3);g.setLineWidth(3);g.rectangle('line',b.x-4,b.y-4,b.w+8,b.h+8,6);g.setLineWidth(1)
     end
     UI.text('Stick / croix : déplacement   ·   A : valider / ralentir   ·   B / Start : retour / pause',160,725,'small',{.8,.85,.9},880,'center')

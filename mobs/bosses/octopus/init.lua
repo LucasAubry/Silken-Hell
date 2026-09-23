@@ -9,7 +9,7 @@ function O.reset(active)
     O.inkPools={}; O.blasts={}; O.inkCount=0; O.poolCooldown=0;O.inkRotation=0;O.crabRage=0
     O.projectiles={}; O.blots={}; O.crabs={}; O.wounds={}; player.ink=0
     O.arms={3,3,3,3,3,3,3,3}
-    O.stun=0;O.enraged=false;O.barrage=0;O.barrageShot=0;O.tipOffsets=nil;O.tether=nil;O.restCurves=nil;O.pullCurve=nil;O.restSpines=nil
+    O.stun=0;O.enraged=false;O.barrage=0;O.barrageShot=0;O.tipOffsets=nil;O.tether=nil;O.restCurves=nil;O.pullCurve=nil;O.restSpines=nil;O.armRasterKey=nil;O.restReach=nil
     if active then player.x=O.x-15; player.y=535; player.lastMoveX=0; player.lastMoveY=-1 end
 end
 function O.sprite()
@@ -68,6 +68,19 @@ end
 function O.armAt(x,y)
     local dx,dy=x-O.x,y-O.y
     if dx*dx+dy*dy<=65^2 then return nil end
+    if not O.restReach then
+        O.restReach=0
+        for arm=1,8 do local points=O.armCurve(arm)
+            local r=0;for _,p in ipairs(points) do r=math.max(r,math.sqrt(p.x*p.x+p.y*p.y)+p.width) end
+            points.reach=r;O.restReach=math.max(O.restReach,r)
+        end
+    end
+    local radius=O.restReach
+    if O.tether then local points=O.armCurve(O.tether.arm)
+        if not points.reach then local r=0;for _,p in ipairs(points) do r=math.max(r,math.sqrt(p.x*p.x+p.y*p.y)+p.width) end;points.reach=r end
+        radius=math.max(radius,points.reach)
+    end
+    if dx*dx+dy*dy>radius*radius then return nil end
     local xx=math.cos(O.angle)*dx+math.sin(O.angle)*dy
     local yy=-math.sin(O.angle)*dx+math.cos(O.angle)*dy
     for arm=1,8 do if O.arms[arm]>0 then
@@ -186,6 +199,7 @@ function O.hurt(crab,arm)
     if O.stun<=0 then O.stun=3;O.angularVelocity=0 end
 end
 function O.crabPathClear(x,y)
+    if x<46 or y<44 or x>Arena.width-46 or y>Arena.height-44 then return false end
     if Arena.blocked(x-14,y-12,28,24) then return false end
     if not O.active or O.defeated then return true end
     if (x-O.x)^2+(y-O.y)^2<185^2 then return false end
@@ -264,10 +278,6 @@ function O.updateCrabs(dt)
             for _,p in ipairs(O.inkPools) do if Hazards.inEllipse(c.x,c.y,p,20) then covered=true;break end end
             if covered then table.remove(O.crabs,i)
             else c.emerge=c.emerge+dt;if c.emerge>=1.05 then c.emerge=nil end end
-        elseif c.emerge then
-            c.emerge=c.emerge+dt; local t=math.min(1,c.emerge/.9)
-            c.x=O.x+(c.tx-O.x)*t; c.y=O.y+(c.ty-O.y)*t
-            if t==1 then c.emerge=nil; O.crabContact(c) end
         else
             O.inkCrab(c,dt)
             if c.fling then O.moveFlungCrab(c,dt,function() O.crabContact(c) end)
@@ -277,20 +287,33 @@ function O.updateCrabs(dt)
     end
 end
 function O.crabSpeed(c)
-    return c.speed*1.3*(c.frenzy and 1.4 or 1)*((player.ink or 0)>0 and 1.75 or 1)*((O.rider or O.crabRage>0) and 1.45 or 1)
+    return c.speed*1.3*(c.inked and (1.5+.2*math.sin((c.age or 0)*19)) or c.frenzy and 1.4 or 1)*((player.ink or 0)>0 and 1.75 or 1)*((O.rider or O.crabRage>0) and 1.45 or 1)
 end
 function O.walkCrab(c,dt,contact)
+    -- Keep recovery for crabs embedded in a wall, independently of their old steering.
+    if Arena.blocked(c.x-14,c.y-12,28,24) then
+        local x,y=Arena.clearSpot(c.x-14,c.y-12,28,24);c.x,c.y=x+14,y+12
+    end
     if c.inked then
         c.frenzyTurn=(c.frenzyTurn or 0)-dt
-        if c.frenzyTurn<=0 then c.frenzyStep=(c.frenzyStep or 0)+1;local a=(c.wave or 0)*.71+(c.age or 0)*.3+c.frenzyStep*2.399963;c.vx,c.vy=math.cos(a),math.sin(a);c.frenzyTurn=.22 end
+        if c.frenzyTurn<=0 then
+            c.frenzySeed=c.frenzySeed or c.x*.017+c.y*.031+(c.wave or 0)*.71+(c.age or 0)*2
+            c.frenzyStep=(c.frenzyStep or 0)+1
+            -- Irregular but reproducible turns, independent of the player's position.
+            local roll=math.sin(c.frenzySeed+c.frenzyStep*12.9898)*43758.5453
+            local a=(roll-math.floor(roll))*math.pi*2
+            c.vx,c.vy=math.cos(a),math.sin(a)
+            c.frenzyTurn=.10+.16*(.5+.5*math.sin(c.frenzyStep*7.13+c.frenzySeed))
+            c.orbitSide=nil
+        end
     else
         local dx,dy=player.x+15-c.x,player.y+12-c.y
         local length=math.sqrt(dx*dx+dy*dy)
         if length>0 then c.vx,c.vy=dx/length,dy/length end
     end
     c.vx,c.vy=c.vx or 0,c.vy or 1
-    -- Walk around the whole resting boss; only a player kick may cross it.
-    if O.active and not O.defeated then
+    -- Only ordinary crabs orbit toward the player. Inked crabs just avoid obstacles.
+    if O.active and not O.defeated and not c.inked then
         local dx,dy=c.x-O.x,c.y-O.y;local d=math.sqrt(dx*dx+dy*dy)
         local tx,ty=player.x+15-O.x,player.y+12-O.y
         local desired=math.atan2(ty,tx);local angle=math.atan2(dy,dx)
@@ -511,11 +534,26 @@ function O.armCurve(arm)
 end
 function O.drawArms()
     local g=love.graphics
-    g.push('all');g.setShader();g.translate(O.x,O.y);g.rotate(O.angle)
-    for arm=1,8 do if O.arms[arm]>0 then
+    local pulled=O.tether and O.tether.arm or 0
+    local key=table.concat(O.arms,':')..':'..pulled
+    local density=Graphics and Graphics.quality==1 and 1 or 2
+    key=key..':'..density
+    if O.armRasterKey~=key then
+        if not O.armRaster or O.armRaster:getWidth()~=440*density then
+            if O.armRaster then O.armRaster:release() end
+            O.armRaster=g.newCanvas(440*density,440*density);O.armRaster:setFilter('linear','linear')
+        end
+        local old=g.getCanvas();g.push('all');g.setCanvas(O.armRaster);g.origin();g.setScissor();g.clear(0,0,0,0);g.setShader();g.scale(density);g.translate(220,220)
         O.vectorMeshes=O.vectorMeshes or {}
-        O.vectorMeshes[arm]=TentacleVector.draw(O.armCurve(arm),1,1-O.arms[arm]/3,O.vectorMeshes[arm])
-    end end
+        for arm=1,8 do if O.arms[arm]>0 and arm~=pulled then
+            O.vectorMeshes[arm]=TentacleVector.draw(O.armCurve(arm),1,1-O.arms[arm]/3,O.vectorMeshes[arm])
+        end end
+        g.setCanvas(old);g.pop();O.armRasterKey=key
+    end
+    g.push('all');g.setShader();g.translate(O.x,O.y);g.rotate(O.angle);g.setColor(1,1,1)
+    Art.shadow(O.armRaster,-220,-220,0,1/density,1/density)
+    g.setBlendMode('alpha','premultiplied');g.draw(O.armRaster,-220,-220,0,1/density,1/density);g.setBlendMode('alpha')
+    if pulled>0 and O.arms[pulled]>0 then O.vectorMeshes[pulled]=TentacleVector.draw(O.armCurve(pulled),1,1-O.arms[pulled]/3,O.vectorMeshes[pulled]) end
     g.pop()
 end
 function O.draw()

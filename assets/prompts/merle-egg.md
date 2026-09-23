@@ -1,0 +1,3 @@
+Built-in image_gen tool, 2026-09-23. Output: assets/sprites/merle_egg.png
+
+Use case: stylized-concept. Asset type: transparent PNG sprite for Silken Hell dark fantasy pixel-art game. Single beautiful intact blackbird egg, upright, slightly narrower at top, ivory cream shell with irregular deep navy blue speckles, softly shaded volume, crisp pixel clusters and dark thin outline matching detailed retro fantasy game sprites. Centered egg only, fills 80% image height, no nest, no ground shadow, no glow, no text, no extra objects. Genuinely transparent background. Must remain readable at 32 pixels tall.

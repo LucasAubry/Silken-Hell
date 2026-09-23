@@ -24,7 +24,7 @@ end
 function W.playLayout(layout,row)
     local valid,why=LayoutSchema.validate(layout)
     if not valid then W.status=why; return false end
-    App.practice=nil;App.sessionLayout=layout; App.singleLevel=true; App.workshopMap=row
+    App.hardcore=false;App.practice=nil;App.sessionLayout=layout; App.singleLevel=true; App.workshopMap=row
     App.start(layout.world); return true
 end
 function W.play(row)

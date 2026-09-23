@@ -41,7 +41,6 @@ function S.splitAbyss(layout)
     for _,e in ipairs(layout.entities) do
         if e.kind=='boss' and e.type=='skeleton_fish' then
             local stage=e.skeletonStage or (layout.world==7 and layout.level>=8 and layout.level or 10)
-            if stage==10 then entities[#entities+1]=e else
             local function part(typ,x,y,w,h,rotation)
                 entities[#entities+1]={kind='abyss_part',type=typ,x=x,y=y,w=w,h=h,rotation=rotation or 0,id=(e.id or 'skeleton')..'-'..#entities}
             end
@@ -55,7 +54,6 @@ function S.splitAbyss(layout)
             part('skeleton_tail',e.x-width*.405,e.y,100,145)
             if stage==10 then
                 entities[#entities+1]={kind='boss',type='skeleton_head',id=e.id,x=math.max(115,math.min(width-145,e.x+width*.29)),y=math.max(125,math.min(455,e.y)),movementRate=e.movementRate or 1,attackRate=e.attackRate or 1}
-            end
             end
         else entities[#entities+1]=e end
     end

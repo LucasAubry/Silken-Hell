@@ -18,6 +18,7 @@ function S.refresh()
 end
 function S.turnPage(step) S.page=(S.page-1+step)%S.pages+1;S.refresh() end
 function S.launch(p)
+    App.hardcore=false;Hardcore.notice=nil
     if p.hardcore then S.duel=nil;App.start(14);return end
     local world=p.world;local kind=p.type
     if kind=='skeleton_head' then kind='skeleton_fish' end
@@ -45,7 +46,7 @@ end
 function S.open()
     if Replay then Replay.recording=false end
     if not Worlds.canEnter(8) and os.getenv('SILKEN_TEST')~='1' then return end
-    App.practice=nil
+    App.hardcore=false;Hardcore.notice=nil;App.practice=nil
     App.selectedWorld=8
     App.sessionLayout=nil;App.singleLevel=false;App.workshopMap=nil;App.custom=false
     S.duel=nil;S.page=1;S.category=S.category or 'boss';S.refresh()

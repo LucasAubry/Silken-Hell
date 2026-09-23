@@ -41,7 +41,7 @@ function C.reset()
     Aftermath.reset()
     AbyssTerrain.reset()
     C.biome=Worlds.biome(C.world,player.level)
-    local world=C.biome; local n=(C.world==3 or Worlds.isSecret(C.world)) and 10 or player.level
+    local world=C.biome; local n=(Worlds.isSecret(C.world)) and 10 or player.level
     BossFX.reset()
     if Bosses then Bosses.reset() end
     local previousSide=C.lastSide
@@ -79,7 +79,7 @@ function C.reset()
         C.lastSide=math.floor((a+math.pi/4)%(2*math.pi)/(math.pi/2))+1
     end
     objet.larme.abyssHeld=nil; objet.larme.taken=boss; objet.larme_dropped=true
-    if not boss then
+    if not boss and C.world~=3 then
         if world>=4 then Realms.spawn(world,n)
         elseif world==2 then C.spawnHell(n) else
             _G['mob_lv'..n]()
@@ -118,7 +118,7 @@ function C.reset()
     Ocean.reset(world)
     Abyss.reset(world,n)
     Magma.reset()
-    if LevelLayouts and not Worlds.isSecret(C.world) then LevelLayouts.applyCurrent() end
+    if LevelLayouts and C.world~=3 and not Worlds.isSecret(C.world) then LevelLayouts.applyCurrent() end
     if not Realms.custom then C.clearGroundSites(); if world==2 then Magma.populate(n) end end
     if Secret then Secret.configure();if Secret.duel then Secret.duel.time=0;if Secret.duel.kind=='mob' then objet.larme.taken=true end end end
     local hasOctopus=Octopus.active
@@ -181,11 +181,11 @@ function C.clearGroundSites()
     end
 end
 function C.drawCircles()
-    if C.biome==5 then return end
-    if Bosses.hud().active or Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active then return end
+    if (Abyss.boss and not Abyss.defeated) or Bosses.hud().active or Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active then return end
     local g=love.graphics
     for _,p in ipairs(levels[player.level].larme_position) do
         g.setColor(Worlds.color(C.world).tear)
+        if C.biome==5 then g.setColor(.72,.51,.30,.72) end
         if C.biome==7 then g.setColor(.3,.7,1,Abyss.siteVisibility(p.x+15,p.y+39)) end
         Art.drawTinted('tear_ring',p.x+15,p.y+39,44)
     end
@@ -193,7 +193,7 @@ function C.drawCircles()
 end
 function C.draw()
     local g=love.graphics; local hell=C.biome==2
-    Arena.drawFloor(hell); C.drawCircles(); Abyss.drawSites()
+    Arena.drawFloor(hell);if C.world==3 then Meadow.draw() end; C.drawCircles(); Abyss.drawSites()
     if hell then
         for i=1,32 do
             local x=(i*79+math.sin(larme_float_timer+i)*14)%(Arena.width-50)+25
@@ -211,13 +211,13 @@ function C.drawTear()
     if not objet.larme.taken then
         local x,y=objet.larme.x,objet.larme.y+math.sin(larme_float_timer*2)*4
         local tint=Worlds.color(C.biome).tear
-        if C.biome==5 then tint={.8,.94,1};g.setColor(.32,.65,1,.17);g.ellipse('fill',x+15,y+20,24,30);g.setColor(.8,.94,1,.7);g.setLineWidth(1.5);g.line(x+15,y-9,x+15,y-3);g.line(x-7,y+20,x-2,y+20);g.line(x+32,y+20,x+37,y+20) end
-        g.setColor(tint); g.draw(particleSystem,x+15,y+20)
+        if C.biome==5 then tint={.86,.65,.39} end
+        if C.biome~=5 then g.setColor(tint);g.draw(particleSystem,x+15,y+20) end
         local previous=g.getShader()
         if C.biome==5 then
             C.tearShader=C.tearShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
                 vec4 p=Texel(tex,uv);float v=max(p.r,max(p.g,p.b));
-                return vec4(.75+.25*v,.9+.1*v,1.0,p.a)*color;
+                return vec4(.66+.30*v,.43+.33*v,.22+.28*v,p.a)*color;
             }]])
             g.setShader(C.tearShader);g.setColor(1,1,1)
         end

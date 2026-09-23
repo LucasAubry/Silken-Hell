@@ -1,6 +1,16 @@
 -- Each custom encounter owns its state, including duplicates of the same boss.
 local B={items={}}
 local files={skeleton_head='mobs/bosses/abyss/init',storm='mobs/bosses/storm/init',merle='mobs/bosses/raven/init',wasp='mobs/bosses/wasp/init',hedgehog='mobs/bosses/hedgehog/init',octopus='mobs/bosses/octopus/init',skeleton_fish='mobs/bosses/abyss/init'}
+-- Compile each constructor once. Executing the chunk still creates independent
+-- boss state, but deaths and replay ticks no longer reopen source files.
+local constructors={}
+for _,file in pairs(files) do
+    if not constructors[file] then
+        local chunk,err=love.filesystem.load(file..'.lua')
+        assert(chunk,'Impossible de charger le boss '..file..'.lua : '..tostring(err))
+        constructors[file]=chunk
+    end
+end
 function B.reset() B.items={} end
 function B.any() return #B.items>0 end
 function B.alive()
@@ -14,13 +24,13 @@ function B.load(entries,nests,lights)
         local file=files[e.type]
         if file then
             local saved={}; for k,v in pairs(MobBehaviors) do saved[k]=v end
-            local boss=assert(love.filesystem.load(file..'.lua'))()
+            local boss=constructors[file]()
             for k in pairs(MobBehaviors) do MobBehaviors[k]=nil end
             for k,v in pairs(saved) do MobBehaviors[k]=v end
             local px,py=player.x,player.y; local count=#mobs
             if e.type=='skeleton_fish' or e.type=='skeleton_head' then
                 boss.reset(7,e.type=='skeleton_head' and 10 or e.skeletonStage or (Campaign.biome==7 and player.level>=8 and player.level or 10)); boss.instance=true; boss.headOnly=e.type=='skeleton_head'; boss.origin={x=e.x,y=e.y}; boss.buildBones()
-                boss.lightSites=#lights>0 and require('json').decode(require('json').encode(lights)) or {{x=90,y=110},{x=Arena.width-90,y=490}}
+                if boss.boss then boss.setupEncounter() else boss.lightSites=#lights>0 and require('json').decode(require('json').encode(lights)) or {{x=90,y=110},{x=Arena.width-90,y=490}} end
             else boss.reset(false); boss.active=true; boss.x=e.x; boss.y=e.y end
             while #mobs>count do table.remove(mobs) end
             player.x,player.y=px,py
@@ -99,7 +109,7 @@ function B.hud()
     for _,item in ipairs(B.items) do if item.boss.boss~=false then
         hp=hp+item.boss.hp; maxHp=maxHp+item.boss.maxHp; if not item.boss.defeated then count=count+1 end
     end end
-    return {active=maxHp>0,defeated=count==0,hp=hp,maxHp=maxHp,flash=0,name=count..' boss · '..hp..' PV'}
+    return {active=maxHp>0,defeated=count==0,hp=hp,maxHp=maxHp,flash=0,name=count..' boss · '..math.ceil(hp)..' PV'}
 end
 function B.resize(ratio)
     for _,item in ipairs(B.items) do
@@ -108,7 +118,7 @@ function B.resize(ratio)
         if b.x then b.x=b.x*ratio end
         if b.head then b.head.x=b.head.x*ratio end
         if b.origin then b.origin.x=b.origin.x*ratio; b.buildBones() end
-        for _,key in ipairs({'projectiles','strikes','nests','eggs','chicks','minions','pools','shots','skins','crabs','wounds','lightSites','threads','plankton','corpses','inkPools','blasts','eruptions'}) do
+        for _,key in ipairs({'projectiles','strikes','nests','eggs','chicks','minions','pools','shots','skins','crabs','wounds','lightSites','mines','threads','plankton','corpses','inkPools','blasts','eruptions'}) do
             for _,p in ipairs(b[key] or {}) do if p.x then p.x=p.x*ratio end; if p.cx then p.cx=p.cx*ratio end; if p.tx then p.tx=p.tx*ratio end; if p.fromX then p.fromX=p.fromX*ratio end end
         end
         end
