@@ -10,17 +10,18 @@ local function clearBoss(b)
  assert(b.hp==10 and b.maxHp==10)
  for i=1,9 do hit(b);assert(b.hp==10-i and not b.broken) end
  b.projectiles={{x=50,y=50,vx=1,vy=1,life=3}}
- hit(b);assert(b.hp==0 and b.broken and not b.defeated and #b.chicks==6)
+ hit(b);assert(b.hp==0 and b.broken and not b.defeated and #b.chicks==12)
  assert(#b.projectiles==0 and objet.larme.taken and not Campaign.canCollect())
  local m=b.chicks[1];local x,y=m.x,m.y
  player.x=x-15;player.y=y-12;player.dashing=false
  for i=1,90 do b.update(1/60) end
- assert(#b.chicks==6 and m.x==x and m.y==y and not player.reset and #b.projectiles==0,'Stunned birds stay still, harmless, and require a dash')
+ assert(#b.chicks==12 and m.x==x and m.y==y and not player.reset and #b.projectiles==0,'Stunned birds stay still, harmless, and require a dash')
  Aftermath.update(.01);assert(not Aftermath.cleared,'Egg breaking alone does not finish encounter')
- for i=1,6 do
+ while #b.chicks>0 do
+  local remaining=#b.chicks
   m=b.chicks[1];player.x=m.x-15;player.y=m.y-12;player.dashing=true;b.contact();player.dashing=false
-  assert(#b.chicks==6-i)
-  if i<6 then assert(not b.defeated and objet.larme.taken) end
+  assert(#b.chicks<remaining)
+  if #b.chicks>0 then assert(not b.defeated and objet.larme.taken) end
  end
  assert(b.defeated and Campaign.canCollect() and not objet.larme.taken,'Tear appears only after final stunned bird dies')
 end
@@ -46,7 +47,10 @@ function T.run()
  b.fire=fire;Hazards.kill=kill
  reset();b=Raven
  for i=1,9 do
-  hit(b);assert(#b.chicks<=6,'No additional corner birds')
+  local previous={};for _,m in ipairs(b.chicks) do previous[m]=true end
+  hit(b);assert(#b.chicks==3+i,'Every invocation adds a bird without a cap')
+  for _,m in ipairs(b.chicks) do previous[m]=nil end
+  assert(next(previous)==nil,'Existing birds remain after every invocation')
   for _,m in ipairs(b.chicks) do assert(m.kind~='corner') end
  end
  reset();b=Raven;Hazards.kill=function() end
@@ -88,7 +92,8 @@ function T.run()
    local m;for _,v in ipairs(Raven.chicks) do if v.kind=='charger' then m=v;break end end
    if m then Raven.projectiles={{x=m.x,y=m.y,vx=0,vy=0,life=3}};Raven.update(0);Raven.update(.3) end
    App.capture='egg-fallen-bird.png'
-  elseif tick==7 then io.stdout:flush();love.event.quit(0) end
+  elseif tick==7 then reset();for i=1,10 do hit(Raven) end;App.capture='egg-no-ground-triangles.png'
+  elseif tick==9 then io.stdout:flush();love.event.quit(0) end
  end
 end
 return T

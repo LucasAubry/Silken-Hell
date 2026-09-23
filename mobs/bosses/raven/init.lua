@@ -52,8 +52,6 @@ function B.fire(m)
 end
 function B.hatch()
     local wave=B.maxHp-B.hp
-    local chargers={};for i,m in ipairs(B.chicks) do if m.kind=='charger' then chargers[#chargers+1]=i end end
-    if #chargers>=3 then table.remove(B.chicks,chargers[1]) end
     local sites={};for i,n in ipairs(B.nests) do if not n.shooter then sites[#sites+1]=i end end
     if #sites>0 then
         local i=sites[(wave-1)%#sites+1];local n=B.nests[i]
@@ -161,9 +159,6 @@ function B.draw()
     end
     if B.broken then
         g.push('all');g.setColor(.83,.84,.8)
-        for i=1,9 do local a=i*2.399;local x,y=B.x+math.cos(a)*30,B.y+math.sin(a)*20
-            g.polygon('fill',x-7,y+5,x-2,y-8,x+8,y+2);g.setColor(.65,.73,.82)
-        end
         if not B.defeated then g.setColor(.9,.94,1);g.setFont(UI.fonts.small);g.printf('Fonce sur les oiseaux étourdis',B.x-150,B.y+52,300,'center') end
         g.pop()
     end

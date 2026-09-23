@@ -63,7 +63,8 @@ function H.update(dt)
         local speed=(475+(H.stage-1)*22)*(H.movementRate or 1)
         local current=math.atan2(H.vy,H.vx); local target=math.atan2(player.y+12-H.y,player.x+15-H.x)
         local delta=(target-current+math.pi)%(math.pi*2)-math.pi
-        local angle=current+math.max(-dt*1.35,math.min(dt*1.35,delta))
+        -- Tighter turns reduce the rolling circle radius without changing speed.
+        local angle=current+math.max(-dt*2.4,math.min(dt*2.4,delta))
         H.vx,H.vy=math.cos(angle)*speed,math.sin(angle)*speed
         local steps=math.max(1,math.ceil(speed*dt/4))
         for _=1,steps do
