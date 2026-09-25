@@ -1,4 +1,5 @@
 local json=require 'json'
+local Tools=require 'replay_tools'
 local R={version=1,step=1/60,accumulator=0,speed=1,status=''}
 function R.canonical(value)
     if type(value)~='table' then return json.encode(value) end
@@ -10,7 +11,7 @@ function R.hash(value) return love.data.encode('string','hex',love.data.hash('sh
 function R.build()
     if not R.buildId then
         local sources={}
-        for _,name in ipairs({'main','campaign','input','realms','hazards','arena','level_layouts','replay','level','player','hit_box','objet','burning','aftermath','breathing_bubble','abyss_terrain','secret','world','effect'}) do sources[#sources+1]=assert(love.filesystem.read(name..'.lua')) end
+        for _,name in ipairs({'main','campaign','renaissance','input','realms','hazards','arena','level_layouts','replay','replay_tools','level','player','hit_box','objet','burning','aftermath','breathing_bubble','abyss_terrain','secret','world','effect'}) do sources[#sources+1]=assert(love.filesystem.read(name..'.lua')) end
         local function actorSources(dir)
             local names=love.filesystem.getDirectoryItems(dir);table.sort(names)
             for _,name in ipairs(names) do local path=dir..'/'..name;local info=love.filesystem.getInfo(path)
@@ -54,16 +55,18 @@ function R.saveFinished()
     R.recording=false;R.pendingFinish=nil;R.pendingScore=nil
 end
 function R.update(dt,tick)
+    if R.ghost then R.updateGhost(dt,tick);return end
     if R.disabled then tick(dt);return end
     if not R.playing and not R.recording then tick(math.min(dt,.05));return end
     if R.playing and R.paused then return end
-    R.accumulator=R.accumulator+math.min(dt,.25)*(R.playing and R.speed or 1)
+    if R.job then R.accumulator=R.step*240 else R.accumulator=R.accumulator+math.min(dt,.25)*(R.playing and R.speed or 1) end
+    local deadline=R.job and love.timer.getTime()+.012
     local limit=0
-    while R.accumulator>=R.step and App.state=='playing' and limit<32 do
+    while R.accumulator>=R.step and (App.state=='playing' or R.playing and R.compatibility and (App.state=='victory' or App.state=='customVictory')) and limit<(R.job and 240 or 32) and (not deadline or love.timer.getTime()<deadline) do
         R.accumulator=R.accumulator-R.step;limit=limit+1
         local x,y,slow
         if R.playing then
-            if R.frame>=R.data.frames then R.stop('Lecture terminée.');break end
+            if R.frame>=R.data.frames then R.endPlayback();break end
             if R.eventLeft<=0 then local e=R.data.inputs[R.eventIndex];if not e then R.stop('Replay incomplet.');break end;R.event=e;R.eventLeft=e[1];R.eventIndex=R.eventIndex+1 end
             x,y,slow=R.event[2],R.event[3],R.event[4]==1;R.eventLeft=R.eventLeft-1
         else
@@ -72,15 +75,26 @@ function R.update(dt,tick)
             if previous and previous[2]==x and previous[3]==y and previous[4]==s then previous[1]=previous[1]+1 else list[#list+1]={1,x,y,s} end
         end
         R.frame=R.frame+1;R.data.frames=R.playing and R.data.frames or R.frame
-        R.enter();R.input={x,y,slow};local ok,err=xpcall(function() tick(R.step) end,debug.traceback);R.leave();if not ok then error(err) end
+        R.enter();R.input={x,y,slow};local ok,err=xpcall(function() if App.state=='playing' then tick(R.step) end end,debug.traceback);R.leave();if not ok then error(err) end
         local actual=R.checkpoint()
         if R.playing then
             local expected=R.data.checks[R.checkIndex]
             if expected and expected[1]==R.frame then
-                if expected[2]~=actual[2] or expected[3]~=actual[3] or expected[4]~=actual[4] or expected[5]~=actual[5] or expected[6]~=actual[6] then R.stop('Lecture arrêtée : simulation différente de la run enregistrée.');break end
+                if expected[2]~=actual[2] or expected[3]~=actual[3] or expected[4]~=actual[4] or expected[5]~=actual[5] or expected[6]~=actual[6] then
+                    if R.compatibility then
+                        -- Old recordings contain input and sparse checkpoints, not the old engine.
+                        -- Keep watching and restore the recorded route when the new simulation diverges.
+                        if not expected[6] then
+                            if player.level~=expected[2] or App.state~='playing' then player.level=expected[2];reset_level() end
+                            App.state='playing';player.x=expected[3]/100;player.y=expected[4]/100;player.death=expected[5]
+                            player.reset=false;player.falling=false
+                        end
+                    else R.stop('Lecture arrêtée : simulation différente de la run enregistrée.');break end
+                end
                 R.checkIndex=R.checkIndex+1
             end
-            if R.frame>=R.data.frames then R.stop('Lecture terminée.');break end
+            if R.afterFrame() then break end
+            if R.frame>=R.data.frames then R.endPlayback();break end
         elseif R.frame%240==0 or R.pendingFinish then
             R.data.checks[#R.data.checks+1]=actual
             if R.pendingFinish then R.saveFinished();break end
@@ -88,7 +102,7 @@ function R.update(dt,tick)
     end
 end
 function R.validate(data)
-    if type(data)~='table' or data.version~=1 or data.build~=R.build() then return false,'Replay créé avec une autre version du jeu.' end
+    if type(data)~='table' or type(data.version)~='number' or data.version%1~=0 or data.version<1 then return false,'Replay invalide.' end
     if not Worlds.playable(data.world) or type(data.inputs)~='table' or type(data.checks)~='table' or type(data.layouts)~='table' or type(data.seed)~='number' or data.seed%1~=0 or type(data.width)~='number' or data.width~=data.width or data.width<400 or data.width>4000 or type(data.frames)~='number' or data.frames<1 then return false,'Replay invalide.' end
     local function integer(n,lo,hi) return type(n)=='number' and n%1==0 and n>=lo and n<=hi end
     if data.completed~=true or type(data.single)~='boolean' or not integer(data.startLevel,1,Worlds.levelCount(data.world)) or not integer(data.skin,1,14) or not integer(data.seed,1,2147483646) or not integer(data.frames,1,5184000) or not integer(data.deaths,0,100000) or type(data.time)~='number' or data.time~=data.time or data.time<0 or data.time>86400 or data.height~=600 or #data.inputs>100000 or #data.checks>25000 then return false,'Replay invalide.' end
@@ -111,13 +125,15 @@ function R.validate(data)
 end
 function R.play(data)
     local ok,why=R.validate(data);if not ok then R.status=why;return false end
+    R.job=nil;R.ghost=nil;R.ghostRetry=nil;R.levelStates={}
     R.saved={character=Profile.character,achievements=json.decode(json.encode(Profile.achievements)),selected=App.selectedWorld}
-    R.recording=false;R.playing=true;R.data=data;R.speed=1;R.paused=false
+    R.recording=false;R.playing=true;R.compatibility=data.build~=R.build() or data.version~=R.version;R.data=data;R.speed=1;R.paused=false
     Secret.duel=data.duel and {kind=data.duel.kind,name=data.duel.name,time=0} or nil;App.sessionLayout=nil;App.hardcore=data.hardcore==true;App.singleLevel=data.single;App.practice=data.startLevel;App.workshopMap=nil;App.preview=false
-    App.start(data.world);R.status='';return true
+    App.start(data.world);R.status=R.compatibility and 'Lecture compatible · restitution approximative.' or '';return true
 end
 function R.stop(message)
-    R.playing=false;R.recording=false;R.input=nil;R.accumulator=0;R.paused=false
+    R.job=nil;R.ghost=nil;R.ghostRetry=nil
+    R.playing=false;R.compatibility=false;R.recording=false;R.input=nil;R.accumulator=0;R.paused=false
     if R.saved then Profile.character=R.saved.character;Profile.achievements=R.saved.achievements;App.selectedWorld=R.saved.selected;R.saved=nil end
     Secret.duel=nil;App.sessionLayout=nil;App.hardcore=false;App.singleLevel=false;App.practice=nil;App.state='rankings';R.status=message or 'Lecture arrêtée.'
 end
@@ -131,4 +147,5 @@ function R.watch(score)
         Online.request('/v1/replays/'..score.runId,nil,function(data,code) if code==200 then R.play(data.replay) else R.status=data.error or 'Replay indisponible.' end end)
     else R.status='Cette ancienne run ne possède pas de replay.' end
 end
+Tools.install(R)
 return R

@@ -56,11 +56,15 @@ function A.clearSpot(x,y,w,h)
     return x,y
 end
 function A.move(m,dx,dy)
+    if m==player and Abyss and Abyss.playerMinX then dx=math.max(m.x+dx,Abyss.playerMinX(m.y))-m.x end
     local ox,oy=m.hitBox_offset_x or 0,m.hitBox_offset_y or 0
     local w,h=m.hitBox_width,m.hitBox_height
     local hitX=A.blocked(m.x+ox+dx,m.y+oy,w,h)
+    if m==player and Abyss and Abyss.blockedPlayer and Abyss.blockedPlayer(m.x+dx,m.y) then hitX=true end
     if not hitX then m.x=m.x+dx end
     local hitY=A.blocked(m.x+ox,m.y+oy+dy,w,h)
+    if m==player and Abyss and Abyss.blockedPlayer and Abyss.blockedPlayer(m.x,m.y+dy) then hitY=true end
+    if m==player and Abyss and Abyss.playerMinX and m.x<Abyss.playerMinX(m.y+dy) then hitY=true end
     if not hitY then m.y=m.y+dy end
     return hitX,hitY
 end
@@ -213,6 +217,7 @@ function A.drawFloor(hell)
     else BiomeFloor.draw(Campaign.biome,A.width,600,UI.clock) end
 end
 function A.drawWall(r,hell)
+    if r.renaissanceSoil then Renaissance.drawSoil(r);return end
     if Campaign.world==3 then Meadow.wall(r);return end
     local g=love.graphics
     if Campaign.biome>=4 then Realms.drawWall(r)

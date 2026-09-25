@@ -10,12 +10,12 @@ local function clearBoss(b)
  assert(b.hp==10 and b.maxHp==10)
  for i=1,9 do hit(b);assert(b.hp==10-i and not b.broken) end
  b.projectiles={{x=50,y=50,vx=1,vy=1,life=3}}
- hit(b);assert(b.hp==0 and b.broken and not b.defeated and #b.chicks==12)
+ hit(b);assert(b.hp==0 and b.broken and not b.defeated and #b.chicks==6)
  assert(#b.projectiles==0 and objet.larme.taken and not Campaign.canCollect())
  local m=b.chicks[1];local x,y=m.x,m.y
  player.x=x-15;player.y=y-12;player.dashing=false
  for i=1,90 do b.update(1/60) end
- assert(#b.chicks==12 and m.x==x and m.y==y and not player.reset and #b.projectiles==0,'Stunned birds stay still, harmless, and require a dash')
+ assert(#b.chicks==6 and m.x==x and m.y==y and not player.reset and #b.projectiles==0,'Stunned birds stay still, harmless, and require a dash')
  Aftermath.update(.01);assert(not Aftermath.cleared,'Egg breaking alone does not finish encounter')
  while #b.chicks>0 do
   local remaining=#b.chicks
@@ -48,30 +48,36 @@ function T.run()
  reset();b=Raven
  for i=1,9 do
   local previous={};for _,m in ipairs(b.chicks) do previous[m]=true end
-  hit(b);assert(#b.chicks==3+i,'Every invocation adds a bird without a cap')
+  hit(b);assert(#b.chicks==3+math.min(math.floor(i/2),3),'Every two lost HP summon a pursuer, up to three living birds')
   for _,m in ipairs(b.chicks) do previous[m]=nil end
   assert(next(previous)==nil,'Existing birds remain after every invocation')
   for _,m in ipairs(b.chicks) do assert(m.kind~='corner') end
  end
  reset();b=Raven;Hazards.kill=function() end
- local anchors={};for _,m in ipairs(b.chicks) do anchors[m]={m.x,m.y} end
+ local anchors={};for _,m in ipairs(b.chicks) do if m.kind=='shooter' then anchors[m]={m.x,m.y} end end
  for i=1,180 do player.x=35+i;player.y=500;b.update(1/60) end
  for m,p in pairs(anchors) do assert(m.x==p[1] and m.y==p[2],'Shooters remain in their nests') end
  assert(b.featherSpeed==440 and b.interval()<=.32,'Faster feathers and firing cadence')
- b.hp=9;b.hatch();local target=b.chicks[#b.chicks]
+ reset();b=Raven;assert(#b.chicks==3,'Only shooters are present initially')
+ for i=1,6 do hit(b) end
+ local target=b.chicks[#b.chicks]
  target.age=1;target.x=b.x+140;target.y=b.y;b.movementRate=0;b.shotClock=100
  player.x=35;player.y=540
  b.projectiles={{x=b.x+95,y=b.y,vx=440,vy=0,life=3}}
  b.update(.12)
- assert(#b.chicks==3 and #b.corpses==1 and #b.projectiles==0,'Feather kills pursuing bird and is consumed without tunnelling')
+ assert(#b.chicks==5 and #b.corpses==1 and #b.projectiles==0,'Feather kills pursuing bird and is consumed without tunnelling')
+ b.update(0);assert(#b.chicks==5,'A death alone does not summon a replacement')
+ hit(b);assert(#b.chicks==5,'One lost HP does not replace a dead pursuer')
+ hit(b);assert(#b.chicks==6,'Two lost HP replace a dead pursuer')
+ hit(b);assert(#b.chicks==6,'Only one replacement may spawn per death')
  local corpse=b.corpses[1];local x,y=corpse.x,corpse.y
  for i=1,60 do b.update(1/60) end
  assert(corpse.x==x and corpse.y==y and corpse.fall==1,'Corpse settles and stays on the floor')
  local hurt=false;Hazards.kill=function() hurt=true end
  player.x=x-15;player.y=y-12;b.update(.01);assert(not hurt,'Dead bird is harmless')
  local shooter=b.chicks[1];b.projectiles={{x=shooter.x,y=shooter.y,vx=0,vy=0,life=3}}
- b.update(.01);assert(#b.chicks==3 and #b.corpses==1,'Feathers do not kill nesting shooters')
- b.hp=1;hit(b);assert(b.broken and #b.chicks==3 and #b.corpses==1,'Only living birds are stunned')
+ b.update(.01);assert(#b.chicks==6 and #b.corpses==1,'Feathers do not kill nesting shooters')
+ b.hp=1;hit(b);assert(b.broken and #b.chicks==6 and #b.corpses==1,'Only living birds are stunned')
  while #b.chicks>0 do local m=b.chicks[1];player.x=m.x-15;player.y=m.y-12;player.dashing=true;b.contact() end
  player.dashing=false;assert(b.defeated and #b.corpses==1,'Corpses remain after victory and do not block it')
  Hazards.kill=kill

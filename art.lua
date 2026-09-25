@@ -122,9 +122,14 @@ function A.drawLarva(x,y,size,angle,time)
     g.pop()
 end
 function A.load()
+    for _,key in ipairs({'bush','mini_bush','walking_tree','white_spider','white_egg','brown_egg','soil'}) do
+        A.add('rebirth_'..key,'assets/sprites/renaissance/'..key..'.png')
+    end
     A.add('map_cloud','assets/sprites/map_cloud.png')
     A.add('cave_wall','assets/sprites/cave_wall-v2.png')
     A.add('magma_larva','assets/sprites/magma_larva.png')
+    A.add('merle_flight','assets/sprites/merle_flight.png')
+    for _,dir in ipairs({'left','up','down'}) do A.add('merle_flight_'..dir,'assets/sprites/merle_flight_'..dir..'.png') end
     A.add('magma_nest','assets/sprites/magma_nest.png')
     A.add('octopus_extended_down','assets/sprites/directional/octopus_extended_down.png')
     A.add('abyss_octopus','assets/sprites/abyss_octopus.png')

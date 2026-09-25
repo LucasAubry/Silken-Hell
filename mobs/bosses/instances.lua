@@ -34,6 +34,7 @@ function B.load(entries,nests,lights)
             else boss.reset(false); boss.active=true; boss.x=e.x; boss.y=e.y end
             while #mobs>count do table.remove(mobs) end
             player.x,player.y=px,py
+            if e.type=='storm' then Realms.tornadoes={} end
             if e.type=='merle' then
                 boss.setupNests(#nests>=2 and require('json').decode(require('json').encode(nests)) or nil)
             end
@@ -114,11 +115,11 @@ end
 function B.resize(ratio)
     for _,item in ipairs(B.items) do
         local b=item.boss
-        if item.kind=='wasp' then b.resize(ratio) else
+        if item.kind=='wasp' or item.kind=='storm' or item.kind=='skeleton_fish' then b.resize(ratio) else
         if b.x then b.x=b.x*ratio end
         if b.head then b.head.x=b.head.x*ratio end
         if b.origin then b.origin.x=b.origin.x*ratio; b.buildBones() end
-        for _,key in ipairs({'projectiles','strikes','nests','eggs','chicks','minions','pools','shots','skins','crabs','wounds','lightSites','mines','threads','plankton','corpses','inkPools','blasts','eruptions'}) do
+        for _,key in ipairs({'projectiles','strikes','nests','eggs','chicks','minions','pools','shots','skins','crabs','wounds','lightSites','waves','mines','octopuses','lures','orbs','vortices','sparks','rifts','counterShots','trail','ambient','threads','plankton','corpses','inkPools','blasts','eruptions'}) do
             for _,p in ipairs(b[key] or {}) do if p.x then p.x=p.x*ratio end; if p.cx then p.cx=p.cx*ratio end; if p.tx then p.tx=p.tx*ratio end; if p.fromX then p.fromX=p.fromX*ratio end end
         end
         end

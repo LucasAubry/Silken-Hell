@@ -280,7 +280,7 @@ function W.drawGround()
             local x,y=b.tx or b.x,b.ty or b.y
             g.setColor(1,.55,.12,.55+.25*math.sin(W.elapsed*12));g.setLineWidth(2)
             g.circle('line',x,y,38);g.line(x-10,y,x+10,y);g.line(x,y-10,x,y+10)
-            g.setFont(UI.fonts.small);g.printf('INVOCATION',x-65,y+42,130,'center')
+            g.setFont(UI.fonts.small);g.printf(require('localization').text('INVOCATION'),x-65,y+42,130,'center')
         end
     end
     for _,p in ipairs(W.eruptions) do

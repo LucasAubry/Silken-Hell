@@ -6,7 +6,7 @@ function C.unlocked(index)
     return Profile.achievements[index==13 and 'gillou' or 'maxance']==true
 end
 function C.selected()
-    if Replay and Replay.playing then return Replay.data.skin or 1 end
+    if Replay and Replay.playing and not Replay.ghost then return Replay.data.skin or 1 end
     local index=math.max(1,math.min(#C.keys,Profile.character or 1))
     return C.unlocked(index) and index or 1
 end

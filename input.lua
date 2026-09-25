@@ -32,6 +32,17 @@ end
 function I.label(key)
     local b=key:match('^mouse:(%d+)$');return b and ('Souris '..b) or key:upper()
 end
+function I.action(key)
+    if App.state~='playing' and App.state~='pause' and App.state~='customVictory' then return false end
+    local k=Profile.keys
+    if key==k.restartLevel then App.restartLevel()
+    elseif key==k.restartWorld then App.restartWorld()
+    elseif key==k.nextWorld then App.practiceWorld(1)
+    elseif key==k.previousWorld then App.practiceWorld(-1)
+    elseif key==k.pause then if App.state=='playing' then App.state='pause' elseif App.state=='pause' then App.state='playing' end
+    else return false end
+    return true
+end
 function I.move()
     if Replay and Replay.input then return Replay.input[1],Replay.input[2] end
     local k=Profile.keys

@@ -5,6 +5,12 @@ function A.ready()
     local present=Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active or Abyss.boss or Bosses.hud().active
     return present and Campaign.canCollect()
 end
+function A.centerTear()
+    local tear=objet.larme
+    tear.x=Arena.width/2-tear.hitBox_width/2
+    tear.y=Arena.height/2-tear.hitBox_height/2
+    tear.abyssHeld=nil;tear.taken=false
+end
 function A.update(dt)
     if not A.cleared and A.ready() then
         A.cleared=true
@@ -23,6 +29,7 @@ function A.update(dt)
     end
     for i=#A.sparks,1,-1 do local s=A.sparks[i];s.age=s.age+dt;if s.age>1.1 then table.remove(A.sparks,i) end end
     if A.cleared then
+        A.centerTear()
         local dx,dy=A.x-player.x-15,A.y-player.y-12;local d=math.sqrt(dx*dx+dy*dy)
         A.near=d<115
         A.looking=A.near and (dx*(player.lastMoveX or 0)+dy*(player.lastMoveY or 1))/math.max(1,d)>.65
@@ -39,15 +46,22 @@ function A.draw()
         end
     end
     if A.cleared then
+        -- Victory reward is drawn after darkness and all boss/terrain effects.
+        g.setShader();g.setBlendMode('add')
+        for i=4,1,-1 do
+            g.setColor(c[1],c[2],c[3],.045)
+            g.circle('fill',Arena.width/2,Arena.height/2,18+i*10)
+        end
+        g.setBlendMode('alpha');Campaign.drawTear(true)
         g.setColor(c[1]*.5+.5,c[2]*.5+.5,c[3]*.5+.5,A.looking and .95 or .4+.1*math.sin(UI.clock*2))
         for i=-3,3 do local x=A.x+i*9
             g.line(x-2,A.y+3,x,A.y-3,x+2,A.y+3);g.line(x-2,A.y,x+2,A.y)
         end
-        if A.near then g.setFont(UI.fonts.small);g.printf('Regarde les inscriptions',A.x-130,A.y-65,260,'center') end
-        local story=(Story.worlds or {})[Campaign.world] or ''
+        if A.near then g.setFont(UI.fonts.small);g.printf(require('localization').text('Regarde les inscriptions'),A.x-130,A.y-65,260,'center') end
+        local story=Story.localizedWorld(Campaign.world)
         if A.lookTime>.6 and story~='' then
             g.setColor(.02,.025,.04,.9);g.rectangle('fill',A.x-220,65,440,130,8)
-            g.setColor(1,.94,.8);g.printf(story,A.x-200,80,400,'center')
+            g.setFont(UI.fonts.small);g.setColor(1,.94,.8);g.printf(story,A.x-200,80,400,'center')
         end
     end
     g.pop()

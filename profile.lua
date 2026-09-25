@@ -1,21 +1,24 @@
-local P = {name='', country='', character=1, unlocked=1, music=0.35, sound=0.65,
-    stats={tears=0,deaths=0,attempts=0}, achievements={}, keys={up='up',down='down',left='left',right='right',dash='space'}, scores={}}
+local P = {name='', country='', language='fr', character=1, unlocked=1, music=0.35, sound=0.65,
+    stats={tears=0,eggs=0,deaths=0,attempts=0}, achievements={}, keys={up='up',down='down',left='left',right='right',dash='space',restartLevel='r',restartWorld='f5',nextWorld='pagedown',previousWorld='pageup',replayFaster='=',replaySlower='-',pause='p',ghost='g'}, scores={}}
 local json=require 'json'
-local actions={'up','down','left','right','dash'}
+local actions={'up','down','left','right','dash','restartLevel','restartWorld','nextWorld','previousWorld','replayFaster','replaySlower','pause','ghost'}
 function P.load()
-    P.levels={};P.completed={};P.scores={}; P.achievements={};P.stats={tears=0,deaths=0,attempts=0}
+    P.language='fr'
+    P.levels={};P.completed={};P.scores={}; P.achievements={};P.stats={tears=0,eggs=0,deaths=0,attempts=0}
     local data=love.filesystem.read('profile.txt') or ''
     local version=tonumber(data:match('progressVersion=(%d+)')) or 1
     for line in data:gmatch('[^\n]+') do
         local k,v=line:match('^(%w+)=(.*)$')
         if k and k:match('^level%d+$') then P.levels[tonumber(k:match('%d+'))]=math.max(1,math.min(10,tonumber(v) or 1))
         elseif k and k:match('^completed%d+$') then P.completed[tonumber(k:match('%d+'))]=v=='1'
+        elseif k=='totalEggs' then P.stats.eggs=math.max(0,math.floor(tonumber(v) or 0))
         elseif k=='totalTears' then P.stats.tears=math.max(0,math.floor(tonumber(v) or 0))
         elseif k=='totalDeaths' then P.stats.deaths=math.max(0,math.floor(tonumber(v) or 0))
         elseif k=='totalAttempts' then P.stats.attempts=math.max(0,math.floor(tonumber(v) or 0))
         elseif k=='achievementGillou' then P.achievements.gillou=v=='2'
         elseif k=='achievementMaxance' then P.achievements.maxance=v=='2'
         elseif k and k:match('^flawless%d+$') then P.achievements[k]=v=='1'
+        elseif k=='language' then P.language=require('localization').valid(v) and v or 'fr'
         elseif k=='name' then P.name=v
         elseif k=='country' then P.country=v:match('^%u%u$') or ''
         elseif k=='character' then P.character=math.max(1,math.min(14,tonumber(v) or 1))
@@ -51,7 +54,7 @@ function P.load()
 end
 function P.save()
     if Replay and Replay.playing then return end
-    local rows={'statsVersion=1','totalTears='..P.stats.tears,'totalDeaths='..P.stats.deaths,'totalAttempts='..P.stats.attempts,'achievementGillou='..(P.achievements.gillou and '2' or '0'),'achievementMaxance='..(P.achievements.maxance and '2' or '0'),'progressVersion=2','name='..P.name,'country='..P.country,'character='..(P.character or 1),'unlocked='..P.unlocked,'music='..P.music,'sound='..P.sound}
+    local rows={'statsVersion=1','totalTears='..P.stats.tears,'totalEggs='..(P.stats.eggs or 0),'totalDeaths='..P.stats.deaths,'totalAttempts='..P.stats.attempts,'achievementGillou='..(P.achievements.gillou and '2' or '0'),'achievementMaxance='..(P.achievements.maxance and '2' or '0'),'progressVersion=2','name='..P.name,'country='..P.country,'language='..P.language,'character='..(P.character or 1),'unlocked='..P.unlocked,'music='..P.music,'sound='..P.sound}
     for id,done in pairs(P.achievements) do if id:match('^flawless%d+$') and done then rows[#rows+1]=id..'=1' end end
     for world,n in pairs(P.levels or {}) do rows[#rows+1]='level'..world..'='..n end
     for world,done in pairs(P.completed or {}) do if done then rows[#rows+1]='completed'..world..'=1' end end

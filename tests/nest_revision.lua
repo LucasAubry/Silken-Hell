@@ -9,6 +9,9 @@ function T.run()
  end
  assert(math.abs(player.x+15-Raven.x)<.001 and math.abs(player.y+12-(Raven.nests[4].y-65))<.001)
  player.x=Raven.x-15;player.y=Raven.y-12;player.dashing=true;Raven.contact()
+ assert(#Raven.chicks==3,'First hit does not summon a bird')
+ player.x=35;player.y=540;Raven.contact()
+ player.x=Raven.x-15;player.y=Raven.y-12;Raven.contact()
  assert(#Raven.chicks==4 and #Raven.projectiles==0);Raven.fireNext();assert(#Raven.projectiles==1)
  for _,p in ipairs(Raven.projectiles) do
   local bird=false;for _,m in ipairs(Raven.chicks) do if m.kind=='shooter' and m.x==p.x and m.y==p.y then bird=true end end
@@ -45,7 +48,8 @@ function T.run()
  LevelLayouts.disabled=false;Workshop.playLayout(layout)
  local boss=Bosses.items[1].boss
  assert(#boss.nests==6 and #boss.chicks==3)
- for _,m in ipairs(boss.chicks) do assert(m.kind=='shooter') end
+ local followers=0;for _,m in ipairs(boss.chicks) do if m.kind=='charger' then followers=followers+1 end end
+ assert(followers==0,'Saved encounters summon pursuers only on damage')
  App.capture='nest-revision.png';local ticks=0
  love.update=function() ticks=ticks+1;if ticks==3 then
    Campaign.select(4);player.level=10;App.sessionLayout=nil;LevelLayouts.disabled=true;reset_level();Octopus.releaseCrabs();Octopus.updateCrabs(.6);App.capture='crab-emergence.png'

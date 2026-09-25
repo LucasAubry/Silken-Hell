@@ -96,7 +96,7 @@ function C.draw()
     if not A.head or A.defeated then return end
     local mx,my=C.mouth()
     local labels={lightning='ÉCLAIRS',plankton='PLANCTON',suction='ASPIRATION',rest=''}
-    g.setColor(.7,.9,1,.9);g.setFont(UI.fonts.small);g.printf(labels[A.phase] or '',A.head.x-130,A.head.y-155,260,'center')
+    g.setColor(.7,.9,1,.9);g.setFont(UI.fonts.small);g.printf(require('localization').text(labels[A.phase] or ''),A.head.x-130,A.head.y-155,260,'center')
     if A.phase=='suction' then
         g.setColor(.35,.8,1,.38);g.setLineWidth(1.5)
         for i=1,24 do local t=(A.phaseTime*.6+i/24)%1;local x=mx-(1-t)*450;local y=my+math.sin(i*2.4)*(1-t)*180

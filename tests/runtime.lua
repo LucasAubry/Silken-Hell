@@ -9,6 +9,15 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv("SILKEN_ABYSS_PATTERNS_TEST")=="1" then require("tests.abyss_patterns").run();return end
+    if os.getenv("SILKEN_ABYSS_WHIP_TEST")=="1" then require("tests.abyss_whip").run();return end
+    if os.getenv("SILKEN_LOCALIZATION_TEST")=="1" then require("tests.localization").run();return end
+    if os.getenv("SILKEN_REPLAY_TOOLS_TEST")=="1" then require("tests.replay_tools").run();return end
+    if os.getenv("SILKEN_REPLAY_COMPAT_TEST")=="1" then require("tests.replay_compat").run();return end
+    if os.getenv("SILKEN_STORM_LIGHT_TEST")=="1" then require("tests.storm_light").run();return end
+    if os.getenv("SILKEN_REBIRTH_TEST")=="1" then require("tests.rebirth").run();return end
+    if os.getenv("SILKEN_SKY_MERLE_TEST")=="1" then require("tests.sky_merle").run();return end
+    if os.getenv("SILKEN_ABYSS_LASER_TEST")=="1" then require("tests.abyss_laser_cycle").run();return end
     if os.getenv("SILKEN_ABYSS_MINES_TEST")=="1" then require("tests.abyss_mines").run();return end
     if os.getenv("SILKEN_BOSS_RELOAD_TEST")=="1" then require("tests.boss_reload").run();return end
     if os.getenv("SILKEN_ABYSS_LEFT_TEST")=="1" then require("tests.abyss_left").run();return end

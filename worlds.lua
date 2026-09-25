@@ -14,7 +14,7 @@ W.names[8]='Le Sanctuaire';W.palette[8]={floor={.055,.035,.12},ink={.32,.22,.48}
 W.rush={1,6,5,4,7,2}
 W.secretBiomes={[9]=1,[10]=6,[11]=5,[12]=4,[13]=7,[14]=2}
 for id,biome in pairs(W.secretBiomes) do W.palette[id]=W.palette[biome] end
-W.names[9]='Merle Démon';W.names[10]='Séraphin Démon';W.names[11]='Hérisson Démon';W.names[12]='Poulpe Démon';W.names[13]='Léviathan Démon';W.names[14]='Sœurs de lave Démon'
+W.names[9]='Merle Démon';W.names[10]='Merle des orages Démon';W.names[11]='Hérisson Démon';W.names[12]='Poulpe Démon';W.names[13]='Léviathan Démon';W.names[14]='Sœurs de lave Démon'
 function W.isSecret(id) return W.secretBiomes[id]~=nil end
 function W.levelCount(id) if W.isSecret(id) then return 1 end;return id==3 and #W.rush or 10 end
 function W.biome(id,level) if id==8 then return 2 end;if W.secretBiomes[id] then return W.secretBiomes[id] end;return id end

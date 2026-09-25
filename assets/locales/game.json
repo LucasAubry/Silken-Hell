@@ -1,0 +1,3434 @@
+{
+  "Classement voilé": {
+    "en": "Hidden leaderboard",
+    "es": "Clasificación oculta",
+    "ru": "Скрытая таблица рекордов",
+    "pt": "Ranking oculto",
+    "zh": "隐藏排行榜",
+    "ja": "非公開ランキング"
+  },
+  "Termine ce monde pour découvrir ses records.": {
+    "en": "Complete this world to reveal its records.",
+    "es": "Completa este mundo para ver sus récords.",
+    "ru": "Пройди этот мир, чтобы увидеть рекорды.",
+    "pt": "Conclua este mundo para ver seus recordes.",
+    "zh": "完成这个世界以查看纪录。",
+    "ja": "このワールドをクリアすると記録が表示されます。"
+  },
+  "Monde": {
+    "en": "World",
+    "es": "Mundo",
+    "ru": "Мир",
+    "pt": "Mundo",
+    "zh": "世界",
+    "ja": "ワールド"
+  },
+  "  ·  Voir tous": {
+    "en": "  ·  View all",
+    "es": "  ·  Ver todos",
+    "ru": "  ·  Все рекорды",
+    "pt": "  ·  Ver todos",
+    "zh": "  ·  查看全部",
+    "ja": "  ·  すべて見る"
+  },
+  "Connexion…": {
+    "en": "Connecting…",
+    "es": "Conectando…",
+    "ru": "Подключение…",
+    "pt": "Conectando…",
+    "zh": "正在连接…",
+    "ja": "接続中…"
+  },
+  "Reconnexion…": {
+    "en": "Reconnecting…",
+    "es": "Reconectando…",
+    "ru": "Переподключение…",
+    "pt": "Reconectando…",
+    "zh": "正在重新连接…",
+    "ja": "再接続中…"
+  },
+  "Aucun score": {
+    "en": "No scores",
+    "es": "Sin puntuaciones",
+    "ru": "Нет результатов",
+    "pt": "Sem pontuações",
+    "zh": "暂无成绩",
+    "ja": "記録なし"
+  },
+  "Mondes classiques": {
+    "en": "Classic worlds",
+    "es": "Mundos clásicos",
+    "ru": "Обычные миры",
+    "pt": "Mundos clássicos",
+    "zh": "经典世界",
+    "ja": "通常ワールド"
+  },
+  "Mode démon": {
+    "en": "Demon mode",
+    "es": "Modo demonio",
+    "ru": "Режим демона",
+    "pt": "Modo demônio",
+    "zh": "恶魔模式",
+    "ja": "デーモンモード"
+  },
+  "Classement des âmes": {
+    "en": "Leaderboard of souls",
+    "es": "Clasificación de almas",
+    "ru": "Рейтинг душ",
+    "pt": "Ranking das almas",
+    "zh": "灵魂排行榜",
+    "ja": "魂のランキング"
+  },
+  "Cet appareil": {
+    "en": "This device",
+    "es": "Este dispositivo",
+    "ru": "Это устройство",
+    "pt": "Este dispositivo",
+    "zh": "此设备",
+    "ja": "この端末"
+  },
+  "Rang": {
+    "en": "Rank",
+    "es": "Puesto",
+    "ru": "Место",
+    "pt": "Posição",
+    "zh": "排名",
+    "ja": "順位"
+  },
+  "Joueur": {
+    "en": "Player",
+    "es": "Jugador",
+    "ru": "Игрок",
+    "pt": "Jogador",
+    "zh": "玩家",
+    "ja": "プレイヤー"
+  },
+  "Chrono": {
+    "en": "Time",
+    "es": "Tiempo",
+    "ru": "Время",
+    "pt": "Tempo",
+    "zh": "时间",
+    "ja": "タイム"
+  },
+  "Morts · pénalité": {
+    "en": "Deaths · penalty",
+    "es": "Muertes · penalización",
+    "ru": "Смерти · штраф",
+    "pt": "Mortes · penalidade",
+    "zh": "死亡 · 罚时",
+    "ja": "死亡 · ペナルティ"
+  },
+  "Visionner": {
+    "en": "Watch",
+    "es": "Ver",
+    "ru": "Смотреть",
+    "pt": "Assistir",
+    "zh": "观看",
+    "ja": "見る"
+  },
+  "Connexion indisponible": {
+    "en": "Connection unavailable",
+    "es": "Conexión no disponible",
+    "ru": "Соединение недоступно",
+    "pt": "Conexão indisponível",
+    "zh": "无法连接",
+    "ja": "接続できません"
+  },
+  "Précédente": {
+    "en": "Previous",
+    "es": "Anterior",
+    "ru": "Назад",
+    "pt": "Anterior",
+    "zh": "上一页",
+    "ja": "前へ"
+  },
+  "Suivante": {
+    "en": "Next",
+    "es": "Siguiente",
+    "ru": "Далее",
+    "pt": "Próxima",
+    "zh": "下一页",
+    "ja": "次へ"
+  },
+  "France": {
+    "en": "France",
+    "es": "Francia",
+    "ru": "Франция",
+    "pt": "França",
+    "zh": "法国",
+    "ja": "フランス"
+  },
+  "Belgique": {
+    "en": "Belgium",
+    "es": "Bélgica",
+    "ru": "Бельгия",
+    "pt": "Bélgica",
+    "zh": "比利时",
+    "ja": "ベルギー"
+  },
+  "Suisse": {
+    "en": "Switzerland",
+    "es": "Suiza",
+    "ru": "Швейцария",
+    "pt": "Suíça",
+    "zh": "瑞士",
+    "ja": "スイス"
+  },
+  "Canada": {
+    "en": "Canada",
+    "es": "Canadá",
+    "ru": "Канада",
+    "pt": "Canadá",
+    "zh": "加拿大",
+    "ja": "カナダ"
+  },
+  "États-Unis": {
+    "en": "United States",
+    "es": "Estados Unidos",
+    "ru": "США",
+    "pt": "Estados Unidos",
+    "zh": "美国",
+    "ja": "アメリカ"
+  },
+  "Royaume-Uni": {
+    "en": "United Kingdom",
+    "es": "Reino Unido",
+    "ru": "Великобритания",
+    "pt": "Reino Unido",
+    "zh": "英国",
+    "ja": "イギリス"
+  },
+  "Allemagne": {
+    "en": "Germany",
+    "es": "Alemania",
+    "ru": "Германия",
+    "pt": "Alemanha",
+    "zh": "德国",
+    "ja": "ドイツ"
+  },
+  "Espagne": {
+    "en": "Spain",
+    "es": "España",
+    "ru": "Испания",
+    "pt": "Espanha",
+    "zh": "西班牙",
+    "ja": "スペイン"
+  },
+  "Italie": {
+    "en": "Italy",
+    "es": "Italia",
+    "ru": "Италия",
+    "pt": "Itália",
+    "zh": "意大利",
+    "ja": "イタリア"
+  },
+  "Portugal": {
+    "en": "Portugal",
+    "es": "Portugal",
+    "ru": "Португалия",
+    "pt": "Portugal",
+    "zh": "葡萄牙",
+    "ja": "ポルトガル"
+  },
+  "Maroc": {
+    "en": "Morocco",
+    "es": "Marruecos",
+    "ru": "Марокко",
+    "pt": "Marrocos",
+    "zh": "摩洛哥",
+    "ja": "モロッコ"
+  },
+  "Algérie": {
+    "en": "Algeria",
+    "es": "Argelia",
+    "ru": "Алжир",
+    "pt": "Argélia",
+    "zh": "阿尔及利亚",
+    "ja": "アルジェリア"
+  },
+  "Tunisie": {
+    "en": "Tunisia",
+    "es": "Túnez",
+    "ru": "Тунис",
+    "pt": "Tunísia",
+    "zh": "突尼斯",
+    "ja": "チュニジア"
+  },
+  "Pays indisponible": {
+    "en": "Country unavailable",
+    "es": "País no disponible",
+    "ru": "Страна недоступна",
+    "pt": "País indisponível",
+    "zh": "国家不可用",
+    "ja": "国を取得できません"
+  },
+  "Détection du pays…": {
+    "en": "Detecting country…",
+    "es": "Detectando país…",
+    "ru": "Определение страны…",
+    "pt": "Detectando país…",
+    "zh": "正在检测国家…",
+    "ja": "国を確認中…"
+  },
+  "CRÉER": {
+    "en": "CREATE",
+    "es": "CREAR",
+    "ru": "СОЗДАТЬ",
+    "pt": "CRIAR",
+    "zh": "创建",
+    "ja": "作成"
+  },
+  "TON PSEUDO : ": {
+    "en": "YOUR NICKNAME: ",
+    "es": "TU APODO: ",
+    "ru": "ТВОЙ НИК: ",
+    "pt": "SEU APELIDO: ",
+    "zh": "你的昵称：",
+    "ja": "ニックネーム："
+  },
+  "A : ajouter une lettre · X : effacer · B : retour": {
+    "en": "A: add a letter · X: delete · B: back",
+    "es": "A: añadir letra · X: borrar · B: volver",
+    "ru": "A: добавить букву · X: стереть · B: назад",
+    "pt": "A: adicionar letra · X: apagar · B: voltar",
+    "zh": "A：添加字母 · X：删除 · B：返回",
+    "ja": "A：文字追加 · X：削除 · B：戻る"
+  },
+  "Espace": {
+    "en": "Space",
+    "es": "Espacio",
+    "ru": "Пробел",
+    "pt": "Espaço",
+    "zh": "空格",
+    "ja": "スペース"
+  },
+  "Effacer": {
+    "en": "Delete",
+    "es": "Borrar",
+    "ru": "Стереть",
+    "pt": "Apagar",
+    "zh": "删除",
+    "ja": "削除"
+  },
+  "TON NOM DANS L’ÉTERNITÉ": {
+    "en": "YOUR NAME IN ETERNITY",
+    "es": "TU NOMBRE EN LA ETERNIDAD",
+    "ru": "ТВОЁ ИМЯ В ВЕЧНОСТИ",
+    "pt": "SEU NOME NA ETERNIDADE",
+    "zh": "你在永恒中的名字",
+    "ja": "永遠に刻む名前"
+  },
+  "Pseudo : ": {
+    "en": "Nickname: ",
+    "es": "Apodo: ",
+    "ru": "Ник: ",
+    "pt": "Apelido: ",
+    "zh": "昵称：",
+    "ja": "ニックネーム："
+  },
+  "PAYS DÉTECTÉ : ": {
+    "en": "DETECTED COUNTRY: ",
+    "es": "PAÍS DETECTADO: ",
+    "ru": "ОПРЕДЕЛЕНА СТРАНА: ",
+    "pt": "PAÍS DETECTADO: ",
+    "zh": "检测到的国家：",
+    "ja": "検出された国："
+  },
+  "Bestiaire": {
+    "en": "Bestiary",
+    "es": "Bestiario",
+    "ru": "Бестиарий",
+    "pt": "Bestiário",
+    "zh": "生物图鉴",
+    "ja": "生き物図鑑"
+  },
+  "Créatures": {
+    "en": "Creatures",
+    "es": "Criaturas",
+    "ru": "Существа",
+    "pt": "Criaturas",
+    "zh": "生物",
+    "ja": "生き物"
+  },
+  "Boss": {
+    "en": "Bosses",
+    "es": "Jefes",
+    "ru": "Боссы",
+    "pt": "Chefes",
+    "zh": "首领",
+    "ja": "ボス"
+  },
+  "Pièges": {
+    "en": "Traps",
+    "es": "Trampas",
+    "ru": "Ловушки",
+    "pt": "Armadilhas",
+    "zh": "陷阱",
+    "ja": "罠"
+  },
+  "Les Sœurs de lave": {
+    "en": "The Lava Sisters",
+    "es": "Las Hermanas de Lava",
+    "ru": "Лавовые сёстры",
+    "pt": "As Irmãs de Lava",
+    "zh": "熔岩姐妹",
+    "ja": "溶岩の姉妹"
+  },
+  "Voir la version normale": {
+    "en": "View normal version",
+    "es": "Ver versión normal",
+    "ru": "Обычная версия",
+    "pt": "Ver versão normal",
+    "zh": "查看普通版本",
+    "ja": "通常版を見る"
+  },
+  "Voir la version démon": {
+    "en": "View demon version",
+    "es": "Ver versión demonio",
+    "ru": "Демоническая версия",
+    "pt": "Ver versão demônio",
+    "zh": "查看恶魔版本",
+    "ja": "デーモン版を見る"
+  },
+  "Molette · touches haut/bas · stick droit": {
+    "en": "Scroll wheel · up/down keys · right stick",
+    "es": "Rueda · arriba/abajo · stick derecho",
+    "ru": "Колёсико · вверх/вниз · правый стик",
+    "pt": "Roda · cima/baixo · analógico direito",
+    "zh": "滚轮 · 上下键 · 右摇杆",
+    "ja": "ホイール · 上下キー · 右スティック"
+  },
+  "Rencontre les créatures pour découvrir leurs secrets.": {
+    "en": "Encounter creatures to uncover their secrets.",
+    "es": "Encuentra criaturas para descubrir sus secretos.",
+    "ru": "Встречай существ, чтобы узнать их тайны.",
+    "pt": "Encontre criaturas para descobrir seus segredos.",
+    "zh": "遇见生物，揭开它们的秘密。",
+    "ja": "生き物に出会い、その秘密を知ろう。"
+  },
+  "Entraînement · non classé": {
+    "en": "Practice · unranked",
+    "es": "Práctica · sin clasificación",
+    "ru": "Тренировка · без рейтинга",
+    "pt": "Treino · sem classificação",
+    "zh": "练习 · 不计排名",
+    "ja": "練習 · ランキング対象外"
+  },
+  "Charges : ": {
+    "en": "Charges: ",
+    "es": "Cargas: ",
+    "ru": "Заряды: ",
+    "pt": "Cargas: ",
+    "zh": "电荷：",
+    "ja": "帯電："
+  },
+  "Entraînement": {
+    "en": "Practice",
+    "es": "Práctica",
+    "ru": "Тренировка",
+    "pt": "Treino",
+    "zh": "练习",
+    "ja": "練習"
+  },
+  "Quitter": {
+    "en": "Quit",
+    "es": "Salir",
+    "ru": "Выйти",
+    "pt": "Sair",
+    "zh": "退出",
+    "ja": "終了"
+  },
+  "Démon": {
+    "en": "Demon",
+    "es": "Demonio",
+    "ru": "Демон",
+    "pt": "Demônio",
+    "zh": "恶魔",
+    "ja": "デーモン"
+  },
+  "Histoire": {
+    "en": "Story",
+    "es": "Historia",
+    "ru": "История",
+    "pt": "História",
+    "zh": "故事",
+    "ja": "ストーリー"
+  },
+  "Carte ": {
+    "en": "Map ",
+    "es": "Mapa ",
+    "ru": "Карта ",
+    "pt": "Mapa ",
+    "zh": "地图 ",
+    "ja": "マップ "
+  },
+  "Précédent": {
+    "en": "Previous",
+    "es": "Anterior",
+    "ru": "Назад",
+    "pt": "Anterior",
+    "zh": "上一页",
+    "ja": "前へ"
+  },
+  "Suivant": {
+    "en": "Next",
+    "es": "Siguiente",
+    "ru": "Далее",
+    "pt": "Próximo",
+    "zh": "下一页",
+    "ja": "次へ"
+  },
+  "Titre de la carte": {
+    "en": "Map title",
+    "es": "Título del mapa",
+    "ru": "Название карты",
+    "pt": "Título do mapa",
+    "zh": "地图标题",
+    "ja": "マップ名"
+  },
+  "Ton pseudo": {
+    "en": "Your nickname",
+    "es": "Tu apodo",
+    "ru": "Твой ник",
+    "pt": "Seu apelido",
+    "zh": "你的昵称",
+    "ja": "ニックネーム"
+  },
+  "Biome : ": {
+    "en": "Biome: ",
+    "es": "Bioma: ",
+    "ru": "Биом: ",
+    "pt": "Bioma: ",
+    "zh": "生态区：",
+    "ja": "バイオーム："
+  },
+  "Difficulté ": {
+    "en": "Difficulty ",
+    "es": "Dificultad ",
+    "ru": "Сложность ",
+    "pt": "Dificuldade ",
+    "zh": "难度 ",
+    "ja": "難易度 "
+  },
+  "Rouge + ": {
+    "en": "Red + ",
+    "es": "Rojo + ",
+    "ru": "Красный + ",
+    "pt": "Vermelho + ",
+    "zh": "红色 + ",
+    "ja": "赤 + "
+  },
+  "PUBLIER LA CARTE": {
+    "en": "PUBLISH MAP",
+    "es": "PUBLICAR MAPA",
+    "ru": "ОПУБЛИКОВАТЬ КАРТУ",
+    "pt": "PUBLICAR MAPA",
+    "zh": "发布地图",
+    "ja": "マップを公開"
+  },
+  "Terminer la carte pour la valider": {
+    "en": "Complete the map to validate it",
+    "es": "Completa el mapa para validarlo",
+    "ru": "Пройди карту для проверки",
+    "pt": "Conclua o mapa para validá-lo",
+    "zh": "通关地图以完成验证",
+    "ja": "マップをクリアして検証"
+  },
+  "Retour au Workshop": {
+    "en": "Back to Workshop",
+    "es": "Volver al Workshop",
+    "ru": "Назад в мастерскую",
+    "pt": "Voltar à Oficina",
+    "zh": "返回创意工坊",
+    "ja": "ワークショップへ戻る"
+  },
+  "Publier ma carte": {
+    "en": "Publish my map",
+    "es": "Publicar mi mapa",
+    "ru": "Опубликовать карту",
+    "pt": "Publicar meu mapa",
+    "zh": "发布我的地图",
+    "ja": "自作マップを公開"
+  },
+  "Créer une carte": {
+    "en": "Create a map",
+    "es": "Crear un mapa",
+    "ru": "Создать карту",
+    "pt": "Criar um mapa",
+    "zh": "创建地图",
+    "ja": "マップを作成"
+  },
+  "Actualiser": {
+    "en": "Refresh",
+    "es": "Actualizar",
+    "ru": "Обновить",
+    "pt": "Atualizar",
+    "zh": "刷新",
+    "ja": "更新"
+  },
+  "Tous les biomes": {
+    "en": "All biomes",
+    "es": "Todos los biomas",
+    "ru": "Все биомы",
+    "pt": "Todos os biomas",
+    "zh": "所有生态区",
+    "ja": "全バイオーム"
+  },
+  "Toutes difficultés": {
+    "en": "All difficulties",
+    "es": "Todas las dificultades",
+    "ru": "Все сложности",
+    "pt": "Todas as dificuldades",
+    "zh": "所有难度",
+    "ja": "全難易度"
+  },
+  "Les plus étoilées": {
+    "en": "Most starred",
+    "es": "Más estrellas",
+    "ru": "Больше всего звёзд",
+    "pt": "Mais estrelas",
+    "zh": "星标最多",
+    "ja": "スターが多い順"
+  },
+  "Faciles → difficiles": {
+    "en": "Easy → hard",
+    "es": "Fácil → difícil",
+    "ru": "Легко → сложно",
+    "pt": "Fácil → difícil",
+    "zh": "简单 → 困难",
+    "ja": "簡単 → 難しい"
+  },
+  "Difficiles → faciles": {
+    "en": "Hard → easy",
+    "es": "Difícil → fácil",
+    "ru": "Сложно → легко",
+    "pt": "Difícil → fácil",
+    "zh": "困难 → 简单",
+    "ja": "難しい → 簡単"
+  },
+  "Jouer": {
+    "en": "Play",
+    "es": "Jugar",
+    "ru": "Играть",
+    "pt": "Jogar",
+    "zh": "开始",
+    "ja": "プレイ"
+  },
+  "Page ": {
+    "en": "Page ",
+    "es": "Página ",
+    "ru": "Страница ",
+    "pt": "Página ",
+    "zh": "页 ",
+    "ja": "ページ "
+  },
+  " · Survie ": {
+    "en": " · Survival ",
+    "es": " · Supervivencia ",
+    "ru": " · Выживание ",
+    "pt": " · Sobrevivência ",
+    "zh": " · 生存 ",
+    "ja": " · サバイバル "
+  },
+  " · Duel": {
+    "en": " · Duel",
+    "es": " · Duelo",
+    "ru": " · Дуэль",
+    "pt": " · Duelo",
+    "zh": " · 决斗",
+    "ja": " · 決闘"
+  },
+  "Quitter Silken Hell ?": {
+    "en": "Quit Silken Hell?",
+    "es": "¿Salir de Silken Hell?",
+    "ru": "Выйти из Silken Hell?",
+    "pt": "Sair de Silken Hell?",
+    "zh": "退出 Silken Hell？",
+    "ja": "Silken Hell を終了しますか？"
+  },
+  "Rester": {
+    "en": "Stay",
+    "es": "Quedarse",
+    "ru": "Остаться",
+    "pt": "Ficar",
+    "zh": "留下",
+    "ja": "続ける"
+  },
+  "Quitter le jeu": {
+    "en": "Quit game",
+    "es": "Salir del juego",
+    "ru": "Выйти из игры",
+    "pt": "Sair do jogo",
+    "zh": "退出游戏",
+    "ja": "ゲーム終了"
+  },
+  "Larmes récupérées": {
+    "en": "Tears collected",
+    "es": "Lágrimas recogidas",
+    "ru": "Собрано слёз",
+    "pt": "Lágrimas coletadas",
+    "zh": "收集的泪滴",
+    "ja": "集めた涙"
+  },
+  "Œufs récupérés": {
+    "en": "Eggs collected",
+    "es": "Huevos recogidos",
+    "ru": "Собрано яиц",
+    "pt": "Ovos coletados",
+    "zh": "收集的蛋",
+    "ja": "集めた卵"
+  },
+  "Morts": {
+    "en": "Deaths",
+    "es": "Muertes",
+    "ru": "Смерти",
+    "pt": "Mortes",
+    "zh": "死亡",
+    "ja": "死亡数"
+  },
+  "Essais": {
+    "en": "Attempts",
+    "es": "Intentos",
+    "ru": "Попытки",
+    "pt": "Tentativas",
+    "zh": "尝试",
+    "ja": "挑戦回数"
+  },
+  "Afficher les succès accomplis": {
+    "en": "Show completed achievements",
+    "es": "Mostrar logros completados",
+    "ru": "Показать полученные достижения",
+    "pt": "Mostrar conquistas concluídas",
+    "zh": "显示已完成成就",
+    "ja": "達成済みの実績を表示"
+  },
+  "Masquer les succès accomplis": {
+    "en": "Hide completed achievements",
+    "es": "Ocultar logros completados",
+    "ru": "Скрыть полученные достижения",
+    "pt": "Ocultar conquistas concluídas",
+    "zh": "隐藏已完成成就",
+    "ja": "達成済みの実績を隠す"
+  },
+  "Succès secret": {
+    "en": "Secret achievement",
+    "es": "Logro secreto",
+    "ru": "Секретное достижение",
+    "pt": "Conquista secreta",
+    "zh": "隐藏成就",
+    "ja": "秘密の実績"
+  },
+  "À découvrir en jouant.": {
+    "en": "Discover it by playing.",
+    "es": "Descúbrelo jugando.",
+    "ru": "Открой во время игры.",
+    "pt": "Descubra jogando.",
+    "zh": "在游戏中发现。",
+    "ja": "プレイして見つけよう。"
+  },
+  "DÉBLOQUÉ": {
+    "en": "UNLOCKED",
+    "es": "DESBLOQUEADO",
+    "ru": "ОТКРЫТО",
+    "pt": "DESBLOQUEADO",
+    "zh": "已解锁",
+    "ja": "解放済み"
+  },
+  " · Skin Gillou": {
+    "en": " · Gillou skin",
+    "es": " · Aspecto Gillou",
+    "ru": " · Облик Gillou",
+    "pt": " · Visual Gillou",
+    "zh": " · Gillou 外观",
+    "ja": " · Gillou スキン"
+  },
+  " · Skin Maxance": {
+    "en": " · Maxance skin",
+    "es": " · Aspecto Maxance",
+    "ru": " · Облик Maxance",
+    "pt": " · Visual Maxance",
+    "zh": " · Maxance 外观",
+    "ja": " · Maxance スキン"
+  },
+  "Entraînement terminé": {
+    "en": "Practice complete",
+    "es": "Práctica terminada",
+    "ru": "Тренировка завершена",
+    "pt": "Treino concluído",
+    "zh": "练习完成",
+    "ja": "練習クリア"
+  },
+  "Duel terminé": {
+    "en": "Duel complete",
+    "es": "Duelo terminado",
+    "ru": "Дуэль завершена",
+    "pt": "Duelo concluído",
+    "zh": "决斗完成",
+    "ja": "決闘クリア"
+  },
+  "Carte terminée": {
+    "en": "Map complete",
+    "es": "Mapa completado",
+    "ru": "Карта пройдена",
+    "pt": "Mapa concluído",
+    "zh": "地图完成",
+    "ja": "マップクリア"
+  },
+  "Donner une étoile": {
+    "en": "Give a star",
+    "es": "Dar una estrella",
+    "ru": "Поставить звезду",
+    "pt": "Dar uma estrela",
+    "zh": "给予星标",
+    "ja": "スターを贈る"
+  },
+  "Rejouer": {
+    "en": "Retry",
+    "es": "Reintentar",
+    "ru": "Повторить",
+    "pt": "Tentar de novo",
+    "zh": "重试",
+    "ja": "やり直す"
+  },
+  "Retour aux mondes": {
+    "en": "Back to worlds",
+    "es": "Volver a los mundos",
+    "ru": "К выбору миров",
+    "pt": "Voltar aos mundos",
+    "zh": "返回世界选择",
+    "ja": "ワールドへ戻る"
+  },
+  "Retour au Sanctuaire": {
+    "en": "Back to the Sanctuary",
+    "es": "Volver al Santuario",
+    "ru": "Вернуться в Святилище",
+    "pt": "Voltar ao Santuário",
+    "zh": "返回圣殿",
+    "ja": "聖域へ戻る"
+  },
+  "Les âmes les plus rapides": {
+    "en": "The fastest souls",
+    "es": "Las almas más rápidas",
+    "ru": "Самые быстрые души",
+    "pt": "As almas mais rápidas",
+    "zh": "最快的灵魂",
+    "ja": "最速の魂たち"
+  },
+  "Un instant suspendu": {
+    "en": "A suspended moment",
+    "es": "Un instante suspendido",
+    "ru": "Застывшее мгновение",
+    "pt": "Um instante suspenso",
+    "zh": "暂停的瞬间",
+    "ja": "時が止まるひととき"
+  },
+  " · Hardcore accompli": {
+    "en": " · Hardcore complete",
+    "es": " · Extremo completado",
+    "ru": " · Хардкор пройден",
+    "pt": " · Hardcore concluído",
+    "zh": " · 硬核完成",
+    "ja": " · ハードコア達成"
+  },
+  "Traversée hardcore accomplie !": {
+    "en": "Hardcore journey complete!",
+    "es": "¡Recorrido extremo completado!",
+    "ru": "Хардкорное прохождение завершено!",
+    "pt": "Jornada hardcore concluída!",
+    "zh": "硬核旅程完成！",
+    "ja": "ハードコア踏破！"
+  },
+  "Défi démon terminé.": {
+    "en": "Demon challenge complete.",
+    "es": "Desafío demoníaco completado.",
+    "ru": "Испытание демона пройдено.",
+    "pt": "Desafio demoníaco concluído.",
+    "zh": "恶魔挑战完成。",
+    "ja": "デーモンチャレンジ達成。"
+  },
+  " est débloqué.": {
+    "en": " is unlocked.",
+    "es": " se ha desbloqueado.",
+    "ru": " открыт.",
+    "pt": " foi desbloqueado.",
+    "zh": "已解锁。",
+    "ja": "が解放されました。"
+  },
+  "Tous les mondes sont accomplis.": {
+    "en": "All worlds are complete.",
+    "es": "Has completado todos los mundos.",
+    "ru": "Все миры пройдены.",
+    "pt": "Todos os mundos foram concluídos.",
+    "zh": "所有世界均已完成。",
+    "ja": "すべてのワールドをクリアしました。"
+  },
+  "Progression hardcore sauvegardée · hors classement normal": {
+    "en": "Hardcore progress saved · outside normal rankings",
+    "es": "Progreso extremo guardado · fuera de la clasificación normal",
+    "ru": "Хардкор сохранён · вне обычного рейтинга",
+    "pt": "Progresso hardcore salvo · fora do ranking normal",
+    "zh": "硬核进度已保存 · 不计普通排名",
+    "ja": "ハードコア進行を保存 · 通常ランキング対象外"
+  },
+  "Rejouer en hardcore": {
+    "en": "Retry in hardcore",
+    "es": "Reintentar en extremo",
+    "ru": "Повторить на хардкоре",
+    "pt": "Repetir no hardcore",
+    "zh": "重试硬核模式",
+    "ja": "ハードコアで再挑戦"
+  },
+  "Entrer : ": {
+    "en": "Enter: ",
+    "es": "Entrar: ",
+    "ru": "Войти: ",
+    "pt": "Entrar: ",
+    "zh": "进入：",
+    "ja": "進む："
+  },
+  "Rejouer : ": {
+    "en": "Retry: ",
+    "es": "Reintentar: ",
+    "ru": "Повторить: ",
+    "pt": "Repetir: ",
+    "zh": "重试：",
+    "ja": "再挑戦："
+  },
+  "Menu & classements": {
+    "en": "Menu & leaderboards",
+    "es": "Menú y clasificaciones",
+    "ru": "Меню и рейтинги",
+    "pt": "Menu e rankings",
+    "zh": "菜单和排行榜",
+    "ja": "メニューとランキング"
+  },
+  "LA DESCENTE": {
+    "en": "THE DESCENT",
+    "es": "EL DESCENSO",
+    "ru": "НИСХОЖДЕНИЕ",
+    "pt": "A DESCIDA",
+    "zh": "坠落之路",
+    "ja": "下降"
+  },
+  "Un fil à suivre, un monde à découvrir.": {
+    "en": "A thread to follow, a world to discover.",
+    "es": "Un hilo que seguir, un mundo por descubrir.",
+    "ru": "Нить, за которой идёшь. Мир, который откроешь.",
+    "pt": "Um fio a seguir, um mundo a descobrir.",
+    "zh": "循着丝线，探索世界。",
+    "ja": "糸をたどり、世界を見つける。"
+  },
+  "Haut": {
+    "en": "Up",
+    "es": "Arriba",
+    "ru": "Вверх",
+    "pt": "Cima",
+    "zh": "上",
+    "ja": "上"
+  },
+  "Bas": {
+    "en": "Down",
+    "es": "Abajo",
+    "ru": "Вниз",
+    "pt": "Baixo",
+    "zh": "下",
+    "ja": "下"
+  },
+  "Chaque mort te fait reculer d’un niveau.\nMinimum : niveau 1.": {
+    "en": "Each death sends you back one level.\nMinimum: level 1.",
+    "es": "Cada muerte te hace retroceder un nivel.\nMínimo: nivel 1.",
+    "ru": "Каждая смерть возвращает на уровень назад.\nМинимум: уровень 1.",
+    "pt": "Cada morte faz você voltar um nível.\nMínimo: nível 1.",
+    "zh": "每次死亡会退回一关。\n最低为第 1 关。",
+    "ja": "死ぬたびに1レベル戻ります。\n最低はレベル1です。"
+  },
+  "Record : ": {
+    "en": "Record: ",
+    "es": "Récord: ",
+    "ru": "Рекорд: ",
+    "pt": "Recorde: ",
+    "zh": "纪录：",
+    "ja": "記録："
+  },
+  "Aucun parcours terminé": {
+    "en": "No completed runs",
+    "es": "Ningún recorrido completado",
+    "ru": "Нет завершённых прохождений",
+    "pt": "Nenhuma jornada concluída",
+    "zh": "尚无完成的旅程",
+    "ja": "クリア記録なし"
+  },
+  "Skin obtenu : ": {
+    "en": "Skin unlocked: ",
+    "es": "Aspecto obtenido: ",
+    "ru": "Получен облик: ",
+    "pt": "Visual obtido: ",
+    "zh": "获得外观：",
+    "ja": "獲得スキン："
+  },
+  "Termine le monde pour gagner ce skin": {
+    "en": "Complete the world to earn this skin",
+    "es": "Completa el mundo para ganar este aspecto",
+    "ru": "Пройди мир, чтобы получить этот облик",
+    "pt": "Conclua o mundo para ganhar este visual",
+    "zh": "完成世界以获得此外观",
+    "ja": "ワールドクリアでこのスキンを獲得"
+  },
+  "Parcours complet · départ au niveau 1": {
+    "en": "Full run · start at level 1",
+    "es": "Recorrido completo · desde el nivel 1",
+    "ru": "Полное прохождение · с уровня 1",
+    "pt": "Jornada completa · a partir do nível 1",
+    "zh": "完整旅程 · 从第 1 关开始",
+    "ja": "全ステージ · レベル1から開始"
+  },
+  "ENTRAÎNEMENT · sans classement": {
+    "en": "PRACTICE · unranked",
+    "es": "PRÁCTICA · sin clasificación",
+    "ru": "ТРЕНИРОВКА · без рейтинга",
+    "pt": "TREINO · sem classificação",
+    "zh": "练习 · 不计排名",
+    "ja": "練習 · ランキング対象外"
+  },
+  "Toutes les rencontres réunies.\nUne porte ouvre le mode démon.": {
+    "en": "All encounters gathered together.\nA door opens demon mode.",
+    "es": "Todos los encuentros reunidos.\nUna puerta abre el modo demonio.",
+    "ru": "Все встречи собраны здесь.\nДверь открывает режим демона.",
+    "pt": "Todos os encontros reunidos.\nUma porta abre o modo demônio.",
+    "zh": "所有遭遇汇聚于此。\n一扇门通往恶魔模式。",
+    "ja": "すべての出会いが集う場所。\n扉の先にデーモンモード。"
+  },
+  "Hardcore : termine ce monde.": {
+    "en": "Hardcore: complete this world.",
+    "es": "Extremo: completa este mundo.",
+    "ru": "Хардкор: пройди этот мир.",
+    "pt": "Hardcore: conclua este mundo.",
+    "zh": "硬核：完成这个世界。",
+    "ja": "ハードコア：このワールドをクリア。"
+  },
+  "Hardcore : termine Terre (monde 3).": {
+    "en": "Hardcore: complete Earth (world 3).",
+    "es": "Extremo: completa Tierra (mundo 3).",
+    "ru": "Хардкор: пройди Землю (3-й мир).",
+    "pt": "Hardcore: conclua Terra (mundo 3).",
+    "zh": "硬核：完成大地（第 3 世界）。",
+    "ja": "ハードコア：大地（3番目のワールド）をクリア。"
+  },
+  "Entrer au Sanctuaire": {
+    "en": "Enter the Sanctuary",
+    "es": "Entrar al Santuario",
+    "ru": "Войти в Святилище",
+    "pt": "Entrar no Santuário",
+    "zh": "进入圣殿",
+    "ja": "聖域に入る"
+  },
+  "Commencer en hardcore": {
+    "en": "Start hardcore",
+    "es": "Comenzar en extremo",
+    "ru": "Начать хардкор",
+    "pt": "Começar no hardcore",
+    "zh": "开始硬核模式",
+    "ja": "ハードコア開始"
+  },
+  "Commencer le monde": {
+    "en": "Start world",
+    "es": "Comenzar mundo",
+    "ru": "Начать мир",
+    "pt": "Começar mundo",
+    "zh": "开始世界",
+    "ja": "ワールド開始"
+  },
+  "Haut / Bas : monde   ·   Droite : hardcore   ·   Gauche : normal": {
+    "en": "Up / Down: world   ·   Right: hardcore   ·   Left: normal",
+    "es": "Arriba / Abajo: mundo · Derecha: extremo · Izquierda: normal",
+    "ru": "Вверх / вниз: мир · Вправо: хардкор · Влево: обычный",
+    "pt": "Cima / Baixo: mundo · Direita: hardcore · Esquerda: normal",
+    "zh": "上下：世界 · 右：硬核 · 左：普通",
+    "ja": "上下：ワールド · 右：ハードコア · 左：通常"
+  },
+  "Sœurs de lave": {
+    "en": "Lava Sisters",
+    "es": "Hermanas de Lava",
+    "ru": "Лавовые сёстры",
+    "pt": "Irmãs de Lava",
+    "zh": "熔岩姐妹",
+    "ja": "溶岩の姉妹"
+  },
+  "Normal": {
+    "en": "Normal",
+    "es": "Normal",
+    "ru": "Обычный",
+    "pt": "Normal",
+    "zh": "普通",
+    "ja": "通常"
+  },
+  "SANCTUAIRE · MODE DÉMON": {
+    "en": "SANCTUARY · DEMON MODE",
+    "es": "SANTUARIO · MODO DEMONIO",
+    "ru": "СВЯТИЛИЩЕ · РЕЖИМ ДЕМОНА",
+    "pt": "SANTUÁRIO · MODO DEMÔNIO",
+    "zh": "圣殿 · 恶魔模式",
+    "ja": "聖域 · デーモンモード"
+  },
+  "LE SANCTUAIRE": {
+    "en": "THE SANCTUARY",
+    "es": "EL SANTUARIO",
+    "ru": "СВЯТИЛИЩЕ",
+    "pt": "O SANTUÁRIO",
+    "zh": "圣殿",
+    "ja": "聖域"
+  },
+  "Approche une miniature pour entrer dans son duel.": {
+    "en": "Approach a miniature to enter its duel.",
+    "es": "Acércate a una miniatura para entrar en su duelo.",
+    "ru": "Подойди к миниатюре, чтобы начать дуэль.",
+    "pt": "Aproxime-se de uma miniatura para entrar no duelo.",
+    "zh": "靠近缩影即可进入决斗。",
+    "ja": "ミニチュアに近づいて決闘を開始。"
+  },
+  "Voir les boss": {
+    "en": "View bosses",
+    "es": "Ver jefes",
+    "ru": "Показать боссов",
+    "pt": "Ver chefes",
+    "zh": "查看首领",
+    "ja": "ボスを見る"
+  },
+  "Voir les créatures": {
+    "en": "View creatures",
+    "es": "Ver criaturas",
+    "ru": "Показать существ",
+    "pt": "Ver criaturas",
+    "zh": "查看生物",
+    "ja": "生き物を見る"
+  },
+  "Classements": {
+    "en": "Leaderboards",
+    "es": "Clasificaciones",
+    "ru": "Рейтинги",
+    "pt": "Rankings",
+    "zh": "排行榜",
+    "ja": "ランキング"
+  },
+  "Choix des mondes": {
+    "en": "World selection",
+    "es": "Selección de mundos",
+    "ru": "Выбор миров",
+    "pt": "Seleção de mundos",
+    "zh": "世界选择",
+    "ja": "ワールド選択"
+  },
+  "Niveau ": {
+    "en": "Level ",
+    "es": "Nivel ",
+    "ru": "Уровень ",
+    "pt": "Nível ",
+    "zh": "关卡 ",
+    "ja": "レベル "
+  },
+  " : retour au niveau ": {
+    "en": ": back to level ",
+    "es": ": regreso al nivel ",
+    "ru": ": возврат на уровень ",
+    "pt": ": volta ao nível ",
+    "zh": "：退回关卡 ",
+    "ja": "：戻るレベル "
+  },
+  "Niveau 1 · Nouvelle tentative": {
+    "en": "Level 1 · New attempt",
+    "es": "Nivel 1 · Nuevo intento",
+    "ru": "Уровень 1 · Новая попытка",
+    "pt": "Nível 1 · Nova tentativa",
+    "zh": "第 1 关 · 再次尝试",
+    "ja": "レベル1 · 再挑戦"
+  },
+  "HARDCORE · mort = niveau précédent": {
+    "en": "HARDCORE · death = previous level",
+    "es": "EXTREMO · morir = nivel anterior",
+    "ru": "ХАРДКОР · смерть = уровень назад",
+    "pt": "HARDCORE · morte = nível anterior",
+    "zh": "硬核 · 死亡 = 退回上一关",
+    "ja": "ハードコア · 死亡で前のレベルへ"
+  },
+  "Détail indisponible pour cette ancienne partie.": {
+    "en": "Details unavailable for this old run.",
+    "es": "Detalles no disponibles para esta partida antigua.",
+    "ru": "Подробности этой старой игры недоступны.",
+    "pt": "Detalhes indisponíveis para esta partida antiga.",
+    "zh": "无法查看这场旧游戏的详情。",
+    "ja": "この古いプレイの詳細はありません。"
+  },
+  "Chargement…": {
+    "en": "Loading…",
+    "es": "Cargando…",
+    "ru": "Загрузка…",
+    "pt": "Carregando…",
+    "zh": "加载中…",
+    "ja": "読み込み中…"
+  },
+  "Détail de la traversée": {
+    "en": "Journey details",
+    "es": "Detalles del recorrido",
+    "ru": "Подробности прохождения",
+    "pt": "Detalhes da jornada",
+    "zh": "旅程详情",
+    "ja": "踏破の詳細"
+  },
+  "Niveau": {
+    "en": "Level",
+    "es": "Nivel",
+    "ru": "Уровень",
+    "pt": "Nível",
+    "zh": "关卡",
+    "ja": "レベル"
+  },
+  "Temps passé": {
+    "en": "Time spent",
+    "es": "Tiempo empleado",
+    "ru": "Затраченное время",
+    "pt": "Tempo gasto",
+    "zh": "耗时",
+    "ja": "所要時間"
+  },
+  "Temps actif, tentatives ratées incluses. Pénalités de mort à part.": {
+    "en": "Active time, including failed attempts. Death penalties are separate.",
+    "es": "Tiempo activo, incluidos intentos fallidos. Penalizaciones aparte.",
+    "ru": "Активное время с неудачными попытками. Штрафы за смерти отдельно.",
+    "pt": "Tempo ativo, incluindo falhas. Penalidades de morte à parte.",
+    "zh": "活动时间包含失败尝试，死亡罚时另计。",
+    "ja": "失敗した挑戦を含むプレイ時間。死亡ペナルティは別計算。"
+  },
+  "Ce niveau est absent de cet enregistrement.": {
+    "en": "This level is missing from this recording.",
+    "es": "Este nivel no está en esta grabación.",
+    "ru": "В этой записи нет этого уровня.",
+    "pt": "Este nível não está nesta gravação.",
+    "zh": "此录像中没有该关卡。",
+    "ja": "この記録にこのレベルはありません。"
+  },
+  "Lecture terminée.": {
+    "en": "Playback finished.",
+    "es": "Reproducción terminada.",
+    "ru": "Просмотр завершён.",
+    "pt": "Reprodução concluída.",
+    "zh": "播放结束。",
+    "ja": "再生が終了しました。"
+  },
+  "Revoir": {
+    "en": "Watch again",
+    "es": "Ver de nuevo",
+    "ru": "Смотреть снова",
+    "pt": "Rever",
+    "zh": "再次观看",
+    "ja": "見直す"
+  },
+  "Jouer / fantôme": {
+    "en": "Play / ghost",
+    "es": "Jugar / fantasma",
+    "ru": "Играть / призрак",
+    "pt": "Jogar / fantasma",
+    "zh": "游玩／幽灵",
+    "ja": "プレイ／ゴースト"
+  },
+  "Préparation du fantôme": {
+    "en": "Preparing ghost",
+    "es": "Preparando fantasma",
+    "ru": "Подготовка призрака",
+    "pt": "Preparando fantasma",
+    "zh": "准备幽灵",
+    "ja": "ゴースト準備中"
+  },
+  "Recherche du niveau": {
+    "en": "Finding level",
+    "es": "Buscando nivel",
+    "ru": "Поиск уровня",
+    "pt": "Buscando nível",
+    "zh": "查找关卡",
+    "ja": "レベルを検索中"
+  },
+  "Échap : quitter · préparation sans modifier tes scores": {
+    "en": "Esc: quit · preparation does not change your scores",
+    "es": "Esc: salir · la preparación no modifica tus puntuaciones",
+    "ru": "Esc: выход · подготовка не меняет результаты",
+    "pt": "Esc: sair · preparação não altera suas pontuações",
+    "zh": "Esc：退出 · 准备过程不影响成绩",
+    "ja": "Esc：終了 · 準備中は記録に影響しません"
+  },
+  "Recommencer": {
+    "en": "Restart",
+    "es": "Reiniciar",
+    "ru": "Начать заново",
+    "pt": "Reiniciar",
+    "zh": "重新开始",
+    "ja": "やり直す"
+  },
+  "Niveau réussi !": {
+    "en": "Level complete!",
+    "es": "¡Nivel completado!",
+    "ru": "Уровень пройден!",
+    "pt": "Nível concluído!",
+    "zh": "关卡完成！",
+    "ja": "レベルクリア！"
+  },
+  "Entraînement fantôme · non classé": {
+    "en": "Ghost practice · unranked",
+    "es": "Práctica fantasma · sin clasificación",
+    "ru": "Тренировка с призраком · без рейтинга",
+    "pt": "Treino com fantasma · sem classificação",
+    "zh": "幽灵练习 · 不计排名",
+    "ja": "ゴースト練習 · ランキング対象外"
+  },
+  "Replay": {
+    "en": "Replay",
+    "es": "Repetición",
+    "ru": "Повтор",
+    "pt": "Replay",
+    "zh": "回放",
+    "ja": "リプレイ"
+  },
+  " · fantôme arrivé": {
+    "en": " · ghost finished",
+    "es": " · fantasma terminó",
+    "ru": " · призрак финишировал",
+    "pt": " · fantasma terminou",
+    "zh": " · 幽灵已到终点",
+    "ja": " · ゴースト到着"
+  },
+  "Chargement des cartes…": {
+    "en": "Loading maps…",
+    "es": "Cargando mapas…",
+    "ru": "Загрузка карт…",
+    "pt": "Carregando mapas…",
+    "zh": "正在加载地图…",
+    "ja": "マップを読み込み中…"
+  },
+  "Aucune carte publiée pour le moment.": {
+    "en": "No maps published yet.",
+    "es": "Aún no hay mapas publicados.",
+    "ru": "Опубликованных карт пока нет.",
+    "pt": "Ainda não há mapas publicados.",
+    "zh": "暂无已发布地图。",
+    "ja": "公開されたマップはまだありません。"
+  },
+  "Les cartes les plus étoilées sont en tête.": {
+    "en": "Maps with the most stars appear first.",
+    "es": "Los mapas con más estrellas aparecen primero.",
+    "ru": "Первыми идут карты с наибольшим числом звёзд.",
+    "pt": "Mapas com mais estrelas aparecem primeiro.",
+    "zh": "星标最多的地图排在前面。",
+    "ja": "スターの多いマップから表示します。"
+  },
+  "Workshop indisponible. Réessaie dans un instant.": {
+    "en": "Workshop unavailable. Try again shortly.",
+    "es": "Workshop no disponible. Inténtalo en un momento.",
+    "ru": "Мастерская недоступна. Попробуй чуть позже.",
+    "pt": "Oficina indisponível. Tente novamente em instantes.",
+    "zh": "创意工坊不可用，请稍后重试。",
+    "ja": "ワークショップに接続できません。少し待って再試行してください。"
+  },
+  "Téléchargement de la carte…": {
+    "en": "Downloading map…",
+    "es": "Descargando mapa…",
+    "ru": "Скачивание карты…",
+    "pt": "Baixando mapa…",
+    "zh": "正在下载地图…",
+    "ja": "マップをダウンロード中…"
+  },
+  "Téléchargement impossible.": {
+    "en": "Download failed.",
+    "es": "No se pudo descargar.",
+    "ru": "Не удалось скачать.",
+    "pt": "Falha no download.",
+    "zh": "下载失败。",
+    "ja": "ダウンロードできませんでした。"
+  },
+  "Étoile non enregistrée. Réessaie.": {
+    "en": "Star not saved. Try again.",
+    "es": "No se guardó la estrella. Reinténtalo.",
+    "ru": "Звезда не сохранена. Попробуй снова.",
+    "pt": "Estrela não salva. Tente de novo.",
+    "zh": "星标未保存，请重试。",
+    "ja": "スターを保存できませんでした。再試行してください。"
+  },
+  "Créateur": {
+    "en": "Creator",
+    "es": "Creador",
+    "ru": "Автор",
+    "pt": "Criador",
+    "zh": "创作者",
+    "ja": "制作者"
+  },
+  "Crée puis applique un niveau dans l’éditeur pour le publier ici.": {
+    "en": "Create and apply a level in the editor to publish it here.",
+    "es": "Crea y aplica un nivel en el editor para publicarlo aquí.",
+    "ru": "Создай и примени уровень в редакторе, чтобы опубликовать его здесь.",
+    "pt": "Crie e aplique um nível no editor para publicá-lo aqui.",
+    "zh": "在编辑器中创建并应用关卡，即可在此发布。",
+    "ja": "エディターでレベルを作成し適用すると、ここで公開できます。"
+  },
+  "Choisis une de tes cartes enregistrées.": {
+    "en": "Choose one of your saved maps.",
+    "es": "Elige uno de tus mapas guardados.",
+    "ru": "Выбери одну из сохранённых карт.",
+    "pt": "Escolha um dos seus mapas salvos.",
+    "zh": "选择一张已保存的地图。",
+    "ja": "保存済みマップを選んでください。"
+  },
+  "Carte terminée : tu peux la publier.": {
+    "en": "Map complete: you can publish it.",
+    "es": "Mapa completado: ya puedes publicarlo.",
+    "ru": "Карта пройдена: можно публиковать.",
+    "pt": "Mapa concluído: você pode publicá-lo.",
+    "zh": "地图已通关，可以发布。",
+    "ja": "マップクリア：公開できます。"
+  },
+  "Termine cette version de la carte avant de la publier.": {
+    "en": "Complete this version of the map before publishing it.",
+    "es": "Completa esta versión del mapa antes de publicarla.",
+    "ru": "Пройди эту версию карты перед публикацией.",
+    "pt": "Conclua esta versão do mapa antes de publicá-la.",
+    "zh": "发布前请通关此版本的地图。",
+    "ja": "公開前にこのバージョンをクリアしてください。"
+  },
+  "Renseigne le titre et ton pseudo.": {
+    "en": "Enter a title and your nickname.",
+    "es": "Escribe el título y tu apodo.",
+    "ru": "Укажи название и свой ник.",
+    "pt": "Informe o título e seu apelido.",
+    "zh": "请输入标题和昵称。",
+    "ja": "タイトルとニックネームを入力してください。"
+  },
+  "Vérification de la partie terminée…": {
+    "en": "Verifying completed run…",
+    "es": "Verificando partida completada…",
+    "ru": "Проверка завершённой игры…",
+    "pt": "Verificando partida concluída…",
+    "zh": "正在验证已完成的游戏…",
+    "ja": "クリア記録を検証中…"
+  },
+  "Validation indisponible.": {
+    "en": "Validation unavailable.",
+    "es": "Validación no disponible.",
+    "ru": "Проверка недоступна.",
+    "pt": "Validação indisponível.",
+    "zh": "验证不可用。",
+    "ja": "検証できません。"
+  },
+  "Publication impossible. Ta carte reste enregistrée localement.": {
+    "en": "Publishing failed. Your map is still saved locally.",
+    "es": "No se pudo publicar. Tu mapa sigue guardado localmente.",
+    "ru": "Публикация не удалась. Карта сохранена на устройстве.",
+    "pt": "Falha ao publicar. Seu mapa continua salvo localmente.",
+    "zh": "发布失败，地图仍保存在本地。",
+    "ja": "公開できませんでした。マップは端末に保存されています。"
+  },
+  "Lance le jeu depuis le bouton du dossier du projet pour ouvrir l’éditeur.": {
+    "en": "Launch the game from the project folder button to open the editor.",
+    "es": "Inicia el juego desde el botón de la carpeta del proyecto para abrir el editor.",
+    "ru": "Запусти игру кнопкой в папке проекта, чтобы открыть редактор.",
+    "pt": "Inicie o jogo pelo botão na pasta do projeto para abrir o editor.",
+    "zh": "请通过项目文件夹中的按钮启动游戏，以打开编辑器。",
+    "ja": "プロジェクトフォルダーのボタンからゲームを起動してエディターを開いてください。"
+  },
+  "Le concepteur de niveaux s’ouvre.": {
+    "en": "The level editor is opening.",
+    "es": "Se está abriendo el editor de niveles.",
+    "ru": "Открывается редактор уровней.",
+    "pt": "O editor de níveis está abrindo.",
+    "zh": "正在打开关卡编辑器。",
+    "ja": "レベルエディターを起動しています。"
+  },
+  "Impossible d’ouvrir le concepteur.": {
+    "en": "Could not open the editor.",
+    "es": "No se pudo abrir el editor.",
+    "ru": "Не удалось открыть редактор.",
+    "pt": "Não foi possível abrir o editor.",
+    "zh": "无法打开编辑器。",
+    "ja": "エディターを開けませんでした。"
+  },
+  "Entre un pseudo pour commencer.": {
+    "en": "Enter a nickname to begin.",
+    "es": "Escribe un apodo para empezar.",
+    "ru": "Введи ник, чтобы начать.",
+    "pt": "Digite um apelido para começar.",
+    "zh": "请输入昵称以开始。",
+    "ja": "ニックネームを入力して開始。"
+  },
+  " · Niveau suivant": {
+    "en": " · Next level",
+    "es": " · Nivel siguiente",
+    "ru": " · Следующий уровень",
+    "pt": " · Próximo nível",
+    "zh": " · 下一关",
+    "ja": " · 次のレベル"
+  },
+  "Connexion au Workshop indisponible.": {
+    "en": "Workshop connection unavailable.",
+    "es": "Conexión al Workshop no disponible.",
+    "ru": "Нет соединения с мастерской.",
+    "pt": "Conexão com a Oficina indisponível.",
+    "zh": "无法连接创意工坊。",
+    "ja": "ワークショップに接続できません。"
+  },
+  "Partie classée": {
+    "en": "Ranked run",
+    "es": "Partida clasificada",
+    "ru": "Рейтинговая игра",
+    "pt": "Partida ranqueada",
+    "zh": "排名游戏",
+    "ja": "ランキング対象"
+  },
+  "Score en attente de connexion": {
+    "en": "Score waiting for connection",
+    "es": "Puntuación esperando conexión",
+    "ru": "Результат ожидает соединения",
+    "pt": "Pontuação aguardando conexão",
+    "zh": "成绩等待连接",
+    "ja": "接続待ちの記録"
+  },
+  "Score local : ": {
+    "en": "Local score: ",
+    "es": "Puntuación local: ",
+    "ru": "Локальный результат: ",
+    "pt": "Pontuação local: ",
+    "zh": "本地成绩：",
+    "ja": "端末の記録："
+  },
+  "connexion indisponible": {
+    "en": "connection unavailable",
+    "es": "conexión no disponible",
+    "ru": "соединение недоступно",
+    "pt": "conexão indisponível",
+    "zh": "无法连接",
+    "ja": "接続不可"
+  },
+  "Partie hors ligne": {
+    "en": "Offline run",
+    "es": "Partida sin conexión",
+    "ru": "Игра без сети",
+    "pt": "Partida offline",
+    "zh": "离线游戏",
+    "ja": "オフラインプレイ"
+  },
+  "Connexion au classement…": {
+    "en": "Connecting to leaderboard…",
+    "es": "Conectando a la clasificación…",
+    "ru": "Подключение к рейтингу…",
+    "pt": "Conectando ao ranking…",
+    "zh": "正在连接排行榜…",
+    "ja": "ランキングに接続中…"
+  },
+  "Envoi du score…": {
+    "en": "Sending score…",
+    "es": "Enviando puntuación…",
+    "ru": "Отправка результата…",
+    "pt": "Enviando pontuação…",
+    "zh": "正在发送成绩…",
+    "ja": "記録を送信中…"
+  },
+  "Score publié dans les classements": {
+    "en": "Score published on leaderboards",
+    "es": "Puntuación publicada en las clasificaciones",
+    "ru": "Результат опубликован в рейтингах",
+    "pt": "Pontuação publicada nos rankings",
+    "zh": "成绩已发布至排行榜",
+    "ja": "記録をランキングに公開しました"
+  },
+  "Score local uniquement : ": {
+    "en": "Local score only: ",
+    "es": "Solo puntuación local: ",
+    "ru": "Только локальный результат: ",
+    "pt": "Pontuação apenas local: ",
+    "zh": "仅本地成绩：",
+    "ja": "端末のみの記録："
+  },
+  "validation refusée": {
+    "en": "validation rejected",
+    "es": "validación rechazada",
+    "ru": "проверка отклонена",
+    "pt": "validação recusada",
+    "zh": "验证被拒绝",
+    "ja": "検証が拒否されました"
+  },
+  "Score enregistré · replay conservé localement, envoi en attente": {
+    "en": "Score saved · replay stored locally, upload pending",
+    "es": "Puntuación guardada · repetición local, envío pendiente",
+    "ru": "Результат сохранён · повтор на устройстве, отправка ожидается",
+    "pt": "Pontuação salva · replay local, envio pendente",
+    "zh": "成绩已保存 · 回放保存在本地，等待上传",
+    "ja": "記録を保存 · リプレイは端末に保存、送信待ち"
+  },
+  "Replay incomplet.": {
+    "en": "Incomplete replay.",
+    "es": "Repetición incompleta.",
+    "ru": "Неполная запись повтора.",
+    "pt": "Replay incompleto.",
+    "zh": "回放不完整。",
+    "ja": "リプレイが不完全です。"
+  },
+  "Lecture arrêtée : simulation différente de la run enregistrée.": {
+    "en": "Playback stopped: simulation differs from the recorded run.",
+    "es": "Reproducción detenida: la simulación difiere de la partida grabada.",
+    "ru": "Просмотр остановлен: симуляция отличается от записи.",
+    "pt": "Reprodução interrompida: simulação diferente da partida gravada.",
+    "zh": "播放已停止：模拟结果与录像不符。",
+    "ja": "再生停止：シミュレーションが記録と異なります。"
+  },
+  "Replay invalide.": {
+    "en": "Invalid replay.",
+    "es": "Repetición no válida.",
+    "ru": "Некорректный повтор.",
+    "pt": "Replay inválido.",
+    "zh": "回放无效。",
+    "ja": "無効なリプレイです。"
+  },
+  "Vérification invalide.": {
+    "en": "Invalid verification.",
+    "es": "Verificación no válida.",
+    "ru": "Некорректная проверка.",
+    "pt": "Verificação inválida.",
+    "zh": "验证无效。",
+    "ja": "無効な検証です。"
+  },
+  "Run inachevée.": {
+    "en": "Unfinished run.",
+    "es": "Partida sin terminar.",
+    "ru": "Игра не завершена.",
+    "pt": "Partida inacabada.",
+    "zh": "游戏未完成。",
+    "ja": "未完了のプレイです。"
+  },
+  "Duel invalide.": {
+    "en": "Invalid duel.",
+    "es": "Duelo no válido.",
+    "ru": "Некорректная дуэль.",
+    "pt": "Duelo inválido.",
+    "zh": "决斗无效。",
+    "ja": "無効な決闘です。"
+  },
+  "Commandes invalides.": {
+    "en": "Invalid controls.",
+    "es": "Controles no válidos.",
+    "ru": "Некорректные команды.",
+    "pt": "Comandos inválidos.",
+    "zh": "操作无效。",
+    "ja": "無効な操作記録です。"
+  },
+  "Durée de replay invalide.": {
+    "en": "Invalid replay duration.",
+    "es": "Duración de repetición no válida.",
+    "ru": "Некорректная длительность повтора.",
+    "pt": "Duração de replay inválida.",
+    "zh": "回放时长无效。",
+    "ja": "リプレイの長さが無効です。"
+  },
+  "Carte de replay invalide.": {
+    "en": "Invalid replay map.",
+    "es": "Mapa de repetición no válido.",
+    "ru": "Некорректная карта повтора.",
+    "pt": "Mapa de replay inválido.",
+    "zh": "回放地图无效。",
+    "ja": "リプレイのマップが無効です。"
+  },
+  "Lecture compatible · restitution approximative.": {
+    "en": "Compatibility playback · approximate reconstruction.",
+    "es": "Reproducción compatible · reconstrucción aproximada.",
+    "ru": "Совместимый просмотр · приблизительное восстановление.",
+    "pt": "Reprodução compatível · reconstrução aproximada.",
+    "zh": "兼容播放 · 近似还原",
+    "ja": "互換再生 · 近似的な再現"
+  },
+  "Lecture arrêtée.": {
+    "en": "Playback stopped.",
+    "es": "Reproducción detenida.",
+    "ru": "Просмотр остановлен.",
+    "pt": "Reprodução interrompida.",
+    "zh": "播放已停止。",
+    "ja": "再生を停止しました。"
+  },
+  "Chargement du replay…": {
+    "en": "Loading replay…",
+    "es": "Cargando repetición…",
+    "ru": "Загрузка повтора…",
+    "pt": "Carregando replay…",
+    "zh": "正在加载回放…",
+    "ja": "リプレイ読み込み中…"
+  },
+  "Replay indisponible.": {
+    "en": "Replay unavailable.",
+    "es": "Repetición no disponible.",
+    "ru": "Повтор недоступен.",
+    "pt": "Replay indisponível.",
+    "zh": "回放不可用。",
+    "ja": "リプレイを取得できません。"
+  },
+  "Cette ancienne run ne possède pas de replay.": {
+    "en": "This old run has no replay.",
+    "es": "Esta partida antigua no tiene repetición.",
+    "ru": "У этой старой игры нет повтора.",
+    "pt": "Esta partida antiga não tem replay.",
+    "zh": "这场旧游戏没有回放。",
+    "ja": "この古いプレイにはリプレイがありません。"
+  },
+  "Sauvegarde impossible : vérifie les droits du dossier.": {
+    "en": "Save failed: check folder permissions.",
+    "es": "No se pudo guardar: revisa los permisos de la carpeta.",
+    "ru": "Не удалось сохранить: проверь права доступа к папке.",
+    "pt": "Falha ao salvar: verifique as permissões da pasta.",
+    "zh": "保存失败：请检查文件夹权限。",
+    "ja": "保存できません：フォルダーの権限を確認してください。"
+  },
+  "Monde ou niveau invalide.": {
+    "en": "Invalid world or level.",
+    "es": "Mundo o nivel no válido.",
+    "ru": "Некорректный мир или уровень.",
+    "pt": "Mundo ou nível inválido.",
+    "zh": "世界或关卡无效。",
+    "ja": "無効なワールドまたはレベルです。"
+  },
+  "Dimensions ou nombre d’objets invalide.": {
+    "en": "Invalid dimensions or object count.",
+    "es": "Dimensiones o cantidad de objetos no válidas.",
+    "ru": "Некорректные размеры или число объектов.",
+    "pt": "Dimensões ou quantidade de objetos inválidas.",
+    "zh": "尺寸或对象数量无效。",
+    "ja": "サイズまたはオブジェクト数が無効です。"
+  },
+  "Biome invalide.": {
+    "en": "Invalid biome.",
+    "es": "Bioma no válido.",
+    "ru": "Некорректный биом.",
+    "pt": "Bioma inválido.",
+    "zh": "生态区无效。",
+    "ja": "無効なバイオームです。"
+  },
+  "Difficulté entre 1 et 5.": {
+    "en": "Difficulty must be between 1 and 5.",
+    "es": "La dificultad debe ser de 1 a 5.",
+    "ru": "Сложность должна быть от 1 до 5.",
+    "pt": "Dificuldade deve ser de 1 a 5.",
+    "zh": "难度必须为 1 至 5。",
+    "ja": "難易度は1から5です。"
+  },
+  "Bonus rouge entre 0 et 999, au niveau 5.": {
+    "en": "Red bonus must be 0–999 at difficulty 5.",
+    "es": "El bonus rojo debe ser de 0 a 999, en dificultad 5.",
+    "ru": "Красный бонус от 0 до 999 при сложности 5.",
+    "pt": "Bônus vermelho de 0 a 999, na dificuldade 5.",
+    "zh": "红色加成为 0 至 999，仅限难度 5。",
+    "ja": "赤ボーナスは難易度5で0～999です。"
+  },
+  "Objet inconnu.": {
+    "en": "Unknown object.",
+    "es": "Objeto desconocido.",
+    "ru": "Неизвестный объект.",
+    "pt": "Objeto desconhecido.",
+    "zh": "未知对象。",
+    "ja": "不明なオブジェクトです。"
+  },
+  "Valeur numérique invalide.": {
+    "en": "Invalid numeric value.",
+    "es": "Valor numérico no válido.",
+    "ru": "Некорректное число.",
+    "pt": "Valor numérico inválido.",
+    "zh": "数值无效。",
+    "ja": "無効な数値です。"
+  },
+  "Multiplicateur entre 0,1 et 5.": {
+    "en": "Multiplier must be between 0.1 and 5.",
+    "es": "Multiplicador entre 0,1 y 5.",
+    "ru": "Множитель от 0,1 до 5.",
+    "pt": "Multiplicador entre 0,1 e 5.",
+    "zh": "倍率必须为 0.1 至 5。",
+    "ja": "倍率は0.1から5です。"
+  },
+  "Délai entre 0,1 et 120 secondes.": {
+    "en": "Delay must be between 0.1 and 120 seconds.",
+    "es": "Retardo entre 0,1 y 120 segundos.",
+    "ru": "Задержка от 0,1 до 120 секунд.",
+    "pt": "Atraso entre 0,1 e 120 segundos.",
+    "zh": "延迟必须为 0.1 至 120 秒。",
+    "ja": "遅延は0.1から120秒です。"
+  },
+  "Stade du squelette invalide.": {
+    "en": "Invalid skeleton stage.",
+    "es": "Fase del esqueleto no válida.",
+    "ru": "Некорректная стадия скелета.",
+    "pt": "Estágio do esqueleto inválido.",
+    "zh": "骨架阶段无效。",
+    "ja": "骨格の段階が無効です。"
+  },
+  "Un objet sort du terrain.": {
+    "en": "An object is outside the arena.",
+    "es": "Un objeto está fuera del terreno.",
+    "ru": "Объект за пределами поля.",
+    "pt": "Um objeto está fora do terreno.",
+    "zh": "有对象超出场地。",
+    "ja": "オブジェクトがフィールド外にあります。"
+  },
+  "Les dimensions doivent être positives.": {
+    "en": "Dimensions must be positive.",
+    "es": "Las dimensiones deben ser positivas.",
+    "ru": "Размеры должны быть положительными.",
+    "pt": "As dimensões devem ser positivas.",
+    "zh": "尺寸必须为正数。",
+    "ja": "サイズは正の値にしてください。"
+  },
+  "Dimensions du mur manquantes.": {
+    "en": "Wall dimensions are missing.",
+    "es": "Faltan las dimensiones del muro.",
+    "ru": "Не указаны размеры стены.",
+    "pt": "Faltam as dimensões do muro.",
+    "zh": "缺少墙壁尺寸。",
+    "ja": "壁のサイズがありません。"
+  },
+  "Nom de créature invalide.": {
+    "en": "Invalid creature name.",
+    "es": "Nombre de criatura no válido.",
+    "ru": "Некорректное имя существа.",
+    "pt": "Nome de criatura inválido.",
+    "zh": "生物名称无效。",
+    "ja": "無効な生き物の名前です。"
+  },
+  "Option invalide.": {
+    "en": "Invalid option.",
+    "es": "Opción no válida.",
+    "ru": "Некорректная опция.",
+    "pt": "Opção inválida.",
+    "zh": "选项无效。",
+    "ja": "無効なオプションです。"
+  },
+  "Il faut exactement un départ du joueur.": {
+    "en": "Exactly one player start is required.",
+    "es": "Se necesita exactamente un inicio de jugador.",
+    "ru": "Нужна ровно одна точка старта игрока.",
+    "pt": "É necessário exatamente um início de jogador.",
+    "zh": "必须恰好有一个玩家起点。",
+    "ja": "プレイヤーの開始地点は1つ必要です。"
+  },
+  "Soie": {
+    "en": "Silk",
+    "es": "Seda",
+    "ru": "Шёлк",
+    "pt": "Seda",
+    "zh": "丝绸",
+    "ja": "絹"
+  },
+  "Perle": {
+    "en": "Pearl",
+    "es": "Perla",
+    "ru": "Жемчужина",
+    "pt": "Pérola",
+    "zh": "珍珠",
+    "ja": "真珠"
+  },
+  "Braise": {
+    "en": "Ember",
+    "es": "Brasa",
+    "ru": "Уголёк",
+    "pt": "Brasa",
+    "zh": "余烬",
+    "ja": "熾火"
+  },
+  "Écume": {
+    "en": "Seafoam",
+    "es": "Espuma",
+    "ru": "Пена",
+    "pt": "Espuma",
+    "zh": "海沫",
+    "ja": "海の泡"
+  },
+  "Royale": {
+    "en": "Royal",
+    "es": "Real",
+    "ru": "Королевская",
+    "pt": "Real",
+    "zh": "皇族",
+    "ja": "ロイヤル"
+  },
+  "Auréole": {
+    "en": "Halo",
+    "es": "Aureola",
+    "ru": "Нимб",
+    "pt": "Auréola",
+    "zh": "光环",
+    "ja": "光輪"
+  },
+  "Zéphyr": {
+    "en": "Zephyr",
+    "es": "Céfiro",
+    "ru": "Зефир",
+    "pt": "Zéfiro",
+    "zh": "和风",
+    "ja": "そよ風"
+  },
+  "Ambre": {
+    "en": "Amber",
+    "es": "Ámbar",
+    "ru": "Янтарь",
+    "pt": "Âmbar",
+    "zh": "琥珀",
+    "ja": "琥珀"
+  },
+  "Corail": {
+    "en": "Coral",
+    "es": "Coral",
+    "ru": "Коралл",
+    "pt": "Coral",
+    "zh": "珊瑚",
+    "ja": "珊瑚"
+  },
+  "Lanterne": {
+    "en": "Lantern",
+    "es": "Linterna",
+    "ru": "Фонарь",
+    "pt": "Lanterna",
+    "zh": "灯笼",
+    "ja": "ランタン"
+  },
+  "Cendre": {
+    "en": "Ash",
+    "es": "Ceniza",
+    "ru": "Пепел",
+    "pt": "Cinza",
+    "zh": "灰烬",
+    "ja": "灰"
+  },
+  "Renouveau": {
+    "en": "Renewal",
+    "es": "Renovación",
+    "ru": "Обновление",
+    "pt": "Renovação",
+    "zh": "新生",
+    "ja": "再生"
+  },
+  "Paradis": {
+    "en": "Paradise",
+    "es": "Paraíso",
+    "ru": "Рай",
+    "pt": "Paraíso",
+    "zh": "天堂",
+    "ja": "楽園"
+  },
+  "Enfer": {
+    "en": "Hell",
+    "es": "Infierno",
+    "ru": "Ад",
+    "pt": "Inferno",
+    "zh": "地狱",
+    "ja": "地獄"
+  },
+  "Renaissance": {
+    "en": "Rebirth",
+    "es": "Renacimiento",
+    "ru": "Возрождение",
+    "pt": "Renascimento",
+    "zh": "重生",
+    "ja": "転生"
+  },
+  "Océan": {
+    "en": "Ocean",
+    "es": "Océano",
+    "ru": "Океан",
+    "pt": "Oceano",
+    "zh": "海洋",
+    "ja": "海"
+  },
+  "Terre": {
+    "en": "Earth",
+    "es": "Tierra",
+    "ru": "Земля",
+    "pt": "Terra",
+    "zh": "大地",
+    "ja": "大地"
+  },
+  "Ciel": {
+    "en": "Sky",
+    "es": "Cielo",
+    "ru": "Небо",
+    "pt": "Céu",
+    "zh": "天空",
+    "ja": "空"
+  },
+  "Abysse": {
+    "en": "Abyss",
+    "es": "Abismo",
+    "ru": "Бездна",
+    "pt": "Abismo",
+    "zh": "深渊",
+    "ja": "深淵"
+  },
+  "Le Sanctuaire": {
+    "en": "The Sanctuary",
+    "es": "El Santuario",
+    "ru": "Святилище",
+    "pt": "O Santuário",
+    "zh": "圣殿",
+    "ja": "聖域"
+  },
+  "Merle Démon": {
+    "en": "Demon Blackbird",
+    "es": "Mirlo Demonio",
+    "ru": "Демон-дрозд",
+    "pt": "Melro Demônio",
+    "zh": "恶魔乌鸫",
+    "ja": "デーモンクロウタドリ"
+  },
+  "Merle des orages Démon": {
+    "en": "Demon Storm Blackbird",
+    "es": "Mirlo de las Tormentas Demonio",
+    "ru": "Демон грозовой дрозд",
+    "pt": "Melro das Tempestades Demônio",
+    "zh": "恶魔雷暴乌鸫",
+    "ja": "デーモン雷嵐のクロウタドリ"
+  },
+  "Hérisson Démon": {
+    "en": "Demon Hedgehog",
+    "es": "Erizo Demonio",
+    "ru": "Демон-ёж",
+    "pt": "Ouriço Demônio",
+    "zh": "恶魔刺猬",
+    "ja": "デーモンハリネズミ"
+  },
+  "Poulpe Démon": {
+    "en": "Demon Octopus",
+    "es": "Pulpo Demonio",
+    "ru": "Демон-осьминог",
+    "pt": "Polvo Demônio",
+    "zh": "恶魔章鱼",
+    "ja": "デーモンタコ"
+  },
+  "Léviathan Démon": {
+    "en": "Demon Leviathan",
+    "es": "Leviatán Demonio",
+    "ru": "Демон-левиафан",
+    "pt": "Leviatã Demônio",
+    "zh": "恶魔利维坦",
+    "ja": "デーモンリヴァイアサン"
+  },
+  "Sœurs de lave Démon": {
+    "en": "Demon Lava Sisters",
+    "es": "Hermanas de Lava Demonio",
+    "ru": "Демонические лавовые сёстры",
+    "pt": "Irmãs de Lava Demônio",
+    "zh": "恶魔熔岩姐妹",
+    "ja": "デーモン溶岩の姉妹"
+  },
+  "Plus rapide que Gillou": {
+    "en": "Faster than Gillou",
+    "es": "Más rápido que Gillou",
+    "ru": "Быстрее Gillou",
+    "pt": "Mais rápido que Gillou",
+    "zh": "比 Gillou 更快",
+    "ja": "Gillou より速く"
+  },
+  "Toucher les trois abeilles pendant le même KO, avant que l’une se réveille.": {
+    "en": "Touch all three bees during the same stun, before any wakes up.",
+    "es": "Toca a las tres abejas durante el mismo aturdimiento, antes de que alguna despierte.",
+    "ru": "Коснись всех трёх пчёл за одно оглушение, пока ни одна не очнулась.",
+    "pt": "Toque as três abelhas no mesmo atordoamento, antes que alguma acorde.",
+    "zh": "在同一次眩晕期间，任一蜜蜂醒来前触碰三只蜜蜂。",
+    "ja": "同じ気絶中に、1匹でも目覚める前に3匹すべてに触れる。"
+  },
+  "Terminer le Paradis avec au moins 95 morts.": {
+    "en": "Complete Paradise with at least 95 deaths.",
+    "es": "Completa Paraíso con al menos 95 muertes.",
+    "ru": "Пройди Рай, погибнув не менее 95 раз.",
+    "pt": "Conclua Paraíso com pelo menos 95 mortes.",
+    "zh": "以至少 95 次死亡完成天堂。",
+    "ja": "95回以上死亡して楽園をクリアする。"
+  },
+  " sans faute": {
+    "en": " flawless",
+    "es": " sin fallos",
+    "ru": " без ошибок",
+    "pt": " sem falhas",
+    "zh": "无瑕",
+    "ja": "ノーミス"
+  },
+  "Terminer ": {
+    "en": "Complete ",
+    "es": "Completa ",
+    "ru": "Пройти: ",
+    "pt": "Conclua ",
+    "zh": "完成 ",
+    "ja": "クリア："
+  },
+  " sans mourir.": {
+    "en": " without dying.",
+    "es": " sin morir.",
+    "ru": " без смертей.",
+    "pt": " sem morrer.",
+    "zh": "，且不死亡。",
+    "ja": "（死亡なし）。"
+  },
+  "Départ du joueur": {
+    "en": "Player start",
+    "es": "Inicio del jugador",
+    "ru": "Старт игрока",
+    "pt": "Início do jogador",
+    "zh": "玩家起点",
+    "ja": "プレイヤー開始地点"
+  },
+  "Cercle de larme": {
+    "en": "Tear circle",
+    "es": "Círculo de lágrima",
+    "ru": "Круг слезы",
+    "pt": "Círculo da lágrima",
+    "zh": "泪滴圆环",
+    "ja": "涙の円"
+  },
+  "Mur": {
+    "en": "Wall",
+    "es": "Muro",
+    "ru": "Стена",
+    "pt": "Muro",
+    "zh": "墙壁",
+    "ja": "壁"
+  },
+  "Petite guêpe": {
+    "en": "Small wasp",
+    "es": "Avispa pequeña",
+    "ru": "Маленькая оса",
+    "pt": "Pequena vespa",
+    "zh": "小黄蜂",
+    "ja": "小さなスズメバチ"
+  },
+  "Petit ver": {
+    "en": "Small worm",
+    "es": "Gusano pequeño",
+    "ru": "Маленький червь",
+    "pt": "Pequeno verme",
+    "zh": "小蠕虫",
+    "ja": "小さなワーム"
+  },
+  "Petit merle": {
+    "en": "Blackbird chick",
+    "es": "Cría de mirlo",
+    "ru": "Птенец дрозда",
+    "pt": "Filhote de melro",
+    "zh": "乌鸫雏鸟",
+    "ja": "クロウタドリのひな"
+  },
+  "Ange gardien": {
+    "en": "Guardian angel",
+    "es": "Ángel guardián",
+    "ru": "Ангел-хранитель",
+    "pt": "Anjo guardião",
+    "zh": "守护天使",
+    "ja": "守護天使"
+  },
+  "Serpent céleste": {
+    "en": "Celestial serpent",
+    "es": "Serpiente celestial",
+    "ru": "Небесный змей",
+    "pt": "Serpente celestial",
+    "zh": "天界之蛇",
+    "ja": "天空の蛇"
+  },
+  "Goule de braise": {
+    "en": "Ember ghoul",
+    "es": "Gul de brasa",
+    "ru": "Угольный гуль",
+    "pt": "Carniçal de brasa",
+    "zh": "余烬食尸鬼",
+    "ja": "熾火のグール"
+  },
+  "Serpent tournoyant": {
+    "en": "Spinning serpent",
+    "es": "Serpiente giratoria",
+    "ru": "Вращающийся змей",
+    "pt": "Serpente giratória",
+    "zh": "旋转蛇",
+    "ja": "回転する蛇"
+  },
+  "Poisson-lame": {
+    "en": "Bladefish",
+    "es": "Pez cuchilla",
+    "ru": "Рыба-клинок",
+    "pt": "Peixe-lâmina",
+    "zh": "刀刃鱼",
+    "ja": "刃の魚"
+  },
+  "Méduse électrique": {
+    "en": "Electric jellyfish",
+    "es": "Medusa eléctrica",
+    "ru": "Электрическая медуза",
+    "pt": "Água-viva elétrica",
+    "zh": "电水母",
+    "ja": "電気クラゲ"
+  },
+  "Crabe": {
+    "en": "Crab",
+    "es": "Cangrejo",
+    "ru": "Краб",
+    "pt": "Caranguejo",
+    "zh": "螃蟹",
+    "ja": "カニ"
+  },
+  "Ver de terre": {
+    "en": "Earthworm",
+    "es": "Lombriz",
+    "ru": "Дождевой червь",
+    "pt": "Minhoca",
+    "zh": "蚯蚓",
+    "ja": "ミミズ"
+  },
+  "Taupe": {
+    "en": "Mole",
+    "es": "Topo",
+    "ru": "Крот",
+    "pt": "Toupeira",
+    "zh": "鼹鼠",
+    "ja": "モグラ"
+  },
+  "Mouette": {
+    "en": "Gull",
+    "es": "Gaviota",
+    "ru": "Чайка",
+    "pt": "Gaivota",
+    "zh": "海鸥",
+    "ja": "カモメ"
+  },
+  "Pieuvre abyssale": {
+    "en": "Abyssal octopus",
+    "es": "Pulpo abisal",
+    "ru": "Глубинный осьминог",
+    "pt": "Polvo abissal",
+    "zh": "深渊章鱼",
+    "ja": "深淵のタコ"
+  },
+  "Gueule des profondeurs": {
+    "en": "Maw of the depths",
+    "es": "Fauces de las profundidades",
+    "ru": "Пасть глубин",
+    "pt": "Mandíbula das profundezas",
+    "zh": "深海巨口",
+    "ja": "深海の大顎"
+  },
+  "Poisson-lanterne": {
+    "en": "Lanternfish",
+    "es": "Pez linterna",
+    "ru": "Рыба-фонарь",
+    "pt": "Peixe-lanterna",
+    "zh": "灯笼鱼",
+    "ja": "ランタンフィッシュ"
+  },
+  "Piège de capture": {
+    "en": "Capture trap",
+    "es": "Trampa de captura",
+    "ru": "Ловушка захвата",
+    "pt": "Armadilha de captura",
+    "zh": "捕获陷阱",
+    "ja": "捕獲罠"
+  },
+  "Roue enchaînée": {
+    "en": "Chained wheel",
+    "es": "Rueda encadenada",
+    "ru": "Колесо на цепи",
+    "pt": "Roda acorrentada",
+    "zh": "锁链刀轮",
+    "ja": "鎖の車輪"
+  },
+  "Larve de magma": {
+    "en": "Magma larva",
+    "es": "Larva de magma",
+    "ru": "Магмовая личинка",
+    "pt": "Larva de magma",
+    "zh": "岩浆幼虫",
+    "ja": "マグマの幼虫"
+  },
+  "Nid de larves": {
+    "en": "Larva nest",
+    "es": "Nido de larvas",
+    "ru": "Гнездо личинок",
+    "pt": "Ninho de larvas",
+    "zh": "幼虫巢",
+    "ja": "幼虫の巣"
+  },
+  "Flaque de lave": {
+    "en": "Lava pool",
+    "es": "Charco de lava",
+    "ru": "Лужа лавы",
+    "pt": "Poça de lava",
+    "zh": "熔岩池",
+    "ja": "溶岩だまり"
+  },
+  "Anémone électrique": {
+    "en": "Electric anemone",
+    "es": "Anémona eléctrica",
+    "ru": "Электрическая актиния",
+    "pt": "Anêmona elétrica",
+    "zh": "电海葵",
+    "ja": "電気イソギンチャク"
+  },
+  "Tunnel (par paire)": {
+    "en": "Tunnel (paired)",
+    "es": "Túnel (por pares)",
+    "ru": "Туннель (парный)",
+    "pt": "Túnel (em pares)",
+    "zh": "隧道（成对）",
+    "ja": "トンネル（ペア）"
+  },
+  "Trou dans les nuages": {
+    "en": "Cloud hole",
+    "es": "Agujero en las nubes",
+    "ru": "Дыра в облаках",
+    "pt": "Buraco nas nuvens",
+    "zh": "云层空洞",
+    "ja": "雲の穴"
+  },
+  "Tornade": {
+    "en": "Tornado",
+    "es": "Tornado",
+    "ru": "Торнадо",
+    "pt": "Tornado",
+    "zh": "龙卷风",
+    "ja": "竜巻"
+  },
+  "Pluie": {
+    "en": "Rain",
+    "es": "Lluvia",
+    "ru": "Дождь",
+    "pt": "Chuva",
+    "zh": "雨",
+    "ja": "雨"
+  },
+  "Courant marin": {
+    "en": "Sea current",
+    "es": "Corriente marina",
+    "ru": "Морское течение",
+    "pt": "Corrente marinha",
+    "zh": "洋流",
+    "ja": "海流"
+  },
+  "Source de lumière": {
+    "en": "Light source",
+    "es": "Fuente de luz",
+    "ru": "Источник света",
+    "pt": "Fonte de luz",
+    "zh": "光源",
+    "ja": "光源"
+  },
+  "Nid du Merle": {
+    "en": "Blackbird nest",
+    "es": "Nido de mirlo",
+    "ru": "Гнездо дрозда",
+    "pt": "Ninho de melro",
+    "zh": "乌鸫巢",
+    "ja": "クロウタドリの巣"
+  },
+  "Merle noir des orages": {
+    "en": "Storm blackbird",
+    "es": "Mirlo de las tormentas",
+    "ru": "Грозовой дрозд",
+    "pt": "Melro das tempestades",
+    "zh": "雷暴乌鸫",
+    "ja": "雷嵐のクロウタドリ"
+  },
+  "Le Merle noir": {
+    "en": "The Blackbird",
+    "es": "El Mirlo",
+    "ru": "Чёрный дрозд",
+    "pt": "O Melro",
+    "zh": "乌鸫",
+    "ja": "クロウタドリ"
+  },
+  "Trois Sœurs de braise": {
+    "en": "Three Ember Sisters",
+    "es": "Tres Hermanas de Brasa",
+    "ru": "Три угольные сестры",
+    "pt": "Três Irmãs de Brasa",
+    "zh": "余烬三姐妹",
+    "ja": "熾火の三姉妹"
+  },
+  "Hérisson": {
+    "en": "Hedgehog",
+    "es": "Erizo",
+    "ru": "Ёж",
+    "pt": "Ouriço",
+    "zh": "刺猬",
+    "ja": "ハリネズミ"
+  },
+  "Poulpe": {
+    "en": "Octopus",
+    "es": "Pulpo",
+    "ru": "Осьминог",
+    "pt": "Polvo",
+    "zh": "章鱼",
+    "ja": "タコ"
+  },
+  "Tête du Léviathan": {
+    "en": "Leviathan head",
+    "es": "Cabeza de Leviatán",
+    "ru": "Голова левиафана",
+    "pt": "Cabeça do Leviatã",
+    "zh": "利维坦之首",
+    "ja": "リヴァイアサンの頭"
+  },
+  "Queue du Léviathan": {
+    "en": "Leviathan tail",
+    "es": "Cola de Leviatán",
+    "ru": "Хвост левиафана",
+    "pt": "Cauda do Leviatã",
+    "zh": "利维坦之尾",
+    "ja": "リヴァイアサンの尾"
+  },
+  "Côte du Léviathan": {
+    "en": "Leviathan rib",
+    "es": "Costilla de Leviatán",
+    "ru": "Ребро левиафана",
+    "pt": "Costela do Leviatã",
+    "zh": "利维坦肋骨",
+    "ja": "リヴァイアサンの肋骨"
+  },
+  "Vertèbre du Léviathan": {
+    "en": "Leviathan vertebra",
+    "es": "Vértebra de Leviatán",
+    "ru": "Позвонок левиафана",
+    "pt": "Vértebra do Leviatã",
+    "zh": "利维坦脊椎",
+    "ja": "リヴァイアサンの椎骨"
+  },
+  "Le premier souffle": {
+    "en": "The First Breath",
+    "es": "El Primer Aliento",
+    "ru": "Первый вдох",
+    "pt": "O Primeiro Sopro",
+    "zh": "初次呼吸",
+    "ja": "最初の息吹"
+  },
+  "Les veilleurs": {
+    "en": "The Watchers",
+    "es": "Los Vigías",
+    "ru": "Стражи",
+    "pt": "Os Vigias",
+    "zh": "守望者",
+    "ja": "見守る者たち"
+  },
+  "La ronde des lames": {
+    "en": "The Dance of Blades",
+    "es": "La Danza de las Cuchillas",
+    "ru": "Танец клинков",
+    "pt": "A Dança das Lâminas",
+    "zh": "刀刃之舞",
+    "ja": "刃の輪舞"
+  },
+  "Le jardin des épines": {
+    "en": "The Garden of Thorns",
+    "es": "El Jardín de Espinas",
+    "ru": "Сад шипов",
+    "pt": "O Jardim de Espinhos",
+    "zh": "荆棘花园",
+    "ja": "棘の庭"
+  },
+  "Les ailes captives": {
+    "en": "Captive Wings",
+    "es": "Alas Cautivas",
+    "ru": "Пленённые крылья",
+    "pt": "Asas Cativas",
+    "zh": "被囚之翼",
+    "ja": "囚われた翼"
+  },
+  "Le silence des serpents": {
+    "en": "The Silence of Serpents",
+    "es": "El Silencio de las Serpientes",
+    "ru": "Молчание змей",
+    "pt": "O Silêncio das Serpentes",
+    "zh": "群蛇的寂静",
+    "ja": "蛇たちの沈黙"
+  },
+  "Les quatre gardiens": {
+    "en": "The Four Guardians",
+    "es": "Los Cuatro Guardianes",
+    "ru": "Четыре стража",
+    "pt": "Os Quatro Guardiões",
+    "zh": "四位守护者",
+    "ja": "四人の守護者"
+  },
+  "Le chœur brisé": {
+    "en": "The Broken Choir",
+    "es": "El Coro Roto",
+    "ru": "Разбитый хор",
+    "pt": "O Coro Partido",
+    "zh": "破碎的合唱",
+    "ja": "砕けた合唱"
+  },
+  "Les portes du ciel": {
+    "en": "The Gates of Heaven",
+    "es": "Las Puertas del Cielo",
+    "ru": "Врата небес",
+    "pt": "Os Portões do Céu",
+    "zh": "天堂之门",
+    "ja": "天国の門"
+  },
+  "La chute": {
+    "en": "The Fall",
+    "es": "La Caída",
+    "ru": "Падение",
+    "pt": "A Queda",
+    "zh": "坠落",
+    "ja": "落下"
+  },
+  "Les braises": {
+    "en": "The Embers",
+    "es": "Las Brasas",
+    "ru": "Угли",
+    "pt": "As Brasas",
+    "zh": "余烬",
+    "ja": "残り火"
+  },
+  "Le cercle des damnés": {
+    "en": "The Circle of the Damned",
+    "es": "El Círculo de los Condenados",
+    "ru": "Круг проклятых",
+    "pt": "O Círculo dos Condenados",
+    "zh": "受诅者之环",
+    "ja": "呪われし者の輪"
+  },
+  "La forge": {
+    "en": "The Forge",
+    "es": "La Forja",
+    "ru": "Кузница",
+    "pt": "A Forja",
+    "zh": "熔炉",
+    "ja": "鍛冶場"
+  },
+  "Les ailes de cendre": {
+    "en": "Wings of Ash",
+    "es": "Alas de Ceniza",
+    "ru": "Крылья пепла",
+    "pt": "Asas de Cinza",
+    "zh": "灰烬之翼",
+    "ja": "灰の翼"
+  },
+  "Le fleuve noir": {
+    "en": "The Black River",
+    "es": "El Río Negro",
+    "ru": "Чёрная река",
+    "pt": "O Rio Negro",
+    "zh": "黑河",
+    "ja": "黒い川"
+  },
+  "Les sept sceaux": {
+    "en": "The Seven Seals",
+    "es": "Los Siete Sellos",
+    "ru": "Семь печатей",
+    "pt": "Os Sete Selos",
+    "zh": "七重封印",
+    "ja": "七つの封印"
+  },
+  "La gueule du feu": {
+    "en": "The Maw of Fire",
+    "es": "Las Fauces del Fuego",
+    "ru": "Пасть огня",
+    "pt": "A Boca do Fogo",
+    "zh": "烈焰巨口",
+    "ja": "炎の顎"
+  },
+  "Le trône vide": {
+    "en": "The Empty Throne",
+    "es": "El Trono Vacío",
+    "ru": "Пустой трон",
+    "pt": "O Trono Vazio",
+    "zh": "空王座",
+    "ja": "空の玉座"
+  },
+  "La Guêpe solitaire": {
+    "en": "The Lone Wasp",
+    "es": "La Avispa Solitaria",
+    "ru": "Одинокая оса",
+    "pt": "A Vespa Solitária",
+    "zh": "孤独黄蜂",
+    "ja": "孤独なスズメバチ"
+  },
+  "L’Œuf du Merle": {
+    "en": "The Blackbird’s Egg",
+    "es": "El Huevo del Mirlo",
+    "ru": "Яйцо дрозда",
+    "pt": "O Ovo do Melro",
+    "zh": "乌鸫之卵",
+    "ja": "クロウタドリの卵"
+  },
+  "Les Trois Sœurs de braise": {
+    "en": "The Three Ember Sisters",
+    "es": "Las Tres Hermanas de Brasa",
+    "ru": "Три угольные сестры",
+    "pt": "As Três Irmãs de Brasa",
+    "zh": "余烬三姐妹",
+    "ja": "熾火の三姉妹"
+  },
+  "Hérisson des profondeurs": {
+    "en": "Hedgehog of the depths",
+    "es": "Erizo de las profundidades",
+    "ru": "Глубинный ёж",
+    "pt": "Ouriço das profundezas",
+    "zh": "深地刺猬",
+    "ja": "地底のハリネズミ"
+  },
+  "Le Poulpe des marées": {
+    "en": "The Tidal Octopus",
+    "es": "El Pulpo de las Mareas",
+    "ru": "Приливный осьминог",
+    "pt": "O Polvo das Marés",
+    "zh": "潮汐章鱼",
+    "ja": "潮のタコ"
+  },
+  "Crabe des marées": {
+    "en": "Tidal crab",
+    "es": "Cangrejo de las mareas",
+    "ru": "Приливный краб",
+    "pt": "Caranguejo das marés",
+    "zh": "潮汐蟹",
+    "ja": "潮のカニ"
+  },
+  "Léviathan d’ivoire": {
+    "en": "Ivory Leviathan",
+    "es": "Leviatán de Marfil",
+    "ru": "Левиафан из слоновой кости",
+    "pt": "Leviatã de Marfim",
+    "zh": "象牙利维坦",
+    "ja": "象牙のリヴァイアサン"
+  },
+  "Mouette électrique": {
+    "en": "Electric gull",
+    "es": "Gaviota eléctrica",
+    "ru": "Электрическая чайка",
+    "pt": "Gaivota elétrica",
+    "zh": "电海鸥",
+    "ja": "電気カモメ"
+  },
+  "Tunnel de terre": {
+    "en": "Earth tunnel",
+    "es": "Túnel de tierra",
+    "ru": "Земляной туннель",
+    "pt": "Túnel de terra",
+    "zh": "地道",
+    "ja": "地中のトンネル"
+  },
+  "Ver des profondeurs": {
+    "en": "Worm of the depths",
+    "es": "Gusano de las profundidades",
+    "ru": "Глубинный червь",
+    "pt": "Verme das profundezas",
+    "zh": "深地蠕虫",
+    "ja": "地底のワーム"
+  },
+  "Taupe fouisseuse": {
+    "en": "Burrowing mole",
+    "es": "Topo excavador",
+    "ru": "Роющий крот",
+    "pt": "Toupeira escavadora",
+    "zh": "掘地鼹鼠",
+    "ja": "穴掘りモグラ"
+  },
+  "Mouette des vents": {
+    "en": "Wind gull",
+    "es": "Gaviota de los vientos",
+    "ru": "Ветровая чайка",
+    "pt": "Gaivota dos ventos",
+    "zh": "风之海鸥",
+    "ja": "風のカモメ"
+  },
+  "Averse acérée": {
+    "en": "Piercing downpour",
+    "es": "Lluvia afilada",
+    "ru": "Пронзающий ливень",
+    "pt": "Chuva cortante",
+    "zh": "利刃骤雨",
+    "ja": "鋭い豪雨"
+  },
+  "Minuscule ver": {
+    "en": "Tiny worm",
+    "es": "Gusano diminuto",
+    "ru": "Крошечный червь",
+    "pt": "Verme minúsculo",
+    "zh": "微型蠕虫",
+    "ja": "小さなワーム"
+  },
+  "Petit merle noir": {
+    "en": "Blackbird chick",
+    "es": "Cría de mirlo negro",
+    "ru": "Птенец чёрного дрозда",
+    "pt": "Filhote de melro preto",
+    "zh": "小乌鸫",
+    "ja": "クロウタドリのひな"
+  },
+  "Regarde les inscriptions": {
+    "en": "Look at the inscriptions",
+    "es": "Mira las inscripciones",
+    "ru": "Посмотри на надписи",
+    "pt": "Olhe as inscrições",
+    "zh": "查看铭文",
+    "ja": "碑文を見る"
+  },
+  "ŒUFS ": {
+    "en": "EGGS ",
+    "es": "HUEVOS ",
+    "ru": "ЯЙЦА ",
+    "pt": "OVOS ",
+    "zh": "蛋 ",
+    "ja": "卵 "
+  },
+  "Il poursuit l’araignée. Certains anges portent une larme : attire-les dans un piège pour la faire tomber.": {
+    "en": "It pursues the spider. Some angels carry a tear: lure them into a trap to make them drop it.",
+    "es": "Persigue a la araña. Algunos ángeles llevan una lágrima: atráelos a una trampa para que la suelten.",
+    "ru": "Преследует паука. Некоторые ангелы несут слезу: замани их в ловушку, чтобы они её выронили.",
+    "pt": "Persegue a aranha. Alguns anjos carregam uma lágrima: atraia-os para uma armadilha para que a soltem.",
+    "zh": "它会追赶蜘蛛。有些天使携带泪滴：将它们引入陷阱即可使泪滴掉落。",
+    "ja": "クモを追いかける。涙を持つ天使もいる。罠に誘い込むと涙を落とす。"
+  },
+  "Il avance lorsque tu bouges. Les pièges peuvent l’immobiliser ; le toucher est mortel.": {
+    "en": "It moves when you move. Traps can immobilize it; touching it is deadly.",
+    "es": "Avanza cuando tú te mueves. Las trampas pueden inmovilizarla; tocarla es mortal.",
+    "ru": "Двигается, когда двигаешься ты. Ловушки могут обездвижить его; прикосновение смертельно.",
+    "pt": "Move-se quando você se move. Armadilhas podem imobilizá-la; tocá-la é mortal.",
+    "zh": "你移动时它才会前进。陷阱可以将它定住；触碰它会死亡。",
+    "ja": "こちらが動くと進む。罠で動きを止められるが、触れると死ぬ。"
+  },
+  "Sa lame tourne au bout d’une chaîne. Évite la tête mobile et traverse lorsque son passage est libre.": {
+    "en": "Its blade spins at the end of a chain. Avoid the moving head and cross when the path is clear.",
+    "es": "Su cuchilla gira al final de una cadena. Evita la cabeza móvil y cruza cuando el paso esté libre.",
+    "ru": "Лезвие вращается на конце цепи. Избегай движущегося колеса и проходи, когда путь свободен.",
+    "pt": "Sua lâmina gira na ponta de uma corrente. Evite a cabeça móvel e passe quando o caminho estiver livre.",
+    "zh": "刀刃在锁链末端旋转。避开移动的刀轮，等通道空出后再穿过。",
+    "ja": "鎖の先で刃が回転する。動く刃を避け、通り道が空いたときに渡ろう。"
+  },
+  "Il immobilise brièvement sa première victime. Un monstre porteur piégé lâche sa larme. Le piège se réarme après six secondes.": {
+    "en": "It briefly immobilizes its first victim. A trapped carrier drops its tear. The trap resets after six seconds.",
+    "es": "Inmoviliza brevemente a su primera víctima. Un portador atrapado suelta su lágrima. La trampa se rearma tras seis segundos.",
+    "ru": "Ненадолго обездвиживает первую жертву. Пойманный носитель роняет слезу. Ловушка снова готова через шесть секунд.",
+    "pt": "Imobiliza brevemente a primeira vítima. Um portador preso solta sua lágrima. A armadilha se rearma após seis segundos.",
+    "zh": "它会短暂困住第一个受害者。携带泪滴的怪物被困后会掉落泪滴。陷阱六秒后重新启动。",
+    "ja": "最初に触れた相手を短時間拘束する。涙を持つ敵を捕らえると涙を落とす。6秒後に再び作動する。"
+  },
+  "Fonce dans le gros œuf central pour lui retirer une vie, puis éloigne-toi avant le prochain coup. Chaque impact brise un petit œuf dans chacun des six nids fixes. Trois oiseaux tirent immédiatement une plume puis tournent près de leur nid avec des tirs espacés ; trois autres chargent sans ligne d’avertissement. Leurs points de départ sont toujours les mêmes. Brise la coquille en six impacts pour libérer la larme.": {
+    "en": "Rush into the large central egg to remove one life, then move away before the next hit. Each impact breaks a small egg in each of the six fixed nests. Three birds immediately fire a feather, then circle near their nests and fire at intervals; three others charge without warning lines. Their starting positions never change. Break the shell with six hits to release the tear.",
+    "es": "Embiste el huevo central para quitarle una vida y aléjate antes del siguiente golpe. Cada impacto rompe un huevo pequeño en cada uno de los seis nidos fijos. Tres pájaros disparan una pluma inmediatamente y luego giran cerca de su nido con disparos espaciados; otros tres cargan sin líneas de aviso. Sus posiciones iniciales siempre son las mismas. Rompe la cáscara con seis impactos para liberar la lágrima.",
+    "ru": "Врезайся в большое яйцо в центре, чтобы снять одну жизнь, затем отойди перед следующим ударом. Каждый удар разбивает по маленькому яйцу в шести неподвижных гнёздах. Три птицы сразу стреляют пером, затем кружат у гнёзд и стреляют с перерывами; ещё три атакуют рывком без предупреждающих линий. Начальные позиции всегда одинаковы. Разбей скорлупу шестью ударами, чтобы освободить слезу.",
+    "pt": "Avance contra o grande ovo central para tirar uma vida e afaste-se antes do próximo golpe. Cada impacto quebra um ovo pequeno em cada um dos seis ninhos fixos. Três pássaros disparam uma pena imediatamente, depois circulam perto dos ninhos e atiram em intervalos; outros três avançam sem linhas de aviso. As posições iniciais são sempre as mesmas. Quebre a casca com seis impactos para liberar a lágrima.",
+    "zh": "冲撞中央巨蛋可削去一条生命，随后远离，准备下次攻击。每次撞击都会打破六个固定巢穴中各一枚小蛋。三只鸟立即射出一根羽毛，然后在巢旁盘旋并间隔射击；另外三只会直接冲锋，没有预警线。它们的起始位置始终相同。撞击六次打破蛋壳，即可释放泪滴。",
+    "ja": "中央の大きな卵に突進するとライフを1つ削れる。次の攻撃前に離れよう。命中するたび、固定された6つの巣で小さな卵が1つずつ割れる。3羽はすぐに羽を放ち、その後は巣の近くを回りながら間隔をあけて撃つ。残る3羽は予告線なしで突進する。出現位置は常に同じ。6回ぶつかって殻を割ると涙が現れる。"
+  },
+  "Un petit nid d’œufs qui fait naître des larves de magma. Tu peux marcher dessus sans danger : seules les larves et leurs explosions sont mortelles. Les œufs remuent avant une éclosion.": {
+    "en": "A small nest of eggs that spawns magma larvae. You can safely walk over it: only the larvae and their explosions are deadly. The eggs wriggle before hatching.",
+    "es": "Un pequeño nido de huevos que genera larvas de magma. Puedes pisarlo sin peligro: solo las larvas y sus explosiones son mortales. Los huevos se agitan antes de eclosionar.",
+    "ru": "Небольшое гнездо яиц, из которых появляются магмовые личинки. По нему можно безопасно ходить: опасны только личинки и их взрывы. Перед вылуплением яйца шевелятся.",
+    "pt": "Um pequeno ninho de ovos que gera larvas de magma. Você pode passar por cima sem perigo: só as larvas e suas explosões são mortais. Os ovos se mexem antes de chocar.",
+    "zh": "孵化岩浆幼虫的小蛋巢。可以安全踩过：只有幼虫及其爆炸会致命。孵化前，蛋会晃动。",
+    "ja": "マグマの幼虫が生まれる小さな卵の巣。踏んでも安全だが、幼虫とその爆発は致命的。孵化前には卵が揺れる。"
+  },
+  "Elle te poursuit très vite et contourne les murs. Elle clignote avant d’exploser après quelques secondes, ou dès qu’elle te touche. Son explosion est mortelle à proximité, sans laisser de flaque.": {
+    "en": "It pursues you very quickly and goes around walls. It flashes before exploding after a few seconds, or as soon as it touches you. Its explosion is deadly nearby and leaves no pool.",
+    "es": "Te persigue muy rápido y rodea los muros. Parpadea antes de explotar tras unos segundos, o en cuanto te toca. Su explosión es mortal de cerca y no deja charco.",
+    "ru": "Очень быстро преследует тебя, обходя стены. Мигает перед взрывом через несколько секунд или взрывается сразу при касании. Взрыв смертелен вблизи и не оставляет лужи.",
+    "pt": "Persegue você muito rápido e contorna paredes. Pisca antes de explodir após alguns segundos, ou assim que toca você. A explosão é mortal de perto e não deixa poça.",
+    "zh": "它会快速追赶你并绕过墙壁。数秒后爆炸前会闪烁，碰到你则立刻爆炸。近距离爆炸致命，但不会留下熔岩池。",
+    "ja": "壁を回り込みながら高速で追ってくる。数秒後の爆発前に点滅し、触れた場合は即座に爆発する。近くでは致命的だが、液だまりは残さない。"
+  },
+  "Elle poursuit sa cible, puis accélère pendant trois secondes. Elle contourne les murs.": {
+    "en": "It pursues its target, then speeds up for three seconds. It goes around walls.",
+    "es": "Persigue a su objetivo y luego acelera durante tres segundos. Rodea los muros.",
+    "ru": "Преследует цель, затем ускоряется на три секунды. Обходит стены.",
+    "pt": "Persegue o alvo e acelera por três segundos. Contorna paredes.",
+    "zh": "它会追赶目标，然后加速三秒。它能绕过墙壁。",
+    "ja": "標的を追いかけた後、3秒間加速する。壁を回り込む。"
+  },
+  "Il tourne sur lui-même et se déplace indépendamment de toi. Il rebondit sur les murs sans poursuivre le joueur.": {
+    "en": "It spins and moves independently of you. It bounces off walls without chasing the player.",
+    "es": "Gira sobre sí misma y se mueve independientemente de ti. Rebota en los muros sin perseguir al jugador.",
+    "ru": "Вращается и движется независимо от тебя. Отскакивает от стен, не преследуя игрока.",
+    "pt": "Gira e se move independentemente de você. Ricocheteia nas paredes sem perseguir o jogador.",
+    "zh": "它会自行旋转和移动，不受你的动作影响。它在墙间反弹，不会追赶玩家。",
+    "ja": "その場で回転しながら、こちらと無関係に動く。プレイヤーを追わず、壁で跳ね返る。"
+  },
+  "Trois abeilles, trois vies chacune. Elles s’alignent horizontalement ou verticalement attendent 0,4 seconde puis chargent tout droit, sans annoncer leur trajectoire. Un choc contre un mur les met KO : touche-les pour retirer une vie. Depuis les coins, une, deux puis trois sœurs lancent des larves de magma identiques à celles des nids. Les transitions sont rapides et deux sœurs ne chargent jamais dans le même sens en même temps. Chaque sœur éliminée accélère les survivantes et laisse un corps mortel au sol. La dernière lâche deux larves de magma au début de chaque attaque. Leur vol est très rapide et leur contact est mortel sauf pendant le KO.": {
+    "en": "Three bees, three lives each. They line up horizontally or vertically, wait 0.4 seconds, then charge straight ahead without marking their path. Hitting a wall stuns them: touch them to remove a life. From the corners, first one, then two, then three sisters launch the same magma larvae as the nests. Transitions are fast, and two sisters never charge in the same direction at once. Each defeated sister speeds up the survivors and leaves a deadly body on the ground. The last one releases two magma larvae at the start of every attack. They fly very fast and are deadly to touch unless stunned.",
+    "es": "Tres abejas, tres vidas cada una. Se alinean horizontal o verticalmente, esperan 0,4 segundos y cargan en línea recta sin marcar su trayectoria. Chocar con un muro las deja aturdidas: tócalas para quitarles una vida. Desde las esquinas, primero una, luego dos y luego tres hermanas lanzan las mismas larvas de magma que los nidos. Las transiciones son rápidas y dos hermanas nunca cargan en la misma dirección a la vez. Cada hermana eliminada acelera a las supervivientes y deja un cuerpo mortal en el suelo. La última libera dos larvas al inicio de cada ataque. Vuelan muy rápido y su contacto es mortal salvo durante el aturdimiento.",
+    "ru": "Три пчелы, у каждой три жизни. Они выстраиваются горизонтально или вертикально, ждут 0,4 секунды и атакуют по прямой без указания траектории. Удар о стену оглушает их: коснись, чтобы снять жизнь. Из углов сначала одна, затем две и три сестры выпускают таких же магмовых личинок, как гнёзда. Переходы быстрые; две сестры никогда не атакуют одновременно в одном направлении. Каждая побеждённая сестра ускоряет остальных и оставляет смертельное тело на земле. Последняя выпускает двух личинок в начале каждой атаки. Полёт очень быстрый, прикосновение смертельно, кроме периода оглушения.",
+    "pt": "Três abelhas, três vidas cada. Alinham-se na horizontal ou vertical, esperam 0,4 segundo e avançam em linha reta sem indicar a trajetória. Bater na parede as atordoa: toque para tirar uma vida. Dos cantos, primeiro uma, depois duas e três irmãs lançam larvas de magma iguais às dos ninhos. As transições são rápidas e duas irmãs nunca avançam na mesma direção ao mesmo tempo. Cada irmã derrotada acelera as sobreviventes e deixa um corpo mortal no chão. A última solta duas larvas no início de cada ataque. Voam muito rápido e o contato é mortal, exceto durante o atordoamento.",
+    "zh": "三只蜜蜂各有三条生命。它们横向或纵向排齐，等待 0.4 秒后沿直线冲锋，不会预告路线。撞墙后会眩晕，此时触碰可削去一条生命。从角落开始，先是一只，再是两只，最后三姐妹都会发射与巢穴相同的岩浆幼虫。阶段切换很快，两只姐妹绝不会同时朝同一方向冲锋。每击败一只，幸存者都会加速，地上则留下致命尸体。最后一只会在每次攻击开始时释放两只岩浆幼虫。飞行速度极快，除眩晕期间外，接触即死。",
+    "ja": "3匹のハチがそれぞれ3つのライフを持つ。縦か横に並び、0.4秒待ってから軌道を示さず直進する。壁にぶつかると気絶し、その間に触れるとライフを削れる。隅から最初は1匹、次に2匹、最後は3匹が巣と同じマグマの幼虫を放つ。切り替えは速く、2匹が同時に同じ方向へ突進することはない。1匹倒すたびに残りが加速し、地面に致命的な死体が残る。最後の1匹は毎回の攻撃開始時に幼虫を2匹放つ。飛行は非常に速く、気絶中以外は触れると死ぬ。"
+  },
+  "Petite guêpe cuivrée aux yeux verts, invoquée uniquement par la dernière sœur survivante. Elle reste présente jusqu’à la fin du niveau, même après la mort du boss. Son contact est mortel.": {
+    "en": "A small copper-colored wasp with green eyes, summoned only by the last surviving sister. It remains until the level ends, even after the boss dies. Touching it is deadly.",
+    "es": "Pequeña avispa cobriza de ojos verdes, invocada solo por la última hermana superviviente. Permanece hasta el final del nivel, incluso tras morir el jefe. Su contacto es mortal.",
+    "ru": "Маленькая медная оса с зелёными глазами, которую призывает только последняя сестра. Остаётся до конца уровня даже после гибели босса. Прикосновение смертельно.",
+    "pt": "Pequena vespa cor de cobre com olhos verdes, invocada só pela última irmã sobrevivente. Fica até o fim do nível, mesmo após a morte do chefe. O contato é mortal.",
+    "zh": "只有最后存活的姐妹会召唤这种铜色绿眼小黄蜂。即使首领死亡，它也会留到关卡结束。触碰致命。",
+    "ja": "緑の目を持つ銅色の小さなハチ。最後に残った姉妹だけが召喚する。ボスを倒してもレベル終了まで残り、触れると死ぬ。"
+  },
+  "Les éclairs percent le sol : évite les trous jusqu’à leur fermeture. Le Merle tire ses plumes trois par trois en volant autour de toi. Esquive les plumes noires. Touche les plumes jaunes pour les garder en orbite autour de toi. Approche-les du Merle : chaque plume qui le touche lui retire une vie et disparaît. Ses traversées viennent des quatre bords : seul son bec dépasse avant le départ. Moins il lui reste de vie, plus il va vite.": {
+    "en": "Lightning pierces the ground: avoid the holes until they close. The Blackbird circles you and fires feathers in groups of three. Dodge the black feathers. Touch yellow feathers to keep them orbiting you, then bring them close to the Blackbird: each hit removes one life and consumes the feather. It charges across the arena from all four edges; only its beak shows before it starts. The less life it has, the faster it moves.",
+    "es": "Los rayos perforan el suelo: evita los agujeros hasta que se cierren. El Mirlo vuela a tu alrededor y dispara plumas de tres en tres. Esquiva las negras. Toca las amarillas para que orbiten a tu alrededor y acércalas al Mirlo: cada impacto le quita una vida y consume la pluma. Atraviesa la arena desde los cuatro bordes; solo asoma su pico antes de salir. Cuanta menos vida le queda, más rápido va.",
+    "ru": "Молнии пробивают пол: избегай дыр, пока они не закроются. Дрозд кружит вокруг тебя и выпускает по три пера. Уклоняйся от чёрных. Касайся жёлтых, чтобы они вращались вокруг тебя, затем поднеси их к дрозду: каждое попадание снимает жизнь и уничтожает перо. Он пересекает арену со всех четырёх краёв; перед рывком виден лишь клюв. Чем меньше жизней, тем выше скорость.",
+    "pt": "Raios perfuram o chão: evite os buracos até fecharem. O Melro voa ao seu redor e lança penas de três em três. Desvie das pretas. Toque as amarelas para que orbitem você e aproxime-as do Melro: cada acerto tira uma vida e consome a pena. Ele cruza a arena a partir das quatro bordas; só o bico aparece antes da partida. Quanto menos vidas restam, mais rápido fica.",
+    "zh": "闪电会击穿地面：洞口关闭前请避开。乌鸫绕你飞行，每次射出三根羽毛。躲开黑羽，触碰黄羽可使其环绕你。将黄羽带近乌鸫：每根命中的羽毛削去一条生命并消失。它会从四边横穿场地，出发前只有鸟喙露出。生命越少，速度越快。",
+    "ja": "雷が地面に穴を開ける。閉じるまで避けよう。クロウタドリは周囲を飛びながら羽を3枚ずつ放つ。黒い羽は避け、黄色い羽に触れて自分の周囲を回らせよう。その羽を敵に近づけると、命中した羽が消えてライフを1つ削る。四方の端から横切る攻撃では、出発前にくちばしだけが見える。残りライフが少ないほど速くなる。"
+  },
+  "Il lance douze piques rapides et espacées en cercle. La première manche commence avec une taupe et un rebond. Chaque nouvelle manche ajoute une taupe et un rebond, avec un maximum de deux rebonds et cinq taupes. Il a sept vies. Chaque série terminée lui coûte une vie. Il rebondit sans pause contre les murs et est brièvement étourdi uniquement lorsqu’il perd une vie.": {
+    "en": "It fires twelve fast, spaced spikes in a circle. The first round starts with one mole and one bounce. Each new round adds a mole and a bounce, capped at two bounces and five moles. It has seven lives and loses one after each completed sequence. It bounces off walls without pausing and is briefly stunned only when it loses a life.",
+    "es": "Lanza doce púas rápidas y espaciadas en círculo. La primera ronda empieza con un topo y un rebote. Cada ronda añade un topo y un rebote, hasta dos rebotes y cinco topos. Tiene siete vidas y pierde una al terminar cada serie. Rebota sin pausa contra los muros y solo queda brevemente aturdido cuando pierde una vida.",
+    "ru": "Выпускает по кругу двенадцать быстрых шипов с промежутками. Первый раунд начинается с одного крота и одного отскока. Каждый новый раунд добавляет крота и отскок, максимум — два отскока и пять кротов. У него семь жизней; после каждой серии он теряет одну. Отскакивает от стен без пауз и ненадолго оглушается только при потере жизни.",
+    "pt": "Lança doze espinhos rápidos e espaçados em círculo. A primeira rodada começa com uma toupeira e um ricochete. Cada nova rodada acrescenta uma toupeira e um ricochete, até dois ricochetes e cinco toupeiras. Tem sete vidas e perde uma ao terminar cada sequência. Ricocheteia sem parar nas paredes e só fica brevemente atordoado ao perder uma vida.",
+    "zh": "它会向四周发射十二根快速且留有间隙的尖刺。第一轮有一只鼹鼠和一次反弹。每轮增加一只鼹鼠和一次反弹，最多两次反弹、五只鼹鼠。它有七条生命，每结束一组攻击就失去一条。它会持续撞墙反弹，仅在失去生命时短暂眩晕。",
+    "ja": "速い針を12本、間隔をあけて円状に放つ。最初はモグラ1匹と反射1回で始まり、ラウンドごとに1匹と1回が増える。上限は反射2回、モグラ5匹。ライフは7つで、一連の攻撃が終わるたびに1つ失う。壁で休まず跳ね返り、ライフを失ったときだけ短く気絶する。"
+  },
+  "Il fait surgir six crabes par vague, puis huit quand il est enragé, et des flaques d’encre qui durent sept secondes. Un crabe encré devient noir et fonce dans tous les sens, avec des changements brusques et irréguliers, sans te suivre. Fonce sur un crabe noir pour le propulser à l’opposé du point de contact. Un mur le fait exploser ; un tentacule le fait exploser et étourdit le poulpe pendant trois secondes, sans lui retirer de vie. Pendant ce délai, fonce sur une extrémité lumineuse pour t’y attacher, puis entraîne-la dans un coin éclairé afin de l’arracher. Sinon, le poulpe se réveille et le lien se détache. Chaque tentacule arraché retire une vie : il faut arracher les huit. Son corps reste mortel ; ses tentacules sont mortels quand il tourne. À quatre vies, il accélère fortement et projette une rafale d’encre pendant trois secondes. Les crabes ordinaires sont mortels ; les noirs se repoussent uniquement en fonçant.": {
+    "en": "It summons six crabs per wave, or eight when enraged, and ink pools that last seven seconds. An inked crab turns black and darts erratically without following you. Rush into a black crab to launch it away from the point of contact. A wall makes it explode; a tentacle makes it explode and stuns the octopus for three seconds without damaging it. During that time, rush into a glowing tip to attach to it, then drag it into a lit corner to tear it off. Otherwise the octopus wakes and the link breaks. Each torn tentacle removes one life: remove all eight. Its body is always deadly; tentacles are deadly while it spins. At four lives it speeds up sharply and sprays ink for three seconds. Ordinary crabs are deadly; black ones can only be pushed by rushing.",
+    "es": "Invoca seis cangrejos por oleada, u ocho cuando se enfurece, y charcos de tinta que duran siete segundos. Un cangrejo entintado se vuelve negro y corre de forma irregular sin seguirte. Embístelo para lanzarlo en dirección opuesta al contacto. Explota contra un muro; contra un tentáculo explota y aturde al pulpo tres segundos sin dañarlo. Durante ese tiempo, embiste una punta luminosa para engancharte y arrástrala a una esquina iluminada para arrancarla. Si no, el pulpo despierta y se rompe el vínculo. Cada tentáculo arrancado quita una vida: debes arrancar los ocho. Su cuerpo siempre es mortal; los tentáculos lo son cuando gira. Con cuatro vidas acelera mucho y lanza tinta durante tres segundos. Los cangrejos normales son mortales; los negros solo se empujan embistiendo.",
+    "ru": "Призывает по шесть крабов за волну, а в ярости — восемь, и создаёт лужи чернил на семь секунд. Испачканный краб чернеет и хаотично мечется, не преследуя тебя. Врежься в чёрного краба, чтобы отбросить его от точки контакта. Стена заставляет его взорваться; щупальце — взорваться и оглушить осьминога на три секунды без потери жизни. В это время врежься в светящийся кончик, чтобы зацепиться, и дотащи его в освещённый угол, чтобы оторвать. Иначе осьминог очнётся и связь оборвётся. Каждое оторванное щупальце отнимает жизнь: нужно оторвать все восемь. Тело всегда смертельно, щупальца — при вращении. На четырёх жизнях он резко ускоряется и три секунды распыляет чернила. Обычные крабы смертельны; чёрных можно толкать только с разгона.",
+    "pt": "Invoca seis caranguejos por onda, ou oito quando enfurecido, e poças de tinta que duram sete segundos. Um caranguejo com tinta fica preto e corre de modo irregular sem seguir você. Avance contra ele para lançá-lo na direção oposta ao contato. Uma parede o faz explodir; um tentáculo o faz explodir e atordoa o polvo por três segundos sem tirar vida. Nesse tempo, avance contra uma ponta luminosa para se prender e arraste-a até um canto iluminado para arrancá-la. Caso contrário, o polvo acorda e o vínculo se desfaz. Cada tentáculo arrancado tira uma vida: arranque os oito. O corpo é sempre mortal; os tentáculos são mortais enquanto gira. Com quatro vidas, acelera muito e dispara tinta por três segundos. Caranguejos comuns são mortais; os pretos só são empurrados com uma investida.",
+    "zh": "它每波召唤六只螃蟹，暴怒时八只，并生成持续七秒的墨池。沾墨的螃蟹变黑后会无规则乱冲，不再追踪你。冲撞黑蟹可将其向接触点的反方向弹开。撞墙会爆炸；撞触手会爆炸并让章鱼眩晕三秒，但不扣生命。此时冲向发光的触手末端与其连接，再拖至亮着的角落将其扯断。否则章鱼醒来，连接断开。每扯断一条触手削去一条生命，必须扯断全部八条。身体始终致命；旋转时触手也致命。剩四条生命时，它大幅加速并连续喷墨三秒。普通螃蟹致命；黑蟹只能通过冲撞弹开。",
+    "ja": "1波に6匹、怒ると8匹のカニと、7秒続く墨だまりを出す。墨を浴びたカニは黒くなり、追尾せず不規則に走り回る。黒いカニに突進すると接触点の反対側へ飛ばせる。壁に当たると爆発し、触手に当たると爆発してタコを3秒気絶させるが、ライフは削れない。その間に光る先端へ突進してつかまり、明るい隅へ引っぱって引きちぎろう。間に合わないとタコが目覚め、つながりが切れる。触手1本でライフを1つ削り、8本すべてを取る必要がある。胴体は常に致命的で、回転中は触手も危険。残り4つになると急加速し、3秒間墨を放つ。普通のカニは触れると死ぬ。黒いカニは突進でのみ押し返せる。"
+  },
+  "Il te poursuit jusqu’à toucher de l’encre : devenu noir, il devient frénétique, accélère et change brutalement de direction sans te suivre. Fonce sur lui pour le propulser à l’opposé du contact ; sans élan, il reste mortel. Il explose contre un mur ou un tentacule. Un impact sur un tentacule étourdit le poulpe trois secondes. Une explosion repousse les crabes voisins, mais les crabes n’explosent pas simplement en se touchant.": {
+    "en": "It pursues you until it touches ink. It then turns black, becomes frenzied, speeds up and changes direction abruptly without following you. Rush into it to launch it away from contact; without momentum it is still deadly. It explodes against a wall or tentacle. Hitting a tentacle stuns the octopus for three seconds. Explosions push nearby crabs, but crabs do not explode just by touching each other.",
+    "es": "Te persigue hasta tocar tinta. Entonces se vuelve negro, se descontrola, acelera y cambia bruscamente de dirección sin seguirte. Embístelo para lanzarlo lejos del contacto; sin impulso sigue siendo mortal. Explota contra muros o tentáculos. Golpear un tentáculo aturde al pulpo tres segundos. Las explosiones empujan a los cangrejos cercanos, pero no explotan solo por tocarse.",
+    "ru": "Преследует тебя, пока не коснётся чернил. Затем чернеет, впадает в бешенство, ускоряется и резко меняет направление без преследования. Врежься с разгона, чтобы отбросить его; без разгона касание смертельно. Взрывается о стену или щупальце. Попадание в щупальце оглушает осьминога на три секунды. Взрыв отталкивает соседних крабов, но простое касание друг друга не вызывает взрыв.",
+    "pt": "Persegue você até tocar tinta. Então fica preto, frenético, acelera e muda bruscamente de direção sem seguir você. Avance para lançá-lo para longe do contato; sem impulso, continua mortal. Explode contra paredes ou tentáculos. Atingir um tentáculo atordoa o polvo por três segundos. Explosões empurram caranguejos próximos, mas eles não explodem só por se tocar.",
+    "zh": "它会追赶你，直到碰到墨水。随后变黑、狂暴、加速并突然变向，不再追踪你。冲撞可将它弹开；没有冲力时，接触依然致命。它撞墙或触手会爆炸，击中触手可使章鱼眩晕三秒。爆炸会推开附近螃蟹，但螃蟹互相接触不会自行爆炸。",
+    "ja": "墨に触れるまで追ってくる。黒くなると暴走し、加速して追尾せず急に方向転換する。勢いをつけてぶつかると反対側へ飛ばせるが、勢いがないと死ぬ。壁や触手に当たると爆発し、触手への命中はタコを3秒気絶させる。爆発で周囲のカニを押し返すが、カニ同士の接触だけでは爆発しない。"
+  },
+  "Il t’évite dans le noir. Il charge tant que tu es éclairé : sur un cercle, ou pendant les six secondes qui suivent une électrocution.": {
+    "en": "It avoids you in darkness. It charges while you are lit: on a circle, or for six seconds after an electric shock.",
+    "es": "Te evita en la oscuridad. Carga mientras estás iluminado: sobre un círculo o durante los seis segundos tras una descarga.",
+    "ru": "Избегает тебя в темноте. Атакует, пока ты освещён: на круге или шесть секунд после удара током.",
+    "pt": "Evita você no escuro. Avança enquanto você está iluminado: num círculo ou nos seis segundos após um choque.",
+    "zh": "黑暗中它会避开你。当你在光圈上或触电后的六秒内发光时，它会冲向你。",
+    "ja": "暗闇では避けてくる。光の円にいる間や感電後6秒間など、こちらが光っていると突進する。"
+  },
+  "Son contact et chaque éclair ajoutent une charge, jusqu’à trois, pour six secondes, renouvelées à chaque impact. Plus tu accumules de charges, plus tu brilles, plus les poissons te repèrent de loin et plus ils te poursuivent vite.": {
+    "en": "Contact and each lightning strike add a charge, up to three, lasting six seconds and refreshed on each hit. The more charges you have, the brighter you glow, the farther away fish detect you and the faster they pursue you.",
+    "es": "El contacto y cada rayo añaden una carga, hasta tres, durante seis segundos que se renuevan con cada golpe. Cuantas más cargas acumules, más brillas, más lejos te detectan los peces y más rápido te persiguen.",
+    "ru": "Прикосновение и каждая молния добавляют заряд, максимум три, на шесть секунд; каждый удар обновляет время. Чем больше зарядов, тем ярче ты светишься, тем дальше рыбы замечают тебя и тем быстрее преследуют.",
+    "pt": "O contato e cada raio adicionam uma carga, até três, por seis segundos, renovados a cada impacto. Quanto mais cargas, mais você brilha, de mais longe os peixes detectam você e mais rápido perseguem.",
+    "zh": "接触或每道闪电都会增加一层电荷，最多三层，持续六秒，每次命中刷新时长。层数越多，你越亮，鱼发现你的距离越远，追赶速度也越快。",
+    "ja": "接触や雷のたびに帯電が1つ増え、最大3つ。6秒続き、命中のたびに時間が更新される。多く帯電するほど明るくなり、遠くの魚にも見つかりやすく、追跡も速くなる。"
+  },
+  "Le Léviathan vise avant de tirer ses lasers : quitte les lignes fines avant leur explosion. Après trois salves, il aspire : cours à contre-courant et reste loin de sa bouche. Quand il reprend son souffle, fonce sur le cœur doré devant sa bouche pour le blesser une fois. Six impacts libèrent la larme.": {
+    "en": "The Leviathan aims before firing lasers: leave the thin lines before they explode. After three volleys it inhales: run against the current and stay away from its mouth. When it catches its breath, rush into the golden heart in front of its mouth to hurt it once. Six hits release the tear.",
+    "es": "El Leviatán apunta antes de disparar láseres: sal de las líneas finas antes de que exploten. Tras tres salvas aspira: corre contra la corriente y aléjate de su boca. Cuando recupera el aliento, embiste el corazón dorado ante su boca para herirlo una vez. Seis impactos liberan la lágrima.",
+    "ru": "Левиафан целится перед выстрелом лазеров: уйди с тонких линий до взрыва. После трёх залпов он втягивает воздух: беги против течения и держись подальше от пасти. Когда он переводит дух, врежься в золотое сердце перед пастью, чтобы ранить один раз. Шесть ударов освобождают слезу.",
+    "pt": "O Leviatã mira antes de disparar lasers: saia das linhas finas antes que explodam. Após três salvas, ele suga: corra contra a corrente e fique longe da boca. Quando recupera o fôlego, avance contra o coração dourado diante da boca para feri-lo uma vez. Seis impactos liberam a lágrima.",
+    "zh": "利维坦会先瞄准再发射激光：在细线爆炸前离开。三轮齐射后它会吸气，此时逆流奔跑并远离嘴部。它喘息时，冲撞嘴前的金色心脏可造成一次伤害。六次撞击后释放泪滴。",
+    "ja": "リヴァイアサンはレーザー発射前に照準を合わせる。細い線が爆発する前に離れよう。3回の斉射後は吸い込むため、流れに逆らって走り、口から離れる。息を整えている間に口の前の金色の心臓へ突進すると1回傷つけられる。6回命中すると涙が現れる。"
+  },
+  "Frappée par la foudre, elle devient jaune et conserve une petite aura jaune mortelle. Son passage laisse une traînée électrique qui tue au contact et disparaît après 2,2 secondes.": {
+    "en": "Struck by lightning, it turns yellow and keeps a small deadly yellow aura. It leaves an electric trail that kills on contact and vanishes after 2.2 seconds.",
+    "es": "Al recibir un rayo se vuelve amarilla y conserva una pequeña aura amarilla mortal. Deja un rastro eléctrico que mata al tocarlo y desaparece tras 2,2 segundos.",
+    "ru": "После удара молнии желтеет и сохраняет небольшую смертельную жёлтую ауру. Оставляет электрический след, смертельный при касании, который исчезает через 2,2 секунды.",
+    "pt": "Atingida por um raio, fica amarela e mantém uma pequena aura amarela mortal. Deixa um rastro elétrico que mata ao contato e desaparece após 2,2 segundos.",
+    "zh": "被闪电击中后变黄，并保留一圈小型致命黄光。飞过时留下接触即死的电流轨迹，2.2 秒后消失。",
+    "ja": "雷に打たれると黄色くなり、小さな致命的な黄色いオーラをまとう。通った後には触れると死ぬ電気の軌跡が残り、2.2秒で消える。"
+  },
+  "Sa lanterne éclaire les Abysses. Il t’évite dans le noir, mais te charge si une méduse t’illumine.": {
+    "en": "Its lantern lights the Abyss. It avoids you in darkness, but charges if a jellyfish makes you glow.",
+    "es": "Su linterna ilumina el Abismo. Te evita en la oscuridad, pero carga si una medusa te ilumina.",
+    "ru": "Его фонарь освещает Бездну. Избегает тебя в темноте, но атакует, если медуза заставит тебя светиться.",
+    "pt": "Sua lanterna ilumina o Abismo. Evita você no escuro, mas avança se uma água-viva iluminar você.",
+    "zh": "它的灯笼照亮深渊。黑暗中会避开你，但水母使你发光后，它就会冲锋。",
+    "ja": "ランタンが深淵を照らす。暗闇では避けるが、クラゲでこちらが光ると突進する。"
+  },
+  "Elle tourne sans arrêt. La toucher fait tournoyer l’araignée, puis la projette très violemment vers un bord. Attention aux trous et aux bords !": {
+    "en": "It spins constantly. Touching it spins the spider and then throws it violently toward an edge. Beware of holes and edges!",
+    "es": "Gira sin parar. Tocarlo hace girar a la araña y la lanza violentamente hacia un borde. ¡Cuidado con los agujeros y bordes!",
+    "ru": "Постоянно вращается. При касании раскручивает паука и с силой бросает к краю. Берегись дыр и краёв!",
+    "pt": "Gira sem parar. Tocá-lo faz a aranha girar e a lança violentamente para uma borda. Cuidado com buracos e bordas!",
+    "zh": "它不停旋转。碰到后蜘蛛会被卷起，再猛烈甩向场地边缘。小心洞口和边缘！",
+    "ja": "常に回転している。触れるとクモが回され、端に向かって強く投げ飛ばされる。穴や縁に注意！"
+  },
+  "Le joueur et les monstres peuvent emprunter ce terrier et ressortent par le tunnel relié après une courte animation. Éloigne-toi de la sortie avant de rentrer à nouveau pour faire le chemin inverse.": {
+    "en": "Players and monsters can use this burrow and emerge from the connected tunnel after a short animation. Move away from the exit before entering again to travel back.",
+    "es": "El jugador y los monstruos pueden usar esta madriguera y salir por el túnel conectado tras una breve animación. Aléjate de la salida antes de volver a entrar para regresar.",
+    "ru": "Игрок и монстры могут пройти через нору и после короткой анимации выйти из связанного туннеля. Отойди от выхода, прежде чем войти снова, чтобы вернуться.",
+    "pt": "Jogador e monstros podem usar esta toca e sair pelo túnel conectado após uma breve animação. Afaste-se da saída antes de entrar de novo para voltar.",
+    "zh": "玩家和怪物都能钻入洞穴，经过短暂动画后从相连的隧道出来。若想原路返回，先离开出口再重新进入。",
+    "ja": "プレイヤーも敵もこの穴を使い、短いアニメーションの後につながった出口から出る。戻るには一度出口から離れてから入り直そう。"
+  },
+  "Une flaque mortelle pour toi. Les monstres la traversent, s’embrasent et laissent du feu derrière eux.": {
+    "en": "A pool that is deadly to you. Monsters cross it, catch fire and leave flames behind them.",
+    "es": "Un charco mortal para ti. Los monstruos lo cruzan, se incendian y dejan fuego a su paso.",
+    "ru": "Лужа смертельна для тебя. Монстры проходят через неё, загораются и оставляют за собой огонь.",
+    "pt": "Uma poça mortal para você. Monstros a atravessam, pegam fogo e deixam chamas para trás.",
+    "zh": "对你致命的熔岩池。怪物可以穿过，但会着火并在身后留下火焰。",
+    "ja": "プレイヤーには致命的な液だまり。敵は通り抜けるが燃え上がり、後ろに炎を残す。"
+  },
+  "Il nage en banc très lentement, puis tout le banc fonce vers ta position en un dash. Écarte-toi au moment de la charge.": {
+    "en": "It swims very slowly in a school, then the entire school dashes toward your position. Move aside when it charges.",
+    "es": "Nada muy despacio en banco y luego todo el banco se lanza hacia tu posición. Apártate cuando cargue.",
+    "ru": "Очень медленно плывёт в стае, затем вся стая рывком устремляется к тебе. Уйди в сторону во время атаки.",
+    "pt": "Nada muito devagar em cardume, depois todo o cardume dispara para sua posição. Desvie no momento da investida.",
+    "zh": "鱼群缓慢游动，随后整群朝你的位置猛冲。冲锋时及时闪开。",
+    "ja": "群れでゆっくり泳ぎ、その後一斉にこちらの位置へ突進する。突進の瞬間に横へ避けよう。"
+  },
+  "Elle s’illumine puis lance de petits fils électriques bleus dans toutes les directions. Passe entre les éclairs.": {
+    "en": "It lights up, then sends small blue electric threads in every direction. Slip between the bolts.",
+    "es": "Se ilumina y lanza pequeños hilos eléctricos azules en todas direcciones. Pasa entre los rayos.",
+    "ru": "Загорается, затем выпускает маленькие синие электрические нити во все стороны. Проходи между разрядами.",
+    "pt": "Acende e lança pequenos fios elétricos azuis em todas as direções. Passe entre os raios.",
+    "zh": "它先发光，再向四面八方射出细小蓝色电丝。从电流之间穿过。",
+    "ja": "光った後、細い青い電流を全方向へ放つ。電流の間をすり抜けよう。"
+  },
+  "Son corps ondule en zigzag. Il se dirige vers toi. Une minuscule ombre indique sa position sous terre. Il émerge et crache des œufs : lorsqu’ils touchent un mur, de minuscules vers apparaissent et te poursuivent.": {
+    "en": "Its body zigzags as it approaches you. A tiny shadow reveals its underground position. It emerges and spits eggs: when they hit a wall, tiny worms hatch and pursue you.",
+    "es": "Su cuerpo zigzaguea al acercarse. Una sombra diminuta indica su posición bajo tierra. Emerge y escupe huevos: al chocar contra un muro, nacen gusanos pequeños que te persiguen.",
+    "ru": "Приближается, извиваясь зигзагом. Маленькая тень показывает его положение под землёй. Выныривает и выплёвывает яйца: при ударе о стену из них появляются крошечные черви, которые преследуют тебя.",
+    "pt": "O corpo ondula em zigue-zague enquanto se aproxima. Uma pequena sombra indica a posição subterrânea. Emerge e cospe ovos: ao baterem numa parede, nascem pequenos vermes que perseguem você.",
+    "zh": "它扭动身体呈之字形靠近你。地下位置由微小阴影标示。它钻出地面并吐出蛋；蛋撞墙后会孵出追赶你的小蠕虫。",
+    "ja": "体をジグザグにくねらせて近づく。地下にいる位置は小さな影で分かる。地上に出て卵を吐き、壁に当たった卵から小さなワームが生まれて追ってくる。"
+  },
+  "Elle creuse pour s’enfouir, devient invisible, puis une motte annonce sa remontée animée : éloigne-toi avant qu’elle surgisse. Elle se déplace rapidement et contourne les murs.": {
+    "en": "It digs underground and becomes invisible. A mound then signals its animated emergence: move away before it surfaces. It moves quickly and goes around walls.",
+    "es": "Excava y se vuelve invisible. Un montículo anuncia que va a emerger: aléjate antes de que salga. Se mueve rápido y rodea los muros.",
+    "ru": "Закапывается и становится невидимым. Затем холмик предупреждает о выходе: отойди, пока крот не появился. Быстро движется и обходит стены.",
+    "pt": "Cava para se esconder e fica invisível. Um monte de terra anuncia a saída: afaste-se antes que apareça. Move-se rápido e contorna paredes.",
+    "zh": "它挖洞潜地后隐形。土堆会预示它即将钻出，出现前请远离。它移动迅速并能绕过墙壁。",
+    "ja": "地中に潜って見えなくなる。出てくる前には土の盛り上がりが現れるため、飛び出す前に離れよう。移動は速く、壁を回り込む。"
+  },
+  "Elle se dirige vers la larme puis tourne autour. Le vent la pousse ; la foudre peut la transformer en mouette électrique.": {
+    "en": "It heads toward the tear and circles it. Wind pushes it; lightning can turn it into an electric gull.",
+    "es": "Se dirige a la lágrima y gira a su alrededor. El viento la empuja; un rayo puede convertirla en gaviota eléctrica.",
+    "ru": "Летит к слезе и кружит вокруг. Ветер сносит её; молния может превратить её в электрическую чайку.",
+    "pt": "Vai até a lágrima e circula ao redor. O vento a empurra; raios podem transformá-la em gaivota elétrica.",
+    "zh": "它会飞向泪滴并围绕其盘旋。风会推动它；闪电可能将它变为电海鸥。",
+    "ja": "涙に向かって飛び、その周りを回る。風に流され、雷に当たると電気カモメになることがある。"
+  },
+  "Des averses frappent des emplacements fixes. Les ombres bleues annoncent les impacts. Évite également les trous et le bord du sol de nuages.": {
+    "en": "Downpours strike fixed locations. Blue shadows warn of impacts. Also avoid holes and the edge of the cloud floor.",
+    "es": "Las lluvias golpean ubicaciones fijas. Las sombras azules avisan de los impactos. Evita también los agujeros y los bordes del suelo de nubes.",
+    "ru": "Ливни бьют по фиксированным местам. Синие тени предупреждают об ударах. Также избегай дыр и края облачного пола.",
+    "pt": "Chuvas atingem locais fixos. Sombras azuis avisam dos impactos. Evite também os buracos e a borda do chão de nuvens.",
+    "zh": "骤雨袭击固定位置，蓝色阴影会提前预示落点。同时避开云地板上的洞口和边缘。",
+    "ja": "決まった場所に豪雨が降る。青い影が着弾地点を知らせる。雲の床の穴や端も避けよう。"
+  },
+  "Né d’un œuf projeté contre un mur, il poursuit simplement l’araignée. Petit, mais mortel au contact.": {
+    "en": "Born from an egg thrown against a wall, it simply pursues the spider. Small, but deadly to touch.",
+    "es": "Nace de un huevo lanzado contra un muro y persigue a la araña. Es pequeño, pero su contacto es mortal.",
+    "ru": "Появляется из яйца, ударившегося о стену, и просто преследует паука. Маленький, но смертельный при касании.",
+    "pt": "Nasce de um ovo lançado contra a parede e persegue a aranha. Pequeno, mas mortal ao contato.",
+    "zh": "从撞墙的蛋中孵化，只会追赶蜘蛛。虽小，但触碰致命。",
+    "ja": "壁に当たった卵から生まれ、クモをひたすら追う。小さいが触れると死ぬ。"
+  },
+  "Il éclot dans un nid quand le gros œuf est frappé. Certains tournent et tirent des plumes, les autres visent puis chargent. Son contact est mortel.": {
+    "en": "It hatches in a nest when the large egg is hit. Some circle and fire feathers; others aim, then charge. Touching it is deadly.",
+    "es": "Nace en un nido cuando golpeas el huevo grande. Algunos giran y disparan plumas; otros apuntan y cargan. Su contacto es mortal.",
+    "ru": "Вылупляется в гнезде при ударе по большому яйцу. Одни кружат и стреляют перьями, другие целятся и атакуют рывком. Прикосновение смертельно.",
+    "pt": "Nasce num ninho quando o ovo grande é atingido. Alguns circulam e atiram penas; outros miram e avançam. O contato é mortal.",
+    "zh": "巨蛋受到撞击时，它会在巢中孵化。有些盘旋并射羽毛，有些瞄准后冲锋。触碰致命。",
+    "ja": "大きな卵に攻撃が当たると巣から生まれる。回りながら羽を放つものと、狙ってから突進するものがいる。触れると死ぬ。"
+  },
+  "\n\nAccès : porte droite du Sanctuaire. Ce combat dispose de son propre classement. Gillou récompense trois touches pendant un même KO des sœurs.": {
+    "en": "\n\nAccess: right door of the Sanctuary. This fight has its own leaderboard. Gillou rewards three hits during a single stun of the sisters.",
+    "es": "\n\nAcceso: puerta derecha del Santuario. Este combate tiene su propia clasificación. Gillou recompensa tres toques durante un mismo aturdimiento de las hermanas.",
+    "ru": "\n\nВход: правая дверь Святилища. У этого боя свой рейтинг. Gillou даётся за три касания за одно оглушение сестёр.",
+    "pt": "\n\nAcesso: porta direita do Santuário. Esta luta tem seu próprio ranking. Gillou recompensa três toques durante um mesmo atordoamento das irmãs.",
+    "zh": "\n\n入口：圣殿右侧门。此战斗拥有独立排行榜。在姐妹同一次眩晕期间触碰三次可获得 Gillou。",
+    "ja": "\n\n入口：聖域の右の扉。この戦闘には専用ランキングがある。姉妹の同じ気絶中に3回触れると Gillou を獲得。"
+  },
+  "Cette version démon n’est pas encore disponible. Pour le moment, seules les Sœurs de lave se trouvent derrière la porte démon du Sanctuaire.\n\nVERSION NORMALE\n\n": {
+    "en": "This demon version is not yet available. For now, only the Lava Sisters are behind the Sanctuary’s demon door.\n\nNORMAL VERSION\n\n",
+    "es": "Esta versión demonio aún no está disponible. Por ahora, solo las Hermanas de Lava están tras la puerta demoníaca del Santuario.\n\nVERSIÓN NORMAL\n\n",
+    "ru": "Эта демоническая версия пока недоступна. Сейчас за демонической дверью Святилища находятся только Лавовые сёстры.\n\nОБЫЧНАЯ ВЕРСИЯ\n\n",
+    "pt": "Esta versão demoníaca ainda não está disponível. Por enquanto, só as Irmãs de Lava estão atrás da porta demoníaca do Santuário.\n\nVERSÃO NORMAL\n\n",
+    "zh": "此恶魔版本尚未开放。目前圣殿恶魔之门后只有熔岩姐妹。\n\n普通版本\n\n",
+    "ja": "このデーモン版はまだ利用できません。現在、聖域のデーモンの扉の先にいるのは溶岩の姉妹のみです。\n\n通常版\n\n"
+  },
+  "WORKSHOP": {
+    "en": "WORKSHOP",
+    "es": "TALLER",
+    "ru": "МАСТЕРСКАЯ",
+    "pt": "OFICINA",
+    "zh": "创意工坊",
+    "ja": "ワークショップ"
+  },
+  "HARDCORE": {
+    "en": "HARDCORE",
+    "es": "EXTREMO",
+    "ru": "ХАРДКОР",
+    "pt": "HARDCORE",
+    "zh": "硬核",
+    "ja": "ハードコア"
+  },
+  "NIVEAU": {
+    "en": "LEVEL",
+    "es": "NIVEL",
+    "ru": "УРОВЕНЬ",
+    "pt": "NÍVEL",
+    "zh": "关卡",
+    "ja": "レベル"
+  },
+  "PAUSE": {
+    "en": "PAUSED",
+    "es": "PAUSA",
+    "ru": "ПАУЗА",
+    "pt": "PAUSA",
+    "zh": "暂停",
+    "ja": "一時停止"
+  },
+  " · accompli": {
+    "en": " · complete",
+    "es": " · completado",
+    "ru": " · пройдено",
+    "pt": " · concluído",
+    "zh": " · 完成",
+    "ja": " · 達成"
+  },
+  " morts": {
+    "en": " deaths",
+    "es": " muertes",
+    "ru": " смертей",
+    "pt": " mortes",
+    "zh": " 次死亡",
+    "ja": " 回死亡"
+  },
+  " morts (": {
+    "en": " deaths (",
+    "es": " muertes (",
+    "ru": " смертей (",
+    "pt": " mortes (",
+    "zh": " 次死亡 (",
+    "ja": " 回死亡 ("
+  },
+  "Page %d / %d  ·  %d records": {
+    "en": "Page %d / %d  ·  %d records",
+    "es": "Página %d / %d  ·  %d récords",
+    "ru": "Страница %d / %d  ·  %d рекордов",
+    "pt": "Página %d / %d  ·  %d recordes",
+    "zh": "页 %d / %d  ·  %d 条纪录",
+    "ja": "ページ %d / %d  ·  記録 %d 件"
+  },
+  "Page": {
+    "en": "Page",
+    "es": "Página",
+    "ru": "Страница",
+    "pt": "Página",
+    "zh": "页",
+    "ja": "ページ"
+  },
+  " records": {
+    "en": " records",
+    "es": " récords",
+    "ru": " рекордов",
+    "pt": " recordes",
+    "zh": " 条纪录",
+    "ja": " 件の記録"
+  },
+  "Souris ": {
+    "en": "Mouse ",
+    "es": "Ratón ",
+    "ru": "Мышь ",
+    "pt": "Mouse ",
+    "zh": "鼠标 ",
+    "ja": "マウス "
+  },
+  " : pause": {
+    "en": " : pause",
+    "es": " : pausa",
+    "ru": " : пауза",
+    "pt": " : pausar",
+    "zh": "：暂停",
+    "ja": "：一時停止"
+  },
+  " : vitesse": {
+    "en": " : speed",
+    "es": " : velocidad",
+    "ru": " : скорость",
+    "pt": " : velocidade",
+    "zh": "：速度",
+    "ja": "：速度"
+  },
+  " : rejouer": {
+    "en": " : retry",
+    "es": " : reintentar",
+    "ru": " : повторить",
+    "pt": " : repetir",
+    "zh": "：重试",
+    "ja": "：再挑戦"
+  },
+  "Œuf brisé · ": {
+    "en": "Broken egg · ",
+    "es": "Huevo roto · ",
+    "ru": "Разбитое яйцо · ",
+    "pt": "Ovo quebrado · ",
+    "zh": "碎裂的蛋 · ",
+    "ja": "割れた卵 · "
+  },
+  " oiseaux étourdis": {
+    "en": " stunned birds",
+    "es": " pájaros aturdidos",
+    "ru": " оглушённых птиц",
+    "pt": " pássaros atordoados",
+    "zh": " 只眩晕的鸟",
+    "ja": " 羽の気絶した鳥"
+  },
+  "Le Merle noir des orages": {
+    "en": "The Storm Blackbird",
+    "es": "El Mirlo de las Tormentas",
+    "ru": "Грозовой дрозд",
+    "pt": "O Melro das Tempestades",
+    "zh": "雷暴乌鸫",
+    "ja": "雷嵐のクロウタドリ"
+  },
+  "Le Hérisson des profondeurs": {
+    "en": "The Hedgehog of the Depths",
+    "es": "El Erizo de las Profundidades",
+    "ru": "Глубинный ёж",
+    "pt": "O Ouriço das Profundezas",
+    "zh": "深地刺猬",
+    "ja": "地底のハリネズミ"
+  },
+  "Le Léviathan des Abysses": {
+    "en": "The Abyssal Leviathan",
+    "es": "El Leviatán del Abismo",
+    "ru": "Левиафан Бездны",
+    "pt": "O Leviatã do Abismo",
+    "zh": "深渊利维坦",
+    "ja": "深淵のリヴァイアサン"
+  },
+  "LES SŒURS DE LAVE — MODE DÉMON\n\nTrois sœurs noires et rouges, trois vies chacune. Elles gardent les vitesses originales : 4 % de plus que les sœurs normales, et environ 14 % de plus pour la dernière survivante.\n\n": {
+    "en": "THE LAVA SISTERS — DEMON MODE\n\nThree black and red sisters, three lives each. They retain their original speeds: 4% faster than the normal sisters, and about 14% faster for the last survivor.\n\n",
+    "es": "LAS HERMANAS DE LAVA — MODO DEMONIO\n\nTres hermanas negras y rojas, tres vidas cada una. Mantienen las velocidades originales: un 4 % más que las hermanas normales y alrededor de un 14 % más para la última superviviente.\n\n",
+    "ru": "ЛАВОВЫЕ СЁСТРЫ — РЕЖИМ ДЕМОНА\n\nТри чёрно-красные сестры, по три жизни. Сохраняют исходную скорость: на 4 % быстрее обычных сестёр и примерно на 14 % быстрее для последней выжившей.\n\n",
+    "pt": "AS IRMÃS DE LAVA — MODO DEMÔNIO\n\nTrês irmãs pretas e vermelhas, três vidas cada. Mantêm as velocidades originais: 4% acima das irmãs normais e cerca de 14% a mais para a última sobrevivente.\n\n",
+    "zh": "熔岩姐妹 — 恶魔模式\n\n三只黑红色姐妹，各有三条生命。保留原始速度：比普通姐妹快 4%，最后一只幸存者约快 14%。\n\n",
+    "ja": "溶岩の姉妹 — デーモンモード\n\n黒と赤の三姉妹で、ライフは各3つ。元の速度を維持し、通常の姉妹より4%、最後の1匹は約14%速い。\n\n"
+  },
+  "Tout le jeu suit la langue choisie.": {
+    "en": "The whole game uses your chosen language.",
+    "es": "Todo el juego usa el idioma elegido.",
+    "ru": "Вся игра использует выбранный язык.",
+    "pt": "Todo o jogo usa o idioma escolhido.",
+    "zh": "整个游戏使用所选语言。",
+    "ja": "ゲーム全体が選んだ言語になります。"
+  },
+  "Terminer %s sans mourir.": {
+    "en": "Complete %s without dying.",
+    "es": "Completa %s sin morir.",
+    "ru": "Пройти «%s» без смертей.",
+    "pt": "Conclua %s sem morrer.",
+    "zh": "不死亡地完成%s。",
+    "ja": "%sを一度も死なずにクリアする。"
+  },
+  "%s sans faute": {
+    "en": "Flawless %s",
+    "es": "%s sin fallos",
+    "ru": "%s без ошибок",
+    "pt": "%s sem falhas",
+    "zh": "%s无瑕",
+    "ja": "%sノーミス"
+  },
+  "ÉCLAIRS": {
+    "en": "LIGHTNING",
+    "es": "RAYOS",
+    "ru": "МОЛНИИ",
+    "pt": "RAIOS",
+    "zh": "闪电",
+    "ja": "雷"
+  },
+  "PLANCTON": {
+    "en": "PLANKTON",
+    "es": "PLANCTON",
+    "ru": "ПЛАНКТОН",
+    "pt": "PLÂNCTON",
+    "zh": "浮游生物",
+    "ja": "プランクトン"
+  },
+  "ASPIRATION": {
+    "en": "SUCTION",
+    "es": "SUCCIÓN",
+    "ru": "ВСАСЫВАНИЕ",
+    "pt": "SUCÇÃO",
+    "zh": "吸气",
+    "ja": "吸引"
+  },
+  "INVOCATION": {
+    "en": "SUMMONING",
+    "es": "INVOCACIÓN",
+    "ru": "ПРИЗЫВ",
+    "pt": "INVOCAÇÃO",
+    "zh": "召唤",
+    "ja": "召喚"
+  },
+  "Fonce sur les oiseaux étourdis": {
+    "en": "Rush into the stunned birds",
+    "es": "Embiste a los pájaros aturdidos",
+    "ru": "Врежься в оглушённых птиц",
+    "pt": "Avance contra os pássaros atordoados",
+    "zh": "冲撞眩晕的鸟",
+    "ja": "気絶した鳥に突進しよう"
+  },
+  "Stick / croix : déplacement   ·   A : valider / ralentir   ·   B / Start : retour / pause": {
+    "en": "Stick / D-pad: move · A: confirm / slow down · B / Start: back / pause",
+    "es": "Stick / cruceta: mover · A: confirmar / ralentizar · B / Start: volver / pausa",
+    "ru": "Стик / крестовина: движение · A: выбор / замедление · B / Start: назад / пауза",
+    "pt": "Analógico / direcional: mover · A: confirmar / desacelerar · B / Start: voltar / pausar",
+    "zh": "摇杆／方向键：移动 · A：确认／减速 · B／Start：返回／暂停",
+    "ja": "スティック／十字キー：移動 · A：決定／減速 · B／Start：戻る／一時停止"
+  },
+  "Identité de jeu manquante.": {
+    "en": "Missing game identity.",
+    "es": "Falta la identidad de juego.",
+    "ru": "Нет идентификатора игры.",
+    "pt": "Identidade de jogo ausente.",
+    "zh": "缺少游戏身份。",
+    "ja": "ゲームIDがありません。"
+  },
+  "Requête trop grande.": {
+    "en": "Request too large.",
+    "es": "Solicitud demasiado grande.",
+    "ru": "Слишком большой запрос.",
+    "pt": "Solicitação grande demais.",
+    "zh": "请求过大。",
+    "ja": "リクエストが大きすぎます。"
+  },
+  "Requête vide.": {
+    "en": "Empty request.",
+    "es": "Solicitud vacía.",
+    "ru": "Пустой запрос.",
+    "pt": "Solicitação vazia.",
+    "zh": "请求为空。",
+    "ja": "空のリクエストです。"
+  },
+  "JSON invalide.": {
+    "en": "Invalid JSON.",
+    "es": "JSON no válido.",
+    "ru": "Некорректный JSON.",
+    "pt": "JSON inválido.",
+    "zh": "JSON 无效。",
+    "ja": "無効なJSONです。"
+  },
+  "Monde invalide.": {
+    "en": "Invalid world.",
+    "es": "Mundo no válido.",
+    "ru": "Некорректный мир.",
+    "pt": "Mundo inválido.",
+    "zh": "世界无效。",
+    "ja": "無効なワールドです。"
+  },
+  "Page invalide.": {
+    "en": "Invalid page.",
+    "es": "Página no válida.",
+    "ru": "Некорректная страница.",
+    "pt": "Página inválida.",
+    "zh": "页面无效。",
+    "ja": "無効なページです。"
+  },
+  "Pseudo invalide (1 à 16 caractères).": {
+    "en": "Invalid nickname (1–16 characters).",
+    "es": "Apodo no válido (1 a 16 caracteres).",
+    "ru": "Некорректный ник (1–16 символов).",
+    "pt": "Apelido inválido (1 a 16 caracteres).",
+    "zh": "昵称无效（1 至 16 个字符）。",
+    "ja": "無効なニックネームです（1～16文字）。"
+  },
+  "Monde indisponible.": {
+    "en": "World unavailable.",
+    "es": "Mundo no disponible.",
+    "ru": "Мир недоступен.",
+    "pt": "Mundo indisponível.",
+    "zh": "世界不可用。",
+    "ja": "このワールドは利用できません。"
+  },
+  "Apparence invalide.": {
+    "en": "Invalid appearance.",
+    "es": "Aspecto no válido.",
+    "ru": "Некорректный облик.",
+    "pt": "Aparência inválida.",
+    "zh": "外观无效。",
+    "ja": "無効なスキンです。"
+  },
+  "Date de départ invalide.": {
+    "en": "Invalid start date.",
+    "es": "Fecha de inicio no válida.",
+    "ru": "Некорректная дата начала.",
+    "pt": "Data de início inválida.",
+    "zh": "开始日期无效。",
+    "ja": "開始日時が無効です。"
+  },
+  "Trop de nouvelles parties.": {
+    "en": "Too many new runs.",
+    "es": "Demasiadas partidas nuevas.",
+    "ru": "Слишком много новых игр.",
+    "pt": "Muitas partidas novas.",
+    "zh": "新游戏次数过多。",
+    "ja": "新しいプレイの開始が多すぎます。"
+  },
+  "Partie introuvable.": {
+    "en": "Run not found.",
+    "es": "Partida no encontrada.",
+    "ru": "Игра не найдена.",
+    "pt": "Partida não encontrada.",
+    "zh": "找不到游戏记录。",
+    "ja": "プレイが見つかりません。"
+  },
+  "Score invalide.": {
+    "en": "Invalid score.",
+    "es": "Puntuación no válida.",
+    "ru": "Некорректный результат.",
+    "pt": "Pontuação inválida.",
+    "zh": "成绩无效。",
+    "ja": "無効な記録です。"
+  },
+  "Partie déjà terminée.": {
+    "en": "Run already finished.",
+    "es": "Partida ya terminada.",
+    "ru": "Игра уже завершена.",
+    "pt": "Partida já concluída.",
+    "zh": "游戏已结束。",
+    "ja": "すでに終了したプレイです。"
+  },
+  "Niveaux à terminer dans l’ordre.": {
+    "en": "Complete levels in order.",
+    "es": "Completa los niveles en orden.",
+    "ru": "Проходи уровни по порядку.",
+    "pt": "Conclua os níveis em ordem.",
+    "zh": "请按顺序完成关卡。",
+    "ja": "レベルを順番にクリアしてください。"
+  },
+  "Partie expirée.": {
+    "en": "Run expired.",
+    "es": "Partida caducada.",
+    "ru": "Срок игры истёк.",
+    "pt": "Partida expirada.",
+    "zh": "游戏记录已过期。",
+    "ja": "プレイの有効期限が切れました。"
+  },
+  "Chronomètre ou compteur incohérent.": {
+    "en": "Inconsistent timer or counter.",
+    "es": "Cronómetro o contador incoherente.",
+    "ru": "Несогласованное время или счётчик.",
+    "pt": "Cronômetro ou contador inconsistente.",
+    "zh": "计时或计数不一致。",
+    "ja": "タイマーかカウンターに不整合があります。"
+  },
+  "Trop de requêtes. Réessaie dans une minute.": {
+    "en": "Too many requests. Try again in a minute.",
+    "es": "Demasiadas solicitudes. Reintenta en un minuto.",
+    "ru": "Слишком много запросов. Повтори через минуту.",
+    "pt": "Muitas solicitações. Tente em um minuto.",
+    "zh": "请求过多，请一分钟后重试。",
+    "ja": "リクエストが多すぎます。1分後に再試行してください。"
+  },
+  "Route introuvable.": {
+    "en": "Route not found.",
+    "es": "Ruta no encontrada.",
+    "ru": "Маршрут не найден.",
+    "pt": "Rota não encontrada.",
+    "zh": "找不到路由。",
+    "ja": "接続先が見つかりません。"
+  },
+  "Service temporairement indisponible.": {
+    "en": "Service temporarily unavailable.",
+    "es": "Servicio temporalmente no disponible.",
+    "ru": "Сервис временно недоступен.",
+    "pt": "Serviço temporariamente indisponível.",
+    "zh": "服务暂时不可用。",
+    "ja": "サービスは一時的に利用できません。"
+  },
+  "Filtre invalide.": {
+    "en": "Invalid filter.",
+    "es": "Filtro no válido.",
+    "ru": "Некорректный фильтр.",
+    "pt": "Filtro inválido.",
+    "zh": "筛选条件无效。",
+    "ja": "無効なフィルターです。"
+  },
+  "Trop de validations. Réessaie plus tard.": {
+    "en": "Too many validations. Try again later.",
+    "es": "Demasiadas validaciones. Reintenta más tarde.",
+    "ru": "Слишком много проверок. Повтори позже.",
+    "pt": "Muitas validações. Tente mais tarde.",
+    "zh": "验证次数过多，请稍后重试。",
+    "ja": "検証回数が多すぎます。後で再試行してください。"
+  },
+  "Titre, auteur ou carte invalide.": {
+    "en": "Invalid title, author or map.",
+    "es": "Título, autor o mapa no válido.",
+    "ru": "Некорректное название, автор или карта.",
+    "pt": "Título, autor ou mapa inválido.",
+    "zh": "标题、作者或地图无效。",
+    "ja": "タイトル、作者、マップのいずれかが無効です。"
+  },
+  "Identifiant invalide.": {
+    "en": "Invalid identifier.",
+    "es": "Identificador no válido.",
+    "ru": "Некорректный идентификатор.",
+    "pt": "Identificador inválido.",
+    "zh": "标识符无效。",
+    "ja": "無効なIDです。"
+  },
+  "Cette carte appartient à un autre créateur.": {
+    "en": "This map belongs to another creator.",
+    "es": "Este mapa pertenece a otro creador.",
+    "ru": "Эта карта принадлежит другому автору.",
+    "pt": "Este mapa pertence a outro criador.",
+    "zh": "此地图属于其他创作者。",
+    "ja": "このマップは別の制作者のものです。"
+  },
+  "Limite de publication atteinte. Réessaie plus tard.": {
+    "en": "Publishing limit reached. Try again later.",
+    "es": "Límite de publicación alcanzado. Reintenta más tarde.",
+    "ru": "Лимит публикаций достигнут. Повтори позже.",
+    "pt": "Limite de publicação atingido. Tente mais tarde.",
+    "zh": "已达到发布上限，请稍后重试。",
+    "ja": "公開上限に達しました。後で再試行してください。"
+  },
+  "Carte introuvable.": {
+    "en": "Map not found.",
+    "es": "Mapa no encontrado.",
+    "ru": "Карта не найдена.",
+    "pt": "Mapa não encontrado.",
+    "zh": "找不到地图。",
+    "ja": "マップが見つかりません。"
+  },
+  "Vote invalide.": {
+    "en": "Invalid vote.",
+    "es": "Voto no válido.",
+    "ru": "Некорректный голос.",
+    "pt": "Voto inválido.",
+    "zh": "投票无效。",
+    "ja": "無効な投票です。"
+  },
+  "Replay introuvable.": {
+    "en": "Replay not found.",
+    "es": "Repetición no encontrada.",
+    "ru": "Повтор не найден.",
+    "pt": "Replay não encontrado.",
+    "zh": "找不到回放。",
+    "ja": "リプレイが見つかりません。"
+  },
+  "Partie terminée introuvable.": {
+    "en": "Completed run not found.",
+    "es": "Partida terminada no encontrada.",
+    "ru": "Завершённая игра не найдена.",
+    "pt": "Partida concluída não encontrada.",
+    "zh": "找不到已完成的游戏。",
+    "ja": "クリア記録が見つかりません。"
+  },
+  "Replay incohérent avec le score.": {
+    "en": "Replay does not match the score.",
+    "es": "La repetición no coincide con la puntuación.",
+    "ru": "Повтор не соответствует результату.",
+    "pt": "Replay não corresponde à pontuação.",
+    "zh": "回放与成绩不符。",
+    "ja": "リプレイと記録が一致しません。"
+  },
+  " boss · ": {
+    "en": " bosses · ",
+    "es": " jefes · ",
+    "ru": " боссов · ",
+    "pt": " chefes · ",
+    "zh": " 个首领 · ",
+    "ja": " 体のボス · "
+  },
+  " PV": {
+    "en": " HP",
+    "es": " PV",
+    "ru": " ОЗ",
+    "pt": " PV",
+    "zh": " 生命值",
+    "ja": " HP"
+  }
+}

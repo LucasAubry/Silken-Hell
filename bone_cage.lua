@@ -31,11 +31,11 @@ function C.draw(p,time)
   end
  end
  bone({-27,14,-24,-8,-13,-27,0,-33,13,-27,24,-8,27,14})
- for _,x in ipairs({-14,0,14}) do
+ for _,x in ipairs(p.locked and {-14,0,14} or {-20,20}) do
   bone({x,21,x*.85,5,x*.7,-15,x*.5,-30})
  end
  bone({-27,14,-18,23,0,26,18,23,27,14})
- bone({-25,2,-12,7,0,9,12,7,25,2})
+ if p.locked then bone({-25,2,-12,7,0,9,12,7,25,2}) end
  g.pop()
 end
 return C

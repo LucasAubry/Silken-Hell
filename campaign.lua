@@ -125,6 +125,7 @@ function C.reset()
     for _,item in ipairs(Bosses.items) do if item.kind=='octopus' then hasOctopus=true end end
     if hasOctopus then for i=#mobs,1,-1 do if mobs[i].type=='jelly' then table.remove(mobs,i) end end end
     BossFX.update(0)
+    Renaissance.reset()
     C.updateTear(0)
     if App.state=='playing' then Bestiary.encounter() end
 end
@@ -181,6 +182,7 @@ function C.clearGroundSites()
     end
 end
 function C.drawCircles()
+    if Renaissance.active then return end
     if (Abyss.boss and not Abyss.defeated) or Bosses.hud().active or Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active then return end
     local g=love.graphics
     for _,p in ipairs(levels[player.level].larme_position) do
@@ -205,16 +207,24 @@ function C.draw()
     C.drawTear()
     g.setColor(1,1,1)
 end
-function C.drawTear()
+function C.drawTear(overlay)
+    if Renaissance.active then Renaissance.drawEggs();return end
+    if Aftermath.cleared and not overlay then return end
     if objet.larme.abyssHeld or (C.carrier and not objet.larme_dropped and (Realms.underground(C.carrier) or C.carrier.tunnelTravel)) then return end
     local g=love.graphics
     if not objet.larme.taken then
-        local x,y=objet.larme.x,objet.larme.y+math.sin(larme_float_timer*2)*4
+        local x,y=objet.larme.x,objet.larme.y+(Aftermath.cleared and 0 or math.sin(larme_float_timer*2)*4)
         local tint=Worlds.color(C.biome).tear
         if C.biome==5 then tint={.86,.65,.39} end
         if C.biome~=5 then g.setColor(tint);g.draw(particleSystem,x+15,y+20) end
         local previous=g.getShader()
-        if C.biome==5 then
+        if overlay then
+            C.victoryTearShader=C.victoryTearShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
+                vec4 p=Texel(tex,uv);
+                return vec4(vec3(.4,.55,.65)+p.rgb*vec3(.6,.45,.35),p.a)*color;
+            }]])
+            g.setShader(C.victoryTearShader);g.setColor(1,1,1)
+        elseif C.biome==5 then
             C.tearShader=C.tearShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
                 vec4 p=Texel(tex,uv);float v=max(p.r,max(p.g,p.b));
                 return vec4(.66+.30*v,.43+.33*v,.22+.28*v,p.a)*color;
@@ -236,6 +246,8 @@ function C.drawMob(m)
     else behavior.draw(m) end
 end
 function C.updateTear(dt)
+    if Renaissance.active then Renaissance.syncEgg();return end
+    if Aftermath.cleared then Aftermath.centerTear();return end
     if C.carrier then
         if not objet.larme_dropped then
             local m=C.carrier; local dx,dy=0,1

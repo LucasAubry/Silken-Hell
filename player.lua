@@ -22,6 +22,7 @@ end
 
 
 function draw_player(direction)
+    if Abyss and Abyss.playerHidden() then return end
     if player.abyssHeld then
         local s=player.abyssHeld.swallowed; local scale=math.max(0,1-(s and s.time or 0)/.25)
         love.graphics.setColor(.5,.9,1,scale); Characters.draw(player.x+15,player.y+8,62*scale,direction)
@@ -32,7 +33,7 @@ function draw_player(direction)
         Characters.draw(player.x+15,player.y+8+dy,62*scale,direction)
         love.graphics.setColor(1,1,1); return
     end
-    if player.whirl then
+    if player.whirl or player.skyWhirl then
         local g=love.graphics; g.push(); g.translate(player.x+15,player.y+12); g.rotate(Realms.clock*18)
         g.setColor(1,1,1); Characters.draw(0,0,62,direction); g.pop(); return
     end
@@ -48,11 +49,23 @@ function draw_player(direction)
         love.graphics.ellipse('fill',player.x+15,player.y+14,34,22)
         love.graphics.setColor(.42,1,.32)
     else love.graphics.setColor(1,1,1) end
+    local g=love.graphics
+    local previousShader=g.getShader()
+    if (player.charges or 0)>0 and Abyss and Abyss.encounterActive() then
+        player.chargeShader=player.chargeShader or g.newShader([[vec4 effect(vec4 color, Image image, vec2 uv, vec2 px) {
+            vec4 tex=Texel(image,uv);
+            float light=dot(tex.rgb,vec3(.299,.587,.114));
+            return vec4(vec3(.12,.65,1.0)*(.25+light*.95),tex.a)*color;
+        }]])
+        g.setColor(1,1,1);g.setShader(player.chargeShader)
+    end
     Characters.draw(player.x+15,player.y+8,62,direction)
+    g.setShader(previousShader)
     love.graphics.setColor(1,1,1)
 end
 
 function draw_player_beacon()
+    if Abyss and Abyss.playerHidden() then return end
     if Campaign.biome==7 then Ocean.drawBubble(true) end
 end
 return player
