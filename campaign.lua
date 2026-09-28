@@ -7,6 +7,7 @@ function C.install()
     -- Keep the authored positions and original encounters, before procedural walls were added.
     C.original=levels
     for w=1,7 do for n=1,10 do C.data[w][n]={} end end
+    C.data[3]={{},{}}
     for w=9,14 do C.data[w]={{}} end
     C.floor=love.graphics.newCanvas(800,600)
     love.graphics.setCanvas(C.floor); love.graphics.clear(0.105,0.035,0.04)
@@ -126,6 +127,7 @@ function C.reset()
     if hasOctopus then for i=#mobs,1,-1 do if mobs[i].type=='jelly' then table.remove(mobs,i) end end end
     BossFX.update(0)
     Renaissance.reset()
+    Ending.reset()
     C.updateTear(0)
     if App.state=='playing' then Bestiary.encounter() end
 end
@@ -182,7 +184,7 @@ function C.clearGroundSites()
     end
 end
 function C.drawCircles()
-    if Renaissance.active then return end
+    if Renaissance.active or Ending.active then return end
     if (Abyss.boss and not Abyss.defeated) or Bosses.hud().active or Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active then return end
     local g=love.graphics
     for _,p in ipairs(levels[player.level].larme_position) do
@@ -208,6 +210,7 @@ function C.draw()
     g.setColor(1,1,1)
 end
 function C.drawTear(overlay)
+    if Ending.active then return end
     if Renaissance.active then Renaissance.drawEggs();return end
     if Aftermath.cleared and not overlay then return end
     if objet.larme.abyssHeld or (C.carrier and not objet.larme_dropped and (Realms.underground(C.carrier) or C.carrier.tunnelTravel)) then return end
@@ -246,6 +249,7 @@ function C.drawMob(m)
     else behavior.draw(m) end
 end
 function C.updateTear(dt)
+    if Ending.active then return end
     if Renaissance.active then Renaissance.syncEgg();return end
     if Aftermath.cleared then Aftermath.centerTear();return end
     if C.carrier then

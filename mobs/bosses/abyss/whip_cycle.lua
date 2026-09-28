@@ -84,13 +84,15 @@ function C.contact(a)
  if (player.abyssGrace or 0)>0 or player.abyssSpit then return end
  for i=#a.plankton,1,-1 do
   local p=a.plankton[i]
-  if distance(px-p.x,py-p.y)<p.r+12 then
+  local collecting=not (a.healsFromEnergy and a.phase=='suction' and not p.red and not p.lethal)
+  if collecting and distance(px-p.x,py-p.y)<p.r+12 then
    table.remove(a.plankton,i)
    if p.red or p.lethal or (a.lightOnlySuction and a.phase=='suction') then Hazards.kill('abyss_projectile');return end
    player.charges=math.min(3,(player.charges or 0)+1);player.electrified=60;a.refreshLight()
    BossFX.burst(p.x,p.y,{.2,.7,1},.35)
   end
  end
+ if a.healsFromEnergy and a.phase=='suction' then return end
  for _,p in ipairs(a.debris) do
   if math.abs(px-p.x)<p.w*.5+12 and math.abs(py-p.y)<p.h*.5+10 then Hazards.kill('abyss_projectile');return end
  end
@@ -98,7 +100,11 @@ function C.contact(a)
  local inMouth=a.mouthPassage and a.mouthPassage(px,py)
  for _,b in ipairs(a.bones) do
   local throat=inMouth and (b.key=='skeleton_head' or b.key=='skeleton_open')
-  if not throat and a.overlapsBone(b) then Hazards.kill('abyss_bite');return end
+  if not throat and a.overlapsBone(b) then
+   if a.bodyContact and a.bodyContact(b) then
+    if a.defeated then return end
+   else Hazards.kill('abyss_bite');return end
+  end
  end
 end
 function C.suction(a,dt)
@@ -208,7 +214,8 @@ function C.draw(a)
    visibility=.035
    for _,orb in ipairs(a.plankton) do if orb.lethal then visibility=math.max(visibility,1-distance(p.x-orb.x,p.y-orb.y)/150) end end
   end
-  g.setColor(.3,.7,1,.18*visibility);g.setLineWidth(3);g.line(p.x-65,p.y,p.x-25,p.y)
+  local speed=math.max(1,math.sqrt(p.vx*p.vx+(p.vy or 0)^2));local dx,dy=p.vx/speed,(p.vy or 0)/speed
+  g.setColor(.3,.7,1,.18*visibility);g.setLineWidth(3);g.line(p.x-dx*65,p.y-dy*65,p.x-dx*25,p.y-dy*25)
   g.setColor(.82*visibility,.94*visibility,visibility);Art.draw('skeleton_spine',p.x,p.y,p.w,0,p.h)
  end
  if a.phase=='inhaleTell' or a.phase=='suction' then

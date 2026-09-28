@@ -1,6 +1,7 @@
 local FX=require 'mobs.bosses.encounter_fx'
 local S={active=false}
-local GOLDEN_FEATHER_ORBIT_RADIUS=88
+local GOLDEN_PICKUP_RADIUS=24
+local RETURN_SPEED=2200
 local function distance(x,y,tx,ty) return math.sqrt((tx-x)^2+(ty-y)^2) end
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 function S.speed() return (3000+2200*(1-S.hp/S.maxHp))*(S.movementRate or 1) end
@@ -9,7 +10,7 @@ function S.reset(active)
  if player.skyThrow and player.skyThrow.boss==S then player.skyThrow=nil end
  S.active=active;S.name='Le Merle noir des orages';S.hp=10;S.maxHp=10;S.defeated=false;S.electric=false
  S.x=Arena.width*.5;S.y=150;S.dir='down';S.clock=0;S.flash=0;S.hitGrace=0;S.chargeTime=0;S.charges=0
- S.projectiles={};S.strikes={};S.trails={};S.holes={};S.tornado=nil;S.pattern=0;S.pass=0;S.round=0
+ S.projectiles={};S.strikes={};S.trails={};S.holes={};S.tornado=nil;S.pattern=0;S.pass=0;S.round=0;S.featherSalvos=0
  S.vx=0;S.vy=0;S.centerX=player.x+15;S.centerY=player.y+12;S.poseAge=1
  S.nest={x=Arena.width-105,y=115};S.setPhase('orbit')
 end
@@ -21,8 +22,8 @@ function S.setPhase(phase)
  elseif phase=='leave' then S.phaseTime=.45;S.fromX=S.x;S.fromY=S.y;S.pass=0
  elseif phase=='flightTell' then
   S.phaseTime=.65-.17*(1-S.hp/S.maxHp);S.hidden=true;S.pass=S.pass+1
-  local mode=(S.pass+S.round-2)%4
-  local px,py=clamp(player.x+15,110,Arena.width-110),clamp(player.y+12,105,495)
+  local mode=({0,1,3})[(S.pass+S.round-2)%3+1]
+  local px,py=clamp(player.x+15,38,Arena.width-38),clamp(player.y+12,35,565)
   if mode==0 then S.startX=-110;S.endX=Arena.width+110;S.startY=py;S.endY=py;S.dir='right'
   elseif mode==1 then S.startX=Arena.width+110;S.endX=-110;S.startY=py;S.endY=py;S.dir='left'
   elseif mode==2 then S.startX=px;S.endX=px;S.startY=-100;S.endY=700;S.dir='down'
@@ -35,12 +36,18 @@ function S.setPhase(phase)
   S.returnX=clamp(player.x+15+(player.x<Arena.width*.5 and 180 or -180),120,Arena.width-120);S.returnY=clamp(player.y-90,115,460)
  end
 end
+function S.goldenInterval()
+ if S.hp>=9 then return 1 elseif S.hp>=6 then return 2 elseif S.hp>=3 then return 3 else return 4 end
+end
 function S.fire()
  local aim=math.atan2(player.y+12-S.y,player.x+15-S.x)
- local a=aim+(S.burst-1)*.11;local speed=285+80*(1-S.hp/S.maxHp)
- S.projectiles[#S.projectiles+1]={x=S.x+math.cos(a)*45,y=S.y+math.sin(a)*45,vx=math.cos(a)*speed,vy=math.sin(a)*speed,life=4.5,age=0,golden=S.burst==2}
+ -- Five-shot salvos surround an occasional offset gold feather with lethal black ones.
+ local golden=S.burst==2 and S.featherSalvos%S.goldenInterval()==0
+ local offset=golden and (S.featherSalvos%2==0 and .38 or -.38) or (S.burst-2)*.13
+ local a=aim+offset;local speed=285+80*(1-S.hp/S.maxHp)
+ S.projectiles[#S.projectiles+1]={x=S.x+math.cos(a)*45,y=S.y+math.sin(a)*45,vx=math.cos(a)*speed,vy=math.sin(a)*speed,life=4.5,age=0,golden=golden}
  S.burst=S.burst+1
- if S.burst==3 then S.burst=0;S.salvos=S.salvos+1;S.shot=.65 else S.shot=.16 end
+ if S.burst==5 then S.burst=0;S.salvos=S.salvos+1;S.featherSalvos=S.featherSalvos+1;S.shot=.55 else S.shot=.14 end
 end
 function S.summon()
  local cx,cy=player.x+15,player.y+12;local chosen={}
@@ -60,8 +67,8 @@ function S.finish()
  S.defeated=true;S.projectiles={};S.strikes={};S.trails={};S.holes={}
  objet.larme.taken=false;objet.larme.x,objet.larme.y=Arena.clearSpot(clamp(S.x,70,Arena.width-70)-15,clamp(S.y,85,515)-20,30,40)
 end
-function S.hurt()
- if S.defeated or S.hitGrace>0 then return false end
+function S.hurt(fromFeather)
+ if S.defeated or (S.hitGrace>0 and not fromFeather) then return false end
  S.hp=math.max(0,S.hp-1);S.flash=.3;S.hitGrace=.24;S.electric=S.hp<=S.maxHp*.5
  Audio.play('pick');BossFX.burst(S.x,S.y,{.65,.9,1},3)
  if S.hp==0 then S.finish() end
@@ -72,14 +79,16 @@ function S.canReflect(p)
 end
 function S.reflect(p)
  if p.returned or not p.golden then return end
- p.returned=true;p.age=0;p.orbitAngle=math.atan2(p.y-player.y-12,p.x-player.x-15);p.orbitRadius=distance(p.x,p.y,player.x+15,player.y+12);p.vx=0;p.vy=0;Audio.play('pick');BossFX.burst(p.x,p.y,{.65,.9,1},.6)
-end
-function S.orbitPosition(p)
- local angle=p.orbitAngle or 0;local radius=p.orbitRadius or GOLDEN_FEATHER_ORBIT_RADIUS
- return player.x+15+math.cos(angle)*radius,player.y+12+math.sin(angle)*radius
+ p.returned=true;p.age=0
+ local d=math.max(1,distance(p.x,p.y,S.x,S.y))
+ p.vx=(S.x-p.x)/d*RETURN_SPEED;p.vy=(S.y-p.y)/d*RETURN_SPEED
+ Audio.play('pick');BossFX.burst(p.x,p.y,{1,.8,.25},.6)
 end
 function S.featherHit(p)
- if p.returned and not S.hidden and distance(p.x,p.y,S.x,S.y)<45 then return S.hurt() end
+ if p.returned and not p.spent and distance(p.x,p.y,S.x,S.y)<45 then
+  p.spent=true
+  return S.hurt(true) -- Each collected feather owns exactly one hit, even in a group.
+ end
  return false
 end
 function S.holeAt(x,y)
@@ -92,9 +101,8 @@ function S.contact()
  if S.holeAt(player.x+15,player.y+12) then Hazards.kill('storm');if player.reset then player.falling=true end;return end
  for i=#S.projectiles,1,-1 do
   local p=S.projectiles[i]
-  if S.canReflect(p) and distance(p.x,p.y,player.x+15,player.y+12)<32 then S.reflect(p) end
+  if S.canReflect(p) and distance(p.x,p.y,player.x+15,player.y+12)<GOLDEN_PICKUP_RADIUS then S.reflect(p) end
   if p.returned then
-   p.x,p.y=S.orbitPosition(p)
    if S.featherHit(p) then if S.defeated then return end;table.remove(S.projectiles,i) end
   end
  end
@@ -157,13 +165,13 @@ function S.update(dt)
  for i=#S.projectiles,1,-1 do
   local p=S.projectiles[i];p.age=p.age+dt;local dead=false
   if p.returned then
-   -- Carried feathers stay with the player until one actually hits the bird.
-   local steps=math.max(1,math.ceil(dt*240/6))
+   -- Home independently of the player, including while the bird leaves the screen.
+   local steps=math.max(1,math.ceil(dt*RETURN_SPEED/6))
    for _=1,steps do
-    p.orbitAngle=(p.orbitAngle or 0)+dt/steps*3.4
-    p.orbitRadius=math.min(GOLDEN_FEATHER_ORBIT_RADIUS,(p.orbitRadius or GOLDEN_FEATHER_ORBIT_RADIUS)+dt/steps*180)
-    p.x,p.y=S.orbitPosition(p)
-    p.vx=-math.sin(p.orbitAngle)*218;p.vy=math.cos(p.orbitAngle)*218
+    local dx,dy=S.x-p.x,S.y-p.y;local d=math.max(.001,distance(p.x,p.y,S.x,S.y))
+    local step=math.min(d,RETURN_SPEED*dt/steps)
+    p.vx=dx/d*RETURN_SPEED;p.vy=dy/d*RETURN_SPEED
+    p.x=p.x+dx/d*step;p.y=p.y+dy/d*step
     if S.featherHit(p) then dead=true;if S.defeated then return end;break end
    end
   else
@@ -173,7 +181,7 @@ function S.update(dt)
     if dead then break end
     p.x=p.x+p.vx*dt/steps;p.y=p.y+p.vy*dt/steps
     if p.x<20 or p.x>Arena.width-20 or p.y<35 or p.y>565 or Arena.blocked(p.x-3,p.y-3,6,6) then dead=true
-    elseif distance(p.x,p.y,player.x+15,player.y+12)<(S.canReflect(p) and 32 or 17) then
+    elseif distance(p.x,p.y,player.x+15,player.y+12)<(S.canReflect(p) and GOLDEN_PICKUP_RADIUS or 17) then
      if S.canReflect(p) then S.reflect(p);break else Hazards.kill('storm');dead=true end
     end
    end
@@ -214,19 +222,33 @@ function S.drawGround()
  end end
  g.pop()
 end
+function S.previewPose()
+ local a=Art.images[sprite(S.dir)];local scale=170/math.max(a.w,a.h);local w,h=a.w*scale,a.h*scale
+ local x,y=S.x,S.y;local cx,cy,cw,ch
+ if S.dir=='right' then x=100-w/2;cx,cy,cw,ch=22,y-36,80,72
+ elseif S.dir=='left' then x=Arena.width-100+w/2;cx,cy,cw,ch=Arena.width-102,y-36,80,72
+ elseif S.dir=='down' then y=105-h/2;cx,cy,cw,ch=x-36,22,72,85
+ else y=495+h/2;cx,cy,cw,ch=x-36,493,72,85 end
+ return x,y,cx,cy,cw,ch
+end
+function S.visibleBounds()
+ if not S.active or S.defeated then return end
+ if S.phase=='flightTell' then local _,_,x,y,w,h=S.previewPose();return x,y,w,h end
+ if S.hidden then return end
+ local a=Art.images[sprite(S.dir)];local scale=175/math.max(a.w,a.h)
+ return S.x-a.w*scale/2,S.y-a.h*scale/2,a.w*scale,a.h*scale
+end
 function S.draw()
  if not S.active or S.defeated then return end
  local g=love.graphics;g.push('all')
  for _,p in ipairs(S.trails) do g.setColor(.45,.7,1,p.life*.9);bird(p.dir,p.x,p.y) end
  if S.phase=='flightTell' then
-  -- Only the beak enters the playable border; no line, arrow or lane preview.
-  local a=Art.images[sprite(S.dir)];local scale=170/math.max(a.w,a.h);local w,h=a.w*scale,a.h*scale
-  local x,y=S.x,S.y
-  if S.dir=='right' then x=50-w/2;g.setScissor(28,y-25,24,50)
-  elseif S.dir=='left' then x=Arena.width-50+w/2;g.setScissor(Arena.width-52,y-25,24,50)
-  elseif S.dir=='down' then y=40-h/2;g.setScissor(x-25,28,50,14)
-  else y=560+h/2;g.setScissor(x-25,558,50,14) end
-  g.setColor(1,1,1);bird(S.dir,x,y);g.setScissor()
+  -- A generous slice of the beak stays visible even when aiming into a corner.
+  local x,y,cx,cy,cw,ch=S.previewPose()
+  local sx,sy=g.transformPoint(cx,cy);local ex,ey=g.transformPoint(cx+cw,cy+ch)
+  local oldX,oldY,oldW,oldH=g.getScissor()
+  g.intersectScissor(sx,sy,ex-sx,ey-sy);g.setColor(1,1,1);bird(S.dir,x,y)
+  if oldX then g.setScissor(oldX,oldY,oldW,oldH) else g.setScissor() end
  elseif not S.hidden then
   local blend=math.min(1,S.poseAge/.13)
   if S.previousDir and blend<1 and S.phase=='orbit' then g.setColor(1,1,1,1-blend);bird(S.previousDir,S.x,S.y) else blend=1 end

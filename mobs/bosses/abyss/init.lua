@@ -154,6 +154,7 @@ function A.refreshLight()
     player.illuminated=math.max(onSite and 6 or 0,player.electrified or 0)
 end
 function A.charge(seconds)
+    if A.encounterActive() and A.isPulling() then return end
     player.charges=math.min(A.encounterActive() and 3 or 5,(player.charges or 0)+1)
     player.electrified=math.max(player.electrified or 0,seconds or 6); A.refreshLight()
 end
@@ -359,8 +360,8 @@ function A.updatePlayer(dt)
     player.abyssGrace=math.max(0,(player.abyssGrace or 0)-dt)
     local s=player.abyssSpit
     if s then
-        s.time=s.time+dt; local t=math.min(1,s.time/.28); local eased=1-(1-t)^2
-        player.x=s.fromX+(s.toX-s.fromX)*eased; player.y=s.fromY+(s.toY-s.fromY)*eased
+        s.time=s.time+dt; local t=math.min(1,s.time/(s.duration or .28)); local eased=1-(1-t)^2
+        player.x=s.fromX+(s.toX-s.fromX)*eased; player.y=s.fromY+(s.toY-s.fromY)*eased+(s.arc or 0)*4*t*(1-t)
         if t==1 then player.abyssSpit=nil;player.abyssGrace=math.max(player.abyssGrace or 0,.25) end
     end
 end
@@ -464,6 +465,7 @@ function A.drawBones(overlay)
                 visibility=.18+(A.open and .025 or 0)+.025*(A.energy or 0)+A.flash*.3
             end
             g.setColor(visibility,visibility,visibility)
+        elseif A.boss and A.phase=='traverse' then g.setColor(.16,.19,.22)
         else g.setColor(1,1-A.flash,1-A.flash) end
         Art.draw(b.key,b.x,b.y,(b.flip and -b.w or b.w),b.angle,b.h);g.setShader(previous)
         if A.boss and (b.key=='skeleton_head' or b.key=='skeleton_open') then A.drawBossEye(b,overlay)
@@ -487,7 +489,7 @@ function A.addLights(lights)
     for i,p in ipairs(A.lightSites or {}) do if #lights<24 then lights[#lights+1]={p.x,p.y,110,A.boss and (i%2==A.lightParity and .7 or .12) or .55} end end
     for _,p in ipairs(A.octopuses or {}) do if not p.abyssHeld and #lights<24 then lights[#lights+1]={p.x,p.y,90,.6} end end
     for i=#A.bones,#A.bones-1,-1 do local b=A.bones[i]; if b then lights[#lights+1]={b.gx,b.gy,A.boss and (45+65*(A.energy or 0)) or 120,A.boss and (.04+.18*(A.energy or 0)) or .85} end end
-    for i=1,#A.bones-2 do local b=A.bones[i]; if #lights<24 then lights[#lights+1]={b.gx,b.gy,80,.65} end end
+    for i=1,#A.bones-2 do local b=A.bones[i]; if #lights<24 then lights[#lights+1]={b.gx,b.gy,80,A.boss and A.phase=='traverse' and .06 or .65} end end
 end
 function A.eyePosition(m)
     local a=Art.images.abyss_fish; local x,y=85*.3,-85*(a.h/a.w)*.09

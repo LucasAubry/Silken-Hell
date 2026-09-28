@@ -1,7 +1,8 @@
 -- The same sprite-space triangles drive tooth rendering, removal and collision.
 local J={}
 local teeth={{1084,363,1070,433,1090,405},{1130,344,1139,402,1149,374},{1185,316,1175,405,1197,365},{1000,716,963,757,990,758},{1057,743,1024,799,1055,785},{1121,790,1085,838,1112,834}}
-local order={4,1,5,2,6,3}
+local order={4,1,6,3}
+J.order=order
 function J.point(a,x,y)
  local qx,qy,qw,qh=Art.images.skeleton_open.quad:getViewport()
  return a.head.x-a.head.w/2+(x-qx)/qw*a.head.w,a.head.y-a.head.h/2+(y-qy)/qh*a.head.h
@@ -25,9 +26,9 @@ end
 function J.blocked(a,x,y)
  if a.defeated or not a.active or not a.boss or player.abyssSpit or a.grab then return false end
  if x>=a.head.x+a.head.w/2+4 then return false end
- if x<a.head.x+20 then return true end
+ if x<a.head.x+a.head.w*20/414 then return true end
  -- Keep the back of the skull and the outside of the jaws inaccessible.
- if y+12<a.head.y-135 or y+12>a.head.y+195 then return true end
+ if y+12<a.head.y-a.head.h*135/504 or y+12>a.head.y+a.head.h*195/504 then return true end
  -- Sample the actual visible bone mask, with the player's small gameplay body.
  for yy=y+2,y+22,4 do for xx=x+2,x+28,4 do if J.solid(a,xx,yy) then return true end end end
  return false
@@ -80,9 +81,9 @@ function J.update(a,dt)
   a.hurt(1)
   -- A fresh row supplies the remaining damage when a tougher boss outlives six teeth.
   if not a.defeated then
-   local remaining=0;for index=1,6 do if not a.removedTeeth[index] then remaining=remaining+1 end end
+   local remaining=0;for _,index in ipairs(order) do if not a.removedTeeth[index] then remaining=remaining+1 end end
    if remaining==0 then
-    for index=1,math.min(6,a.hp) do a.removedTeeth[index]=nil end
+    for i=1,math.min(#order,a.hp) do a.removedTeeth[order[i]]=nil end
     a.toothTargets={}
    end
   end

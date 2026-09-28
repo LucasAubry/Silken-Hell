@@ -9,6 +9,13 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv("SILKEN_ABYSS_TAIL_TEST")=="1" then require("tests.abyss_tail").run();return end
+    if os.getenv("SILKEN_ABYSS_BODY_TEST")=="1" then require("tests.abyss_body_damage").run();return end
+    if os.getenv("SILKEN_ABYSS_SWIMMING_TEST")=="1" then require("tests.abyss_swimming").run();return end
+    if os.getenv("SILKEN_BOSS_SPEED_TEST")=="1" then require("tests.boss_speed_revision").run();return end
+    if os.getenv("SILKEN_SKY_VISIBILITY_TEST")=="1" then require("tests.sky_visibility").run();return end
+    if os.getenv("SILKEN_STORM_HOMING_TEST")=="1" then require("tests.storm_homing").run();return end
+    if os.getenv("SILKEN_ENDING_TEST")=="1" then require("tests.ending").run();return end
     if os.getenv("SILKEN_ABYSS_PATTERNS_TEST")=="1" then require("tests.abyss_patterns").run();return end
     if os.getenv("SILKEN_ABYSS_WHIP_TEST")=="1" then require("tests.abyss_whip").run();return end
     if os.getenv("SILKEN_LOCALIZATION_TEST")=="1" then require("tests.localization").run();return end

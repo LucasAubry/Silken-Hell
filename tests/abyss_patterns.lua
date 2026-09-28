@@ -19,6 +19,13 @@ function T.run()
  a.update(1.21);assert(a.open and a.phase=='rest','Mouth opens before first laser')
  assert(px==65 and py==329,'Pivot at marked back of throat')
  assert(a.head.w==414 and a.head.h==504 and a.hp==10)
+ a=reset();C.enter(a,'rest');player.x=400;player.y=310;a.update(.91)
+ assert(a.phase=='roar' and C.lockPlayer(a),'Roar retained before old attacks')
+ a.update(1.11)
+ assert(a.phase=='fire' and player.x>Arena.width-140 and not player.reset,'Roar pushes across arena then starts original white bands')
+ assert(a.siege==nil and a.spikes==nil and a.craters==nil,'New siege mechanics removed')
+ C.enter(a,'recover');a.update(.81);a.update(.91);assert(a.phase=='roar','Knockback repeats with original cycle')
+
  for index,attack in ipairs(C.sequence) do
   a=reset();a.attackIndex=index;C.enter(a,'fire')
   assert(#a.beams==0 and #a.zones>=2,'Arena bands replace mouth lasers')

@@ -55,7 +55,9 @@ end
 function I.slow()
     if Replay and Replay.input then return Replay.input[3] end
     local j=I.pad
-    return I.down(Profile.keys.dash) or j and j:isConnected() and (j:isGamepadDown('a','leftshoulder','rightshoulder') or j:getGamepadAxis('triggerleft')>.3 or j:getGamepadAxis('triggerright')>.3) or false
+    local held=I.down(Profile.keys.dash) or j and j:isConnected() and (j:isGamepadDown('a','leftshoulder','rightshoulder') or j:getGamepadAxis('triggerleft')>.3 or j:getGamepadAxis('triggerright')>.3) or false
+    if Profile.speedMode=='slow' then return held end
+    return not held
 end
 function I.navigate(dx,dy)
     local buttons=UI.buttons;local b=buttons[I.index]
@@ -107,6 +109,6 @@ function I.draw()
     if b and not b.disabled and App.state~='playing' and App.state~='bossWorld' and App.state~='worlds' then
         local g=love.graphics;g.setColor(1,.85,.3);g.setLineWidth(3);g.rectangle('line',b.x-4,b.y-4,b.w+8,b.h+8,6);g.setLineWidth(1)
     end
-    UI.text('Stick / croix : déplacement   ·   A : valider / ralentir   ·   B / Start : retour / pause',160,725,'small',{.8,.85,.9},880,'center')
+    UI.text('Stick / croix : déplacement   ·   A : valider / vitesse   ·   B / Start : retour / pause',160,725,'small',{.8,.85,.9},880,'center')
 end
 return I

@@ -194,6 +194,7 @@ function U.menu()
     U.button('HISTOIRE',605,511,170,38,function() App.state='story'; U.storyOffset=0 end)
     U.button('BESTIAIRE',425,557,170,38,Bestiary.open)
     U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open)
+    
     U.button('SUCCÈS',605,557,170,38,function() App.state='achievements' end)
     U.button('WORKSHOP',425,603,170,38,Workshop.open)
     U.button('CRÉER',605,603,170,38,Creator.open)
@@ -244,7 +245,7 @@ function U.settings()
         return
     end
     if U.settingsPage=='shortcuts' then
-        local rows={{'restartLevel','Rejouer le niveau'},{'restartWorld','Recommencer le monde'},{'nextWorld','Monde suivant'},{'previousWorld','Monde précédent'},{'pause','Pause / reprendre'},{'replaySlower','Replay : ralentir'},{'replayFaster','Replay : accélérer'},{'ghost','Tester avec le fantôme'}}
+        local rows={{'restartLevel','Rejouer le niveau'},{'restartWorld','Recommencer le monde'},{'nextWorld','Monde suivant'},{'previousWorld','Monde précédent'},{'pause','Pause / reprendre'},{'replaySlower','Replay : ralentir'},{'replayFaster','Replay : accélérer'}}
         for i,row in ipairs(rows) do local action=row[1];local y=226+(i-1)*43
             U.text(T(row[2]),360,y+7,'body')
             U.button(U.binding==action and 'Appuie sur une touche…' or Input.label(Profile.keys[action]),630,y,210,34,function() U.binding=action end)
@@ -253,11 +254,12 @@ function U.settings()
         U.button('Retour',360,666,480,40,function() U.binding=nil;App.state=U.returnTo or 'menu';Profile.save() end,false,true)
         return
     end
-    local labels={up='Monter',down='Descendre',left='Gauche',right='Droite',dash='Ralentir'}
+    local labels={up='Monter',down='Descendre',left='Gauche',right='Droite',dash=Profile.speedMode=='slow' and 'Ralentir' or 'Accélérer'}
     for i,a in ipairs({'up','down','left','right','dash'}) do local action=a
-        U.text(T(labels[a]),360,230+(i-1)*40,'body')
-        U.button(U.binding==a and 'Touche ou bouton souris…' or Input.label(Profile.keys[a]),560,222+(i-1)*40,280,35,function() U.binding=action end)
+        U.text(T(labels[a]),360,230+(i-1)*37,'body')
+        U.button(U.binding==a and 'Touche ou bouton souris…' or Input.label(Profile.keys[a]),560,222+(i-1)*37,280,35,function() U.binding=action end)
     end
+    U.button(Profile.speedMode=='slow' and 'Touche vitesse : ralentir' or 'Touche vitesse : accélérer',360,412,480,28,function() Profile.speedMode=Profile.speedMode=='slow' and 'accelerate' or 'slow';Profile.save() end)
     U.text(T('SON'),360,444,'small',gold)
     for i,k in ipairs({'music','sound'}) do local key=k; local y=472+(i-1)*50
         U.text(T(k=='music' and 'Ambiance' or 'Effets')..'  '..math.floor(Profile[k]*100+0.5)..' %',360,y+6,'body')
@@ -360,6 +362,7 @@ function U.iconButton(cx,cy,kind,callback)
     U.buttons[#U.buttons+1]={x=cx-20,y=cy-20,w=40,h=40,run=callback}
 end
 function U.gameHud()
+    if Ending and Ending.active then Ending.drawHud();return end
     Hardcore.draw()
     if App.practice and not Replay.playing then U.text('Entraînement · non classé',640,22,'small',{.8,.85,.9}) end
     if Campaign.biome==7 and not Abyss.encounterActive() then U.text('Charges : '..(player.charges or 0),790,22,'small',{.4,.9,1}) end

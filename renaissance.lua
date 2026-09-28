@@ -13,7 +13,7 @@ function N.bush(x,y,mini)
     return m
 end
 function N.reset()
-    N.active=Campaign.world==3; N.soil={}; N.blasts={}; N.eggs={}; N.clock=0; N.spawnClock=8
+    N.active=Campaign.world==3 and App.singleLevel; N.soil={}; N.blasts={}; N.eggs={}; N.clock=0; N.spawnClock=8
     if not N.active then return end
     N.remaining=2
     for i,p in ipairs({{.22,160},{.78,430}}) do

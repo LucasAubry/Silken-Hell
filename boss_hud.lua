@@ -30,6 +30,19 @@ function H.overlaps(w,h)
  local top=H.top+(H.offsetY or 0)
  return x+radius>=H.left and x-radius<=H.left+H.width and y+radius>=top and y-radius<=top+H.height
 end
+function H.stormOverlapsTop(w,h)
+ local scale,ox,oy=App.viewport(w,h);local ui=math.min(w/1200,h/750)
+ local function overlaps(b)
+  if not b.visibleBounds then return false end
+  local x,y,bw,bh=b.visibleBounds();if not x then return false end
+  local left=(ox+x*scale-(w-1200*ui)/2)/ui
+  local top=(oy+y*scale-(h-750*ui)/2)/ui
+  return left+bw*scale/ui>=H.left and left<=H.left+H.width and top+bh*scale/ui>=H.top and top<=H.top+H.height
+ end
+ if overlaps(Storm) then return true end
+ for _,item in ipairs(Bosses.items) do if item.kind=='storm' and overlaps(item.boss) then return true end end
+ return false
+end
 local function tint(c,a) g.setColor(c[1],c[2],c[3],a or 1) end
 local function frame(mode,x,y,w,h,cut)
  g.polygon(mode,x+cut,y,x+w-cut,y,x+w,y+cut,x+w,y+h-cut,x+w-cut,y+h,x+cut,y+h,x,y+h-cut,x,y+cut)

@@ -52,6 +52,7 @@ Graphics=require 'graphics_settings'
 RunDetails=require 'run_details'
 Meadow=require 'meadow'
 Renaissance=require 'renaissance'
+Ending=require 'ending'
 Hardcore=require 'hardcore'
 require 'mobs.infernal'
 Magma=require 'mobs.magma_larva.init'
@@ -97,7 +98,7 @@ function App.start(world)
     App.custom=os.getenv('SILKEN_PREVIEW_WORLD')~=nil
     for _,layout in pairs(LevelLayouts.read()) do if layout.world==world then App.custom=true end end
     if Worlds.isSecret(world) then App.custom=false end
-    if not App.singleLevel and not App.hardcore then Online.start(world,Profile.name,App.runSkin) else Online.current=nil end
+    if not App.singleLevel and not App.hardcore and world~=3 then Online.start(world,Profile.name,App.runSkin) else Online.current=nil end
 end
 function love.load()
     love.graphics.setDefaultFilter('linear','linear')
@@ -130,7 +131,7 @@ function love.load()
     elseif os.getenv('SILKEN_ONLINE_TEST')=='1' then require('tests.online').run() end
 end
 function App.move(dt)
-    if Abyss.cagePlayer() then return end
+    if Ending.locked() or Abyss.cagePlayer() then return end
     if player.abyssKnock or player.abyssHeld or player.abyssSpit or player.whirl or player.throw or player.skyWhirl or player.skyThrow or player.tunnelTravel then player.has_moved=false; player.dashing=false; return end
     local k=Profile.keys
     local dx,dy=Input.move()
@@ -177,7 +178,8 @@ function love.update(dt)
     if App.state=='story' and Story.text~='' then
         UI.storyOffset=math.min(UI.storyLimit or math.huge,(UI.storyOffset or 0)+dt*Story.speed)
     end
-    Audio.update(Profile,App.selectedWorld==2)
+    Audio.update(Profile,App.selectedWorld==2 and App.state~='credits')
+    if App.state=='credits' then Ending.updateCredits(dt);return end
     if App.state=='bossWorld' then Secret.update(dt);return end
     if Replay.playing and not Replay.ghost and Replay.compatibility and (App.state=='victory' or App.state=='customVictory') then App.state='playing' end
     if App.state~='playing' then Replay.accumulator=0;return end
@@ -186,6 +188,7 @@ function love.update(dt)
 end
 function App.simulate(dt)
     Secret.updateDuel(dt);if App.state~='playing' then return end
+    if Ending.active then App.move(math.min(dt,.05));Ending.update(dt);return end
     if player.falling and player.fallTimer>0 then
         timer=timer+dt;RunDetails.tick(dt); player.fallTimer=math.max(0,player.fallTimer-dt)
         if player.fallTimer==0 then Audio.play('death'); reset_level() end
@@ -229,6 +232,7 @@ function App.simulate(dt)
     BossFX.update(dt)
     shader_effect_timer=math.max(0,shader_effect_timer-dt)
     if App.resolveDeath() then return end
+    if Ending.checkHellVictory() then return end
     local collected=Renaissance.active and Renaissance.collect()
     if not player.tunnelTravel and (collected or (not Renaissance.active and Campaign.canCollect() and isTouching(player,objet.larme))) then
         Audio.play('pick');if not Renaissance.active then Profile.record('tears') end
@@ -250,7 +254,7 @@ function love.draw()
         for _,m in ipairs(mobs) do if m.type=='piege' or m.ground then Campaign.drawMob(m) end end
         draw_shadow_dash()
         for _,m in ipairs(mobs) do if m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
-        Renaissance.drawBlasts(); Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false); love.graphics.setColor(1,1,1); if not Abyss.encounterActive() then draw_player(direction) end; Ocean.drawBubble(); Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
+        Renaissance.drawBlasts(); Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false); love.graphics.setColor(1,1,1); if Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not Abyss.encounterActive() then draw_player(direction) end; Ocean.drawBubble(); Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
         Burning.drawMobs(); Atmosphere.draw()
         Realms.drawDarkness(); Realms.drawFireflies(); Abyss.drawLights(); Bosses.drawLights(); if Abyss.encounterActive() then love.graphics.setColor(1,1,1);draw_player(direction) end; draw_player_beacon(); BossFX.draw();Aftermath.draw();if not Abyss.playerHidden() then Replay.drawGhost() end
         love.graphics.setCanvas()
@@ -276,6 +280,8 @@ function love.draw()
         elseif Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('texel',{1/Arena.width,1/Arena.height});polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
         love.graphics.draw(gameCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale); love.graphics.setShader()
         if App.state=='playing' then Realms.drawWind(w,h); Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
+    elseif App.state=='credits' then
+        Ending.drawCredits(w,h)
     elseif App.state=='worlds' then
         WorldMap.drawBackground(w,h)
     else
@@ -284,8 +290,9 @@ function love.draw()
     end
     local s=math.min(w/1200,h/750)
     love.graphics.push(); love.graphics.translate((w-1200*s)/2,(h-750*s)/2); love.graphics.scale(s)
-    UI.draw(); Input.draw(); love.graphics.pop()
-    if Graphics.showFPS then love.graphics.setColor(.7,1,.8);love.graphics.print(tostring(love.timer.getFPS())..' FPS',12,h-24) end
+    if App.state~='credits' then UI.draw();Input.draw() end;love.graphics.pop()
+    if App.state=='playing' then Ending.drawOverlay(w,h) end
+    if Graphics.showFPS and App.state~='credits' and not Ending.active then love.graphics.setColor(.7,1,.8);love.graphics.print(tostring(love.timer.getFPS())..' FPS',12,h-24) end
     if App.capture then
         local path=App.capture; App.capture=nil
         love.graphics.captureScreenshot(function(data) data:encode('png',path) end)
@@ -313,6 +320,7 @@ function love.textinput(text)
 end
 function love.keypressed(key)
     Input.active=false
+    if App.state=='credits' then return end
     if Replay.playing then Replay.key(key);return end
     if App.state=='worlds' then
         if key=='down' then WorldMap.step(1);return elseif key=='up' then WorldMap.step(-1);return elseif key=='right' then WorldMap.branch(true);return elseif key=='left' then WorldMap.branch(false);return elseif key=='return' then App.openEntry(App.selectedWorld,WorldMap.hardcore);return end
@@ -414,6 +422,7 @@ function love.resize(w,h)
     if oldW==Arena.width then return end
     local ratio=Arena.width/oldW
     player.x=player.x*ratio
+    Ending.resize(ratio)
     local level=levels[player.level]
     level.player_position.x=level.player_position.x*ratio
     for _,p in ipairs(level.larme_position) do p.x=p.x*ratio end
