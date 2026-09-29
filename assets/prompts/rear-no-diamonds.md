@@ -1,0 +1,1 @@
+Rear sprite edits, 29 September 2026: remove all diamond/emblem markings from the lower abdomen of the five player sprite families, retain palette, legs, pose and crown. Render one profile mirrored for exact left/right consistency.

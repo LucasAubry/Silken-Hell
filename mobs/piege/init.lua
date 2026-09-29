@@ -10,8 +10,8 @@ function spawn_piege(x, y)
         dir = "up",
         img = nil,
         imgs = {
-            up = mobImage("texture/mob/piege.png"),
-            active = mobImage("texture/mob/piege_active.png")
+            up = mobImage("assets/monstres/paradis/pieges/piege.png"),
+            active = mobImage("assets/monstres/paradis/pieges/piege_active.png")
         },
         hitBox_width = 20,
         hitBox_height = 20,

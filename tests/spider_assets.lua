@@ -31,7 +31,7 @@ function T.run()
  end
  assert(positions[1]~=positions[2],'Nest changes between clutches')
  for _,name in ipairs({'queen','baby_red','baby_white','baby_black','egg','egg_crack1','egg_crack2','shell','web_shot','web_wall','web_gate','partner'}) do
-  local d=love.image.newImageData('assets/sprites/final/'..name..'.png');local _,_,_,a=d:getPixel(0,0);assert(a==0);d:release()
+  local d=love.image.newImageData(require('asset_paths').resolve('assets/sprites/final/'..name..'.png'));local _,_,_,a=d:getPixel(0,0);assert(a==0);d:release()
  end
  local tick=0;love.focus=function() end
  love.update=function()

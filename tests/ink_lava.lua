@@ -15,7 +15,7 @@ function T.run()
     local x,y=Wasp.landingSpot()
     for _,lava in ipairs(Hazards.lava) do assert(not Hazards.inEllipse(x,y,lava,65),'Atterrissage accessible hors lave') end
     for _,name in ipairs({'wasp','wasp_ground'}) do for _,dir in ipairs({'up','down','left','right'}) do
-        local d=love.image.newImageData('assets/sprites/directional/'..name..'_'..dir..'.png')
+        local d=love.image.newImageData(require('asset_paths').resolve('assets/sprites/directional/'..name..'_'..dir..'.png'))
         local _,_,_,a=d:getPixel(0,0);assert(a==0,'PNG transparent');d:release()
     end end
     level(4,10);local O=Octopus

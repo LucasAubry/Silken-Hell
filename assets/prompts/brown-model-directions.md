@@ -1,0 +1,1 @@
+Four directional brown spider PNGs generated from the existing white/gold spider references. Preserve anatomy and leg poses; plain chestnut and chocolate shading, amber eyes, no gold marks, no emblems, no crown; transparent background. Rear sprite is rendered directly, never rotated. September 29, 2026.

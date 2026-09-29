@@ -2,7 +2,7 @@
 local E={}
 function E.draw(x,y,size,cracks,angle)
  local g=love.graphics
- if not Art.images.merle_egg then Art.add('merle_egg','assets/sprites/merle_egg.png') end
+ if not Art.images.merle_egg then Art.add('merle_egg','assets/monstres/paradis/merle/merle_egg.png') end
  g.push('all');g.translate(x,y);g.rotate(angle or 0);g.scale(size/16)
  g.setColor(1,1,1);Art.draw('merle_egg',0,0,22,0,32)
  if (cracks or 0)>0 then

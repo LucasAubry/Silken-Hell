@@ -8,7 +8,7 @@ local palettes={
  [4]={{.035,.13,.17},{.12,.34,.38},{.40,.79,.75}},
  [7]={{.025,.04,.085},{.075,.13,.22},{.27,.48,.66}},
  [2]={{.085,.018,.03},{.23,.055,.065},{.93,.28,.10}},
- [3]={{.035,.055,.07},{.16,.22,.25},{.5,.63,.69}}
+ [3]={{.055,.085,.045},{.18,.25,.12},{.47,.57,.29}}
 }
 local function rand(i,k) local n=math.sin(i*127.1+k*311.7)*43758.5453;return n-math.floor(n) end
 local function tint(c,a,m) love.graphics.setColor(c[1]*(m or 1),c[2]*(m or 1),c[3]*(m or 1),a or 1) end
@@ -48,6 +48,7 @@ function B.edge(length,biome,seed)
  tint(p[3],.45);g.line(0,21,length,21)
 end
 function B.draw()
+ if Campaign.biome==6 and not Secret.inArena() then return end
  local g=love.graphics;local biome=Secret.inArena() and 8 or Campaign.biome;local rank=Worlds.rank(biome);if rank==math.huge then rank=biome==8 and 4 or 1 end;rank=math.min(7,rank)
  local key=biome..':'..Arena.width..':'..(player.level or 1)
  if B.key~=key then

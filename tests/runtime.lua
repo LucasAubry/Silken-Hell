@@ -102,7 +102,7 @@ function T.run()
     require('tests.expansion').run()
     require('tests.workshop_editor').run()
     for _,name in ipairs({'nest','lava','black_feather'}) do
-        local d=love.image.newImageData('assets/sprites/'..name..'.png')
+        local d=love.image.newImageData(require('asset_paths').resolve('assets/sprites/'..name..'.png'))
         local _,_,_,a=d:getPixel(0,0); assert(a==0,'PNG transparent '..name); d:release()
     end
     for _,name in ipairs({'spider','imp','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','gull'}) do

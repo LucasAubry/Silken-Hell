@@ -50,7 +50,7 @@ function T.run()
     assert(Abyss.open and (player.x~=x or player.y~=y),'Bouche ouverte aspire le joueur')
     assert(objet.larme.x~=tx or objet.larme.y~=ty,'Aspiration de la larme')
     for _,key in ipairs({'skeleton_head','skeleton_open','skeleton_rib','skeleton_spine','skeleton_tail','abyss_fish'}) do
-        local data=love.image.newImageData('assets/sprites/'..key..'.png'); local _,_,_,a=data:getPixel(0,0); assert(a==0,key..' transparent'); data:release()
+        local data=love.image.newImageData(require('asset_paths').resolve('assets/sprites/'..key..'.png')); local _,_,_,a=data:getPixel(0,0); assert(a==0,key..' transparent'); data:release()
     end
     print('PASS révision mondes: poursuite, pièges/cercles, météo niveau 5, foudre/mouettes, séparation Terre, hérisson, lumière/poissons, squelette et aspiration')
 end

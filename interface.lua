@@ -124,7 +124,7 @@ function U.background()
         g.setColor(tint[1],tint[2],tint[3],.55+.06*math.sin(U.clock*.8));g.draw(U.halo,x,y,0,155,115)
         g.setBlendMode('alpha')
         if w==1 then g.setColor(1,.97,.9,.5) else g.setColor(.86,.80,.57,.5) end; g.line(x,62,x,y-80)
-        g.setColor(1,1,1); if App.state=='menu' then Characters.selectionPortrait(x,y,216) else Characters.draw(x,y,216,'down') end
+        g.setColor(1,1,1); Characters.selectionPortrait(x,y,216)
     end
     for i=1,95 do
         local x=(i*139+math.sin(U.clock*0.15+i)*18)%1200

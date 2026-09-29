@@ -79,7 +79,7 @@ function T.run()
     if original then love.filesystem.write('custom_levels.json',original) else love.filesystem.remove('custom_levels.json') end
     assert(ok,err)
     for _,key in ipairs({'electric_vent_idle','electric_vent_charge','electric_vent_active','electric_vent_spent'}) do
-        local d=love.image.newImageData('assets/sprites/'..key..'.png'); local _,_,_,a=d:getPixel(0,0); assert(a==0,'PNG alpha '..key); d:release()
+        local d=love.image.newImageData(require('asset_paths').resolve('assets/sprites/'..key..'.png')); local _,_,_,a=d:getPixel(0,0); assert(a==0,'PNG alpha '..key); d:release()
     end
     print('PASS expansion: crabes/encre, cercles lumineux, Léviathan, protection pièges, chargement éditeur')
 end

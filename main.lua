@@ -167,10 +167,15 @@ function App.move(dt)
     if player.has_moved then add_ghost(dt) end
 end
 function App.respawn()
+    local queen=require('final_spider')
+    local resumeQueen=queen.active and queen.engaged and not queen.defeated
     -- Keep the dying level intact until its fall animation has finished.
     Hardcore.death()
     Audio.play('death')
     reset_level()
+    if resumeQueen and queen.active then
+        queen.engaged=true;queen.phase='webs';queen.phaseTime=0;queen.shot=.65;queen.contactGrace=.35
+    end
 end
 function App.resolveDeath()
     if not player.reset then return false end
@@ -337,11 +342,10 @@ function love.textinput(text)
     if (utf8.len(name) or 99)<=16 then App.draftName=name end
     App.error=nil
 end
-function love.keypressed(key)
+function love.keypressed(key,scancode,isrepeat)
     Input.active=false
-    if App.state=='credits' then return end
+    if App.state=='credits' then Ending.creditKey(key,isrepeat);return end
     if key=='escape' then Audio.play('go') end
-    if App.state=='credits' and key=='escape' then Ending.updateCredits(Ending.creditDuration());return end
     if Replay.playing then Replay.key(key);return end
     if App.state=='worlds' then
         if key=='down' then WorldMap.step(1);return elseif key=='up' then WorldMap.step(-1);return elseif key=='right' then WorldMap.branch(true);return elseif key=='left' then WorldMap.branch(false);return elseif key=='return' then Audio.play('selection');App.openEntry(App.selectedWorld,WorldMap.hardcore);return end

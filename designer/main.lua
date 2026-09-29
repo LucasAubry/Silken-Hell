@@ -96,10 +96,10 @@ local function preview()
     os.execute(cmd); state.status='Test lancé — cette fenêtre sera réutilisée au prochain test.'
 end
 local function loadArt()
-    local paths={original='texture/spider_down.png',tear_ring='texture/aureole.png',catalog_ange='texture/mob/ange_down.png',catalog_snake='texture/mob/snake_down.png',catalog_trap='texture/mob/piege.png'}
+    local paths={original='assets/skins/soie/down.png',tear_ring='texture/aureole.png',catalog_ange='assets/monstres/paradis/ange/ange_down.png',catalog_snake='assets/monstres/paradis/serpent/snake_down.png',catalog_trap='assets/monstres/paradis/pieges/piege.png'}
     for _,c in ipairs(C) do if c.art and not Art.images[c.art] then
         local path=paths[c.art] or 'assets/sprites/'..c.art..'.png'
-        if not love.filesystem.getInfo(path) then path='assets/sprites/directional/'..c.art..'.png' end
+        if not love.filesystem.getInfo(require('asset_paths').resolve(path)) then path='assets/sprites/directional/'..c.art..'.png' end
         Art.add(c.art,path)
     end end
     for _,key in ipairs({'skeleton_spine','skeleton_rib','skeleton_tail'}) do Art.add(key,'assets/sprites/'..key..'.png') end

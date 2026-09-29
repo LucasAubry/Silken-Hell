@@ -9,10 +9,10 @@ function spawn_snake(x, y, speed)
         dir = "right",
         img = nil,
         imgs = {
-            up = mobImage("texture/mob/snake_up.png"),
-            down = mobImage("texture/mob/snake_down.png"),
-            left = mobImage("texture/mob/snake_left.png"),
-            right = mobImage("texture/mob/snake_right.png")
+            up = mobImage("assets/monstres/paradis/serpent/snake_up.png"),
+            down = mobImage("assets/monstres/paradis/serpent/snake_down.png"),
+            left = mobImage("assets/monstres/paradis/serpent/snake_left.png"),
+            right = mobImage("assets/monstres/paradis/serpent/snake_right.png")
         },
         hitBox_width = 20,
         hitBox_height = 110,

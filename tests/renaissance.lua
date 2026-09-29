@@ -40,7 +40,7 @@ function T.run()
     BossFX.update(1); assert(BossFX.power==0,'Secousse amortie')
     local phase=Storm.phase; local oldhp=Storm.hp; love.resize(1600,900); assert(Storm.hp==oldhp and Storm.phase==phase); love.resize(love.graphics.getDimensions())
     for _,dir in ipairs({'down','up','left','right'}) do
-        local d=love.image.newImageData('assets/sprites/directional/storm_'..dir..'.png'); local _,_,_,a=d:getPixel(0,0); assert(a<=1/255+.0001,'Fond transparent à un niveau alpha sur 255 près'); d:release()
+        local d=love.image.newImageData(require('asset_paths').resolve('assets/sprites/directional/storm_'..dir..'.png')); local _,_,_,a=d:getPixel(0,0); assert(a<=1/255+.0001,'Fond transparent à un niveau alpha sur 255 près'); d:release()
     end
     -- A complete six-boss run keeps its world ID, timer and deaths between biomes.
     Profile.scores={}; App.start(3); local ordered={Raven,Storm,Hedgehog,Octopus,Abyss,Wasp}

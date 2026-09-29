@@ -2,7 +2,7 @@ local C={}
 function C.make(world)
  local g=love.graphics
  C.atlas=C.atlas or g.newImage('assets/icons/biome-backgrounds.png')
- C.spider=C.spider or g.newImage('texture/spider_down.png');C.spider:setFilter('nearest','nearest')
+ C.spider=C.spider or g.newImage('assets/skins/soie/down.png');C.spider:setFilter('nearest','nearest')
  C.round=C.round or g.newShader([[
  vec4 effect(vec4 color,Image image,vec2 uv,vec2 px) {
   vec2 q=abs(uv-vec2(.5))-vec2(.32);

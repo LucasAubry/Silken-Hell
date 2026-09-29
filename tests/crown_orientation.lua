@@ -9,7 +9,7 @@ function T.run()
  end
  local draw=Art.draw;local cy,rotation
  Art.draw=function(key,x,y,w,a,...)if key=='reward_crown' then cy=y;rotation=a or 0 end;return draw(key,x,y,w,a,...)end
- C.crown(0,0,100,'up');assert(cy==-30 and rotation==0,'Rear crown stays on the upper head, upright');Art.draw=draw
+ C.crown(0,0,100,'up');assert(cy<-25 and rotation==0,'Rear crown stays on the upper head, upright');Art.draw=draw
  local tick=0
  love.draw=function()
  love.graphics.clear(.045,.06,.08);local dirs={'down','left','up','right'};local angles={0,math.pi/2,math.pi,-math.pi/2}

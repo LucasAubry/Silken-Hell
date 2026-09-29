@@ -6,6 +6,7 @@ if raw and os.getenv('SILKEN_EXPORT_ART')~='1' then local ok,data=pcall(require(
 -- Some recovered sprites are RGB exports. Decode their white exterior as
 -- transparency without removing enclosed white details such as eye highlights.
 function A.imageData(path)
+    path=require("asset_paths").resolve(path)
     local data=love.image.newImageData(path)
     local checker=path:match('/waspling_left%.png$')
     if path:match('/worm_left%.png$') or checker then
@@ -26,6 +27,7 @@ function A.imageData(path)
     return data
 end
 function A.add(key,path)
+    path=require("asset_paths").resolve(path)
     local saved=cached[path]
     if saved and saved.fileSize==love.filesystem.getInfo(path).size and not path:match('/worm_left%.png$') and not path:match('/waspling_left%.png$') then
         local image=love.graphics.newImage(path); image:setFilter('nearest','nearest')
@@ -127,12 +129,12 @@ function A.load()
     end
     A.add('map_cloud','assets/sprites/map_cloud.png')
     A.add('cave_wall','assets/sprites/cave_wall-v2.png')
-    A.add('magma_larva','assets/sprites/magma_larva.png')
-    A.add('merle_flight','assets/sprites/merle_flight.png')
+    A.add('magma_larva','assets/monstres/enfer/larve/magma_larva.png')
+    A.add('merle_flight','assets/monstres/paradis/merle/merle_flight.png')
     for _,dir in ipairs({'left','up','down'}) do A.add('merle_flight_'..dir,'assets/sprites/merle_flight_'..dir..'.png') end
-    A.add('magma_nest','assets/sprites/magma_nest.png')
-    A.add('octopus_extended_down','assets/sprites/directional/octopus_extended_down.png')
-    A.add('abyss_octopus','assets/sprites/abyss_octopus.png')
+    A.add('magma_nest','assets/monstres/enfer/larve/magma_nest.png')
+    A.add('octopus_extended_down','assets/monstres/ocean/poulpe/octopus_extended_down.png')
+    A.add('abyss_octopus','assets/monstres/abysse/pieuvre/abyss_octopus.png')
     for _,name in ipairs({'nest','lava','black_feather','wheel','wall','feather'}) do A.add(name,'assets/sprites/'..name..'.png') end
     for _,name in ipairs({'storm','spider','imp','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','gull','waspling','hedgehog','hedgehog_ball','lanternfish'}) do
         for _,dir in ipairs({'up','down','left','right'}) do
@@ -141,9 +143,9 @@ function A.load()
     end
     for _,name in ipairs({'cloud_snare','ink_splatter'}) do A.add(name,'assets/sprites/'..name..'.png') end
     A.add('skull','texture/hud/death.png'); A.add('clock','texture/hud/time.png')
-    A.add('catalog_ange','texture/mob/ange_down.png'); A.add('catalog_snake','texture/mob/snake_down.png'); A.add('catalog_trap','texture/mob/piege.png')
-    A.add('original','texture/spider_down.png')
-    A.add('earth_tunnel','assets/sprites/earth_tunnel.png')
+    A.add('catalog_ange','assets/monstres/paradis/ange/ange_down.png'); A.add('catalog_snake','assets/monstres/paradis/serpent/snake_down.png'); A.add('catalog_trap','assets/monstres/paradis/pieges/piege.png')
+    A.add('original','assets/skins/soie/down.png')
+    A.add('earth_tunnel','assets/monstres/terre/taupe/earth_tunnel.png')
     for _,key in ipairs({'skeleton_head','skeleton_open','skeleton_rib','skeleton_spine','skeleton_tail','abyss_fish'}) do A.add(key,'assets/sprites/'..key..'.png') end
     for _,pose in ipairs({'open','closed','dead'}) do A.add('crab_'..pose,'assets/sprites/crab_'..pose..'.png') end
     for _,key in ipairs({'electric_vent_idle','electric_vent_charge','electric_vent_active','electric_vent_spent'}) do A.add(key,'assets/sprites/'..key..'.png') end

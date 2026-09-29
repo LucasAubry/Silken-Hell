@@ -43,7 +43,8 @@ end
 function A.update(p,hell)
     if A.focused==false then return end
     local pauseSettings=(App.state=='settings' or App.state=='graphics') and UI.returnTo=='pause'
-    local menu=App.state~='playing' and App.state~='pause' and App.state~='credits' and App.state~='victory' and App.state~='customVictory' and not pauseSettings
+    local victoryRanking=App.state=='rankings' and UI.boardReturn=='victory'
+    local menu=not victoryRanking and App.state~='playing' and App.state~='pause' and App.state~='credits' and App.state~='victory' and App.state~='customVictory' and not pauseSettings
     if A.paradise then
         A.paradise:setVolume(p.music)
         if menu then

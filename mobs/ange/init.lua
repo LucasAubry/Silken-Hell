@@ -10,10 +10,10 @@ function spawn_ange(x, y, speed, has_larme)
         has_larme = has_larme or false,
         img = nil,
         imgs = {
-            up = mobImage("texture/mob/ange_up.png"),
-            down = mobImage("texture/mob/ange_down.png"),
-            left = mobImage("texture/mob/ange_left.png"),
-            right = mobImage("texture/mob/ange_right.png")
+            up = mobImage("assets/monstres/paradis/ange/ange_up.png"),
+            down = mobImage("assets/monstres/paradis/ange/ange_down.png"),
+            left = mobImage("assets/monstres/paradis/ange/ange_left.png"),
+            right = mobImage("assets/monstres/paradis/ange/ange_right.png")
         },
         hitBox_width = 20,
         hitBox_height = 110,

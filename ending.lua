@@ -47,12 +47,37 @@ function E.update(dt)
  if d<43 then E.complete();return end
  -- Fast at first, progressively slower so a patient chase always catches up.
  local speed=math.max(45,440-E.clock*18)
- local vx,vy=dx/math.max(1,d),dy/math.max(1,d)
- if p.x<85 and vx<0 or p.x>Arena.width-85 and vx>0 then vx=0;vy=p.y>300 and -1 or 1 end
- if p.y<105 and vy<0 or p.y>510 and vy>0 then vy=0;vx=p.x>Arena.width*.5 and -1 or 1 end
- local len=math.max(1,math.sqrt(vx*vx+vy*vy))
- p.x=math.max(65,math.min(Arena.width-65,p.x+vx/len*speed*dt));p.y=math.max(85,math.min(530,p.y+vy/len*speed*dt))
- p.angle=math.atan2(vy,vx)-math.pi/2
+ -- Commit to an escape waypoint instead of reversing at the middle of a wall.
+ p.routeTime=(p.routeTime or 0)-dt
+ local target=p.target
+ if not target or p.routeTime<=0 or (target.x-p.x)^2+(target.y-p.y)^2<25^2 then
+  local best,score
+  for i=1,12 do
+   local a=i*math.pi/6
+   local c={x=Arena.width*.5+math.cos(a)*(Arena.width*.5-110),y=300+math.sin(a)*185}
+   local tx,ty=c.x-p.x,c.y-p.y;local travel=math.sqrt(tx*tx+ty*ty)
+   if travel>90 then
+    local distance=math.sqrt((c.x-player.x-15)^2+(c.y-player.y-12)^2)
+    local forward=(tx*(p.vx or dx)+ty*(p.vy or dy))/travel
+    local along=math.max(0,math.min(1,((player.x+15-p.x)*tx+(player.y+12-p.y)*ty)/(travel*travel)))
+    local clearance=math.sqrt((p.x+tx*along-player.x-15)^2+(p.y+ty*along-player.y-12)^2)
+    local value=distance+forward*.3-travel*.12-math.max(0,110-clearance)*8
+    if not score or value>score then best=c;score=value end
+   end
+  end
+  p.target=best;p.routeTime=1.6;target=best
+ end
+ local tx,ty=target.x-p.x,target.y-p.y;local length=math.max(.001,math.sqrt(tx*tx+ty*ty))
+ local step=math.min(length,speed*dt);p.vx=tx/length;p.vy=ty/length
+ p.x=p.x+p.vx*step;p.y=p.y+p.vy*step
+ -- Four stable poses, with a margin before changing axis near a diagonal.
+ local horizontal=p.facing=='left' or p.facing=='right'
+ if not p.facing or (horizontal and math.abs(p.vy)>math.abs(p.vx)+.18) or (not horizontal and math.abs(p.vx)>math.abs(p.vy)+.18) then
+  horizontal=math.abs(p.vx)>math.abs(p.vy)
+ end
+ p.facing=horizontal and (p.vx>0 and 'right' or 'left') or (p.vy>0 and 'down' or 'up')
+ p.angle=({down=0,up=math.pi,left=math.pi/2,right=-math.pi/2})[p.facing]
+
 end
 -- Recolor the existing brown spider, preserving the exact silhouette and eyes.
 function E.spider(x,y,size,white,spots,variant,angle)
@@ -113,21 +138,29 @@ function E.drawOverlay(w,h)
  local g=love.graphics;g.push('all');g.setShader();g.setColor(0,0,0,E.fade);g.rectangle('fill',0,0,w,h);g.pop()
 end
 function E.resize(ratio)
- if E.partner then E.partner.x=E.partner.x*ratio end
+ if E.partner then E.partner.x=E.partner.x*ratio;if E.partner.target then E.partner.target.x=E.partner.target.x*ratio end end
  if E.active then require('final_spider').resize(ratio) end
 end
 local creditSpacing,creditSpeed=90,90
 function E.startCredits(onComplete)
- E.creditTime=0;E.creditComplete=onComplete
+ E.creditTime=0;E.creditEscapes=0;E.creditComplete=onComplete;E.creditFinished=false
  App.state='credits';UI.buttons={}
 end
 function E.creditDuration() return (790+#E.credits*creditSpacing+50)/creditSpeed end
+function E.finishCredits()
+ if E.creditFinished then return end
+ E.creditFinished=true
+ local callback=E.creditComplete;E.creditComplete=nil
+ if callback then callback() else App.state='victory' end
+end
+function E.creditKey(key,isrepeat)
+ if key~='escape' or isrepeat then return end
+ E.creditEscapes=(E.creditEscapes or 0)+1
+ if E.creditEscapes>=3 then E.finishCredits() end
+end
 function E.updateCredits(dt)
  E.creditTime=E.creditTime+dt
- if E.creditTime>=E.creditDuration() then
-  local callback=E.creditComplete;E.creditComplete=nil
-  if callback then callback() else App.state='victory' end
- end
+ if E.creditTime>=E.creditDuration() then E.finishCredits() end
 end
 function E.drawCredits(w,h)
  local g=love.graphics;g.push('all');g.setShader();g.clear(.008,.009,.015,1)
@@ -142,6 +175,8 @@ function E.drawCredits(w,h)
  end
  local y=790+#E.credits*creditSpacing-scroll
  g.setFont(UI.fonts.small);g.setColor(.53,.56,.62);g.printf(E.aiNotice,130,y,940,'center')
+ g.setColor(.65,.69,.73,.85);g.setFont(UI.fonts.small)
+ g.printf('Échap × 3 pour passer'..((E.creditEscapes or 0)>0 and ('  ('..E.creditEscapes..'/3)') or ''),120,710,960,'center')
  g.pop()
 end
 return E

@@ -34,7 +34,7 @@ function A.spider(name,x,y,width,angle)
   end
   A.draw((dir=='right' and 'side_' or dir..'_')..variant,0,0,width,0)
   if name=='queen' then
-   if not Art.images.reward_crown then Art.add('reward_crown','assets/sprites/reward-crown.png') end
+   if not Art.images.reward_crown then Art.add('reward_crown','assets/skins/accessoires/couronne.png') end
    g.setColor(1,1,1);Art.draw('reward_crown',dir=='up' and 0 or (dir=='left' and -1 or 1)*width*.19,dir=='up' and -width*.29 or -width*.09,dir=='up' and width*.18 or width*.24,dir=='left' and -.25 or dir=='right' and .25 or 0)
   end
   g.pop()

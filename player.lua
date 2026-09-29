@@ -8,10 +8,10 @@ function load_player()
 	player.speed = 1
 	player.has_moved = true
 	player.last_mouve = "player.y+"
-	player.img_up = love.graphics.newImage("texture/spider_up.png")
-	player.img_down = love.graphics.newImage("texture/spider_down.png")
-	player.img_left = love.graphics.newImage("texture/spider_left.png")
-	player.img_right = love.graphics.newImage("texture/spider_right.png")
+	player.img_up = love.graphics.newImage("assets/skins/soie/up.png")
+	player.img_down = love.graphics.newImage("assets/skins/soie/down.png")
+	player.img_left = love.graphics.newImage("assets/skins/soie/profil.png")
+	player.img_right = love.graphics.newImage("assets/skins/soie/profil.png")
 	-- Preserve crisp pixel edges instead of smoothing this small sprite.
 	for _,dir in ipairs({'up','down','left','right'}) do player['img_'..dir]:setFilter('nearest','nearest') end
 	player.hitBox_width = 60

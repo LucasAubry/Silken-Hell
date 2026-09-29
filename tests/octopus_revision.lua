@@ -62,7 +62,7 @@ function T.run()
     O.updateCrabs(.6); assert(#O.crabs>0,'Mort sur le dos visible')
     love.draw(); O.updateCrabs(.61); assert(#O.crabs==0,'Enfouissement terminé')
     for _,pose in ipairs({'open','closed','dead'}) do
-        local data=love.image.newImageData('assets/sprites/crab_'..pose..'.png')
+        local data=love.image.newImageData(require('asset_paths').resolve('assets/sprites/crab_'..pose..'.png'))
         local _,_,_,alpha=data:getPixel(0,0); assert(alpha==0,'PNG transparent crabe '..pose); data:release()
     end
     level(); O.splash(); local g=love.graphics; local canvas=g.newCanvas(Arena.width,600)

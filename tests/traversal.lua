@@ -42,7 +42,7 @@ function T.run()
     print('PASS traversal: pièges limités au Paradis, tunnels accessibles aller/retour, tornades rotation/projection, taupes rapides, 12 piques, Merle continu, catégorie Pièges')
 end
 function T.visual()
-    local d=love.image.newImageData('assets/sprites/earth_tunnel.png'); local _,_,_,a=d:getPixel(0,0); assert(a==0,'Tunnel PNG transparent'); d:release()
+    local d=love.image.newImageData(require('asset_paths').resolve('assets/monstres/terre/taupe/earth_tunnel.png')); local _,_,_,a=d:getPixel(0,0); assert(a==0,'Tunnel PNG transparent'); d:release()
     Profile.unlocked=6; local tick=0
     love.update=function(dt)
         tick=tick+1; UI.clock=UI.clock+dt

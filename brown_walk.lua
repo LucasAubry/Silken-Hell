@@ -6,9 +6,10 @@ function W.advance(p,distance,dt)
  p.walkMoving=distance>.01 and dt>0
  if p.walkMoving then p.walkPhase=((p.walkPhase or 0)+distance*tau/110)%tau end
 end
-local function build(img,dir)
+local function build(img,dir,bounds)
  local cols,rows=20,20;local vertices,map,rig={},{},{}
- local w,h=img:getDimensions()
+ local iw,ih=img:getDimensions();local qx,qy,w,h=0,0,iw,ih
+ if bounds then qx,qy,w,h=bounds:getViewport() end
  local function protected(u,v,cx,cy,rx,ry)
   return 1-smooth(.8,1.2,math.sqrt(((u-cx)/rx)^2+((v-cy)/ry)^2))
  end
@@ -19,7 +20,7 @@ local function build(img,dir)
   else body=math.max(protected(u,v,.5,.63,.23,.3),protected(u,v,.5,.23,.25,.25)) end
   local side=u<.5 and -1 or 1
   local legWeight=(1-body)*smooth(.1,.3,math.abs(u-.5))
-  vertices[#vertices+1]={u*w,v*h,u,v,1,1,1,1}
+  vertices[#vertices+1]={u*w,v*h,(qx+u*w)/iw,(qy+v*h)/ih,1,1,1,1}
   rig[#rig+1]={x=u*w,y=v*h,weight=legWeight,side=side,offset=v*math.pi*2+(side>0 and math.pi or 0)}
  end end
  for y=0,rows-1 do for x=0,cols-1 do
@@ -29,12 +30,12 @@ local function build(img,dir)
  local mesh=love.graphics.newMesh(vertices,'triangles','dynamic');mesh:setVertexMap(map);mesh:setTexture(img)
  return {mesh=mesh,rig=rig,vertices=vertices,w=w,h=h}
 end
-function W.draw(img,dir,x,y,width,p)
+function W.draw(img,dir,x,y,width,p,bounds)
  if not p.walkMoving or p.reset or p.falling or p.abyssHeld or p.abyssSpit or p.abyssKnock or p.whirl or p.skyWhirl or p.throw or p.skyThrow or p.tunnelTravel then return false end
  local cached=W.meshes[dir]
  if not cached or cached.image~=img then
   if cached then cached.mesh:release() end
-  cached=build(img,dir);cached.image=img;W.meshes[dir]=cached
+  cached=build(img,dir,bounds);cached.image=img;W.meshes[dir]=cached
  end
  local phase=p.walkPhase or 0
  for i,r in ipairs(cached.rig) do

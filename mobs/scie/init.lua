@@ -10,9 +10,9 @@ function spawn_scie(x, y, rotation, speed, texture)
         dir = "up",
         img = nil,
         imgs = {
-            up = mobImage("texture/mob/scie.png"),
-            down = mobImage("texture/mob/scie_pique.png"),
-            left = mobImage("texture/mob/scie_blanc.png"),
+            up = mobImage("assets/monstres/paradis/pieges/scie.png"),
+            down = mobImage("assets/monstres/paradis/pieges/scie_pique.png"),
+            left = mobImage("assets/monstres/paradis/pieges/scie_blanc.png"),
         },
         hitBox_width = 40,
         hitBox_height = 40,

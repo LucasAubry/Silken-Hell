@@ -33,7 +33,7 @@ function T.run()
             assert(Art.images[key]); love.draw()
         end
     end
-    local sprite=Art.imageData('assets/sprites/directional/octopus_extended_down.png');local _,_,_,alpha=sprite:getPixel(0,0);assert(alpha==0);sprite:release()
+    local sprite=Art.imageData('assets/monstres/ocean/poulpe/octopus_extended_down.png');local _,_,_,alpha=sprite:getPixel(0,0);assert(alpha==0);sprite:release()
     for _,name in ipairs({'lanternfish'}) do for _,dir in ipairs({'up','down','left','right'}) do
         local data=Art.imageData('assets/sprites/directional/'..name..'_'..dir..'.png')
         local _,_,_,a=data:getPixel(0,0); assert(a==0,'PNG transparent '..name..' '..dir); data:release()

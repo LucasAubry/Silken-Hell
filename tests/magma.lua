@@ -40,8 +40,8 @@ function T.run()
     assert(#Magma.spawners==1 and #mobs==1,'Objets utilisables dans tous les biomes')
     MobBehaviors.magma_larva.draw(mobs[1]); Magma.drawGround()
     local d,a
-    d=love.image.newImageData('assets/sprites/magma_nest.png'); _,_,_,a=d:getPixel(0,0);assert(a==0,'Transparence nid');d:release()
-    d=love.image.newImageData('assets/sprites/magma_larva.png'); _,_,_,a=d:getPixel(0,0); assert(a==0,'Transparence larve'); d:release()
+    d=love.image.newImageData(require('asset_paths').resolve('assets/monstres/enfer/larve/magma_nest.png')); _,_,_,a=d:getPixel(0,0);assert(a==0,'Transparence nid');d:release()
+    d=love.image.newImageData(require('asset_paths').resolve('assets/monstres/enfer/larve/magma_larva.png')); _,_,_,a=d:getPixel(0,0); assert(a==0,'Transparence larve'); d:release()
     LevelLayouts.disabled=disabled; App.sessionLayout=nil; Campaign.select(1); player.level=1; reset_level()
     print('PASS magma: native levels, clearance, spawn, chase, fuse, blast without poison, reset, resize, editor, alpha')
 end

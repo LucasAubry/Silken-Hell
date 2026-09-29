@@ -17,7 +17,16 @@ local function segment(x,y,xx,yy,p,r)
 end
 function F.reset(active)
  F.active=active;F.hp=20;F.maxHp=20;F.defeated=false;F.x=Arena.width*.5;F.y=165;F.angle=0;F.clock=0;F.flash=0
- F.phase='passive';F.engaged=false;F.contactGrace=0;F.phaseTime=0;F.shot=.65;F.volley=0;F.snareSource=nil;F.layPulse=0;F.eggs={};F.babies={};F.shells={};F.webs={};F.stuck={};F.carried=24;F.wave=0;F.snare=0;F.webGrace=0;F.target=nil;F.gate=false;F.batch=0;F.nest=nil
+ F.phase='passive';F.engaged=false;F.jump=nil;F.jumpHeight=0;F.contactGrace=0;F.phaseTime=0;F.shot=.65;F.volley=0;F.snareSource=nil;F.layPulse=0;F.eggs={};F.babies={};F.shells={};F.webs={};F.stuck={};F.carried=24;F.wave=0;F.snare=0;F.webGrace=0;F.target=nil;F.gate=false;F.batch=0;F.nest=nil
+end
+function F.visualAngle()
+ local dir=ArtSet.facing(F.angle)
+ return ({down=0,up=math.pi,left=math.pi/2,right=-math.pi/2})[dir]
+end
+function F.beginCombat()
+ F.engaged=true;F.phase='intro_jump';F.phaseTime=0;F.contactGrace=1.2
+ F.jump={x=F.x,y=F.y,tx=F.x<Arena.width*.5 and Arena.width-110 or 110,ty=F.y<300 and 480 or 120}
+ F.angle=math.atan2(F.jump.ty-F.y,F.jump.tx-F.x)-math.pi/2
 end
 function F.damage()
  if F.defeated then return end
@@ -110,15 +119,27 @@ function F.update(dt)
  if not F.engaged then
   F.angle=math.atan2(p.y-F.y,p.x-F.x)-math.pi/2
   if near(F,p,29) then
-   F.engaged=true;F.phase='webs';F.phaseTime=0;F.shot=1.1;F.contactGrace=1.1
+   F.beginCombat()
   end
+  return
+ end
+ if F.phase=='intro_jump' then
+  local t=math.min(1,F.phaseTime/.85);local ease=t*t*(3-2*t);local j=F.jump
+  F.x=j.x+(j.tx-j.x)*ease;F.y=j.y+(j.ty-j.y)*ease
+  F.jumpHeight=math.sin(t*math.pi)*115
+  if t>=1 then F.phase='webs';F.phaseTime=0;F.shot=.45;F.contactGrace=.35;F.jump=nil;F.jumpHeight=0 end
   return
  end
  F.contactGrace=math.max(0,(F.contactGrace or 0)-dt)
  if F.contactGrace<=0 and near(F,p,27) then Hazards.kill();return end
  for i=#F.eggs,1,-1 do local e=F.eggs[i];e.age=e.age+dt
-  if player.dashing and near(e,p,32) then F.breakEgg(i);if F.defeated then return end
-  elseif e.age>=e.hatch then
+  local touching=near(e,p,32)
+  local broken=false
+  if touching and not e.touching then
+   e.touching=true;e.hits=(e.hits or 0)+1
+   if e.hits>=2 then F.breakEgg(i);broken=true;if F.defeated then return end end
+  elseif not near(e,p,40) then e.touching=false end
+  if not broken and e.age>=e.hatch then
    table.remove(F.eggs,i);F.shells[#F.shells+1]={x=e.x,y=e.y,seed=e.seed}
    F.babies[#F.babies+1]={x=e.x,y=e.y,age=0,variant=e.seed%11==0 and 'black' or e.seed%2==0 and 'white' or 'red',seed=e.seed}
   end
@@ -196,7 +217,7 @@ function F.draw()
  for _,e in ipairs(F.eggs) do
   local t=math.min(1,e.age/.32);local ease=1-(1-t)^2
   local pose={x=(e.fromX or e.x)+(e.x-(e.fromX or e.x))*ease,y=(e.fromY or e.y)+(e.y-(e.fromY or e.y))*ease-math.sin(t*math.pi)*18}
-  F.egg(pose,17*(.65+.35*ease),e.age/e.hatch)
+  F.egg(pose,17*(.65+.35*ease),math.max(e.age/e.hatch,(e.hits or 0)>0 and .45 or 0))
  end
  for _,b in ipairs(F.babies) do if not b.dead then F.spider(b.x,b.y,36,b.variant,b.angle);if b.webbed then web(b.x,b.y,24) end end end
  if not F.engaged then
@@ -207,9 +228,11 @@ function F.draw()
  local moving=F.phase=='lay' or F.phase=='charge' or F.phase=='webs'
  local stride=moving and math.sin(F.clock*(F.phase=='charge' and 24 or 14)) or 0
  local pulse=(F.layPulse or 0)/.32
- g.push();g.translate(F.x,F.y+stride*2);g.rotate(stride*.018);g.scale(1+pulse*.045,1-pulse*.045)
- F.spider(0,0,62,'queen',F.angle)
- ArtSet.clutch(0,0,62,F.carried,F.angle);g.pop()
+ local facing=F.visualAngle()
+ if F.jumpHeight>0 then g.setColor(0,0,0,.28);g.ellipse('fill',F.x,F.y+16,24,8);g.setColor(1,1,1) end
+ g.push();g.translate(F.x,F.y+stride*2-F.jumpHeight);g.rotate(stride*.018);g.scale(1+pulse*.045,1-pulse*.045)
+ F.spider(0,0,62,'queen',facing)
+ ArtSet.clutch(0,0,62,F.carried,facing);g.pop()
  for _,w in ipairs(F.webs) do g.setColor(1,1,1);ArtSet.draw('web_shot',w.x,w.y,32,math.atan2(w.vy,w.vx)) end
  if F.snare>0 and F.snareSource~='floor' then web(player.x+15,player.y+12,32) end
  if F.gate then

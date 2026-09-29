@@ -23,7 +23,7 @@ function T.run()
  assert(F.snare>0 and F.snareSource=='floor' and Ending.locked())
  local draw=A.draw;local overlays=0;A.draw=function(name,...) if name=='web_wall' then overlays=overlays+1 end;return draw(name,...)end;F.draw();A.draw=draw;assert(overlays==#F.stuck,'Floor snare only draws its existing web')
  F.stuck={};F.phase='webs';F.webs={{x=player.x+15,y=player.y+12,vx=0,vy=0}};F.updateWebs(.01);assert(F.snareSource=='shot')
- for _,color in ipairs({'red','white','black'})do for _,dir in ipairs({'left','up'})do assert(love.filesystem.getInfo('assets/sprites/final/'..dir..'_'..color..'.png'))end end
+ for _,color in ipairs({'red','white','black'})do for _,dir in ipairs({'left','up'})do assert(love.filesystem.getInfo(require('asset_paths').resolve('assets/sprites/final/'..dir..'_'..color..'.png')))end end
  local tick=0
  love.update=function()
   tick=tick+1;UI.clock=2

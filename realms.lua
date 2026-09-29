@@ -101,12 +101,6 @@ function R.reset(w,n)
             g.setColor(.83,.80,.94,.17); g.ellipse('fill',x-12,y-8,rx*.65,ry*.7)
         end
         g.setScissor()
-        for x=46,Arena.width-35,43 do
-            g.setColor(.62,.74,.86); g.ellipse('fill',x,36,30,13); g.ellipse('fill',x,564,30,13)
-        end
-        for y=48,559,38 do
-            g.setColor(.62,.74,.86); g.ellipse('fill',35,y,14,28); g.ellipse('fill',Arena.width-35,y,14,28)
-        end
         for i=1,math.min(6,2+math.floor(n/2)) do
             local p={x=Arena.width*(i%2==0 and .68 or .32),y=145+math.floor((i-1)/2)*145+(n%3-1)*15,rx=39,ry=28,seed=i*1.7+n}
             local safe=true
