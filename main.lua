@@ -268,9 +268,28 @@ function App.simulate(dt)
         else player.level=player.level+1;Hardcore.notify('Niveau '..player.level..' · Niveau suivant');if not App.hardcore then Profile.levelReached(Campaign.world,player.level) end; reset_level() end
     end
 end
+-- Keep the illustrated Paradise at the display's pixel density instead of
+-- stretching a 600-pixel-tall scene. Other biomes retain their existing renderer.
+local function refreshSceneResolution()
+    local g=love.graphics
+    local density=1
+    if App.state=='playing' and require('paradise_ink').active() then
+        local w,h=g.getDimensions();local pw,ph=g.getPixelDimensions()
+        local viewportScale=App.viewport(w,h)
+        density=math.max(1,math.min(4,viewportScale*ph/h))
+    end
+    if math.abs(gameCanvas:getDPIScale()-density)>.001 then
+        gameCanvas:release()
+        gameCanvas=g.newCanvas(Arena.width,Arena.height,{dpiscale=density})
+        gameCanvas:setFilter('linear','linear')
+    end
+    App.scenePixelHeight=gameCanvas:getPixelHeight()
+    App.scenePixelDensity=density
+end
 function love.draw()
     love.graphics.clear(0.013,0.025,0.035)
     if App.state=='playing' then
+        refreshSceneResolution()
         love.graphics.setCanvas(gameCanvas); love.graphics.clear(); love.graphics.origin(); love.graphics.setColor(1,1,1)
         draw_level()
         if not Secret.inArena() then Atmosphere.drawDrops() end
@@ -283,6 +302,7 @@ function love.draw()
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies() end; Abyss.drawLights(); Bosses.drawLights(); if Abyss.encounterActive() then love.graphics.setColor(1,1,1);draw_player(direction) end; draw_player_beacon(); BossFX.draw();Aftermath.draw();Story.drawWallMessage();if not Abyss.playerHidden() then Replay.drawGhost() end
         love.graphics.setCanvas()
     elseif App.state=='bossWorld' then
+        refreshSceneResolution()
         love.graphics.setCanvas(gameCanvas);love.graphics.origin();love.graphics.clear();Secret.drawWorld();love.graphics.setCanvas()
     end
     local w,h=love.graphics.getDimensions()
@@ -301,7 +321,7 @@ function love.draw()
         end
         love.graphics.setColor(1,1,1)
         if App.state=='playing' and isShaderActive() then hitShader:send('time',UI.clock); hitShader:send('screen_size',{Arena.width,Arena.height}); love.graphics.setShader(hitShader)
-        elseif Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('texel',{1/Arena.width,1/Arena.height});polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
+        elseif Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
         love.graphics.draw(gameCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale); love.graphics.setShader()
         if App.state=='playing' then Realms.drawWind(w,h); Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
     elseif App.state=='credits' then
@@ -440,6 +460,8 @@ end
 function love.quit() if App.preview then love.filesystem.remove('preview-heartbeat.txt') end; Online.quit() end
 
 function love.resize(w,h)
+    require('biome_borders').key=nil
+    for _,surface in ipairs(require('biome_floor').surfaces or {}) do surface.tick=nil end
     if Replay and (Replay.playing or Replay.recording) then return end
     -- Reflow a running arena when its window shape changes; retain progress and boss health.
     if not player or not Campaign.data or not gameCanvas then return end

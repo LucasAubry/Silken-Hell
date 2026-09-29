@@ -72,7 +72,8 @@ function A.draw()
     for _,p in ipairs(Hazards.lava) do if #lights<8 then lights[#lights+1]={p.x,p.y,math.max(p.rx,p.ry)*2,1} end end
     while #lights<8 do lights[#lights+1]={0,0,1,0} end
     A.shader:send('localLights',unpack(lights))
-    g.setShader(A.shader); g.rectangle('fill',0,0,Arena.width,600); g.setShader()
+    -- Keep Paradise readable: no full-screen rays or translucent veil.
+    if world~=1 then g.setShader(A.shader);g.rectangle('fill',0,0,Arena.width,600);g.setShader() end
     if world==5 then
         A.mist=A.mist or g.newShader('assets/cave_mist.glsl')
         A.mist:send('clock',t);A.mist:send('dimensions',{Arena.width,600})

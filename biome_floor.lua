@@ -6,6 +6,7 @@ function B.draw(world,width,height,time)
     -- Only the background is downsampled; actors, walls, lights and UI retain
     -- their original resolution. The cave is static and keeps its fine grain.
     local ch=Graphics and Graphics.floorHeight() or 360
+    if world==1 then local target=g.getCanvas();ch=target and target:getPixelHeight() or love.graphics.getPixelHeight() end
     local cw=math.max(300,math.min(2400,math.floor(width/height*ch+.5)))
     -- Two bounded surfaces keep a custom-width arena and its letterbox
     -- backdrop resident together, instead of reallocating them every frame.

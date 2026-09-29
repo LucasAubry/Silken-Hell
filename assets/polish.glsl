@@ -1,12 +1,9 @@
-extern vec2 texel;
 extern float strength;
 vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
- vec4 source=Texel(image,uv);vec3 bloom=vec3(0.0);
- bloom+=max(Texel(image,uv+texel*vec2(2.,0.)).rgb-.65,0.0);
- bloom+=max(Texel(image,uv-texel*vec2(2.,0.)).rgb-.65,0.0);
- bloom+=max(Texel(image,uv+texel*vec2(0.,2.)).rgb-.65,0.0);
- bloom+=max(Texel(image,uv-texel*vec2(0.,2.)).rgb-.65,0.0);
- float l=dot(source.rgb,vec3(.2126,.7152,.0722));
- vec3 polished=mix(vec3(l),source.rgb,1.08)+bloom*.12;
- return vec4(mix(source.rgb,polished,strength),source.a)*color;
+ vec4 source=Texel(image,uv);
+ float luminance=dot(source.rgb,vec3(.2126,.7152,.0722));
+ // Crisp colors without sampling adjacent pixels or spreading highlights.
+ vec3 vivid=mix(vec3(luminance),source.rgb,1.10);
+ vec3 contrast=(vivid-vec3(.5))*1.09+vec3(.5);
+ return vec4(clamp(mix(source.rgb,contrast,strength),0.,1.),source.a)*color;
 }
