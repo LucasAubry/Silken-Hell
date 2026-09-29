@@ -1,7 +1,7 @@
 function love.conf(t)
     t.identity = 'silken-hell'
     t.version = '11.5'
-    t.window.title = 'Silken Hell — Les cinq mondes'
+    t.window.title = 'Silken Hell'
     t.window.width = 1200
     t.window.height = 750
     t.window.resizable = true

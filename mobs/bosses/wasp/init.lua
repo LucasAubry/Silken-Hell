@@ -46,7 +46,7 @@ function W.contact()
             end
             b.hp=b.hp-1; W.hp=W.hp-1; b.flash=.3;W.flash=.3;b.contactGrace=.85;W.hitGrace=.85
             b.phase=b.hp==0 and 'dead' or 'cooldown';b.deadTime=0
-            Audio.play('pick');BossFX.burst(b.x,b.y,{1,.25,.06},b.hp==0 and 4 or 2)
+            BossFX.burst(b.x,b.y,{1,.25,.06},b.hp==0 and 4 or 2)
             if b.hp==0 then W.rest=math.min(W.rest,.08);W.summon=1.4 end
             if W.hp==0 then
                 W.defeated=true;W.projectiles={};W.eruptions={};objet.larme.taken=false
@@ -280,7 +280,7 @@ function W.drawGround()
             local x,y=b.tx or b.x,b.ty or b.y
             g.setColor(1,.55,.12,.55+.25*math.sin(W.elapsed*12));g.setLineWidth(2)
             g.circle('line',x,y,38);g.line(x-10,y,x+10,y);g.line(x,y-10,x,y+10)
-            g.setFont(UI.fonts.small);g.printf('INVOCATION',x-65,y+42,130,'center')
+            g.setFont(UI.fonts.small);g.printf(require('localization').text('INVOCATION'),x-65,y+42,130,'center')
         end
     end
     for _,p in ipairs(W.eruptions) do

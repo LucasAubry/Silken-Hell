@@ -1,7 +1,7 @@
 local H={lava={}}
 function H.kill(source)
     if Aftermath and (Aftermath.cleared or Aftermath.ready()) then return end
-    if source~='charged_suction' and source~='abyss_bite' and source~='abyss_mine' and source~='abyss_tooth' and Abyss and Abyss.isPulling() then return end
+    if source~='charged_suction' and source~='abyss_bite' and source~='abyss_mine' and source~='abyss_tooth' and source~='abyss_laser' and source~='abyss_octopus' and source~='abyss_projectile' and Abyss and Abyss.isPulling() then return end
     if not player.reset and not player.tunnelTravel and not player.abyssHeld and not player.abyssSpit and (player.abyssGrace or 0)<=0 then player.reset=true; player.death=player.death+1; Profile.record('deaths'); activateShaderEffect() end
 end
 function H.reset(hell,n)

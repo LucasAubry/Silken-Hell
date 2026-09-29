@@ -1,0 +1,18 @@
+{
+  "tool": "built-in imagegen",
+  "reference": "assets/sprites/merle_flight.png",
+  "variants": {
+    "left": {
+      "path": "assets/sprites/merle_flight_left.png",
+      "prompt": "Use case: stylized-concept. Game sprite directional flight variant of the exact reference blackbird. flying toward the LEFT, head and golden beak on the LEFT, tail on the RIGHT, side view, upright bird, wings swept upward, feet tucked below belly. Preserve chunky crisp pixel art, midnight navy feathers with golden star markings, golden beak and eyes. One whole bird with padding on genuinely transparent background, no scenery, no text, no ground shadow. Anatomically redraw the requested pose; do not rotate an upright side-view bird upside down. Match the reference game asset."
+    },
+    "up": {
+      "path": "assets/sprites/merle_flight_up.png",
+      "prompt": "Use case: stylized-concept. Game sprite directional flight variant of the exact reference blackbird. flying toward the TOP of the image, viewed from above and behind: golden beak points UP at top, head at top, tail at bottom, both wings extended sideways symmetrically. Preserve chunky crisp pixel art, midnight navy feathers with golden star markings, golden beak and eyes. One whole bird with padding on genuinely transparent background, no scenery, no text, no ground shadow. Anatomically redraw the requested pose; do not rotate an upright side-view bird upside down. Match the reference game asset."
+    },
+    "down": {
+      "path": "assets/sprites/merle_flight_down.png",
+      "prompt": "Use case: stylized-concept. Game sprite directional flight variant of the exact reference blackbird. flying toward the BOTTOM of the image, front/top three-quarter view: golden beak points DOWN at bottom, head at bottom, tail at top, both wings extended sideways symmetrically. Preserve chunky crisp pixel art, midnight navy feathers with golden star markings, golden beak and eyes. One whole bird with padding on genuinely transparent background, no scenery, no text, no ground shadow. Anatomically redraw the requested pose; do not rotate an upright side-view bird upside down. Match the reference game asset."
+    }
+  }
+}

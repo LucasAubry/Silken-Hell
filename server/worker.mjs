@@ -62,7 +62,7 @@ export default {
         if(!name || [...name].length>16 || /[\p{C}]/u.test(name)) fail(400,'Pseudo invalide (1 à 16 caractères).');
         if(![1,2,3,4,5,6,7,9,10,11,12,13,14].includes(b.world)) fail(400,'Monde indisponible.');
         const skin=b.skin===undefined?1:b.skin;
-        if(!Number.isInteger(skin)||skin<1||skin>14) fail(400,'Apparence invalide.');
+        if(!Number.isInteger(skin)||skin<1||skin>22) fail(400,'Apparence invalide.');
         const now=Date.now();
         const startedAt=b.startedAtMs===undefined?now:b.startedAtMs;
         if(!Number.isSafeInteger(startedAt)||startedAt>now+2500||startedAt<now-86400000) fail(400,'Date de départ invalide.');
@@ -78,7 +78,7 @@ export default {
         const run=await env.DB.prepare('SELECT * FROM runs WHERE id=? AND owner=?').bind(match[1],owner).first();
         if(!run) fail(404,'Partie introuvable.');
         const {level,elapsedMs,deaths}=b;
-        const lastLevel=run.world>=9?1:run.world===3?6:10;
+        const lastLevel=run.world>=9?1:run.world===3?2:10;
         if(!Number.isInteger(level)||level<1||level>lastLevel||!Number.isInteger(elapsedMs)||!Number.isInteger(deaths)||deaths<0||deaths>100000) fail(400,'Score invalide.');
         if(level===run.level && elapsedMs===run.elapsed_ms && deaths===run.deaths) return reply({ok:true,completed:level===lastLevel});
         if(run.level===lastLevel) fail(409,'Partie déjà terminée.');

@@ -51,7 +51,13 @@ function B.fire(m)
     B.projectiles[#B.projectiles+1]={x=m.x,y=m.y,vx=math.cos(a)*B.featherSpeed,vy=math.sin(a)*B.featherSpeed,life=3.5,sourceSlot=m.slot}
 end
 function B.hatch()
-    local wave=B.maxHp-B.hp
+    if B.broken or B.defeated then return end
+    local lostHp=B.maxHp-B.hp
+    if lostHp<=0 or lostHp%2~=0 then return end
+    local living=0
+    for _,m in ipairs(B.chicks) do if m.kind=='charger' then living=living+1 end end
+    if living>=3 then return end
+    local wave=lostHp/2
     local sites={};for i,n in ipairs(B.nests) do if not n.shooter then sites[#sites+1]=i end end
     if #sites>0 then
         local i=sites[(wave-1)%#sites+1];local n=B.nests[i]
@@ -65,7 +71,7 @@ function B.contact()
         if player.dashing then
             for i=#B.chicks,1,-1 do local m=B.chicks[i]
                 if (player.x+15-m.x)^2+(player.y+12-m.y)^2<35^2 then
-                    BossFX.burst(m.x,m.y,{.45,.65,1},2);Audio.play('pick');table.remove(B.chicks,i)
+                    BossFX.burst(m.x,m.y,{.45,.65,1},2);table.remove(B.chicks,i)
                 end
             end
             B.name='Œuf brisé · '..#B.chicks..' oiseaux étourdis'
@@ -75,7 +81,7 @@ function B.contact()
     end
     local inside=(player.x+15-B.x)^2+(player.y+12-B.y)^2<58^2
     if inside and not B.inside and player.dashing then
-        B.hp=B.hp-1;B.flash=.25;Audio.play('pick');BossFX.burst(B.x,B.y,{.76,.87,.63},3)
+        B.hp=B.hp-1;B.flash=.25;BossFX.burst(B.x,B.y,{.76,.87,.63},3)
         if B.hp<=0 then B.breakEgg() else B.hatch() end
     end
     B.inside=inside
@@ -159,7 +165,7 @@ function B.draw()
     end
     if B.broken then
         g.push('all');g.setColor(.83,.84,.8)
-        if not B.defeated then g.setColor(.9,.94,1);g.setFont(UI.fonts.small);g.printf('Fonce sur les oiseaux étourdis',B.x-150,B.y+52,300,'center') end
+        if not B.defeated then g.setColor(.9,.94,1);g.setFont(UI.fonts.small);g.printf(require('localization').text('Fonce sur les oiseaux étourdis'),B.x-150,B.y+52,300,'center') end
         g.pop()
     end
     for _,m in ipairs(B.chicks) do

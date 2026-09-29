@@ -32,6 +32,17 @@ end
 function I.label(key)
     local b=key:match('^mouse:(%d+)$');return b and ('Souris '..b) or key:upper()
 end
+function I.action(key)
+    if App.state~='playing' and App.state~='pause' and App.state~='customVictory' then return false end
+    local k=Profile.keys
+    if key==k.restartLevel then App.restartLevel()
+    elseif key==k.restartWorld then App.restartWorld()
+    elseif key==k.nextWorld then App.practiceWorld(1)
+    elseif key==k.previousWorld then App.practiceWorld(-1)
+    elseif key==k.pause then if App.state=='playing' then App.state='pause' elseif App.state=='pause' then App.state='playing' end
+    else return false end
+    return true
+end
 function I.move()
     if Replay and Replay.input then return Replay.input[1],Replay.input[2] end
     local k=Profile.keys
@@ -44,7 +55,9 @@ end
 function I.slow()
     if Replay and Replay.input then return Replay.input[3] end
     local j=I.pad
-    return I.down(Profile.keys.dash) or j and j:isConnected() and (j:isGamepadDown('a','leftshoulder','rightshoulder') or j:getGamepadAxis('triggerleft')>.3 or j:getGamepadAxis('triggerright')>.3) or false
+    local held=I.down(Profile.keys.dash) or j and j:isConnected() and (j:isGamepadDown('a','leftshoulder','rightshoulder') or j:getGamepadAxis('triggerleft')>.3 or j:getGamepadAxis('triggerright')>.3) or false
+    if Profile.speedMode=='slow' then return held end
+    return not held
 end
 function I.navigate(dx,dy)
     local buttons=UI.buttons;local b=buttons[I.index]
@@ -77,7 +90,7 @@ function I.press(j,b)
     I.use(j);if I.pad~=j then return end
     if Replay and Replay.playing then if b=='b' then Replay.stop() elseif b=='a' or b=='start' then Replay.paused=not Replay.paused end;return end
     if b=='start' or b=='b' then love.keypressed('escape');I.active=true;return end
-    if App.state=='worlds' and b=='a' then App.openEntry(App.selectedWorld,WorldMap.hardcore);return end
+    if App.state=='worlds' and b=='a' then Audio.play('selection');App.openEntry(App.selectedWorld,WorldMap.hardcore);return end
     if App.state=='bossWorld' then
         if b=='y' then Secret.category=Secret.category=='mobs' and 'boss' or 'mobs';Secret.page=1;Secret.refresh()
         elseif b=='rightshoulder' then Secret.turnPage(1) elseif b=='leftshoulder' then Secret.turnPage(-1) end
@@ -96,6 +109,6 @@ function I.draw()
     if b and not b.disabled and App.state~='playing' and App.state~='bossWorld' and App.state~='worlds' then
         local g=love.graphics;g.setColor(1,.85,.3);g.setLineWidth(3);g.rectangle('line',b.x-4,b.y-4,b.w+8,b.h+8,6);g.setLineWidth(1)
     end
-    UI.text('Stick / croix : déplacement   ·   A : valider / ralentir   ·   B / Start : retour / pause',160,725,'small',{.8,.85,.9},880,'center')
+    UI.text('Stick / croix : déplacement   ·   A : valider / vitesse   ·   B / Start : retour / pause',160,725,'small',{.8,.85,.9},880,'center')
 end
 return I

@@ -55,7 +55,7 @@ end
 function O.tearArm(arm)
     if O.defeated or O.arms[arm]==0 then return end
     O.arms[arm]=0;O.hp=O.hp-1;O.flash=.3;O.rider=nil;O.stun=0;O.spin=-O.spin
-    O.wounds[#O.wounds+1]={x=player.x+15,y=player.y+12,life=.55};Audio.play('pick')
+    O.wounds[#O.wounds+1]={x=player.x+15,y=player.y+12,life=.55};
     if O.hp<=O.maxHp/2 and not O.enraged then
         O.enraged=true;O.barrage=3;O.barrageShot=0
     end
@@ -253,9 +253,11 @@ function O.crabContact(c)
 end
 function O.moveFlungCrab(c,dt,contact)
     local f=c.fling;local speed=math.sqrt(f.vx*f.vx+f.vy*f.vy)
+    local capped=math.min(speed,O.crabSpeedLimit());local factor=speed>0 and capped/speed or 0
+    local vx,vy=f.vx*factor,f.vy*factor;speed=capped
     local steps=math.max(1,math.ceil(speed*dt/4))
     for _=1,steps do
-        local hx,hy=Arena.move(c,f.vx*dt/steps,f.vy*dt/steps)
+        local hx,hy=Arena.move(c,vx*dt/steps,vy*dt/steps)
         if hx or hy then O.explodeCrab(c);break end
         contact();if c.dead or player.reset then break end
     end
@@ -286,8 +288,14 @@ function O.updateCrabs(dt)
         if player.reset then return end
     end
 end
+function O.crabSpeedLimit()
+    if not O.active then return math.huge end
+    -- Match the player's available movement, including slow mode and terrain.
+    return math.max(0,300*player.speed*Hazards.speed()*(Input.slow() and 1 or 1.8))
+end
 function O.crabSpeed(c)
-    return c.speed*1.3*(c.inked and (1.5+.2*math.sin((c.age or 0)*19)) or c.frenzy and 1.4 or 1)*((player.ink or 0)>0 and 1.75 or 1)*((O.rider or O.crabRage>0) and 1.45 or 1)
+    local requested=c.speed*1.3*(c.inked and (1.5+.2*math.sin((c.age or 0)*19)) or c.frenzy and 1.4 or 1)*((player.ink or 0)>0 and 1.75 or 1)*((O.rider or O.crabRage>0) and 1.45 or 1)
+    return math.min(requested,O.crabSpeedLimit())
 end
 function O.walkCrab(c,dt,contact)
     -- Keep recovery for crabs embedded in a wall, independently of their old steering.

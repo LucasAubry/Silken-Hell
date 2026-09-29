@@ -12,6 +12,7 @@ function O.relayout()
 end
 function O.drawGround() end
 function O.drawBubble(outline)
+    if Abyss and Abyss.playerHidden() then return end
     if not O.active or player.abyssHeld or player.falling or player.tunnelTravel then return end
     local offsets={up={0,-9},down={0,10},left={-11,0},right={11,0}}
     local offset=offsets[direction] or offsets.down

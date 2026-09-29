@@ -3,10 +3,12 @@ C.titles={
  {'Le premier souffle','Les veilleurs','La ronde des lames','Le jardin des épines','Les ailes captives','Le silence des serpents','Les quatre gardiens','Le chœur brisé','Les portes du ciel','Le Merle noir'},
  {'La chute','Les braises','Le cercle des damnés','La forge','Les ailes de cendre','Le fleuve noir','Les sept sceaux','La gueule du feu','Le trône vide','La Guêpe solitaire'}
 }
+C.titles[3]={'La Gardienne des fils','Retrouvailles'}
 function C.install()
     -- Keep the authored positions and original encounters, before procedural walls were added.
     C.original=levels
     for w=1,7 do for n=1,10 do C.data[w][n]={} end end
+    C.data[3]={{},{}}
     for w=9,14 do C.data[w]={{}} end
     C.floor=love.graphics.newCanvas(800,600)
     love.graphics.setCanvas(C.floor); love.graphics.clear(0.105,0.035,0.04)
@@ -38,6 +40,7 @@ function C.positions(n)
     return points
 end
 function C.reset()
+    shader_effect_timer=0;shake_timer=0;cameraShakeX=0;cameraShakeY=0;ghost_timer=0
     Aftermath.reset()
     AbyssTerrain.reset()
     C.biome=Worlds.biome(C.world,player.level)
@@ -118,13 +121,16 @@ function C.reset()
     Ocean.reset(world)
     Abyss.reset(world,n)
     Magma.reset()
-    if LevelLayouts and C.world~=3 and not Worlds.isSecret(C.world) then LevelLayouts.applyCurrent() end
+    if LevelLayouts and (C.world~=3 or App.sessionLayout) and not Worlds.isSecret(C.world) then LevelLayouts.applyCurrent() end
+    if C.world==4 and not boss and not App.sessionLayout then require('mobs.crab.runners').spawn(n) end
     if not Realms.custom then C.clearGroundSites(); if world==2 then Magma.populate(n) end end
     if Secret then Secret.configure();if Secret.duel then Secret.duel.time=0;if Secret.duel.kind=='mob' then objet.larme.taken=true end end end
     local hasOctopus=Octopus.active
     for _,item in ipairs(Bosses.items) do if item.kind=='octopus' then hasOctopus=true end end
     if hasOctopus then for i=#mobs,1,-1 do if mobs[i].type=='jelly' then table.remove(mobs,i) end end end
     BossFX.update(0)
+    Renaissance.reset()
+    Ending.reset()
     C.updateTear(0)
     if App.state=='playing' then Bestiary.encounter() end
 end
@@ -181,6 +187,7 @@ function C.clearGroundSites()
     end
 end
 function C.drawCircles()
+    if Renaissance.active or Ending.active then return end
     if (Abyss.boss and not Abyss.defeated) or Bosses.hud().active or Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active then return end
     local g=love.graphics
     for _,p in ipairs(levels[player.level].larme_position) do
@@ -193,8 +200,10 @@ function C.drawCircles()
 end
 function C.draw()
     local g=love.graphics; local hell=C.biome==2
-    Arena.drawFloor(hell);if C.world==3 then Meadow.draw() end; C.drawCircles(); Abyss.drawSites()
-    if hell then
+    if Secret.inArena() then require('sanctuary_scene').arena(Worlds.isSecret(C.world))
+    else Arena.drawFloor(hell);if C.world==3 then Meadow.draw() end end
+    C.drawCircles(); Abyss.drawSites()
+    if hell and not Secret.inArena() then
         for i=1,32 do
             local x=(i*79+math.sin(larme_float_timer+i)*14)%(Arena.width-50)+25
             local y=(i*47-larme_float_timer*(12+i%9))%570+15
@@ -205,16 +214,25 @@ function C.draw()
     C.drawTear()
     g.setColor(1,1,1)
 end
-function C.drawTear()
+function C.drawTear(overlay)
+    if Ending.active then return end
+    if Renaissance.active then Renaissance.drawEggs();return end
+    if Aftermath.cleared and not overlay then return end
     if objet.larme.abyssHeld or (C.carrier and not objet.larme_dropped and (Realms.underground(C.carrier) or C.carrier.tunnelTravel)) then return end
     local g=love.graphics
     if not objet.larme.taken then
-        local x,y=objet.larme.x,objet.larme.y+math.sin(larme_float_timer*2)*4
+        local x,y=objet.larme.x,objet.larme.y+(Aftermath.cleared and 0 or math.sin(larme_float_timer*2)*4)
         local tint=Worlds.color(C.biome).tear
         if C.biome==5 then tint={.86,.65,.39} end
         if C.biome~=5 then g.setColor(tint);g.draw(particleSystem,x+15,y+20) end
         local previous=g.getShader()
-        if C.biome==5 then
+        if overlay then
+            C.victoryTearShader=C.victoryTearShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
+                vec4 p=Texel(tex,uv);
+                return vec4(vec3(.4,.55,.65)+p.rgb*vec3(.6,.45,.35),p.a)*color;
+            }]])
+            g.setShader(C.victoryTearShader);g.setColor(1,1,1)
+        elseif C.biome==5 then
             C.tearShader=C.tearShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
                 vec4 p=Texel(tex,uv);float v=max(p.r,max(p.g,p.b));
                 return vec4(.66+.30*v,.43+.33*v,.22+.28*v,p.a)*color;
@@ -236,6 +254,9 @@ function C.drawMob(m)
     else behavior.draw(m) end
 end
 function C.updateTear(dt)
+    if Ending.active then return end
+    if Renaissance.active then Renaissance.syncEgg();return end
+    if Aftermath.cleared then Aftermath.centerTear();return end
     if C.carrier then
         if not objet.larme_dropped then
             local m=C.carrier; local dx,dy=0,1

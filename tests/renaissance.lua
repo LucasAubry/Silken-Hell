@@ -26,15 +26,15 @@ function T.run()
     for n=1,10 do
         Campaign.select(6); player.level=n; reset_level(); App.state='playing'
         assert(Realms.lightningClock<.5,'Orage dès le début')
-        Realms.updateLightning(.36); assert(#Realms.lightning>=1,'Foudre présente dès le niveau un')
+        Realms.updateLightning(.36); assert(n==10 or #Realms.lightning>=1,'Foudre présente dès le niveau un')
         for _=1,4 do Realms.lightningClock=0; Realms.updateLightning(.01) end
-        assert(#Realms.lightning>=5,'Orage récurrent')
+        assert(n==10 or #Realms.lightning>=5,'Orage récurrent')
         if n<10 then assert(#mobs>=3,'Ciel plus peuplé') end
     end
     assert(Storm.active and not Campaign.canCollect(),'Boss du Ciel bloque la larme')
-    local hp=Storm.hp; player.x=Storm.x-15; player.y=Storm.y-12; Storm.contact(); assert(Storm.hp==hp,'Invulnérable en vol')
-    player.x=100; player.y=510; Storm.phaseTime=0; Storm.update(.01); assert(Storm.phase=='rest','Accalmie vulnérable')
-    player.x=Storm.x-15; player.y=Storm.y-12; Storm.contact(); assert(Storm.hp==hp-1 and not player.reset and Storm.phase=='storm')
+    local hp=Storm.hp;Storm.chargeTime=3;player.dashing=true
+    player.x=Storm.x-15;player.y=Storm.y-12;Storm.contact();player.dashing=false
+    assert(Storm.hp==hp-1 and not player.reset and Storm.chargeTime==0,'Charged dash damages sky Merle')
     BossFX.update(.01); assert(BossFX.power>0 and #BossFX.events>0,'Impacts et secousse du boss')
     local x,y=BossFX.offset(); assert(math.abs(x)<=6 and math.abs(y)<=6,'Secousse bornée')
     BossFX.update(1); assert(BossFX.power==0,'Secousse amortie')

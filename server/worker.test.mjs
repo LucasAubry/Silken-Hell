@@ -42,7 +42,7 @@ test('payload and rate limit are bounded',async()=>{
 });
 test('new worlds store the run skin and reject invalid skins',async()=>{
  const env={DB:database()};
- for(const skin of [0,15,1.5,'2',null]) assert.equal((await call(env,'/v1/runs',{body:{name:'Test',world:4,skin}})).status,400);
+ for(const skin of [0,23,1.5,'2',null]) assert.equal((await call(env,'/v1/runs',{body:{name:'Test',world:4,skin}})).status,400);
  for(const world of [4,5,6,7]) {
   const skin=world%5+1; const start=await call(env,'/v1/runs',{body:{name:'Abysses',world,skin}}); assert.equal(start.status,201);
   const run=await start.json();
@@ -136,16 +136,16 @@ test('Workshop preserves infernal larva spawners and magma larvae in any biome',
  const {id}=await posted.json();
  assert.deepEqual((await (await call(env,'/v1/workshop/'+id)).json()).layout,layout);
 });
-test('Renaissance completes after six ordered bosses and publishes its own leaderboard',async()=>{
+test('Renaissance completes after boss and reunion and publishes its own leaderboard',async()=>{
  const env={DB:database()};
  const run=await (await call(env,'/v1/runs',{body:{name:'Renaissance',world:3,skin:4}})).json();
  const path='/v1/runs/'+run.id+'/checkpoint';
- assert.equal((await call(env,path,{body:{level:6,elapsedMs:600,deaths:1}})).status,409);
- for(let level=1;level<=6;level++) {
+ assert.equal((await call(env,path,{body:{level:2,elapsedMs:200,deaths:1}})).status,409);
+ for(let level=1;level<=2;level++) {
   const res=await call(env,path,{body:{level,elapsedMs:level*100,deaths:1}}); assert.equal(res.status,200);
-  assert.equal((await res.json()).completed,level===6);
+  assert.equal((await res.json()).completed,level===2);
  }
- assert.equal((await call(env,path,{body:{level:6,elapsedMs:600,deaths:1}})).status,200);
+ assert.equal((await call(env,path,{body:{level:2,elapsedMs:200,deaths:1}})).status,200);
  assert.equal((await call(env,path,{body:{level:7,elapsedMs:700,deaths:1}})).status,400);
  const scores=(await (await call(env,'/v1/leaderboard?world=3')).json()).scores;
  assert.equal(scores.length,1); assert.equal(scores[0].skin,4); assert.equal(scores[0].deaths,1);
@@ -269,3 +269,12 @@ test('completed run replay upload, ownership, leaderboard discovery and download
  assert.deepEqual((await (await call(env,'/v1/replays/'+run.id)).json()).replay,replay);
  assert.equal((await call(env,path,{body:{replay}})).status,201);
 });
+
+ test('all crowned skins survive run submission and leaderboard storage',async()=>{
+  const env={DB:database()};
+  for(let skin=15;skin<=22;skin++) {
+   const res=await call(env,'/v1/runs',{body:{world:9,name:'Crown'+skin,skin}});assert.equal(res.status,201);
+   const run=await res.json();assert.equal((await call(env,'/v1/runs/'+run.id+'/checkpoint',{body:{level:1,elapsedMs:1000+skin,deaths:0}})).status,200);
+  }
+  const board=await (await call(env,'/v1/leaderboard?world=9')).json();assert.deepEqual(board.scores.map(s=>s.skin).sort((a,b)=>a-b),[15,16,17,18,19,20,21,22]);
+ });

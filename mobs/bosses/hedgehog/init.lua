@@ -1,6 +1,6 @@
 local H={active=false,projectiles={}}
 function H.reset(active)
-    H.active=active; H.name='Le Hérisson des profondeurs'; H.hp=7; H.maxHp=7
+    H.active=active; H.name='Le Hérisson des profondeurs'; H.hp=10; H.maxHp=10
     H.defeated=false; H.flash=0; H.phase='standing'; H.phaseTime=1.35; H.shot=.28
     H.x=Arena.width/2; H.y=185; H.dir='down'; H.stage=1; H.bounces=0; H.rotation=0
     H.hitBox_width=64; H.hitBox_height=64; H.hitBox_offset_x=-32; H.hitBox_offset_y=-32
@@ -32,7 +32,7 @@ end
 function H.finishRound()
     if H.defeated then return end
     H.hp=H.hp-1
-    Audio.play('pick')
+    
     if H.hp==0 then
         H.defeated=true; H.projectiles={}; objet.larme.taken=false
         objet.larme.x,objet.larme.y=Arena.clearSpot(H.x-15,H.y-20,30,40)

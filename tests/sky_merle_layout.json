@@ -1,0 +1,1 @@
+{"width": 960, "height": 600, "entities": [{"id": "e1", "kind": "spawn", "x": 480.0, "y": 505}, {"id": "e2", "kind": "tear", "x": 480.0, "y": 319}, {"id": "e3", "kind": "boss", "type": "storm", "x": 480.0, "y": 170, "movementRate": 1, "attackRate": 1}], "world": 6, "level": 10}

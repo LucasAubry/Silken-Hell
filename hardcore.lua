@@ -10,6 +10,7 @@ function H.load()
 end
 function H.complete(world)
  if Replay.playing then return end
+ require('app_icon').complete(world)
  H.completed[tostring(world)]=true
  love.filesystem.write('hardcore.json',require('json').encode(H.completed))
  Replay.finish()

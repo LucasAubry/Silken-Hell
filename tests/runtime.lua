@@ -9,6 +9,24 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv("SILKEN_VICTORY_TEST")=="1" then require("tests.victory_revision").run();return end
+    if os.getenv("SILKEN_DEATH_RESET_TEST")=="1" then require("tests.death_reset").run();love.event.quit();return end
+    if os.getenv("SILKEN_ABYSS_TAIL_TEST")=="1" then require("tests.abyss_tail").run();return end
+    if os.getenv("SILKEN_ABYSS_BODY_TEST")=="1" then require("tests.abyss_body_damage").run();return end
+    if os.getenv("SILKEN_ABYSS_SWIMMING_TEST")=="1" then require("tests.abyss_swimming").run();return end
+    if os.getenv("SILKEN_BOSS_SPEED_TEST")=="1" then require("tests.boss_speed_revision").run();return end
+    if os.getenv("SILKEN_SKY_VISIBILITY_TEST")=="1" then require("tests.sky_visibility").run();return end
+    if os.getenv("SILKEN_STORM_HOMING_TEST")=="1" then require("tests.storm_homing").run();return end
+    if os.getenv("SILKEN_ENDING_TEST")=="1" then require("tests.ending").run();return end
+    if os.getenv("SILKEN_ABYSS_PATTERNS_TEST")=="1" then require("tests.abyss_patterns").run();return end
+    if os.getenv("SILKEN_ABYSS_WHIP_TEST")=="1" then require("tests.abyss_whip").run();return end
+    if os.getenv("SILKEN_LOCALIZATION_TEST")=="1" then require("tests.localization").run();return end
+    if os.getenv("SILKEN_REPLAY_TOOLS_TEST")=="1" then require("tests.replay_tools").run();return end
+    if os.getenv("SILKEN_REPLAY_COMPAT_TEST")=="1" then require("tests.replay_compat").run();return end
+    if os.getenv("SILKEN_STORM_LIGHT_TEST")=="1" then require("tests.storm_light").run();return end
+    if os.getenv("SILKEN_REBIRTH_TEST")=="1" then require("tests.rebirth").run();return end
+    if os.getenv("SILKEN_SKY_MERLE_TEST")=="1" then require("tests.sky_merle").run();return end
+    if os.getenv("SILKEN_ABYSS_LASER_TEST")=="1" then require("tests.abyss_laser_cycle").run();return end
     if os.getenv("SILKEN_ABYSS_MINES_TEST")=="1" then require("tests.abyss_mines").run();return end
     if os.getenv("SILKEN_BOSS_RELOAD_TEST")=="1" then require("tests.boss_reload").run();return end
     if os.getenv("SILKEN_ABYSS_LEFT_TEST")=="1" then require("tests.abyss_left").run();return end

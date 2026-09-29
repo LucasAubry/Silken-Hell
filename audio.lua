@@ -24,8 +24,8 @@ local function levelCue(descending)
 end
 function A.load()
     love.audio.setVolume(1)
-    A.music=tone(8,{130.81,196,261.63,329.63},0.12); A.music:setLooping(true)
-    A.hell=tone(8,{65.41,98,155.56},0.16); A.hell:setLooping(true)
+    local ok,source=pcall(love.audio.newSource,'music et song/music/menu paradi.mp3','stream')
+    if ok then A.paradise=source;source:setLooping(true) end
     A.levelUp=levelCue(false);A.levelDown=levelCue(true)
     A.pick=tone(0.35,{659.25,987.77},0.3)
     A.death=tone(0.18,{82.41,87.31},0.35)
@@ -36,11 +36,20 @@ function A.load()
         A[name]=ok and source or A.click:clone()
     end
 end
+function A.focus(focused)
+    A.focused=focused
+    if not focused and A.paradise then A.paradise:pause() end
+end
 function A.update(p,hell)
-    A.music:setVolume(p.music); A.hell:setVolume(p.music)
-    local active=hell and A.hell or A.music
-    local other=hell and A.music or A.hell
-    other:stop(); if not active:isPlaying() then active:play() end
+    if A.focused==false then return end
+    local pauseSettings=(App.state=='settings' or App.state=='graphics') and UI.returnTo=='pause'
+    local menu=App.state~='playing' and App.state~='pause' and App.state~='credits' and App.state~='victory' and App.state~='customVictory' and not pauseSettings
+    if A.paradise then
+        A.paradise:setVolume(p.music)
+        if menu then
+            if not A.paradise:isPlaying() then A.paradise:play() end
+        else A.paradise:stop() end
+    end
     for _,k in ipairs({'pick','death','click','selection','go','back','editor'}) do A[k]:setVolume(p.sound) end
 end
 function A.play(name) local source=A[name] or A.click;if source then source:setVolume(Profile and Profile.sound or .65);source:stop();source:play() end end

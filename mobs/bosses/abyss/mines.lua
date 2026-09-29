@@ -20,7 +20,7 @@ function M.update(a,dt)
    if player.dashing then
     if dist<1 then dx,dy=player.lastMoveX or 1,player.lastMoveY or 0;dist=math.max(1,math.sqrt(dx*dx+dy*dy)) end
     p.armed=true;p.vx=dx/dist*360;p.vy=dy/dist*360;p.grace=.35;p.freeTime=0
-    Audio.play('pick')
+    
    else Hazards.kill('abyss_mine') end
   end
   local consumed=false

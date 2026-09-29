@@ -1,5 +1,10 @@
 local S={x=90,returnX=90}
 S.portals={}
+function S.inArena() return S.duel~=nil or (Campaign and Worlds.isSecret(Campaign.world)) end
+function S.returnToSanctuary()
+ if Replay and Replay.playing then Replay.stop() end
+ S.open()
+end
 function S.catalog()
     S.normalBosses={};S.creatures={}
     for _,e in ipairs(require('designer.catalog')) do
@@ -8,18 +13,41 @@ function S.catalog()
             table.insert(e.kind=='boss' and S.normalBosses or S.creatures,entry)
         end
     end
+    S.normalBosses[#S.normalBosses+1]={kind='boss',type='final_spider',name='La Gardienne des fils',art='final_queen',world=3}
+    table.sort(S.normalBosses,function(a,b) return Worlds.rank(a.world)<Worlds.rank(b.world) end)
+    for _,entry in ipairs(S.normalBosses) do
+        if entry.type=='merle' then entry.art='merle_egg';entry.name='L’Œuf du Merle'
+        elseif entry.type=='storm' then entry.name='Le Merle noir' end
+    end
+    S.demonBosses={}
+    local ids={[1]=9,[6]=10,[5]=11,[4]=12,[7]=13,[2]=14}
+    for _,entry in ipairs(S.normalBosses) do
+        local copy={};for k,v in pairs(entry) do copy[k]=v end
+        if ids[entry.world] then copy.world=ids[entry.world];copy.hardcore=true;S.demonBosses[#S.demonBosses+1]=copy end
+    end
 end
 function S.refresh()
     if not S.normalBosses then S.catalog() end
-    local list=S.hardcore and {{world=14,name='Sœurs de lave',art='wasp_down',hardcore=true}} or S.category=='mobs' and S.creatures or S.normalBosses
-    S.page=math.max(1,math.min(S.page or 1,math.ceil(#list/6)))
-    S.pages=math.ceil(#list/6);S.portals={}
-    for i=(S.page-1)*6+1,math.min(#list,S.page*6) do S.portals[#S.portals+1]=list[i] end
+    local list=S.hardcore and S.demonBosses or S.category=='mobs' and S.creatures or S.normalBosses
+    S.perPage=(S.hardcore or S.category~='mobs') and 1 or 6
+    S.page=math.max(1,math.min(S.page or 1,math.ceil(#list/S.perPage)))
+    S.pages=math.ceil(#list/S.perPage);S.portals={}
+    for i=(S.page-1)*S.perPage+1,math.min(#list,S.page*S.perPage) do S.portals[#S.portals+1]=list[i] end
 end
-function S.turnPage(step) S.page=(S.page-1+step)%S.pages+1;S.refresh() end
+function S.turnPage(step)
+    local page=math.max(1,math.min(S.pages,S.page+step))
+    if page==S.page then return end
+    S.page=page;S.refresh();S.cooldown=.6;S.charge=0;S.charging=nil
+    S.x=Arena.width*(step>0 and .15 or .85);S.y=478
+end
 function S.launch(p)
-    App.hardcore=false;Hardcore.notice=nil
-    if p.hardcore then S.duel=nil;App.start(14);return end
+    S.returnSelection={page=S.page,category=S.category,hardcore=S.hardcore}
+    App.hardcore=false;Hardcore.notice=nil;App.practice=nil;App.workshopMap=nil;App.preview=false
+    if p.hardcore then S.duel=nil;App.singleLevel=false;App.sessionLayout=nil;App.start(p.world);return end
+    if p.kind=='boss' then
+        S.duel={kind='boss',name=p.name,time=0};App.sessionLayout=nil;App.singleLevel=true
+        App.practice=p.world==3 and 1 or 10;LevelLayouts.disabled=false;App.start(p.world);return
+    end
     local world=p.world;local kind=p.type
     if kind=='skeleton_head' then kind='skeleton_fish' end
     local enemy={kind=p.kind,type=kind,x=480,y=p.kind=='boss' and 250 or 170,speed=p.speed,rota=p.rota or 1,radius=p.radius or 60}
@@ -41,74 +69,60 @@ function S.updateDuel(dt)
     end
 end
 function S.position(i)
-    return Arena.width*(.23+((i-1)%3)*.27),i<=3 and 175 or 425
+    if S.perPage==1 then return Arena.width*.5,478 end
+    return Arena.width*(.23+((i-1)%3)*.27),i<=3 and 220 or 450
 end
-function S.open()
+function S.open(demon)
+    local back=demon==nil and S.returnSelection or nil
+    if back then S.hardcore=back.hardcore end
+    if demon~=nil then S.hardcore=demon==true end
     if Replay then Replay.recording=false end
     if not Worlds.canEnter(8) and os.getenv('SILKEN_TEST')~='1' then return end
     App.hardcore=false;Hardcore.notice=nil;App.practice=nil
     App.selectedWorld=8
     App.sessionLayout=nil;App.singleLevel=false;App.workshopMap=nil;App.custom=false
-    S.duel=nil;S.page=1;S.category=S.category or 'boss';S.refresh()
-    S.x=Arena.width*.5;S.y=300;S.cooldown=.6;App.state='bossWorld'
+    S.duel=nil;S.page=back and back.page or 1;S.category=back and back.category or 'boss';S.charge=0;S.charging=nil;S.refresh()
+    Ending.active=false;require('final_spider').active=false;Replay.input=nil;S.facing='down'
+    S.x=Arena.width*.15;S.y=470;S.cooldown=.6;App.state='bossWorld'
 end
 function S.update(dt)
     S.cooldown=math.max(0,S.cooldown-dt)
-    local dx,dy=Input.move();local speed=Input.slow() and 300 or 540
+    local dx,dy=Input.move();local norm=math.max(1,math.sqrt(dx*dx+dy*dy));dx,dy=dx/norm,dy/norm;local speed=Input.slow() and 300 or 540
     S.x=math.max(45,math.min(Arena.width-45,S.x+dx*speed*math.min(dt,.05)))
     S.y=math.max(50,math.min(550,S.y+dy*speed*math.min(dt,.05)))
     if dx~=0 then S.facing=dx>0 and 'right' or 'left' elseif dy~=0 then S.facing=dy>0 and 'down' or 'up' end
     if S.cooldown>0 then return end
-    if S.x>Arena.width-65 and math.abs(S.y-300)<55 then S.hardcore=not S.hardcore;S.page=1;S.refresh();S.x=Arena.width-130;S.cooldown=.6;return end
+    if dx<0 and S.x<65 then S.turnPage(-1);return end
+    if dx>0 and S.x>Arena.width-65 then S.turnPage(1);return end
+    local selected
     for i,p in ipairs(S.portals) do
         local x,y=S.position(i)
-        if (S.x-x)^2+(S.y-y)^2<35^2 then
-            S.launch(p);return
-        end
+        if ((S.x-x)/38)^2+((S.y+22-y)/17)^2<=1 then selected=i;break end
     end
+    if not selected then S.charging=nil;S.charge=0;return end
+    if S.charging~=selected then S.charging=selected;S.charge=0 end
+    S.charge=math.min(1.4,(S.charge or 0)+dt)
+    if S.charge>=1.4 then S.launch(S.portals[selected]);S.charge=0;S.charging=nil end
 end
-function S.drawWorld()
-    local g=love.graphics
-    BiomeFloor.draw(8,Arena.width,600,UI.clock)
-    g.push('all');g.setBlendMode('add')
-    for i=1,6 do local x,y=S.position(i)
-        for r=5,1,-1 do g.setColor(.8,.85,1,.009);g.ellipse('fill',x,y+12,35+r*18,22+r*13) end
-    end
-    for i=1,30 do local x=(i*137)%Arena.width;local y=(i*83-UI.clock*5)%600
-        g.setColor(1,1,.95,.18+.12*math.sin(UI.clock+i));g.circle('fill',x,y,1)
-    end
-    g.pop()
-    g.setColor(.28,.26,.28)
-    g.rectangle('fill',0,0,Arena.width,22);g.rectangle('fill',0,578,Arena.width,22)
-    g.rectangle('fill',0,0,22,600);g.rectangle('fill',Arena.width-22,0,22,600)
-    g.setColor(.72,.72,.69);g.rectangle('fill',Arena.width-42,240,42,120)
-    g.setColor(.055,.025,.02);g.rectangle('fill',Arena.width-36,248,36,104)
-    g.setColor(1,1,.94);g.line(Arena.width-30,260,Arena.width-15,260,Arena.width-15,340,Arena.width-30,340)
-    g.circle('fill',Arena.width-24,300,3)
-    UI.text(S.hardcore and 'Normal' or 'Mode démon',Arena.width-125,360,'small',{1,.7,.3},110,'center')
-    for i,p in ipairs(S.portals) do local x,y=S.position(i)
-        g.setColor(.1,.065,.075);g.ellipse('fill',x,y+18,65,31)
-        g.setColor(.9,.9,.84);g.ellipse('line',x,y+18,65,31)
-        g.setColor(1,1,1)
-        if p.hardcore then g.setShader(Wasp.lavaMaterial(UI.clock)) end
-        local breath=math.sin(UI.clock*1.7+i*.9)*.018
-        local art=Art.images[p.art];local h=80*art.h/art.w
-        -- Feet stay anchored: only the sprite's chest expands, no wandering.
-        Art.draw(p.art,x,y-h*breath*.5,80*(1+breath*.35),0,h*(1+breath));g.setShader()
-        UI.text(p.name,x-125,y+53,'body',{1,.8,.5},250,'center')
-    end
-    g.setColor(0,0,0,.4);g.ellipse('fill',S.x,S.y+22,22,10)
-    g.setColor(1,1,1);Characters.draw(S.x,S.y,62,S.facing or 'down')
-end
+function S.drawWorld() require('sanctuary_scene').draw(S) end
 function S.draw()
     UI.text(S.hardcore and 'SANCTUAIRE · MODE DÉMON' or 'LE SANCTUAIRE',300,24,'heading',{1,1,.94},600,'center')
-    UI.text('Approche une miniature pour entrer dans son duel.',300,68,'small',{.8,.85,.9},600,'center')
-    if not S.hardcore then
-        UI.button(S.category=='mobs' and 'Voir les boss' or 'Voir les créatures',100,655,240,40,function() S.category=S.category=='mobs' and 'boss' or 'mobs';S.page=1;S.refresh() end)
-        UI.button('Page '..S.page..' / '..S.pages,350,655,190,40,function() S.turnPage(1) end)
+    UI.text(S.category=='mobs' and not S.hardcore and 'Un cercle par monstre · Reste dessus pour un 1 contre 1 de 20 secondes.' or 'Gauche / droite : gardien précédent / suivant. Reste sur le cercle pour entrer.',300,68,'small',{.8,.85,.9},600,'center')
+    if S.hardcore and S.portals[1] then
+        local index=Characters.crownedByWorld[Worlds.biome(S.portals[1].world)]
+        if index then
+            love.graphics.setColor(1,1,1);Characters.portrait(index,1070,590,55,'down',not Characters.unlocked(index))
+            UI.text(Characters.unlocked(index) and 'Couronne obtenue' or 'Récompense Démon',950,622,'small',{1,.84,.4},240,'center')
+        end
     end
-    UI.button('Classements',550,655,220,40,function() UI.boardWorld=14;UI.boardPage=1;App.state='rankings' end)
-    UI.button('Choix des mondes',790,655,250,40,function() App.state='worlds' end)
+    if not S.hardcore then
+        UI.button(S.category=='mobs' and 'Voir les boss' or 'Voir les créatures',100,655,240,40,function() S.category=S.category=='mobs' and 'boss' or 'mobs';S.page=1;S.charge=0;S.charging=nil;S.refresh() end)
+    end
+        UI.button('‹',350,655,45,40,function() S.turnPage(-1) end)
+        UI.text(S.page..' / '..S.pages,403,666,'body',{.75,.81,.88},80,'center')
+        UI.button('›',490,655,45,40,function() S.turnPage(1) end)
+    UI.button('Classements',550,655,220,40,function() UI.boardReturn='bossWorld';UI.boardWorld=S.hardcore and S.portals[1].world or S.portals[1].world;UI.boardPage=1;App.state='rankings' end)
+    UI.button('Choix des mondes',790,655,250,40,function() WorldMap.hardcore=S.hardcore;WorldMap.open() end)
 end
 function S.configure()
     if not Worlds.isSecret(Campaign.world) then return end

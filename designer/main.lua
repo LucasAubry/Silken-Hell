@@ -1,7 +1,7 @@
 local g=love.graphics
 local M,C,json,Worlds,Art,Biome
 local state={all=true,world=1,level=1,category='Mobs',tool=nil,grid=true,snap=true,scroll=0,buttons={},status='Choisis un objet à gauche, puis clique sur le terrain.',clock=0}
-local color={bg={.018,.025,.035},panel={.035,.055,.069},line={.30,.27,.18},text={.92,.90,.82},muted={.58,.62,.62},accent={.89,.75,.46}}
+local color={bg={.018,.027,.045},panel={.035,.065,.10},line={.20,.39,.55},text={.87,.94,1},muted={.53,.66,.77},accent={.40,.74,1}}
 local function q(s) return "'"..s:gsub("'","'\\''").."'" end
 local function text(s,x,y,size,c,w)
     g.setFont(state.fonts[size or 14]); g.setColor(c or color.text)
@@ -112,6 +112,7 @@ function love.load()
     local f=assert(io.open(archive,'rb'),'Archive du jeu introuvable'); local bytes=f:read('*a'); f:close()
     state.assetData=love.filesystem.newFileData(bytes,'silken-assets.zip')
     assert(love.filesystem.mount(state.assetData,'',true),'Impossible de charger les ressources du jeu')
+    require('editor_icon').install()
     json=require 'json'; Worlds=require 'worlds'; Art=require 'art'; Biome=require 'biome_floor'
     C=require 'catalog'; M=require 'model'; state.fonts={}
     for _,size in ipairs({12,14,16,18,22,28}) do state.fonts[size]=g.newFont(size) end

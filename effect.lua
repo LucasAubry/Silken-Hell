@@ -8,6 +8,7 @@ cameraShakeY = 0
 shake_timer = 0
 
 function draw_shadow_dash()
+    if Abyss and Abyss.playerHidden() then return end
     for _,ghost in ipairs(ghosts) do
         local tint=Worlds.color(Campaign.world).tear
         love.graphics.setColor(tint[1],tint[2],tint[3],ghost.alpha*0.6)
@@ -56,6 +57,7 @@ end
 
 
 function add_ghost(dt)
+    if Abyss and Abyss.playerHidden() then return end
     ghost_timer = ghost_timer or 0
     ghost_timer = ghost_timer + dt
     if ghost_timer >= 0.06 and player.dashing then

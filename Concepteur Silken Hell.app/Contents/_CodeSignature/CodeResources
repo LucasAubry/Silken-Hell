@@ -12,6 +12,10 @@
 		<data>
 		xLpKzUkBWSfNOO9KUCiW5823gs8=
 		</data>
+		<key>Resources/SilkenEditor-v1.icns</key>
+		<data>
+		lAgZ0XYPfRtycfTb8DrzZ1MLsjQ=
+		</data>
 		<key>Resources/applet.icns</key>
 		<data>
 		sINd6lbiqHD5dL8c6u79cFvVXhw=
@@ -43,6 +47,17 @@
 			<key>hash2</key>
 			<data>
 			w7vBbgIO2ztXcLsN+4NfFAiCUlVTpgD5EqDjgw5PhNI=
+			</data>
+		</dict>
+		<key>Resources/SilkenEditor-v1.icns</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			lAgZ0XYPfRtycfTb8DrzZ1MLsjQ=
+			</data>
+			<key>hash2</key>
+			<data>
+			mYB9l1iF+/vhtUwaD4aXXmZNTiFhyotNkCnd50Cc3qQ=
 			</data>
 		</dict>
 		<key>Resources/applet.icns</key>

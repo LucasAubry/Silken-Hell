@@ -6,13 +6,14 @@ function T.run()
   Hardcore.notice=nil;LevelLayouts.disabled=true;Campaign.select(w);player.level=n;reset_level();App.state='playing';player.reset=false
  end
  for n=1,Worlds.levelCount(3) do
-  level(3,n);assert(Campaign.biome==3 and #mobs==0 and #Arena.interior==0 and not Bosses.any() and not Raven.active and not Wasp.active and not Octopus.active and not Abyss.active,'Renaissance must be empty at '..n)
+  level(3,n);assert(Campaign.biome==3 and Renaissance.active and Renaissance.remaining==2 and #mobs>=3 and #Arena.interior==0 and not Bosses.any() and not Raven.active and not Wasp.active and not Octopus.active and not Abyss.active,'Renaissance encounter at '..n)
   assert(Campaign.canCollect(),'Empty levels retain an exit')
  end
  level(3,4);RunDetails.reset();App.hardcore=true;player.death=1;player.reset=true
  App.resolveDeath();assert(player.level==3 and not player.reset and RunDetails.rows[4].deaths==1)
  player.level=1;player.reset=true;App.resolveDeath();assert(player.level==1)
  player.level=4;reset_level();player.x=objet.larme.x;player.y=objet.larme.y;App.simulate(0)
+ player.x=objet.larme.x;player.y=objet.larme.y;App.simulate(0)
  assert(player.level==5 and Hardcore.notice.text:find('5'),'Hardcore advances')
  player.reset=true;player.falling=true;player.fallTimer=0;App.resolveDeath();assert(player.level==4);App.simulate(.32);assert(player.level==4 and not player.reset,'Falling death drops exactly once')
  local kill=Hazards.kill;Hazards.kill=function() end
@@ -78,7 +79,7 @@ function T.run()
  Input.move,Input.slow=move,slow;Online.start,Online.checkpoint=start,checkpoint;Replay.disabled=true
  print('PASS full hardcore campaign, isolated scores, saved completion and deterministic replay')
  for _,w in ipairs(Worlds.order) do Profile.completed[w]=true end
- print('PASS empty Renaissance, hardcore progression/fall death, bee combos, restored crab waves, pursuit, ink wandering and wall recovery')
+ print('PASS Renaissance encounters, hardcore progression/fall death, bee combos, restored crab waves, pursuit, ink wandering and wall recovery')
  local tick=0
  love.update=function()
   tick=tick+1

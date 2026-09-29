@@ -118,7 +118,7 @@ function L.apply(layout)
         if (item.kind=='skeleton_fish' or item.kind=='skeleton_head') and item.boss.boss then abyssBoss=true end
     end
     if abyssBoss then
-        for i=#mobs,1,-1 do if mobs[i].type=='light_jelly' then table.remove(mobs,i) end end
+        for i=#mobs,1,-1 do if mobs[i].type=='light_jelly' or mobs[i].type=='abyss_fish' or mobs[i].type=='lanternfish' then table.remove(mobs,i) end end
     end
     local boss=Bosses.alive()
     objet.larme.taken=boss

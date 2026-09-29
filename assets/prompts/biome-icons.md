@@ -1,0 +1,3 @@
+Built-in image_gen · background atlas, then game-native Canvas composition with the unmodified texture/spider_down.png sprite and rounded alpha mask.
+
+Prompt: Edit the supplied red icon into backgrounds only; remove the spider. A 4-column by 2-row grid of equal square tiles, no gutters, lettering or creatures. Pixel-art dark fantasy, centered luminous halo. Reading order: gold/ivory Paradise clouds; red lava Hell; green Renaissance meadow and flowers; turquoise Ocean bubbles/coral; amber Earth roots/rock; blue/violet storm Sky; navy/cyan bioluminescent Abyss with bones; duplicate Paradise. Full-bleed backgrounds, no rounded corners in the atlas; the game applies the final mask.

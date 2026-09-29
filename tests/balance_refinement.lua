@@ -10,7 +10,7 @@ function T.run()
  assert(#sequence>=7,'Shooters continue firing without egg hits')
  for i,slot in ipairs(sequence) do assert(slot==({1,3,5})[(i-1)%3+1],'Strict alternating shooter order') end
  b.fire=fire
- for hit=1,5 do b.hp=10-hit;b.hatch() end
+ for hit=1,8 do b.hp=10-hit;b.hatch() end
  local followers=0;for _,m in ipairs(b.chicks) do if m.kind=='charger' then followers=followers+1 end end
  assert(followers==3 and #b.chicks==6,'At most three pursuing chicks')
  assert(b.featherSpeed==440)

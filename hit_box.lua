@@ -13,6 +13,8 @@ function addWall(x, y, w, h)
 end
 
 function willCollide(newX, newY)
+    if Abyss and Abyss.blockedPlayer and Abyss.blockedPlayer(newX,newY) then return true end
+    if Abyss and Abyss.playerMinX and newX<Abyss.playerMinX(newY) then return true end
 	local offsetX = player.hitBox_offset_x or 0
 	local offsetY = player.hitBox_offset_y or 0
 

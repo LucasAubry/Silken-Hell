@@ -28,7 +28,7 @@ add('rain',nil,'Pluie',nil,6,{phase=0})
 add('current',nil,'Courant marin',nil,4,{rx=50,ry=150,dx=1})
 add('light',nil,'Source de lumière','tear_ring',7)
 add('nest',nil,'Nid du Merle','nest',1,{rx=34,ry=25})
-for _,v in ipairs({{'storm','Séraphin des orages','storm_down',6},{'merle','Le Merle noir','merle_down',1},{'wasp','Trois Sœurs de braise','wasp_down',2},{'hedgehog','Hérisson','hedgehog_down',5},{'octopus','Poulpe','octopus_extended_down',4},{'skeleton_head','Tête du Léviathan','skeleton_head',7}}) do add('boss',v[1],v[2],v[3],v[4],{movementRate=1,attackRate=1}) end
+for _,v in ipairs({{'storm','Merle noir des orages','merle_down',6},{'merle','Le Merle noir','merle_down',1},{'wasp','Trois Sœurs de braise','wasp_down',2},{'hedgehog','Hérisson','hedgehog_down',5},{'octopus','Poulpe','octopus_extended_down',4},{'skeleton_head','Tête du Léviathan','skeleton_head',7}}) do add('boss',v[1],v[2],v[3],v[4],{movementRate=1,attackRate=1}) end
 add('abyss_part','skeleton_tail','Queue du Léviathan','skeleton_tail',7,{w=100,h=145,rotation=0})
 add('abyss_part','skeleton_rib','Côte du Léviathan','skeleton_rib',7,{w=18,h=110,rotation=0})
 add('abyss_part','skeleton_spine','Vertèbre du Léviathan','skeleton_spine',7,{w=22,h=28,rotation=0})
