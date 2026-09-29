@@ -1,4 +1,5 @@
 function draw_mob(m, pivotX, pivotY)
+    if require('paradise_ink').mob(m) then return end
     local img = m.img
     if not img then return end
 

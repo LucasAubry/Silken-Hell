@@ -13,6 +13,7 @@ local palettes={
 local function rand(i,k) local n=math.sin(i*127.1+k*311.7)*43758.5453;return n-math.floor(n) end
 local function tint(c,a,m) love.graphics.setColor(c[1]*(m or 1),c[2]*(m or 1),c[3]*(m or 1),a or 1) end
 function B.edge(length,biome,seed)
+ if biome==1 then return require('paradise_ink').edge(length) end
  local g=love.graphics;local p=palettes[biome] or palettes[1]
  tint(p[1]);g.rectangle('fill',0,0,length,22)
  for i=0,math.ceil(length/48) do local x=i*48;local shift=rand(i,seed)
@@ -50,10 +51,12 @@ end
 function B.draw()
  if Campaign.biome==6 and not Secret.inArena() then return end
  local g=love.graphics;local biome=Secret.inArena() and 8 or Campaign.biome;local rank=Worlds.rank(biome);if rank==math.huge then rank=biome==8 and 4 or 1 end;rank=math.min(7,rank)
- local key=biome..':'..Arena.width..':'..(player.level or 1)
+ local target=g.getCanvas()
+ local density=biome==1 and target and target:getDPIScale() or 1
+ local key=biome..':'..Arena.width..':'..(player.level or 1)..':'..density
  if B.key~=key then
   B.key=key;if B.canvas then B.canvas:release() end
-  B.canvas=g.newCanvas(Arena.width,600);B.canvas:setFilter('nearest','nearest')
+  B.canvas=g.newCanvas(Arena.width,600,{dpiscale=density});B.canvas:setFilter(biome==1 and 'linear' or 'nearest',biome==1 and 'linear' or 'nearest')
   local old=g.getCanvas();g.push('all');g.setCanvas(B.canvas);g.origin();g.setShader();g.clear(0,0,0,0)
   B.edge(Arena.width,biome,1)
   g.push();g.translate(Arena.width,600);g.rotate(math.pi);B.edge(Arena.width,biome,2);g.pop()

@@ -152,6 +152,7 @@ function A.load()
     A.add('tear_ring','texture/aureole.png')
 end
 function A.draw(key,x,y,width,angle,height)
+    if require('paradise_ink').art(key,x,y,width,angle,height) then return end
     local a=assert(A.images[key],key)
     local sx=width/a.w; local sy=height and height/a.h or sx
     if creature(key) then A.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2) end
