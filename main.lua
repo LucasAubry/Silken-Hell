@@ -268,12 +268,11 @@ function App.simulate(dt)
         else player.level=player.level+1;Hardcore.notify('Niveau '..player.level..' · Niveau suivant');if not App.hardcore then Profile.levelReached(Campaign.world,player.level) end; reset_level() end
     end
 end
--- Keep the illustrated Paradise at the display's pixel density instead of
--- stretching a 600-pixel-tall scene. Other biomes retain their existing renderer.
+-- Render illustrated actors at display density in every biome and the sanctuary.
 local function refreshSceneResolution()
     local g=love.graphics
     local density=1
-    if App.state=='playing' and require('paradise_ink').active() then
+    if App.state=='playing' or App.state=='bossWorld' then
         local w,h=g.getDimensions();local pw,ph=g.getPixelDimensions()
         local viewportScale=App.viewport(w,h)
         density=math.max(1,math.min(4,viewportScale*ph/h))

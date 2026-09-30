@@ -585,17 +585,7 @@ function O.draw()
             for i=1,3 do local t=O.clock*4+i*math.pi*2/3;g.circle('fill',O.x+math.cos(t)*42,O.y-65+math.sin(t)*10,4) end
             g.printf(string.format('%.1f s',O.stun),O.x-60,O.y-105,120,'center');g.pop()
         end
-        -- Pupils track the player in the rotating head's local coordinates.
-        g.push('all'); g.translate(O.x,O.y); g.rotate(angle)
-        local dx,dy=player.x+15-O.x,player.y+12-O.y
-        local ex,ey=math.cos(angle)*dx+math.sin(angle)*dy,-math.sin(angle)*dx+math.cos(angle)*dy
-        local d=math.max(1,math.sqrt(ex*ex+ey*ey))
-        for _,x in ipairs({-20,20}) do
-            g.setColor(1,.62,.12); g.ellipse('fill',x,39,6.5,9)
-            g.setColor(.045,.025,.07); g.ellipse('fill',x+ex/d*2.5,39+ey/d*3,2.5,6)
-            g.setColor(1,1,1); g.circle('fill',x+ex/d*2.5-1,37+ey/d*3,1.2)
-        end
-        g.pop()
+        -- Eyes are part of the illustrated mantle, avoiding a second eye overlay.
         if O.hp<=O.maxHp/2 then
             g.push('all'); g.translate(O.x+32,O.y-49); g.scale(1+.08*math.sin(O.clock*8))
             g.setColor(1,.13,.16); g.setLineWidth(4)

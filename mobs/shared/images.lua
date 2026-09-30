@@ -2,7 +2,7 @@
 local mobImages={}
 local function mobImage(path)
     path=require("asset_paths").resolve(path)
-    if not mobImages[path] then mobImages[path]=love.graphics.newImage(path) end
+    if not mobImages[path] then mobImages[path]=require('art_filter').image(path) end
     return mobImages[path]
 end
 

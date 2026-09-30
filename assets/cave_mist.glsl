@@ -7,6 +7,7 @@ float noise(vec2 p) {
  return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
 }
 vec4 effect(vec4 color,Image tex,vec2 uv,vec2 screen) {
+    screen *= dimensions.y/love_ScreenSize.y;
  vec2 p=screen/dimensions;
  vec2 drift=vec2(clock*.024,-clock*.012);
  float n=noise(p*vec2(5,9)+drift)*.6+noise(p*vec2(11,19)-drift*1.4)*.28+noise(p*vec2(23,37)+drift)*.12;

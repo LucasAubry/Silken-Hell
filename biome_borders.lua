@@ -14,6 +14,18 @@ local function rand(i,k) local n=math.sin(i*127.1+k*311.7)*43758.5453;return n-m
 local function tint(c,a,m) love.graphics.setColor(c[1]*(m or 1),c[2]*(m or 1),c[3]*(m or 1),a or 1) end
 function B.edge(length,biome,seed)
  if biome==1 then return require('paradise_ink').edge(length) end
+ if biome==3 or biome==4 or biome==7 then
+  local g=love.graphics;B.images=B.images or {}
+  local image=B.images[biome]
+  if not image then image=g.newImage('assets/environments/ink/wall-'..biome..'.png',{mipmaps=true});image:setFilter('linear','linear');B.images[biome]=image end
+  local iw,ih=image:getDimensions();local scale=22/ih;local tile=iw*scale
+  g.push('all');g.setColor(1,1,1)
+  for x=0,length-1,tile do
+   local width=math.min(tile,length-x);local q=g.newQuad(0,0,width/scale,ih,iw,ih)
+   g.draw(image,q,x,0,0,scale,scale);q:release()
+  end
+  g.pop();return
+ end
  local g=love.graphics;local p=palettes[biome] or palettes[1]
  tint(p[1]);g.rectangle('fill',0,0,length,22)
  for i=0,math.ceil(length/48) do local x=i*48;local shift=rand(i,seed)
@@ -48,15 +60,45 @@ function B.edge(length,biome,seed)
  end
  tint(p[3],.45);g.line(0,21,length,21)
 end
+function B.skyVoid()
+ local g=love.graphics;local w=Arena.width
+ local target=g.getCanvas();local density=target and target:getDPIScale() or 1
+ local key=w..':'..density
+ if B.skyKey==key then
+  g.push('all');g.setShader();g.setColor(1,1,1);g.draw(B.skyCanvas);g.pop();return
+ end
+ B.skyKey=key;if B.skyCanvas then B.skyCanvas:release() end
+ B.skyCanvas=g.newCanvas(w,600,{dpiscale=density});B.skyCanvas:setFilter('linear','linear')
+ g.push('all');g.setCanvas(B.skyCanvas);g.origin();g.setShader();g.clear(0,0,0,0)
+ local function edge(length,depth,seed)
+  for x=0,length-1,8 do
+   local x2=math.min(length,x+8)
+   local function y(at) return depth+math.sin(at*.036+seed)*2+math.sin(at*.087-seed)*1.1 end
+   g.polygon('fill',x,0,x2,0,x2,y(x2),x,y(x))
+  end
+ end
+ for layer=0,12 do
+  local t=math.max(0,(layer-1)/11);local depth=38-layer*2.5
+  if layer==0 then g.setColor(.78,.87,.94)
+  elseif layer==1 then g.setColor(.36,.49,.64)
+  else g.setColor(.25*(1-t)+.015,.35*(1-t)+.025,.47*(1-t)+.065) end
+  edge(w,depth,1)
+  g.push();g.translate(w,600);g.rotate(math.pi);edge(w,depth,2);g.pop()
+  g.push();g.translate(0,600);g.rotate(-math.pi/2);edge(600,depth,3);g.pop()
+  g.push();g.translate(w,0);g.rotate(math.pi/2);edge(600,depth,4);g.pop()
+ end
+ g.setCanvas(target);g.pop()
+ g.push('all');g.setShader();g.setColor(1,1,1);g.draw(B.skyCanvas);g.pop()
+end
 function B.draw()
- if Campaign.biome==6 and not Secret.inArena() then return end
+ if Campaign.biome==6 and not Secret.inArena() then B.skyVoid();return end
  local g=love.graphics;local biome=Secret.inArena() and 8 or Campaign.biome;local rank=Worlds.rank(biome);if rank==math.huge then rank=biome==8 and 4 or 1 end;rank=math.min(7,rank)
  local target=g.getCanvas()
- local density=biome==1 and target and target:getDPIScale() or 1
+ local density=target and target:getDPIScale() or 1
  local key=biome..':'..Arena.width..':'..(player.level or 1)..':'..density
  if B.key~=key then
   B.key=key;if B.canvas then B.canvas:release() end
-  B.canvas=g.newCanvas(Arena.width,600,{dpiscale=density});B.canvas:setFilter(biome==1 and 'linear' or 'nearest',biome==1 and 'linear' or 'nearest')
+  B.canvas=g.newCanvas(Arena.width,600,{dpiscale=density});B.canvas:setFilter('linear','linear')
   local old=g.getCanvas();g.push('all');g.setCanvas(B.canvas);g.origin();g.setShader();g.clear(0,0,0,0)
   B.edge(Arena.width,biome,1)
   g.push();g.translate(Arena.width,600);g.rotate(math.pi);B.edge(Arena.width,biome,2);g.pop()

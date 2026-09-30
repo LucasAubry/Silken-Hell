@@ -15,7 +15,7 @@ function T.run()
  local examples={
   {kind='merle',boss={active=true,hp=4,maxHp=6,flash=0,name='L’Œuf du Merle'}},
   {kind='wasp',boss={active=true,hp=6,maxHp=9,flash=0,name='Les Trois Sœurs de braise',bees={{hp=3},{hp=2},{hp=1}}}},
-  {kind='storm',boss={active=true,hp=5,maxHp=8,flash=0,name='Le Séraphin des orages'}},
+  {kind='storm',boss={active=true,hp=5,maxHp=8,flash=0,name='Le Merle noir'}},
   {kind='hedgehog',boss={active=true,hp=4,maxHp=7,flash=0,name='Le Hérisson des profondeurs'}},
   {kind='octopus',boss={active=true,hp=5,maxHp=8,flash=0,name='Le Poulpe des marées'}},
   {kind='skeleton_fish',boss={active=true,hp=7,maxHp=10,flash=0,name='Le Léviathan des Abysses'}}}

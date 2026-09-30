@@ -10,7 +10,7 @@ end
 local function color(hex)
     assert(hex and hex:match('^#%x%x%x%x%x%x$'),'Tentacle SVG needs six-digit fill colors')
     local r,g,b=tonumber(hex:sub(2,3),16)/255,tonumber(hex:sub(4,5),16)/255,tonumber(hex:sub(6,7),16)/255
-    return {r*.83,g*1.19,math.min(1,b*1.055)}
+    return {r*.92,g*1.05,math.min(1,b*1.10)}
 end
 function V.load()
     if V.bands then return end
@@ -94,8 +94,7 @@ function V.build(points,damage,reusable)
                 g.setColor(c[1],c[2]*(1-damage*.6),c[3]*(1-damage*.5),alpha)
                 local px,py=x+b.nx*width*offset,y+b.ny*width*offset
                 local r=radius;local h=r*.45
-                g.polygon('fill',px-r,py-h,px+r,py-h,px+r,py+h,px-r,py+h)
-                g.polygon('fill',px-h,py-r,px+h,py-r,px+h,py+r,px-h,py+r)
+                g.ellipse('fill',px,py,r,r*.8,12)
             end
             nextSpot=nextSpot+V.patternSpacing
         end

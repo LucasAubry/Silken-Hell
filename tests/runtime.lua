@@ -9,6 +9,7 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv("SILKEN_GLOBAL_INK_TEST")=="1" then require("tests.global_ink").run();return end
     if os.getenv("SILKEN_VICTORY_TEST")=="1" then require("tests.victory_revision").run();return end
     if os.getenv("SILKEN_DEATH_RESET_TEST")=="1" then require("tests.death_reset").run();love.event.quit();return end
     if os.getenv("SILKEN_ABYSS_TAIL_TEST")=="1" then require("tests.abyss_tail").run();return end

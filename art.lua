@@ -9,7 +9,7 @@ function A.imageData(path)
     path=require("asset_paths").resolve(path)
     local data=love.image.newImageData(path)
     local checker=path:match('/waspling_left%.png$')
-    if path:match('/worm_left%.png$') or checker then
+    if checker then
         local w,h=data:getDimensions(); local queue={0}; local seen={[0]=true}; local head=1
         while head<=#queue do
             local i=queue[head]; head=head+1; local x,y=i%w,math.floor(i/w)
@@ -29,8 +29,8 @@ end
 function A.add(key,path)
     path=require("asset_paths").resolve(path)
     local saved=cached[path]
-    if saved and saved.fileSize==love.filesystem.getInfo(path).size and not path:match('/worm_left%.png$') and not path:match('/waspling_left%.png$') then
-        local image=love.graphics.newImage(path); image:setFilter('nearest','nearest')
+    if saved and saved.fileSize==love.filesystem.getInfo(path).size and not path:match('/waspling_left%.png$') then
+        local image=require('art_filter').image(path)
         local iw,ih=image:getDimensions()
         local a={image=image,quad=love.graphics.newQuad(saved.x,saved.y,saved.w,saved.h,iw,ih),w=saved.w,h=saved.h,glow=saved.glow}
         if saved.mask then a.mask={}; a.maskSize=192; for i=1,#saved.mask do a.mask[i-1]=saved.mask:byte(i)==49 end end
@@ -43,7 +43,7 @@ function A.add(key,path)
         if alpha>0.12 then x0=math.min(x0,x); y0=math.min(y0,y); x1=math.max(x1,x); y1=math.max(y1,y) end
     end end
     if x1<x0 then x0,y0,x1,y1=0,0,w-1,h-1 end
-    local image=love.graphics.newImage(data); image:setFilter('nearest','nearest')
+    local image=require('art_filter').image(path,data)
     A.images[key]={image=image,quad=love.graphics.newQuad(x0,y0,x1-x0+1,y1-y0+1,w,h),w=x1-x0+1,h=y1-y0+1}
     if key:match('^octopus_extended_') or key:match('^skeleton_') then
         local a=A.images[key]; a.mask={}; a.maskSize=192
@@ -76,7 +76,7 @@ function A.shadow(...)
 end
 local function creature(key)
     return key=='abyss_fish' or key=='magma_larva' or key=='abyss_octopus' or key=='wheel'
-        or key:match('^crab_') or key:match('^skeleton_') or key:match('^storm_')
+        or key:match('^crab_') or key:match('^skeleton_')
 end
 -- A subdivided sprite lets the mantle pulse and the arms undulate while swimming.
 function A.drawSwimmer(key,x,y,size,angle,time)
@@ -136,7 +136,7 @@ function A.load()
     A.add('octopus_extended_down','assets/monstres/ocean/poulpe/octopus_extended_down.png')
     A.add('abyss_octopus','assets/monstres/abysse/pieuvre/abyss_octopus.png')
     for _,name in ipairs({'nest','lava','black_feather','wheel','wall','feather'}) do A.add(name,'assets/sprites/'..name..'.png') end
-    for _,name in ipairs({'storm','spider','imp','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','gull','waspling','hedgehog','hedgehog_ball','lanternfish'}) do
+    for _,name in ipairs({'spider','imp','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','gull','waspling','hedgehog','hedgehog_ball','lanternfish'}) do
         for _,dir in ipairs({'up','down','left','right'}) do
             A.add(name..'_'..dir,'assets/sprites/directional/'..name..'_'..dir..'.png')
         end

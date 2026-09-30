@@ -176,7 +176,6 @@ function E.drawCredits(w,h)
  local y=790+#E.credits*creditSpacing-scroll
  g.setFont(UI.fonts.small);g.setColor(.53,.56,.62);g.printf(E.aiNotice,130,y,940,'center')
  g.setColor(.65,.69,.73,.85);g.setFont(UI.fonts.small)
- g.printf('Échap × 3 pour passer'..((E.creditEscapes or 0)>0 and ('  ('..E.creditEscapes..'/3)') or ''),120,710,960,'center')
  g.pop()
 end
 return E

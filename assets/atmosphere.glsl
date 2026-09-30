@@ -7,6 +7,7 @@ extern vec2 dimensions;
 extern vec3 lightTint;
 extern vec4 localLights[8];
 vec4 effect(vec4 color,Image texture,vec2 uv,vec2 pixel) {
+    pixel *= dimensions.y/love_ScreenSize.y;
     vec2 p=pixel/dimensions;
     float shafts=0.0;
     float patches=0.0;

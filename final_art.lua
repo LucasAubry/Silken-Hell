@@ -34,11 +34,18 @@ function A.spider(name,x,y,width,angle)
   end
   A.draw((dir=='right' and 'side_' or dir..'_')..variant,0,0,width,0)
   if name=='queen' then
-   if not Art.images.reward_crown then Art.add('reward_crown','assets/skins/accessoires/couronne.png') end
-   g.setColor(1,1,1);Art.draw('reward_crown',dir=='up' and 0 or (dir=='left' and -1 or 1)*width*.19,dir=='up' and -width*.29 or -width*.09,dir=='up' and width*.18 or width*.24,dir=='left' and -.25 or dir=='right' and .25 or 0)
+   if not Art.images.queen_crown then Art.add('queen_crown','assets/monstres/renaissance/reine/crown.png') end
+   g.setColor(1,1,1);Art.draw('queen_crown',dir=='up' and 0 or (dir=='left' and -1 or 1)*width*.19,dir=='up' and -width*.29 or -width*.09,dir=='up' and width*.18 or width*.24,dir=='left' and -.25 or dir=='right' and .25 or 0)
   end
   g.pop()
- else A.draw(name,x,y,width,0) end
+ else
+  A.draw(name,x,y,width,0)
+  if name=='queen' then
+   if not Art.images.queen_crown then Art.add('queen_crown','assets/monstres/renaissance/reine/crown.png') end
+   local crown=Art.images.queen_crown;local cw=width*.24;local ch=cw*crown.h/crown.w
+   graphics.setColor(1,1,1);Art.draw('queen_crown',0,width*.025-ch*.5,cw,0,ch)
+  end
+ end
  graphics.pop()
  return dir
 end
@@ -49,7 +56,7 @@ function A.clutch(x,y,width,count,angle)
  if side then g.scale(dir=='left' and -1 or 1,1) end
  g.scale(scale);g.setColor(1,1,1)
  for i=1,count do local a=i*2.399963;local r=math.sqrt(i/24)
-  A.draw('egg',(side and -36 or 0)+math.cos(a)*r*(side and 24 or 31),(side and -35 or dir=='up' and 20 or -43)+math.sin(a)*r*23,7.56,0,10.8)
+  A.draw('egg',(side and -33 or 0)+math.cos(a)*r*(side and 17 or 22),(side and -32 or dir=='up' and 9 or -39)+math.sin(a)*r*17,7.56,0,10.8)
  end
  g.pop()
 end

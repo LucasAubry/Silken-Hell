@@ -8,7 +8,7 @@ function R.fog(front,demon)
  float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
  float fbm(vec2 p){return noise(p)*.55+noise(p*2.1)*.28+noise(p*4.3)*.17;}
  vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px){
-  vec2 p=px/dimensions;vec2 drift=vec2(clock*.018,clock*.009);
+  vec2 p=(px*(dimensions.y/love_ScreenSize.y))/dimensions;vec2 drift=vec2(clock*.018,clock*.009);
   float n=fbm(p*vec2(4.,6.)+drift+fbm(p*3.-drift));
   float mist=smoothstep(.26,.75,n);
   float low=mix(.85,smoothstep(.34,.83,p.y),front);
@@ -29,7 +29,7 @@ function R.dimensions(p)
 end
 local function sprite(p,x,y)
  local g=love.graphics;local size,height=R.dimensions(p)
- if p.type=='final_spider' then g.setColor(1,1,1);require('final_art').draw('queen',x,y,270);require('final_art').clutch(x,y,270,24);return end
+ if p.type=='final_spider' then g.setColor(1,1,1);require('final_art').spider('queen',x,y,270,0);require('final_art').clutch(x,y,270,24);return end
  if p.type=='merle' then require('mobs.bosses.raven.egg').draw(x,y,100,0);return end
  local a=Art.images[p.art]
  local w,h=size,size*a.h/a.w

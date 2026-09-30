@@ -3,6 +3,7 @@ extern Image trailMask;
 extern vec2 arenaSize;
 extern bool useTrailMask;
 vec4 effect(vec4 color, Image texture, vec2 uv, vec2 pixel) {
+    pixel *= arenaSize.y/love_ScreenSize.y;
     float light = 0.0;
     for (int i=0; i<24; i++) {
         float distanceToLight = length(pixel-lights[i].xy)/max(1.0,lights[i].z);
