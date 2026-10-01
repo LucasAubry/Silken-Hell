@@ -409,8 +409,9 @@ function A.playerBrightness()
 end
 function A.playerLightRadius()
     if A.playerHidden() then return 0 end
-    if A.encounterActive() then return 38+380*A.playerBrightness() end
-    return player.circleLight and 240 or 150+45*math.max(0,(player.charges or 0)-1)
+    local charges=math.max(0,player.charges or 0)
+    if charges>0 then return 320+85*(math.min(3,charges)-1) end
+    return player.circleLight and 240 or A.encounterActive() and 100 or 150
 end
 function A.gazeDirection(b)
     local ox,oy=b.gx,b.gy

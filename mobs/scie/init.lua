@@ -71,9 +71,10 @@ MobBehaviors.scie.update=function(m,dt,noCollision)
 end
 MobBehaviors.scie.draw=function(m)
     local g=love.graphics; local x,y=m.tipX or m.x,m.tipY or m.y
-    g.setColor(.13,.09,.05); g.setLineWidth(7); g.line(m.x,m.y,x,y)
-    g.setColor(.65,.48,.23); g.setLineWidth(2)
+    local ink=require('paradise_ink').active()
+    g.setColor(ink and {.13,.16,.20} or {.13,.09,.05}); g.setLineWidth(7); g.line(m.x,m.y,x,y)
+    g.setColor(ink and {.62,.65,.66} or {.65,.48,.23}); g.setLineWidth(2)
     for i=0,7 do local t=i/8; g.circle('line',m.x+(x-m.x)*t,m.y+(y-m.y)*t,3) end
-    g.setColor(.9,.7,.3); g.circle('fill',m.x,m.y,7); g.setLineWidth(1)
+    g.setColor(ink and {.77,.78,.73} or {.9,.7,.3}); g.circle('fill',m.x,m.y,7); g.setLineWidth(1)
     g.setColor(1,1,1); Art.draw('wheel',x,y,60,m.rotation or 0)
 end

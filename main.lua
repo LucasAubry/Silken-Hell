@@ -49,6 +49,8 @@ Secret=require 'secret'
 Input=require 'input'
 Replay=require 'replay'
 Graphics=require 'graphics_settings'
+local Psyche=require 'psychedelic_fx'
+local Prism=require 'prism_material'
 RunDetails=require 'run_details'
 Meadow=require 'meadow'
 Renaissance=require 'renaissance'
@@ -60,8 +62,11 @@ Burning=require 'burning'
 App={state='menu',selectedWorld=1}
 mobs={}; larme_indexes={}; direction='down'
 shader_effect_timer=0; shader_duration=0.3
-local gameCanvas,hitShader,polishShader
-function activateShaderEffect() shader_effect_timer=shader_duration end
+local gameCanvas,polishShader
+function activateShaderEffect()
+    shader_effect_timer=shader_duration
+    Psyche.death(player.x+15,player.y+12)
+end
 function isShaderActive() return shader_effect_timer>0 end
 function App.openEntry(world,hardcore)
     if hardcore and world~=8 and not Hardcore.available(world) then return false end
@@ -90,7 +95,7 @@ function App.start(world)
     Campaign.starts={{},{},{},{},{},{},{}}; Campaign.lastSide=nil
     Campaign.select(world); App.selectedWorld=world
     Hardcore.notice=nil;timer=0;RunDetails.reset();UI.showRunDetails=false; player.level=App.practice or (App.sessionLayout and App.sessionLayout.level) or 1; player.death=0; direction='down'
-    shader_effect_timer=0; App.state='playing'; love.keyboard.setTextInput(false)
+    shader_effect_timer=0;Psyche.reset(); App.state='playing'; love.keyboard.setTextInput(false)
     if Audio.paradise then Audio.paradise:stop() end
     Replay.begin(world)
     reset_level()
@@ -103,13 +108,14 @@ function App.start(world)
 end
 function love.load()
     love.graphics.setDefaultFilter('linear','linear')
+    local preload=require('texture_preload');preload.begin()
     font_demon=love.graphics.newFont('police.ttf',40)
     if os.getenv('SILKEN_TEST')=='1' then love.filesystem.setIdentity('silken-hell-tests')
     elseif os.getenv('SILKEN_ONLINE_TEST')=='1' then love.filesystem.setIdentity('silken-hell-online-tests')
     elseif os.getenv('SILKEN_WORKSHOP_LIVE_TEST')=='1' then love.filesystem.setIdentity('silken-hell-workshop-tests') end
     Profile.load();require('app_icon').install();Hardcore.load();Graphics.load(); Input.load(); Bestiary.load(); Audio.load(); Audio.focus(love.window.hasFocus()); UI.load()
     load_level(); load_world(); load_player(); load_objet(); load_mob(); load_particles()
-    local assetStart=love.timer.getTime(); Art.load()
+    local assetStart=love.timer.getTime(); Art.load();preload.load()
     if os.getenv('SILKEN_BENCH')=='1' then print(string.format('ASSET_LOAD_SECONDS=%.3f',love.timer.getTime()-assetStart)) end
     if os.getenv('SILKEN_EXPORT_ART')=='1' then local f=assert(io.open(os.getenv('SILKEN_ART_PATH'),'wb')); f:write(require('json').encode(Art.metadata)); f:close(); love.event.quit(); return end
     Arena.configure(love.graphics.getDimensions())
@@ -119,7 +125,8 @@ function love.load()
     Campaign.select(1);reset_level()
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
     polishShader=love.graphics.newShader('assets/polish.glsl')
-    hitShader=love.graphics.newShader('hyper_demon_shader.glsl')
+    Psyche.load()
+    Prism.load()
     App.selectedWorld=1
     Online.init()
     if os.getenv('SILKEN_EXPORT_LEVELS')=='1' then require('designer.export').run(); love.event.quit(); return end
@@ -164,6 +171,7 @@ function App.move(dt)
         if player.reset or player.abyssKnock or Abyss.cagePlayer() then break end
     end
     require('brown_walk').advance(player,math.sqrt((player.x-walkStartX)^2+(player.y-walkStartY)^2),dt)
+    if not player.reset then Psyche.motion(player.x-walkStartX,player.y-walkStartY,dt) end
     if player.has_moved then add_ghost(dt) end
 end
 function App.respawn()
@@ -199,11 +207,15 @@ function love.update(dt)
     if App.state=='credits' then Ending.updateCredits(dt);return end
     if App.state=='bossWorld' then Secret.update(dt);return end
     if Replay.playing and not Replay.ghost and Replay.compatibility and (App.state=='victory' or App.state=='customVictory') then App.state='playing' end
-    if App.state~='playing' then Replay.accumulator=0;return end
+    if App.state~='playing' then
+        if App.state=='victory' or App.state=='customVictory' then Psyche.update(dt) end
+        Replay.accumulator=0;return
+    end
     Replay.update(dt,App.simulate)
     if Replay.playing and not Replay.ghost and Replay.compatibility and (App.state=='victory' or App.state=='customVictory') then App.state='playing' end
 end
 function App.simulate(dt)
+    Psyche.update(dt)
     Secret.updateDuel(dt);if App.state~='playing' then return end
     if Ending.active then
         update_shadow_dash(dt)
@@ -259,6 +271,7 @@ function App.simulate(dt)
     if Ending.checkHellVictory() then return end
     local collected=Renaissance.active and Renaissance.collect()
     if not player.tunnelTravel and (collected or (not Renaissance.active and Campaign.canCollect() and isTouching(player,objet.larme))) then
+        Psyche.collect(player.x+15,player.y+12)
         if not Renaissance.active then Profile.record('tears') end
         if not App.singleLevel and not App.hardcore then Online.checkpoint(player.level,timer,player.death) end
         if App.singleLevel then App.state='customVictory';if not Replay.playing then Replay.finish() end
@@ -290,6 +303,7 @@ function love.draw()
     if App.state=='playing' then
         refreshSceneResolution()
         love.graphics.setCanvas(gameCanvas); love.graphics.clear(); love.graphics.origin(); love.graphics.setColor(1,1,1)
+        Prism.beginScene(gameCanvas)
         draw_level()
         if not Secret.inArena() then Atmosphere.drawDrops() end
         -- Draw all floor traps first, regardless of their spawn order.
@@ -299,10 +313,10 @@ function love.draw()
         Renaissance.drawBlasts(); Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false); love.graphics.setColor(1,1,1); if Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not Abyss.encounterActive() then draw_player(direction) end; Ocean.drawBubble(); Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies() end; Abyss.drawLights(); Bosses.drawLights(); if Abyss.encounterActive() then love.graphics.setColor(1,1,1);draw_player(direction) end; draw_player_beacon(); BossFX.draw();Aftermath.draw();Story.drawWallMessage();if not Abyss.playerHidden() then Replay.drawGhost() end
-        love.graphics.setCanvas()
+        Prism.endScene();love.graphics.setCanvas()
     elseif App.state=='bossWorld' then
         refreshSceneResolution()
-        love.graphics.setCanvas(gameCanvas);love.graphics.origin();love.graphics.clear();Secret.drawWorld();love.graphics.setCanvas()
+        love.graphics.setCanvas(gameCanvas);love.graphics.origin();love.graphics.clear();Prism.beginScene(gameCanvas);Secret.drawWorld();Prism.endScene();love.graphics.setCanvas()
     end
     local w,h=love.graphics.getDimensions()
     if App.state=='playing' or App.state=='bossWorld' then
@@ -319,8 +333,8 @@ function love.draw()
             else BiomeFloor.draw(App.state=='bossWorld' and 8 or (Campaign.world==3 and 3 or Campaign.biome),w,h,UI.clock) end
         end
         love.graphics.setColor(1,1,1)
-        if App.state=='playing' and isShaderActive() then hitShader:send('time',UI.clock); hitShader:send('screen_size',{Arena.width,Arena.height}); love.graphics.setShader(hitShader)
-        elseif Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
+        local psychedelic=App.state=='playing' and Psyche.bind()
+        if not psychedelic and Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
         love.graphics.draw(gameCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale); love.graphics.setShader()
         if App.state=='playing' then Realms.drawWind(w,h); Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
     elseif App.state=='credits' then
@@ -331,9 +345,20 @@ function love.draw()
         UI.theme()
         love.graphics.setShader(UI.shader); love.graphics.setColor(1,1,1); love.graphics.draw(UI.pixel,0,0,0,w,h); love.graphics.setShader()
     end
+    if App.state=='playing' then
+        local scale,x,y=App.viewport(w,h)
+        love.graphics.push('all');love.graphics.translate(x,y);love.graphics.scale(scale)
+        Psyche.draw();love.graphics.pop()
+    end
     local s=math.min(w/1200,h/750)
     love.graphics.push(); love.graphics.translate((w-1200*s)/2,(h-750*s)/2); love.graphics.scale(s)
     if App.state~='credits' then UI.draw();Input.draw() end;love.graphics.pop()
+    -- The final collectible also celebrates over the results screen.
+    if App.state=='victory' or App.state=='customVictory' then
+        local scale,x,y=App.viewport(w,h)
+        love.graphics.push('all');love.graphics.translate(x,y);love.graphics.scale(scale)
+        Psyche.draw();love.graphics.pop()
+    end
     if App.state=='playing' then Ending.drawOverlay(w,h) end
     if Graphics.showFPS and App.state~='credits' and not Ending.active then love.graphics.setColor(.7,1,.8);love.graphics.print(tostring(love.timer.getFPS())..' FPS',12,h-24) end
     if App.capture then

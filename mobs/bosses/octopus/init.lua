@@ -172,8 +172,9 @@ end
 function O.drawGround()
     if not O.active then return end
     local g=love.graphics;g.push('all')
+    if not Art.images.ink_ground then Art.add('ink_ground','assets/monstres/ocean/poulpe/ink_ground.png') end
     for _,p in ipairs(O.inkPools) do
-        g.setColor(.07,.015,.1,math.min(1,p.life));Art.drawTinted('ink_splatter',p.x,p.y,p.rx*2.5,p.seed)
+        g.setColor(.07,.015,.1,math.min(1,p.life));Art.drawTinted('ink_ground',p.x,p.y,p.rx*2.5,p.seed)
     end
     for _,p in ipairs(O.blasts) do g.setColor(.7,.4,1,1-p.age*2);g.ellipse('line',p.x,p.y,185*p.age*2,130*p.age*2) end
     for _,c in ipairs(O.crabs) do if c.emerge and c.emerge>=0 and not c.dead then

@@ -91,8 +91,11 @@ function C.draw(x,y,width,dir)
         local key='original_'..pose
         if not Art.images[key] then Art.add(key,'texture/spider_'..pose..'.png') end
         local art=Art.images[key]
-        local walking=require('brown_walk').draw(art.image,pose,0,0,width,player,art.quad)
-        if not walking then Art.draw(key,0,0,width) end
+        local handled,walking=require('paradise_ink').player(key,pose,width,player)
+        if not handled then
+            walking=require('brown_walk').draw(art.image,pose,0,0,width,player,art.quad)
+            if not walking then Art.draw(key,0,0,width) end
+        end
         g.pop()
         if selected==22 then
             g.push();g.translate(x,y)

@@ -17,8 +17,8 @@ function T.run()
     assert(Abyss.hp==10 and Abyss.maxHp==10)
     player.x=100;player.y=300
     for i=1,8 do Abyss.charge(6) end;assert(player.charges==3)
-    player.charges=1;assert(Abyss.playerLightRadius()==150)
-    player.charges=3;assert(Abyss.playerLightRadius()==240)
+    player.charges=1;assert(Abyss.playerLightRadius()==320)
+    player.charges=3;assert(Abyss.playerLightRadius()==490)
     Abyss.hurt(3);assert(Abyss.hp==7);Abyss.hurt(7);assert(Abyss.defeated and not objet.larme.taken)
     player.illuminated=0;player.electrified=0;player.charges=0
     local draw=love.graphics.draw;local seen=false

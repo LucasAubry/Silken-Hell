@@ -10,7 +10,7 @@ end
 local function color(hex)
     assert(hex and hex:match('^#%x%x%x%x%x%x$'),'Tentacle SVG needs six-digit fill colors')
     local r,g,b=tonumber(hex:sub(2,3),16)/255,tonumber(hex:sub(4,5),16)/255,tonumber(hex:sub(6,7),16)/255
-    return {r*.92,g*1.05,math.min(1,b*1.10)}
+    return {r,g,b}
 end
 function V.load()
     if V.bands then return end

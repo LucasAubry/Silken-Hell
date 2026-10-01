@@ -304,6 +304,20 @@ function W.lavaMaterial(time)
                 W.lavaShader:send('pulse',.8+.2*math.sin((time or W.elapsed)*6))
     return W.lavaShader
 end
+function W.drawGlow(b,flying,alpha)
+ if b.hp<=0 then return end
+ local g=love.graphics;g.push('all');g.setShader();g.setBlendMode('add')
+ local y=b.y+(flying and -10 or 0);local pulse=.75+.25*math.sin(W.elapsed*4+b.id)
+ for ring=8,1,-1 do
+  g.setColor(1,.16,.025,.010*alpha*pulse);g.ellipse('fill',b.x,y,20+ring*7,15+ring*5)
+ end
+ for i=1,7 do
+  local t=(W.elapsed*.55+i*.137)%1;local a=i*2.399
+  local x=b.x+math.cos(a)*(20+12*t);local yy=y+18-t*70
+  g.setColor(1,.34+.25*t,.04,(1-t)*.65*alpha);g.circle('fill',x,yy,1.1+(1-t))
+ end
+ g.pop()
+end
 function W.draw(airborne)
     if not W.active then return end
     local g=love.graphics
@@ -311,6 +325,7 @@ function W.draw(airborne)
         local flying=b.phase~='fatigued' and b.phase~='dead'
         if airborne==flying then
             local alpha=b.hp>0 and (b.phase=='hiding' and .28 or 1) or 1
+            W.drawGlow(b,flying,alpha)
             g.setColor(b.hp<=0 and .55 or 1,b.hp<=0 and .3 or 1-b.flash*.6,b.hp<=0 and .25 or 1-b.flash*.6,alpha)
             local previous=g.getShader()
             if W.hardcore then

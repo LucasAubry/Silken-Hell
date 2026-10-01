@@ -17,7 +17,7 @@ function B.edge(length,biome,seed)
  if biome==3 or biome==4 or biome==7 then
   local g=love.graphics;B.images=B.images or {}
   local image=B.images[biome]
-  if not image then image=g.newImage('assets/environments/ink/wall-'..biome..'.png',{mipmaps=true});image:setFilter('linear','linear');B.images[biome]=image end
+  if not image then image=require('art_filter').image('assets/environments/ink/wall-'..biome..'.png');B.images[biome]=image end
   local iw,ih=image:getDimensions();local scale=22/ih;local tile=iw*scale
   g.push('all');g.setColor(1,1,1)
   for x=0,length-1,tile do

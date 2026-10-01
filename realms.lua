@@ -451,7 +451,7 @@ function R.drawCreatures()
     local g=love.graphics
     for _,m in ipairs(R.larvae) do if not m.abyssHeld then
         local scale,dy=1,0; if m.tunnelTravel then scale,dy=R.travelPose(m) end
-        g.setColor(1,1,1,scale); Art.drawLarva(m.x,m.y+dy,36*scale,math.atan2(player.y+12-m.y,player.x+15-m.x)+math.pi,m.age)
+        g.setColor(1,1,1,scale); Art.drawWorm(m.dir or 'down',m.x,m.y+dy,30*scale,m.age)
     end end
     for _,p in ipairs(R.eggs) do if not p.abyssHeld then
         g.setColor(.24,.12,.09); g.ellipse('fill',p.x,p.y,6,5)
@@ -496,9 +496,9 @@ function R.drawDarkness()
     local g=love.graphics
     R.darkShader=R.darkShader or g.newShader('assets/abyss-darkness.glsl')
     local exposed=(player.illuminated or 0)>0
-    local lights={{player.x+15,player.y+12,exposed and Abyss.playerLightRadius() or 52,exposed and (player.circleLight and .8 or .65+.12*math.max(0,(player.charges or 0)-1)) or .23}}
+    local lights={{player.x+15,player.y+12,exposed and Abyss.playerLightRadius() or 52,exposed and (player.circleLight and .8 or .90+.04*math.max(0,(player.charges or 0)-1)) or .23}}
     if Abyss.encounterActive() then
-        lights[1]={player.x+15,player.y+12,exposed and math.max(180,Abyss.playerLightRadius()) or 100,exposed and .85 or .72}
+        lights[1]={player.x+15,player.y+12,exposed and math.max(180,Abyss.playerLightRadius()) or 100,exposed and .96 or .72}
         lights[#lights+1]={Arena.width/2,300,Arena.width*2,Abyss.isPulling() and .025 or .08}
     end
     for _,m in ipairs(mobs) do if m.type=='lanternfish' and not m.abyssHeld then lights[#lights+1]={m.x,m.y-15,145,1} end end

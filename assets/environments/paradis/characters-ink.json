@@ -1,0 +1,393 @@
+{
+  "ange_down": {
+    "path": "assets/environments/paradis/characters-ink/ange_down.png",
+    "x": 6,
+    "y": 249,
+    "w": 876,
+    "h": 1305,
+    "iw": 887,
+    "ih": 1774,
+    "source": {
+      "x": 5,
+      "y": 107,
+      "w": 379,
+      "h": 561,
+      "iw": 400,
+      "ih": 800
+    }
+  },
+  "snake_down": {
+    "path": "assets/environments/paradis/characters-ink/snake_down.png",
+    "x": 28,
+    "y": 144,
+    "w": 782,
+    "h": 1594,
+    "iw": 817,
+    "ih": 1923,
+    "source": {
+      "x": 15,
+      "y": 69,
+      "w": 233,
+      "h": 475,
+      "iw": 255,
+      "ih": 600
+    }
+  },
+  "merle_down": {
+    "path": "assets/environments/paradis/characters-ink/merle_down.png",
+    "x": 33,
+    "y": 120,
+    "w": 1375,
+    "h": 884,
+    "iw": 1441,
+    "ih": 1092,
+    "source": {
+      "x": 28,
+      "y": 115,
+      "w": 1385,
+      "h": 898,
+      "iw": 1441,
+      "ih": 1092
+    }
+  },
+  "ange_up": {
+    "path": "assets/environments/paradis/characters-ink/ange_up.png",
+    "x": 28,
+    "y": 70,
+    "w": 876,
+    "h": 1574,
+    "iw": 930,
+    "ih": 1691,
+    "source": {
+      "x": 17,
+      "y": 28,
+      "w": 302,
+      "h": 562,
+      "iw": 330,
+      "ih": 600
+    }
+  },
+  "ange_left": {
+    "path": "assets/environments/paradis/characters-ink/ange_left.png",
+    "x": 268,
+    "y": 300,
+    "w": 483,
+    "h": 1249,
+    "iw": 887,
+    "ih": 1774,
+    "source": {
+      "x": 119,
+      "y": 130,
+      "w": 216,
+      "h": 561,
+      "iw": 400,
+      "ih": 800
+    }
+  },
+  "ange_right": {
+    "path": "assets/environments/paradis/characters-ink/ange_right.png",
+    "x": 128,
+    "y": 346,
+    "w": 504,
+    "h": 1253,
+    "iw": 887,
+    "ih": 1774,
+    "source": {
+      "x": 65,
+      "y": 147,
+      "w": 216,
+      "h": 561,
+      "iw": 400,
+      "ih": 800
+    }
+  },
+  "snake_up": {
+    "path": "assets/environments/paradis/characters-ink/snake_up.png",
+    "x": 53,
+    "y": 226,
+    "w": 784,
+    "h": 1418,
+    "iw": 887,
+    "ih": 1774,
+    "source": {
+      "x": 19,
+      "y": 94,
+      "w": 264,
+      "h": 474,
+      "iw": 300,
+      "ih": 600
+    }
+  },
+  "snake_left": {
+    "path": "assets/environments/paradis/characters-ink/snake_left.png",
+    "x": 50,
+    "y": 227,
+    "w": 724,
+    "h": 1609,
+    "iw": 817,
+    "ih": 1923,
+    "source": {
+      "x": 19,
+      "y": 83,
+      "w": 211,
+      "h": 475,
+      "iw": 255,
+      "ih": 600
+    }
+  },
+  "snake_right": {
+    "path": "assets/environments/paradis/characters-ink/snake_right.png",
+    "x": 70,
+    "y": 248,
+    "w": 717,
+    "h": 1562,
+    "iw": 817,
+    "ih": 1923,
+    "source": {
+      "x": 27,
+      "y": 96,
+      "w": 211,
+      "h": 475,
+      "iw": 255,
+      "ih": 600
+    }
+  },
+  "merle_up": {
+    "path": "assets/environments/paradis/characters-ink/merle_up.png",
+    "x": 27,
+    "y": 103,
+    "w": 1387,
+    "h": 918,
+    "iw": 1441,
+    "ih": 1092,
+    "source": {
+      "x": 21,
+      "y": 102,
+      "w": 1398,
+      "h": 916,
+      "iw": 1441,
+      "ih": 1092
+    }
+  },
+  "merle_left": {
+    "path": "assets/environments/paradis/characters-ink/merle_left.png",
+    "x": 42,
+    "y": 81,
+    "w": 1372,
+    "h": 953,
+    "iw": 1441,
+    "ih": 1092,
+    "source": {
+      "x": 52,
+      "y": 123,
+      "w": 1336,
+      "h": 914,
+      "iw": 1441,
+      "ih": 1092
+    }
+  },
+  "merle_right": {
+    "path": "assets/environments/paradis/characters-ink/merle_right.png",
+    "x": 87,
+    "y": 98,
+    "w": 1273,
+    "h": 949,
+    "iw": 1441,
+    "ih": 1092,
+    "source": {
+      "x": 82,
+      "y": 104,
+      "w": 1262,
+      "h": 945,
+      "iw": 1441,
+      "ih": 1092
+    }
+  },
+  "original_down": {
+    "path": "assets/environments/paradis/characters-ink/original_down.png",
+    "x": 26,
+    "y": 33,
+    "w": 1390,
+    "h": 1029,
+    "iw": 1441,
+    "ih": 1092,
+    "source": {
+      "x": 41,
+      "y": 67,
+      "w": 1359,
+      "h": 978,
+      "iw": 1441,
+      "ih": 1092
+    }
+  },
+  "original_up": {
+    "path": "assets/environments/paradis/characters-ink/original_up.png",
+    "x": 36,
+    "y": 29,
+    "w": 1369,
+    "h": 1033,
+    "iw": 1441,
+    "ih": 1092,
+    "source": {
+      "x": 31,
+      "y": 42,
+      "w": 1353,
+      "h": 1018,
+      "iw": 1441,
+      "ih": 1092
+    }
+  },
+  "original_left": {
+    "path": "assets/environments/paradis/characters-ink/original_left.png",
+    "x": 30,
+    "y": 21,
+    "w": 1392,
+    "h": 1041,
+    "iw": 1441,
+    "ih": 1092,
+    "source": {
+      "x": 31,
+      "y": 40,
+      "w": 1379,
+      "h": 1019,
+      "iw": 1441,
+      "ih": 1092
+    }
+  },
+  "tear": {
+    "path": "assets/environments/paradis/characters-ink/tear.png",
+    "x": 211,
+    "y": 55,
+    "w": 676,
+    "h": 1324,
+    "iw": 1098,
+    "ih": 1433,
+    "source": {
+      "x": 45,
+      "y": 12,
+      "w": 140,
+      "h": 269,
+      "iw": 230,
+      "ih": 300
+    }
+  },
+  "black_feather": {
+    "path": "assets/environments/paradis/characters-ink/black_feather.png",
+    "x": 497,
+    "y": 180,
+    "w": 1176,
+    "h": 365,
+    "iw": 2172,
+    "ih": 724,
+    "source": {
+      "x": 543,
+      "y": 216,
+      "w": 1086,
+      "h": 356,
+      "iw": 2172,
+      "ih": 724
+    }
+  },
+  "spider_down": {
+    "path": "assets/environments/paradis/characters-ink/spider_down.png",
+    "x": 39,
+    "y": 41,
+    "w": 1361,
+    "h": 1021,
+    "iw": 1441,
+    "ih": 1092,
+    "source": {
+      "x": 41,
+      "y": 69,
+      "w": 1355,
+      "h": 975,
+      "iw": 1441,
+      "ih": 1092
+    }
+  },
+  "spider_up": {
+    "path": "assets/environments/paradis/characters-ink/spider_up.png",
+    "x": 45,
+    "y": 34,
+    "w": 1350,
+    "h": 1031,
+    "iw": 1441,
+    "ih": 1092,
+    "source": {
+      "x": 31,
+      "y": 41,
+      "w": 1362,
+      "h": 1024,
+      "iw": 1441,
+      "ih": 1092
+    }
+  },
+  "spider_left": {
+    "path": "assets/environments/paradis/characters-ink/spider_left.png",
+    "x": 34,
+    "y": 36,
+    "w": 1377,
+    "h": 1029,
+    "iw": 1441,
+    "ih": 1092,
+    "source": {
+      "x": 30,
+      "y": 40,
+      "w": 1379,
+      "h": 1019,
+      "iw": 1441,
+      "ih": 1092
+    }
+  },
+  "skull": {
+    "path": "assets/environments/paradis/characters-ink/skull.png",
+    "x": 452,
+    "y": 159,
+    "w": 632,
+    "h": 710,
+    "iw": 1536,
+    "ih": 1024,
+    "source": {
+      "x": 212,
+      "y": 92,
+      "w": 227,
+      "h": 228,
+      "iw": 600,
+      "ih": 400
+    }
+  },
+  "clock": {
+    "path": "assets/environments/paradis/characters-ink/clock.png",
+    "x": 487,
+    "y": 195,
+    "w": 563,
+    "h": 632,
+    "iw": 1536,
+    "ih": 1024,
+    "source": {
+      "x": 208,
+      "y": 88,
+      "w": 188,
+      "h": 204,
+      "iw": 600,
+      "ih": 400
+    }
+  },
+  "tear_ring": {
+    "path": "assets/environments/paradis/characters-ink/tear_ring.png",
+    "x": 403,
+    "y": 363,
+    "w": 730,
+    "h": 297,
+    "iw": 1536,
+    "ih": 1024,
+    "source": {
+      "x": 184,
+      "y": 146,
+      "w": 220,
+      "h": 107,
+      "iw": 600,
+      "ih": 400
+    }
+  }
+}

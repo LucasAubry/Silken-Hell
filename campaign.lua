@@ -40,6 +40,7 @@ function C.positions(n)
     return points
 end
 function C.reset()
+    require('psychedelic_fx').resetMotion()
     shader_effect_timer=0;shake_timer=0;cameraShakeX=0;cameraShakeY=0;ghost_timer=0
     Aftermath.reset()
     AbyssTerrain.reset()
@@ -239,7 +240,8 @@ function C.drawTear(overlay)
             }]])
             g.setShader(C.tearShader);g.setColor(1,1,1)
         end
-        g.draw(objet.larme.img,x,y,0,objet.larme.size);g.setShader(previous)
+        if not require('paradise_ink').tear(x,y,objet.larme.size) then g.draw(objet.larme.img,x,y,0,objet.larme.size) end
+        g.setShader(previous)
     end
     g.setColor(1,1,1)
 end

@@ -17,7 +17,7 @@ function S.catalog()
     table.sort(S.normalBosses,function(a,b) return Worlds.rank(a.world)<Worlds.rank(b.world) end)
     for _,entry in ipairs(S.normalBosses) do
         if entry.type=='merle' then entry.art='merle_egg';entry.name='L’Œuf du Merle'
-        elseif entry.type=='storm' then entry.name='Le Merle noir' end
+        elseif entry.type=='storm' then entry.name='Le Merle noir';entry.art='merle_flight_down' end
     end
     S.demonBosses={}
     local ids={[1]=9,[6]=10,[5]=11,[4]=12,[7]=13,[2]=14}

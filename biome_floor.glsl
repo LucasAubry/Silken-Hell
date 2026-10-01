@@ -67,9 +67,11 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   } else c+=vec3(.34,.055,.007)*fissure*(.65+.15*sin(clock*.8+p.x*4.0));
  } else {
   float marble=pow(abs(sin(p.x*8.0+p.y*5.0+fbm(p*4.0)*13.0)),18.0);
-  c=mix(vec3(.77,.78,.73),vec3(.96,.93,.82),terrain);
-  c=mix(c,vec3(.61,.53,.32),marble*.13);
-  c+=vec3(.05,.045,.025)*pow(noise(p*8.0+clock*.009),3.0);
+  // Preserve the marble pattern, with matte ivory washes and fine graphite veins.
+  c=mix(vec3(.78,.78,.75),vec3(.93,.92,.87),terrain);
+  c=mix(c,vec3(.43,.45,.44),smoothstep(.78,.99,marble)*.14);
+  c+=(grain-.5)*.012;
+  c+=vec3(.025,.024,.02)*pow(noise(p*8.0+clock*.009),3.0);
  }
  float vignette=1.0-.13*length((pixel/dimensions-.5)*1.4);
  return vec4(c*vignette,1.0)*tint;

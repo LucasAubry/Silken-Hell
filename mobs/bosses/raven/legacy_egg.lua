@@ -27,13 +27,13 @@ function E.load()
    local c=colors[index];data:setPixel(x,y,c[1],c[2],c[3],1)
   end
  end end
- E.image=love.graphics.newImage(data);E.image:setFilter('nearest','nearest');data:release()
+ E.image=require('art_filter').image(nil,data);data:release()
 end
 function E.draw(x,y,size,cracks)
  E.load();local g=love.graphics;local scale=size/46
  g.setColor(1,1,1);g.draw(E.image,x,y,0,scale,scale,35,49)
  if (cracks or 0)>0 then
-  g.push('all');g.translate(x,y);g.scale(scale,scale);g.setLineStyle('rough')
+  g.push('all');g.translate(x,y);g.scale(scale,scale);g.setLineStyle('smooth')
   local paths={{-12,-17,-5,-10,-9,-2,-2,5},{13,-27,6,-18,11,-11,3,-5},{-17,15,-8,12,-3,20,5,15},{17,9,11,16,15,26,8,32},{-3,-38,1,-29,-3,-24,2,-16}}
   for i=1,math.min(cracks,#paths) do
    g.setLineWidth(3);g.setColor(.12,.22,.20);g.line(paths[i])

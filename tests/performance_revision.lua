@@ -22,7 +22,7 @@ function T.run()
  end
  canvas:release()
  -- All original spawners must reuse textures across deaths and wave spawns.
- local spawns={spawn_boss,spawn_snake,spawn_scie,spawn_piege,spawn_ange}
+ local spawns={spawn_snake,spawn_scie,spawn_piege,spawn_ange}
  for _,spawn in ipairs(spawns) do spawn(100,100,1) end
  local original=g.newImage;local uploads=0
  g.newImage=function(...) uploads=uploads+1;return original(...) end

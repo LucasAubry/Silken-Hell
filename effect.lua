@@ -1,4 +1,5 @@
 -- effect.lua
+local psyche=require('psychedelic_fx')
 
 ghosts = {}
 ghost_timer = 0
@@ -12,6 +13,7 @@ function draw_shadow_dash()
     for _,ghost in ipairs(ghosts) do
         local tint=Worlds.color(Campaign.world).tear
         love.graphics.setColor(tint[1],tint[2],tint[3],ghost.alpha*0.6)
+        if psyche.strength()>0 then psyche.ghostColor(ghost.time,ghost.alpha*(.6+psyche.strength()*.6)) end
         Characters.draw(ghost.x+15,ghost.y+8,62,ghost.direction)
     end
     love.graphics.setColor(1,1,1)
@@ -65,7 +67,7 @@ function add_ghost(dt)
             x = player.x,
             y = player.y,
             direction = direction,
-            alpha = 0.26,
+            alpha = psyche.strength()>0 and .48 or .26,
             time = 0
         })
         ghost_timer = 0

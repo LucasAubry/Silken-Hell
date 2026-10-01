@@ -12,9 +12,13 @@ function C.playerMinX(a,y)
  if cy<a.swimHead.y-98 or cy>a.swimHead.y+141 then return a.swimHead.x+155 end
  return a.swimHead.x+14
 end
-function C.inMouth(a,x,y) return not C.moving(a) and not Jaw.blocked(a,x-15,y-12) end
+function C.throat(a,x,y)
+ local mx,my=C.mouth(a)
+ return a.open and not C.moving(a) and (x-mx)^2/70^2+(y-my)^2/38^2<1
+end
+function C.inMouth(a,x,y) return a.open and not C.moving(a) and (C.throat(a,x,y) or not Jaw.blocked(a,x-15,y-12)) end
 function C.blockedPlayer(a,x,y)
- if C.moving(a) then return false end
+ if C.moving(a) or C.throat(a,x+15,y+12) then return false end
  return Jaw.blocked(a,x,y)
 end
 function C.targetPart(a)
@@ -38,7 +42,7 @@ function C.lockPlayer(a) return not a.defeated and not player.reset and (a.grab~
 local durations={roar=1.1,intro=1.2,rest=.9,retreat=.85,traverse=6,returnHead=.95,bones=5.5,settle=.8,suction=6.5,spit=2.6,recover=1}
 function C.geometry(a) a.beams={};a.zones={} end
 function C.build(a)
- local h=a.swimHead;local key=C.moving(a) and 'skeleton_head' or 'skeleton_open'
+ local h=a.swimHead;local key=a.open and 'skeleton_open' or 'skeleton_head'
  local spot=Art.images[key].glow or {u=.5,v=.5}
  local swimming=a.phase=='traverse';local dir=swimming and a.swimDir or 1
  local angle=swimming and math.cos(a.phaseTime*3.4)*.045*dir or 0
@@ -64,6 +68,7 @@ end
 function C.setup(a)
  W.setup(a);a.hp=10;a.maxHp=10;a.whiteOrbs={};a.lightOnlySuction=false;a.healsFromEnergy=true;a.removedTeeth={};a.toothTargets={};a.fragments={};a.grab=nil;a.mouthPassage=function(x,y) return C.inMouth(a,x,y) end;a.attackIndex=1;a.boneTimer=.3;a.energyTimer=0;a.swimTrail={};a.trailTimer=0;a.damageProgress=0;a.detached={};a.swimY=140;a.cargoBlue=0;a.cargoBones=0;a.bodyHitCooldown=0;a.bodyContactLatched=false;a.bodyContact=function(b) return C.bodyContact(a,b) end
  player.charges=0;player.electrified=0;player.abyssSpit=nil;player.abyssKnock=nil;player.abyssHeld=nil
+ a.mouthHitCooldown=0;a.mouthHitLatched=false
  C.enter(a,'intro')
 end
 local function roarSound()
@@ -80,7 +85,7 @@ local function roarSound()
 end
 function C.enter(a,phase)
  a.motionFrom={x=a.swimHead.x,y=a.swimHead.y}
- a.phase=phase;a.phaseTime=0;a.open=not C.moving(a)
+ a.phase=phase;a.phaseTime=0;a.open=phase~='intro' and not C.moving(a)
  if not C.moving(a) then a.swimHead.x=35;a.swimHead.y=300 end
  a.visibleSince=nil
  if phase=='rest' or phase=='suction' or phase=='recover' then a.whiteOrbs={} end
@@ -134,6 +139,17 @@ end
 function C.contact(a)
  if a.defeated or player.reset or a.phase=='roar' then return end
  player.x=math.max(player.x,C.playerMinX(a))
+ local px,py=player.x+15,player.y+12;local mx,my=C.mouth(a)
+ local inThroat=C.throat(a,px,py)
+ if not inThroat then a.mouthHitLatched=false end
+ if inThroat and player.dashing and not a.mouthHitLatched and (a.mouthHitCooldown or 0)<=0
+  and a.phase~='suction' and not player.abyssSpit then
+  a.mouthHitLatched=true;a.mouthHitCooldown=.75
+  a.hurt(1);player.dashing=false;player.abyssGrace=.45
+  player.abyssKnock={time=.24,vx=520,vy=(py-my)*3}
+  BossFX.burst(mx,my,{.4,.85,1},1.2)
+  if a.defeated then return end
+ end
  if a.phase=='traverse' then
   local touching=false
   for i=1,#a.bones do if a.overlapsBone(a.bones[i]) then touching=true;break end end
@@ -199,6 +215,7 @@ function C.duration(a) return a.phase=='traverse' and a.passDuration or duration
 local function tick(a,dt)
  local phase=a.phase
  a.bodyHitCooldown=math.max(0,a.bodyHitCooldown-dt)
+ a.mouthHitCooldown=math.max(0,(a.mouthHitCooldown or 0)-dt)
  a.clock=a.clock+dt;a.flash=math.max(0,a.flash-dt);a.spitFlash=math.max(0,a.spitFlash-dt)
  a.phaseTime=a.phaseTime+dt*(a.attackRate or 1)
  if phase=='roar' then

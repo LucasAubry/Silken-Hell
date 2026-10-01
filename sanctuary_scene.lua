@@ -29,7 +29,7 @@ function R.dimensions(p)
 end
 local function sprite(p,x,y)
  local g=love.graphics;local size,height=R.dimensions(p)
- if p.type=='final_spider' then g.setColor(1,1,1);require('final_art').spider('queen',x,y,270,0);require('final_art').clutch(x,y,270,24);return end
+ if p.type=='final_spider' then g.setColor(1,1,1);require('final_art').spider('queen',x,y,110,0);require('final_art').clutch(x,y,110,24);return end
  if p.type=='merle' then require('mobs.bosses.raven.egg').draw(x,y,100,0);return end
  local a=Art.images[p.art]
  local w,h=size,size*a.h/a.w

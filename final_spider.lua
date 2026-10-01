@@ -17,16 +17,20 @@ local function segment(x,y,xx,yy,p,r)
 end
 function F.reset(active)
  F.active=active;F.hp=20;F.maxHp=20;F.defeated=false;F.x=Arena.width*.5;F.y=165;F.angle=0;F.clock=0;F.flash=0
- F.phase='passive';F.engaged=false;F.jump=nil;F.jumpHeight=0;F.contactGrace=0;F.phaseTime=0;F.shot=.65;F.volley=0;F.snareSource=nil;F.layPulse=0;F.eggs={};F.babies={};F.shells={};F.webs={};F.stuck={};F.carried=24;F.wave=0;F.snare=0;F.webGrace=0;F.target=nil;F.gate=false;F.batch=0;F.nest=nil
+ F.phase='passive';F.engaged=false;F.jumpCooldown=0;F.jump=nil;F.jumpHeight=0;F.contactGrace=0;F.phaseTime=0;F.shot=.65;F.volley=0;F.snareSource=nil;F.layPulse=0;F.eggs={};F.babies={};F.shells={};F.webs={};F.stuck={};F.carried=24;F.wave=0;F.snare=0;F.webGrace=0;F.target=nil;F.gate=false;F.batch=0;F.nest=nil
 end
 function F.visualAngle()
  local dir=ArtSet.facing(F.angle)
  return ({down=0,up=math.pi,left=math.pi/2,right=-math.pi/2})[dir]
 end
-function F.beginCombat()
- F.engaged=true;F.phase='intro_jump';F.phaseTime=0;F.contactGrace=1.2
+function F.leap(resume)
+ F.jumpResume=resume or 'webs';F.jumpResumeTime=F.phaseTime;F.jumpCooldown=4
+ F.phase='intro_jump';F.phaseTime=0;F.contactGrace=1.2
  F.jump={x=F.x,y=F.y,tx=F.x<Arena.width*.5 and Arena.width-110 or 110,ty=F.y<300 and 480 or 120}
  F.angle=math.atan2(F.jump.ty-F.y,F.jump.tx-F.x)-math.pi/2
+end
+function F.beginCombat()
+ F.engaged=true;F.leap('webs')
 end
 function F.damage()
  if F.defeated then return end
@@ -69,7 +73,7 @@ function F.layEgg()
  F.eggs[#F.eggs+1]={x=point.x,y=point.y,fromX=rearX,fromY=rearY,age=0,hatch=7.5,seed=F.wave*8+F.batch}
 end
 function F.trap(target)
- if F.defeated or F.phase=='charge' or F.phase=='aim' then return end
+ if F.defeated or F.phase=='charge' or F.phase=='aim' or F.phase=='intro_jump' then return end
  F.resume=F.phase;F.target=target;F.phase='aim';F.phaseTime=0
  if target==player then F.snare=2.1 else target.webbed=true end
  local p=target==player and playerPoint() or target;F.chargeX=p.x;F.chargeY=p.y
@@ -107,6 +111,7 @@ end
 function F.update(dt)
  if not F.active then return end
  F.layPulse=math.max(0,(F.layPulse or 0)-dt)
+ F.jumpCooldown=math.max(0,(F.jumpCooldown or 0)-dt)
  F.clock=F.clock+dt;F.phaseTime=F.phaseTime+dt;F.flash=math.max(0,F.flash-dt);F.snare=math.max(0,F.snare-dt);F.webGrace=math.max(0,(F.webGrace or 0)-dt)
  if F.defeated then
   towards(F,Arena.width*.5,95,110,dt)
@@ -123,20 +128,23 @@ function F.update(dt)
   end
   return
  end
- if F.phase=='intro_jump' then
+ local jumping=F.phase=='intro_jump'
+ if jumping then
   local t=math.min(1,F.phaseTime/.85);local ease=t*t*(3-2*t);local j=F.jump
   F.x=j.x+(j.tx-j.x)*ease;F.y=j.y+(j.ty-j.y)*ease
   F.jumpHeight=math.sin(t*math.pi)*115
-  if t>=1 then F.phase='webs';F.phaseTime=0;F.shot=.45;F.contactGrace=.35;F.jump=nil;F.jumpHeight=0 end
-  return
+  if t>=1 then F.phase=F.jumpResume or 'webs';F.phaseTime=F.phase=='lay' and F.jumpResumeTime or 0;F.shot=.45;F.contactGrace=.35;F.jump=nil;F.jumpHeight=0 end
+ end
+ if not jumping and F.jumpCooldown<=0 and (F.phase=='webs' or F.phase=='lay') and near(F,p,115) then
+  F.leap(F.phase);jumping=true
  end
  F.contactGrace=math.max(0,(F.contactGrace or 0)-dt)
  if F.contactGrace<=0 and near(F,p,27) then Hazards.kill();return end
- for i=#F.eggs,1,-1 do local e=F.eggs[i];e.age=e.age+dt
+ for i=#F.eggs,1,-1 do local e=F.eggs[i];e.age=e.age+dt;e.crackShake=math.max(0,(e.crackShake or 0)-dt)
   local touching=near(e,p,32)
   local broken=false
   if touching and not e.touching then
-   e.touching=true;e.hits=(e.hits or 0)+1
+   e.touching=true;e.hits=(e.hits or 0)+1;e.crackShake=.32
    if e.hits>=2 then F.breakEgg(i);broken=true;if F.defeated then return end end
   elseif not near(e,p,40) then e.touching=false end
   if not broken and e.age>=e.hatch then
@@ -154,6 +162,7 @@ function F.update(dt)
   end
  end
  F.updateWebs(dt)
+ if jumping then return end
  if F.phase=='aim' then
   F.angle=math.atan2(F.chargeY-F.y,F.chargeX-F.x)-math.pi/2
   if F.phaseTime>.65 then F.phase='charge';F.phaseTime=0 end
@@ -191,7 +200,6 @@ function F.update(dt)
    if webbed then F.trap(webbed)
    else
     towards(F,Arena.width*.5+math.sin(F.clock*.5)*Arena.width*.18,175+math.cos(F.clock*.65)*45,90,dt)
-    F.angle=math.atan2(p.y-F.y,p.x-F.x)-math.pi/2
    end
   end
  end
@@ -207,7 +215,17 @@ local function web(x,y,r,alpha)
 end
 function F.egg(e,size,progress)
  local name=progress and progress>.66 and 'egg_crack2' or progress and progress>.3 and 'egg_crack1' or 'egg'
- love.graphics.setColor(1,1,1);ArtSet.draw(name,e.x,e.y,size*1.4,0,size*2)
+ local g=love.graphics;g.push('all');g.translate(e.x,e.y)
+ local shake=math.max((e.crackShake or 0)/.32,(progress or 0)>.66 and ((progress-.66)/.34)*.7 or 0)
+ g.translate(math.sin(F.clock*75+(e.seed or 0))*shake*1.8,0)
+ g.setColor(1,1,1);ArtSet.draw(name,0,0,size*1.4,0,size*2)
+ if (progress or 0)>.3 then
+  g.scale(size/17);g.setLineJoin('bevel');g.setLineWidth(2.1);g.setColor(.22,.14,.16,.95)
+  g.line(0,-13,-3,-8,2,-4,-2,1,3,6,0,12)
+  if progress>.66 then g.line(2,-4,6,-6,9,-4);g.line(-2,1,-6,4,-8,2);g.line(3,6,7,10) end
+  g.setLineWidth(.65);g.setColor(.76,.60,.46,.8);g.line(1,-13,-2,-8,3,-4,-1,1,4,6,1,12)
+ end
+ g.pop()
 end
 function F.draw()
  if not F.active then return end
@@ -216,7 +234,7 @@ function F.draw()
  for _,w in ipairs(F.stuck) do web(w.x,w.y,25,.78) end
  for _,e in ipairs(F.eggs) do
   local t=math.min(1,e.age/.32);local ease=1-(1-t)^2
-  local pose={x=(e.fromX or e.x)+(e.x-(e.fromX or e.x))*ease,y=(e.fromY or e.y)+(e.y-(e.fromY or e.y))*ease-math.sin(t*math.pi)*18}
+  local pose={crackShake=e.crackShake,seed=e.seed,x=(e.fromX or e.x)+(e.x-(e.fromX or e.x))*ease,y=(e.fromY or e.y)+(e.y-(e.fromY or e.y))*ease-math.sin(t*math.pi)*18}
   F.egg(pose,17*(.65+.35*ease),math.max(e.age/e.hatch,(e.hits or 0)>0 and .45 or 0))
  end
  for _,b in ipairs(F.babies) do if not b.dead then F.spider(b.x,b.y,36,b.variant,b.angle);if b.webbed then web(b.x,b.y,24) end end end
@@ -224,13 +242,11 @@ function F.draw()
   UI.text('Approche-toi et touche la reine',F.x-150,F.y+46,'small',{.85,.82,.95},300,'center')
  end
  if F.phase=='aim' then g.setColor(1,.28,.25,.5);g.setLineWidth(2);g.circle('line',F.chargeX,F.chargeY,34+math.sin(F.clock*18)*3) end
- -- A shared walking bob and laying contraction keep the carried eggs attached.
- local moving=F.phase=='lay' or F.phase=='charge' or F.phase=='webs'
- local stride=moving and math.sin(F.clock*(F.phase=='charge' and 24 or 14)) or 0
+ -- Keep the body grounded; only a deliberate escape leap raises it.
  local pulse=(F.layPulse or 0)/.32
  local facing=F.visualAngle()
  if F.jumpHeight>0 then g.setColor(0,0,0,.28);g.ellipse('fill',F.x,F.y+16,24,8);g.setColor(1,1,1) end
- g.push();g.translate(F.x,F.y+stride*2-F.jumpHeight);g.rotate(stride*.018);g.scale(1+pulse*.045,1-pulse*.045)
+ g.push();g.translate(F.x,F.y-F.jumpHeight);g.scale(1+pulse*.045,1-pulse*.045)
  F.spider(0,0,62,'queen',facing)
  ArtSet.clutch(0,0,62,F.carried,facing);g.pop()
  for _,w in ipairs(F.webs) do g.setColor(1,1,1);ArtSet.draw('web_shot',w.x,w.y,32,math.atan2(w.vy,w.vx)) end

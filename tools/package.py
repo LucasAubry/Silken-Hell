@@ -11,6 +11,7 @@ for pattern in ('*.lua', '*.glsl', '*.ttf', 'levels/**/*.lua', 'mobs/**/*.lua', 
                 'texture/**/*.png', 'tests/*.lua', 'tests/*.json', 'designer/**/*', 'music et song/**/*.mp3'):
     for path in root.glob(pattern):
         if (path.is_file() and not any(part.startswith('.') or part == '__pycache__' for part in path.relative_to(root).parts)
+                and path.suffix not in ('.md', '.txt', '.icns') and 'prompt' not in path.name.lower()
                 and not re.search(r' \d+\.[^.]+$', path.name) and path.suffix not in ('.tmp', '.updated', '.pyc', '.log')):
             paths.add(path)
 with tempfile.TemporaryDirectory(prefix='silken-build-') as folder:

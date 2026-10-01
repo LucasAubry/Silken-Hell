@@ -1,4 +1,4 @@
-local G={quality=2,effects=true,showFPS=true,vsync=0,limit=120}
+local G={quality=2,effects=true,showFPS=true,vsync=0,limit=120,psychedelic=2}
 local json=require 'json'
 local T=require('localization').text
 function G.load()
@@ -7,10 +7,11 @@ function G.load()
   G.quality=math.max(1,math.min(3,tonumber(v.quality) or 2));G.effects=v.effects~=false;G.showFPS=v.showFPS~=false
   G.limit=(v.limit==0 or v.limit==60) and v.limit or 120
   G.vsync=(v.vsync==1 or v.vsync==-1) and v.vsync or 0
+  G.psychedelic=(v.psychedelic==0 or v.psychedelic==1) and v.psychedelic or 2
  end
  love.window.setVSync(G.vsync)
 end
-function G.save() love.filesystem.write('graphics.json',json.encode({quality=G.quality,effects=G.effects,showFPS=G.showFPS,vsync=G.vsync,limit=G.limit})) end
+function G.save() love.filesystem.write('graphics.json',json.encode({quality=G.quality,effects=G.effects,showFPS=G.showFPS,vsync=G.vsync,limit=G.limit,psychedelic=G.psychedelic})) end
 function G.floorHeight() return ({240,360,600})[G.quality] end
 function G.backgroundHz() return G.quality==1 and 30 or 60 end
 function G.pace()
@@ -29,7 +30,8 @@ function G.draw()
  end)
  U.button(T('Compteur FPS : %s',T(G.showFPS and 'visible' or 'masqué')),340,410,520,45,function() G.showFPS=not G.showFPS;G.save() end)
  U.button(T('Limite FPS : %s',G.limit==0 and T('sans limite') or tostring(G.limit)),340,475,520,45,function() G.limit=G.limit==120 and 60 or G.limit==60 and 0 or 120;G.save() end)
- U.text(T('En cas de ralentissements : qualité légère et lumières désactivées.\nLa lumière nécessaire au combat des abysses reste active.'),340,534,'small',{.65,.77,.79},520)
- U.button('Retour',340,580,520,42,function() App.state='settings' end)
+ U.button(T('Effets psychédéliques : %s',T(({[0]='désactivés',[1]='atténués',[2]='intenses'})[G.psychedelic])),340,532,520,42,function() G.psychedelic=(G.psychedelic+1)%3;G.save() end)
+ U.text(T('Mort, vitesse et larmes : choisis leur intensité visuelle.'),340,582,'small',{.65,.77,.79},520)
+ U.button('Retour',340,611,520,36,function() App.state='settings' end)
 end
 return G

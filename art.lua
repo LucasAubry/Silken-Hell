@@ -27,6 +27,7 @@ function A.imageData(path)
     return data
 end
 function A.add(key,path)
+    if A.onLoad then A.onLoad() end
     path=require("asset_paths").resolve(path)
     local saved=cached[path]
     if saved and saved.fileSize==love.filesystem.getInfo(path).size and not path:match('/waspling_left%.png$') then
@@ -172,6 +173,7 @@ function A.direction(dx,dy,previous)
     return dy>0 and 'down' or 'up'
 end
 function A.drawFacing(name,dir,x,y,size)
+    if require('paradise_ink').facing(name,dir,x,y,size) then return end
     local key=name..'_'..(dir or 'down'); local a=assert(A.images[key],key)
     local scale=size/math.max(a.w,a.h)
     if not name:find('spider') then A.shadow(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2) end
@@ -182,13 +184,13 @@ function A.drawWorm(dir,x,y,size,time)
     local iw,ih=a.image:getDimensions(); local scale=size/math.max(a.w,a.h)
     a.strips=a.strips or {}
     local vertical=dir=='up' or dir=='down'
+    A.shadow(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
     for i=0,11 do
         local t=i/12; local endpoint=(i+1)/12
         local sx,sy=qx+(vertical and 0 or qw*t),qy+(vertical and qh*t or 0)
         local sw,sh=vertical and qw or qw/12,vertical and qh/12 or qh
         if not a.strips[i] then a.strips[i]=love.graphics.newQuad(sx,sy,sw,sh,iw,ih) end
-        local wiggle=math.sin(time*10+t*math.pi*3)*size*.055*math.sin((t+endpoint)*math.pi/2)
-        A.shadow(a.image,a.strips[i],x-qw*scale/2+(vertical and wiggle or qw*t*scale),y-qh*scale/2+(vertical and qh*t*scale or wiggle),0,scale,scale)
+        local wiggle=math.sin(time*10+t*math.pi*3)*size*(vertical and .014 or .035)*math.sin((t+endpoint)*math.pi/2)
         love.graphics.draw(a.image,a.strips[i],x-qw*scale/2+(vertical and wiggle or qw*t*scale),y-qh*scale/2+(vertical and qh*t*scale or wiggle),0,scale,scale)
     end
 end

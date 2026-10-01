@@ -13,6 +13,11 @@ local supported = {}
 for _, option in ipairs(L.options) do supported[option.code] = true end
 function L.valid(code) return supported[code] == true end
 local messages = {
+    ["Effets psychédéliques : %s"] = {en="Psychedelic effects: %s", es="Efectos psicodélicos: %s", ru="Психоделические эффекты: %s", pt="Efeitos psicodélicos: %s", zh="迷幻特效：%s", ja="サイケデリック効果：%s"},
+    ["désactivés"] = {en="off", es="desactivados", ru="выкл.", pt="desativados", zh="关", ja="オフ"},
+    ["atténués"] = {en="reduced", es="suaves", ru="слабые", pt="suaves", zh="柔和", ja="控えめ"},
+    ["intenses"] = {en="intense", es="intensos", ru="яркие", pt="intensos", zh="强烈", ja="強い"},
+    ["Mort, vitesse et larmes : choisis leur intensité visuelle."] = {en="Choose the visual intensity of death, speed and tear effects.", es="Elige la intensidad visual de muerte, velocidad y lágrimas.", ru="Интенсивность эффектов смерти, скорости и слёз.", pt="Escolhe a intensidade visual de morte, velocidade e lágrimas.", zh="选择死亡、速度与泪滴特效的视觉强度。", ja="死亡・スピード・涙のエフェクトの強さを選択。"},
     ["Qualité : %s"] = {en="Quality: %s", es="Calidad: %s", ru="Качество: %s", pt="Qualidade: %s", zh="画质：%s", ja="画質：%s"},
     ["Légère"] = {en="Low", es="Baja", ru="Низкое", pt="Baixa", zh="低", ja="低"},
     ["Équilibrée"] = {en="Balanced", es="Equilibrada", ru="Среднее", pt="Equilibrada", zh="均衡", ja="標準"},
