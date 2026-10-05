@@ -8,7 +8,8 @@ function F.rune(x,y,r,t,color,fill)
  for i=0,3 do local a=i*tau/4+t*.4;g.arc('line','open',x,y,r,a,a+.8) end
  for i=0,7 do local a=i*tau/8;g.line(x+math.cos(a)*(r+3),y+math.sin(a)*(r+3),x+math.cos(a)*(r+7),y+math.sin(a)*(r+7)) end
 end
-function F.bolt(x,y,seed,t)
+function F.bolt(x,y,seed,t,size)
+ local g=love.graphics;g.push('all');g.translate(x,y);g.scale(size or 1,size or 1);g.translate(-x,-y)
  local g=love.graphics;local fade=math.max(0,1-t/.48);local points={x,y}
  for i=1,12 do
   local h=math.sin(i*127.1+seed*311.7)*43758.5453;local jitter=(h-math.floor(h)-.5)*44
@@ -25,6 +26,7 @@ function F.bolt(x,y,seed,t)
  for i=1,9 do local a=i*2.4+seed;local r=t*130
   g.setColor(1,.88,.5,fade);g.line(x+math.cos(a)*r,y+math.sin(a)*r*.5,x+math.cos(a)*(r+5),y+math.sin(a)*(r+5)*.5)
  end
+ g.pop()
 end
 function F.lane(x,y,tx,ty,age,duration,r)
  local g=love.graphics;local angle=math.atan2(ty-y,tx-x);local nx,ny=-math.sin(angle)*r,math.cos(angle)*r

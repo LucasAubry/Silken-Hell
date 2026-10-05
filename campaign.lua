@@ -133,7 +133,7 @@ function C.reset()
     Renaissance.reset()
     Ending.reset()
     C.updateTear(0)
-    require('boss_arrival').reset();require('boss_arrival').scan()
+
     if App.state=='playing' then Bestiary.encounter() end
 end
 function C.spawnHell(n)

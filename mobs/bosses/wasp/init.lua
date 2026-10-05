@@ -30,7 +30,7 @@ function W.resize(ratio)
     end end
 end
 function W.contact()
- if require('boss_arrival').waiting(W) then return end
+
     if not W.active or W.defeated or player.reset then return end
     W.syncAnchor()
     for _,b in ipairs(W.bees) do
@@ -247,7 +247,7 @@ function W.updateBees(dt)
     if complete then W.roundActive=false;W.rest=.04 end
 end
 function W.update(dt)
- if require('boss_arrival').waiting(W) then return end
+
     if not W.active then return end
     W.syncAnchor();W.hitGrace=math.max(0,W.hitGrace-dt);W.elapsed=W.elapsed+dt;W.flash=math.max(0,W.flash-dt)
     if not W.defeated then W.updateBees(dt);W.updateLava(dt)
@@ -276,7 +276,7 @@ function W.update(dt)
     end
 end
 function W.drawGround()
- if require('boss_arrival').waiting(W) then return end
+
     if not W.active or W.defeated then return end
     W.syncAnchor()
     local g=love.graphics;g.push('all')
@@ -324,7 +324,7 @@ function W.drawGlow(b,flying,alpha)
  g.pop()
 end
 function W.draw(airborne)
- if require('boss_arrival').waiting(W) then return end
+
     if not W.active then return end
     local g=love.graphics
     for _,b in ipairs(W.bees) do

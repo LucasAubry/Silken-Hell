@@ -10,25 +10,31 @@ local function clearBoss(b)
  assert(b.hp==10 and b.maxHp==10)
  for i=1,9 do hit(b);assert(b.hp==10-i and not b.broken) end
  b.projectiles={{x=50,y=50,vx=1,vy=1,life=3}}
- hit(b);assert(b.hp==0 and b.broken and not b.defeated and #b.chicks==6)
+ hit(b);assert(b.hp==0 and b.broken and b.defeated and b.liberating and #b.freedChicks==6)
+ local L=require('boss_liberation')
  assert(#b.projectiles==0 and objet.larme.taken and not Campaign.canCollect())
- local m=b.chicks[1];local x,y=m.x,m.y
- player.x=x-15;player.y=y-12;player.dashing=false
- for i=1,90 do b.update(1/60) end
- assert(#b.chicks==6 and m.x==x and m.y==y and not player.reset and #b.projectiles==0,'Stunned birds stay still, harmless, and require a dash')
- Aftermath.update(.01);assert(not Aftermath.cleared,'Egg breaking alone does not finish encounter')
- while #b.chicks>0 do
-  local remaining=#b.chicks
-  m=b.chicks[1];player.x=m.x-15;player.y=m.y-12;player.dashing=true;b.contact();player.dashing=false
-  assert(#b.chicks<remaining)
-  if #b.chicks>0 then assert(not b.defeated and objet.larme.taken) end
- end
- assert(b.defeated and Campaign.canCollect() and not objet.larme.taken,'Tear appears only after final stunned bird dies')
+ assert(#L.events==1 and #L.events[1].threads>=7,'Egg and every surviving bird receive a silk thread')
+ local m=b.freedChicks[1];local x,y=m.x,m.y
+ player.x=x-15;player.y=y-12;player.dashing=false;b.contact();b.update(.1)
+ assert(#b.freedChicks==6 and m.x==x and m.y==y and not player.reset,'Survivors wait safely during liberation')
+ b.breakEgg();assert(#L.events==1,'Breaking the egg again cannot restart liberation')
+ Aftermath.update(.01);assert(not Aftermath.cleared,'Reward waits for the threads to break')
+ L.update(1.8);assert(objet.larme.taken and not Campaign.canCollect())
+ L.update(.2)
+ assert(b.defeated and not b.liberating and #b.chicks==0 and #b.freedChicks==0)
+ assert(Campaign.canCollect() and not objet.larme.taken,'Tear follows the silk animation with no bird contacts')
+
 end
 function T.run()
  Online.enabled=false;Replay.disabled=true;reset()
  local kill=Hazards.kill;Hazards.kill=function() end
  local b=Raven
+ local artDraw=Art.draw;local nests=0
+ Art.draw=function(key,x,y,w,angle,h)
+  assert(key=='nest' and w==80 and h==60,'All nests have identical art and dimensions')
+  nests=nests+1
+ end
+ b.drawGround();Art.draw=artDraw;assert(nests==#b.nests)
  for i=1,3 do hit(b) end
  b.shotClock=100;b.projectiles={};player.x=35;player.y=540
  local chasing=b.chicks[#b.chicks]
@@ -77,15 +83,15 @@ function T.run()
  player.x=x-15;player.y=y-12;b.update(.01);assert(not hurt,'Dead bird is harmless')
  local shooter=b.chicks[1];b.projectiles={{x=shooter.x,y=shooter.y,vx=0,vy=0,life=3}}
  b.update(.01);assert(#b.chicks==6 and #b.corpses==1,'Feathers do not kill nesting shooters')
- b.hp=1;hit(b);assert(b.broken and #b.chicks==6 and #b.corpses==1,'Only living birds are stunned')
- while #b.chicks>0 do local m=b.chicks[1];player.x=m.x-15;player.y=m.y-12;player.dashing=true;b.contact() end
+ b.hp=1;hit(b);assert(b.broken and b.liberating and #b.freedChicks==6 and #b.corpses==1,'Living birds are freed immediately')
+ require('boss_liberation').update(2)
  player.dashing=false;assert(b.defeated and #b.corpses==1,'Corpses remain after victory and do not block it')
  Hazards.kill=kill
  print('PASS stationary nest shooters, faster fire, feather friendly fire, persistent harmless corpses, victory with dead birds')
  reset();clearBoss(Raven)
  local layout=require('json').decode(love.filesystem.read('tests/egg_layout.json'))
  LevelLayouts.disabled=false;Workshop.playLayout(layout);clearBoss(Bosses.items[1].boss)
- print('PASS ten egg HP, faster alternating fire, accelerating pursuit, permanent stun, dash-only kills, delayed victory (native and saved map)')
+ print('PASS ten egg HP, faster alternating fire, accelerating pursuit, automatic silk liberation, delayed tear without bird contacts (native and saved map)')
  reset();local tick=0
  love.update=function(dt)
   tick=tick+1;UI.clock=UI.clock+dt

@@ -1,7 +1,7 @@
 local T={}
 local function reset(world,n)
  App.practice=n or 10;App.singleLevel=true;App.sessionLayout=nil;App.preview=false;App.start(world)
- require('boss_arrival').events={};player.reset=false
+ player.reset=false
 end
 function T.run()
  io.stdout:setvbuf('no')

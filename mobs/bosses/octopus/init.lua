@@ -172,7 +172,7 @@ function O.updateInk(dt)
     for i=#O.blasts,1,-1 do local p=O.blasts[i];p.age=p.age+dt;if p.age>.5 then table.remove(O.blasts,i) end end
 end
 function O.drawGround()
- if require('boss_arrival').waiting(O) then return end
+
     if not O.active then return end
     local g=love.graphics;g.push('all')
     if not Art.images.ink_ground then Art.add('ink_ground','assets/monstres/ocean/poulpe/ink_ground.png') end
@@ -372,7 +372,7 @@ end
 MobBehaviors.crab=require('mobs.crab')(O)
 
 function O.contact()
- if require('boss_arrival').waiting(O) then return end
+
     if not O.active or O.defeated or player.reset then return end
     for _,c in ipairs(O.crabs) do O.crabContact(c);if player.reset then return end end
     for _,c in ipairs(mobs) do if c.type=='crab' then O.crabContact(c);if player.reset then return end end end
@@ -396,7 +396,7 @@ function O.contact()
     end end
 end
 function O.update(dt)
- if require('boss_arrival').waiting(O) then return end
+
     if not O.active or player.reset then return end
     O.updateTether(dt)
     if O.defeated then O.updateCrabs(dt);return end
@@ -430,7 +430,7 @@ function O.update(dt)
     end end
 end
 function O.drawCrabs()
- if require('boss_arrival').waiting(O) then return end
+
     local g=love.graphics
     for _,c in ipairs(O.crabs) do
         local servants=require('servant_art');local context=servants.current;servants.current={type='crab',bossServant=true}
@@ -549,7 +549,7 @@ function O.armCurve(arm)
     return O.restCurves[arm]
 end
 function O.drawArms()
- if require('boss_arrival').waiting(O) then return end
+
     local g=love.graphics
     local pulled=O.tether and O.tether.arm or 0
     local key=table.concat(O.arms,':')..':'..pulled
@@ -559,6 +559,7 @@ function O.drawArms()
         if not O.armRaster or O.armRaster:getWidth()~=440*density then
             if O.armRaster then O.armRaster:release() end
             O.armRaster=g.newCanvas(440*density,440*density);O.armRaster:setFilter('linear','linear')
+            require('prism_material').register(O.armRaster,'generated/actor/octopus')
         end
         local old=g.getCanvas();g.push('all');g.setCanvas(O.armRaster);g.origin();g.setScissor();g.clear(0,0,0,0);g.setShader();g.scale(density);g.translate(220,220)
         O.vectorMeshes=O.vectorMeshes or {}
@@ -574,7 +575,7 @@ function O.drawArms()
     g.pop()
 end
 function O.draw()
- if require('boss_arrival').waiting(O) then return end
+
     if not O.active then return end
     local g=love.graphics
     if not O.defeated or O.liberating then
@@ -616,7 +617,7 @@ function O.draw()
     g.setLineWidth(1); g.setColor(1,1,1)
 end
 function O.drawInk(width,height)
- if require('boss_arrival').waiting(O) then return end
+
     if not O.active then return end
     local g=love.graphics
     g.push('all'); g.scale((width or Arena.width)/Arena.width,(height or 600)/600)

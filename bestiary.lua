@@ -1,10 +1,10 @@
 local json=require 'json'
 local B={seen={},unread={},dirty=false,entries={
- {id='ange',name='Ange gardien',art='catalog_ange',world=1,text='La soie de l’Œuf a figé sa volonté. Il te suit quand tu bouges, s’arrête avec toi et abandonne sa larme dans un piège.'},
+ {id='ange',name='Ange gardien',art='catalog_ange',world=1,text='La soie de l’Œuf a figé sa volonté. Il te poursuit sans relâche et abandonne sa larme dans un piège.'},
  {id='snake',name='Serpent céleste',art='catalog_snake',world=1,text='Premier captif du Paradis, il ne sait plus choisir sa route. Il avance avec tes pas ; un piège peut rompre sa poursuite.'},
  {id='scie',trap=true,name='Roue enchaînée',art='wheel',world=1,text='Les gardiens ont lié une lame au fil de leur maîtresse. Elle tourne sans repos ; son extrémité tranche tout sur son passage.'},
  {id='piege',trap=true,name='Piège de capture',art='catalog_trap',world=1,text='Ces mâchoires retenaient autrefois les serviteurs rebelles. Elles immobilisent encore les captifs et leur font lâcher leurs larmes.'},
- {id='merle',boss=true,name='L’Œuf du Merle',art='merle_down',world=1,text='La Gardienne a cousu une promesse dans cet œuf. Frappe-le en fonçant, évite ses oiseaux, puis délivre les survivants étourdis lorsque la coquille cède.'},
+ {id='merle',boss=true,name='L’Œuf du Merle',art='merle_down',world=1,text='La Gardienne a cousu une promesse dans cet œuf. Frappe-le en fonçant et évite ses oiseaux. Lorsque la coquille cède, leurs fils se brisent et la larme est libérée.'},
  {id='magma_spawner',trap=true,name='Nid de larves',art='magma_nest',world=2,text='Les Guêpes brûlées pondent pour nourrir une armée qui ne leur appartient pas. Les œufs remuent avant de libérer leurs larves.'},
  {id='magma_larva',name='Larve de magma',art='magma_larva',world=2,text='Née sous les fils des Guêpes, elle brûle de rage avant même de grandir. Elle te poursuit puis explose, au contact ou à bout de souffle.'},
  {id='imp',name='Goule de braise',art='imp_down',world=2,text='Les Guêpes ont fait de sa colère une laisse. Elle te traque entre les murs et accélère par accès de fureur.'},
@@ -30,7 +30,7 @@ local B={seen={},unread={},dirty=false,entries={
  {id='gull',name='Mouette des vents',art='gull_down',world=6,text='Le Merle lui a confié une larme qu’elle n’a pas le droit de rendre. Elle tourne autour ; la foudre peut la changer en sentinelle électrique.'},
  {id='rain',trap=true,name='Averse acérée',art='rain',world=6,text='Le ciel pleure sous les fils du Merle. Les ombres bleues annoncent les impacts ; les trous restent une menace après l’averse.'},
  {id='larva',name='Minuscule ver',art='worm_down',world=5,text='Le Hérisson réclame des serviteurs toujours plus jeunes. À peine sorti de son œuf, ce petit ver te poursuit sans comprendre pourquoi.'},
- {id='blackbird_chick',name='Petit merle noir',art='merle_down',world=1,text='L’Œuf les a fait éclore dans une cage de soie. Les oiseaux clairs tirent ; les sombres poursuivent. Quand la coquille cède, tous restent étourdis.'}
+ {id='blackbird_chick',name='Petit merle noir',art='merle_down',world=1,text='L’Œuf les a fait éclore dans une cage de soie. Les oiseaux clairs tirent ; les sombres poursuivent. Quand la coquille cède, leurs liens se brisent ensemble.'}
  ,{id='final_spider',boss=true,name='La Gardienne de la Soie',art='final_queen',world=3,text='Elle tient les gardiens, qui tiennent leurs créatures. Toute cette descente était sa toile. Attire sa charge vers ses enfants pris dans la soie pour retourner ses liens contre elle.'}
  ,{id='queen_child',name='Enfant de la Soie',art='final_baby_red',world=3,text='La Gardienne noue ses propres enfants avant leur premier pas. Ils te poursuivent ; pris dans sa toile, ils deviennent vulnérables à la charge de leur mère.'}
  ,{id='rebirth_bush',name='Buisson captif',art='rebirth_bush',world=3,text='La Gardienne a noué les racines de ce jardin. Le buisson tremble avant d’exploser et de laisser ses rejetons poursuivre sa peine.'}

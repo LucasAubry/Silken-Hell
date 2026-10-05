@@ -2,7 +2,7 @@ local T={}
 local function reset()
  Online.enabled=false;Replay.disabled=true;Replay.recording=false;Replay.playing=false
  App.singleLevel=false;App.practice=nil;App.sessionLayout=nil;LevelLayouts.disabled=true
- Campaign.select(6);player.level=10;reset_level();require('boss_arrival').events={};App.state='playing';player.reset=false
+ Campaign.select(6);player.level=10;reset_level();App.state='playing';player.reset=false
  return Storm
 end
 local function gold(x,y) return {x=x,y=y,vx=280,vy=0,age=0,life=4,golden=true} end
@@ -12,10 +12,14 @@ function T.run()
  for _,hp in ipairs({10,8,5,2}) do
   b.reset(true);b.hp=hp
   for i=1,60 do b.fire() end
-  local n=0;for _,p in ipairs(b.projectiles) do if p.golden then n=n+1 end end
+  local n=0;for _,p in ipairs(b.projectiles) do
+   if p.golden then n=n+1 end
+   local speed=math.sqrt(p.vx*p.vx+p.vy*p.vy)
+   assert(speed>=(255+110*(1-hp/10))*1.25,'Both feather colors travel noticeably faster')
+  end
   counts[#counts+1]=n;assert(#b.projectiles==60 and n>0 and n<=20,'Black feathers dominate; gold remains available')
  end
- assert(counts[1]==20 and counts[2]==10 and counts[3]==4 and counts[4]==3,'Gold availability drops at each HP tier')
+ assert(counts[1]==20 and counts[2]==12 and counts[3]==5 and counts[4]==4,'More gold is distributed across salvos while keeping the HP tiers')
  b=reset();player.x=450;player.y=420;local p=gold(465,432);b.projectiles={p};player.dashing=false;b.contact()
  assert(p.returned and (p.vx~=0 or p.vy~=0),'Touch launches gold immediately without a dash')
  local oldX,oldY=p.x,p.y;player.x=80;b.shot=100;b.bolt=100;b.update(.02)

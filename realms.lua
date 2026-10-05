@@ -205,16 +205,13 @@ function R.update(dt)
         R.updateLightning(dt)
         if Campaign.biome==6 then R.updateWind(dt) end
         R.rainClock=R.rainClock-dt
-        if (R.level>=5 or R.custom) and R.rainClock<=0 then
+        if not R.skyBossPresent() and (R.level>=5 or R.custom) and R.rainClock<=0 then
             R.rainClock=math.max(.55,.95-R.level*.035); R.rainWave=R.rainWave+1
             for _,p in ipairs(R.rainSites) do if p.phase==R.rainWave%3 then
                 R.rain[#R.rain+1]={x=p.x,y=p.y,age=0}
             end end
         end
-        for i=#R.rain,1,-1 do local p=R.rain[i]; p.age=p.age+dt
-            if p.age>=.62 and p.age<1.12 and ((player.x+15-p.x)/24)^2+((player.y+12-p.y)/12)^2<1 then Hazards.kill() end
-            if p.age>1.25 then table.remove(R.rain,i) end
-        end
+        require('sky_rain').update(R.rain,dt)
     end
     if Campaign.biome==4 or Campaign.biome==7 or R.custom then
         for _,school in ipairs(R.schools) do
@@ -232,6 +229,11 @@ function R.update(dt)
     R.updateProjectiles(dt)
     R.updateFireflies(dt)
     R.contact()
+end
+function R.skyBossPresent()
+    if Storm.active then return true end
+    for _,item in ipairs(Bosses.items) do if item.kind=='storm' then return true end end
+    return false
 end
 function R.skyBossActive()
     if Storm.active and not Storm.defeated then return true end
@@ -588,23 +590,7 @@ function R.drawGround()
                 g.push(); g.translate(0,t*7); R.drawHole(p,1-t*.48); g.pop()
             end
         end
-        for _,p in ipairs(R.rain) do
-            g.setColor(.12,.32,.55,p.age<.85 and .24 or .5); g.ellipse('fill',p.x,p.y,23,10)
-            if p.age<.85 then
-                g.setColor(.2,.55,.8,.6); g.ellipse('line',p.x,p.y,24,11)
-                for j=-2,2 do
-                    local progress=math.min(1,p.age/.85); local y=p.y-(1-progress)*155+j%2*5
-                    local x=p.x+j*8
-                    g.setColor(.27,.62,.9,.5); g.setLineWidth(2); g.line(x-6,y-20,x,y)
-                    g.setColor(.7,.92,1); g.ellipse('fill',x,y,2,5)
-                end
-            else
-                local r=8+(p.age-.85)*65; g.setColor(.35,.72,1,math.max(0,1-(p.age-.85)*2.5))
-                g.ellipse('line',p.x,p.y,r,r*.4)
-                for j=0,5 do local a=j*math.pi/3; g.circle('fill',p.x+math.cos(a)*r,p.y+math.sin(a)*r*.4,2) end
-            end
-            g.setLineWidth(1)
-        end
+        require('sky_rain').draw(R.rain)
     end
     -- Pulse warnings and digging tracks stay below all creatures.
     for _,m in ipairs(mobs) do

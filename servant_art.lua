@@ -19,7 +19,7 @@ end
 function S.variant(key)
  return S.current and S.current.bossServant and S.frames[key]
 end
-function S.image(key) return S.variant(key) or Art.images[key] end
+function S.image(key) return S.variant(key) or require('art').images[key] end
 function S.amount(world,level)
  local rank=Worlds.rank(world or (Campaign and Campaign.world) or 1)
  if Worlds.isSecret(world or Campaign.world) then rank=Worlds.rank(Worlds.biome(world or Campaign.world)) end

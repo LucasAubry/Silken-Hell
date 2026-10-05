@@ -238,11 +238,10 @@ function U.menu()
     U.button('HISTOIRE',605,511,170,38,function() App.state='story'; U.storyOffset=400 end)
     U.button('BESTIAIRE',425,557,170,38,Bestiary.open)
     U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open)
-    
+
     U.button('SUCCÈS',605,557,170,38,function() App.state='achievements' end)
     U.button('WORKSHOP',425,603,170,38,Workshop.open)
     U.button('CRÉER',605,603,170,38,Creator.open)
-    if Creator.status~='' then U.text(Creator.status,335,698,'small',muted,530,'center') end
 end
 function U.entry()
     if Input.active then
@@ -325,7 +324,7 @@ function U.bestiaryIcon(entry,x,y,size)
     else
         local a=Art.images[entry.art]
         local width=a and size*a.w/math.max(a.w,a.h) or size
-        Art.draw(entry.art,x,y,width)
+        require('prism_material').drawPreview(function()Art.draw(entry.art,x,y,width)end)
     end
     g.setColor(1,1,1)
 end

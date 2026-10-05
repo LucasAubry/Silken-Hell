@@ -151,8 +151,6 @@ function M.draw()
     g.setColor(1,1,1);Characters.draw(M.x or 365,(M.y or 210)-M.scroll,64,'down')
     g.setScissor();g.pop()
     -- Floating controls leave the painted terrain visible across the entire screen.
-    g.setColor(.015,.025,.035,.83);g.rectangle('fill',45,32,670,85,12,12)
-    UI.text('LA DESCENTE',68,48,'heading',{.98,.90,.71})
     if App.selectedWorld==8 and M.hardcore then g.setColor(.16,.018,.028,.94) else g.setColor(.015,.025,.035,.88) end;g.rectangle('fill',756,136,388,510,16,16)
     g.setColor(.86,.74,.49,.45);g.rectangle('line',756,136,388,510,16,16)
     UI.button('↑',55,151,62,40,function() M.step(-1,true) end,false,false,'go')

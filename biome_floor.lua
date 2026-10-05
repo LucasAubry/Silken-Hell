@@ -19,6 +19,7 @@ function B.draw(world,width,height,time)
         if #B.surfaces>=2 then table.remove(B.surfaces,1).canvas:release() end
         cache={canvas=g.newCanvas(cw,ch),w=cw,h=ch}
         cache.canvas:setFilter('linear','linear')
+        require('prism_material').register(cache.canvas,'generated/floor')
     end
     B.surfaces[#B.surfaces+1]=cache;B.cache=cache
     local tick=world==5 and 0 or math.floor((time or 0)*(Graphics and Graphics.backgroundHz() or 60))

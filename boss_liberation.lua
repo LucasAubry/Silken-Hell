@@ -44,7 +44,7 @@ function L.start(boss,kind,complete)
  actors(mobs);actors(Realms.larvae)
  for _,key in ipairs({'minions','chicks','freedChicks','crabs','babies','corpses','octopuses'}) do actors(boss[key]) end
  -- Remove attack projectiles while preserving bodies and their existing PNGs.
- for _,key in ipairs({'projectiles','strikes','trails','eruptions','webs','threads','beam','beams','pressure','mines'}) do
+ for _,key in ipairs({'projectiles','rain','strikes','trails','eruptions','webs','threads','beam','beams','pressure','mines'}) do
   if boss[key] then
    if key=='beam' or key=='pressure' then boss[key]=nil else boss[key]={} end
   end

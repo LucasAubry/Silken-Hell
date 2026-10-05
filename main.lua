@@ -96,7 +96,7 @@ function App.start(world)
     Campaign.starts={{},{},{},{},{},{},{}}; Campaign.lastSide=nil
     Campaign.select(world); App.selectedWorld=world
     Hardcore.notice=nil;timer=0;RunDetails.reset();UI.showRunDetails=false; player.level=App.practice or (App.sessionLayout and App.sessionLayout.level) or 1; player.death=0; direction='down'
-    shader_effect_timer=0;Psyche.reset();require('boss_arrival').clearSession(); App.state='playing'; love.keyboard.setTextInput(false)
+    shader_effect_timer=0;Psyche.reset(); App.state='playing'; love.keyboard.setTextInput(false)
     if Audio.paradise then Audio.paradise:stop() end
     Replay.begin(world)
     reset_level()
@@ -220,7 +220,7 @@ end
 function App.simulate(dt)
     local liberation=require('boss_liberation')
     if liberation.busy() then liberation.update(dt);return end
-    require('boss_arrival').update(dt)
+
     Psyche.update(dt)
     Secret.updateDuel(dt);if App.state~='playing' then return end
     if Ending.active then
@@ -313,7 +313,7 @@ function love.draw()
         love.graphics.setCanvas(gameCanvas); love.graphics.clear(); love.graphics.origin(); love.graphics.setColor(1,1,1)
         Prism.beginScene(gameCanvas)
         draw_level()
-        require('boss_arrival').draw(false)
+
         if not Secret.inArena() then Atmosphere.drawDrops() end
         -- Draw all floor traps first, regardless of their spawn order.
         for _,m in ipairs(mobs) do if m.type=='piege' or m.ground then Campaign.drawMob(m) end end
@@ -321,7 +321,7 @@ function love.draw()
         for _,m in ipairs(mobs) do if m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
         Renaissance.drawBlasts(); Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false); love.graphics.setColor(1,1,1); if Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not Abyss.encounterActive() then draw_player(direction) end; Ocean.drawBubble(); Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end
-        if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies() end; Abyss.drawLights(); Bosses.drawLights(); if Abyss.encounterActive() then love.graphics.setColor(1,1,1);draw_player(direction) end; draw_player_beacon(); BossFX.draw();require('boss_arrival').draw(true);Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage();if not Abyss.playerHidden() then Replay.drawGhost() end
+        if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies() end; Abyss.drawLights(); Bosses.drawLights(); if Abyss.encounterActive() then love.graphics.setColor(1,1,1);draw_player(direction) end; draw_player_beacon(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage();if not Abyss.playerHidden() then Replay.drawGhost() end
         Prism.endScene();love.graphics.setCanvas()
     elseif App.state=='bossWorld' then
         refreshSceneResolution()
@@ -369,7 +369,13 @@ function love.draw()
         Psyche.draw();love.graphics.pop()
     end
     if App.state=='playing' then Ending.drawOverlay(w,h) end
-    if Graphics.showFPS and App.state~='credits' and not Ending.active then love.graphics.setColor(.7,1,.8);love.graphics.print(tostring(love.timer.getFPS())..' FPS',12,h-24) end
+    if App.state~='credits' and not Ending.active then
+        love.graphics.push('all');love.graphics.origin();love.graphics.setShader()
+        love.graphics.setFont(UI.fonts.tiny)
+        love.graphics.setColor(.78,.78,.71,.7);love.graphics.print('v'..require('version'),12,h-18)
+        if Graphics.showFPS then love.graphics.setColor(.7,1,.8,.8);love.graphics.print(tostring(love.timer.getFPS())..' FPS',12,h-33) end
+        love.graphics.pop()
+    end
     if App.capture then
         local path=App.capture; App.capture=nil
         love.graphics.captureScreenshot(function(data) data:encode('png',path) end)

@@ -5,6 +5,9 @@ function T.run(M,state,select,apply,preview)
         count=count+1; local ok,msg=M.validate(l); assert(ok,key..': '..tostring(msg))
     end
     assert(count==66,'Les soixante-six niveaux doivent être importés')
+    -- Shared sprite rendering must not require the game's Art global.
+    assert(_G.Art==nil)
+    for _,layout in pairs(M.defaults.levels) do select(layout.world,layout.level);love.draw() end
     for n=1,10 do
         local found=false; for _,e in ipairs(M.defaults.levels['2:'..n].entities) do if e.kind=='magma_spawner' then found=true end end
         assert(found,'Flaques Enfer importées dans l’éditeur')

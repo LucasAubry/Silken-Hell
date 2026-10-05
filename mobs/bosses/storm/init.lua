@@ -1,5 +1,9 @@
 local FX=require 'mobs.bosses.encounter_fx'
 local S={active=false}
+local Rain=require 'sky_rain'
+local STRIKE_RADIUS=22
+local BODY_SIZE=150
+local BODY_RADIUS=34
 local GOLDEN_PICKUP_RADIUS=24
 local RETURN_SPEED=2200
 local function distance(x,y,tx,ty) return math.sqrt((tx-x)^2+(ty-y)^2) end
@@ -10,15 +14,14 @@ function S.reset(active)
  if player.skyThrow and player.skyThrow.boss==S then player.skyThrow=nil end
  S.active=active;S.name='Merle noir';S.hp=10;S.maxHp=10;S.defeated=false;S.electric=false
  S.x=Arena.width*.5;S.y=150;S.dir='down';S.clock=0;S.flash=0;S.hitGrace=0;S.chargeTime=0;S.charges=0
- S.projectiles={};S.strikes={};S.trails={};S.holes={};S.tornado=nil;S.pattern=0;S.pass=0;S.round=0;S.featherSalvos=0
- S.pendingDashes=0;S.nextDashHP=7;S.vx=0;S.vy=0;S.centerX=player.x+15;S.centerY=player.y+12;S.poseAge=1
+ S.projectiles={};S.strikes={};S.trails={};S.holes={};S.rain={};S.rainClock=1.4;S.rainWave=0;S.tornado=nil;S.pattern=0;S.pass=0;S.round=0;S.featherSalvos=0
+ S.pendingDashes=0;S.nextDashHP=7;S.vx=0;S.vy=0;S.patrolClock=0;S.poseAge=1
  S.nest={x=Arena.width-105,y=115};S.setPhase('orbit')
 end
 function S.setPhase(phase)
  S.phase=phase;S.phaseAge=0;S.hidden=false
  if phase=='orbit' or phase=='lightning' then
-  S.phase='orbit';S.phaseTime=math.huge;S.shot=.7;S.bolt=.6;S.burst=0;S.salvos=0;S.round=S.round+1
-  S.orbit=math.atan2(S.y-player.y-12,S.x-player.x-15)
+  S.phase='orbit';S.phaseTime=math.huge;S.shot=.7;S.bolt=1;S.burst=0;S.salvos=0;S.round=S.round+1
  elseif phase=='leave' then S.phaseTime=.22;S.fromX=S.x;S.fromY=S.y;S.pass=0;S.vx=0;S.vy=0
  elseif phase=='flightTell' then
   S.phaseTime=.60-.16*(1-S.hp/S.maxHp);S.hidden=true;S.pass=S.pass+1
@@ -35,21 +38,28 @@ function S.setPhase(phase)
   S.flightDuration=distance(S.startX,S.startY,S.endX,S.endY)/S.speed();S.phaseTime=S.flightDuration
  elseif phase=='return' then
   S.phaseTime=.65;S.fromX=S.x;S.fromY=S.y
-  S.returnX=clamp(player.x+15+(player.x<Arena.width*.5 and 180 or -180),120,Arena.width-120);S.returnY=clamp(player.y-90,115,460)
+  S.returnX,S.returnY=S.patrolPosition()
  end
 end
+function S.patrolPosition()
+ -- Two independent sweeps bend naturally through their turns across the arena.
+ local t=S.patrolClock
+ return Arena.width*.5+math.sin(t)*math.max(0,Arena.width*.5-135),300+math.sin(t*1.35-math.pi*.5)*160
+end
 function S.goldenInterval()
- if S.hp>=9 then return 1 elseif S.hp>=6 then return 2 elseif S.hp>=3 then return 3 else return 4 end
+ if S.hp>=9 then return 1 elseif S.hp>=6 then return 1.6 elseif S.hp>=3 then return 2.4 else return 3.2 end
 end
 function S.fire()
  local aim=math.atan2(player.y+12-S.y,player.x+15-S.x)
  -- Sparse opening salvos grow denser and faster as the silk tightens.
  local count=S.hp>S.maxHp*.5 and 3 or 5
  local middle=math.floor(count/2)
- local golden=S.burst==middle and S.featherSalvos%S.goldenInterval()==0
+ -- Fractional intervals spread the extra gold evenly without adding larger salvos.
+ local interval=S.goldenInterval()
+ local golden=S.burst==middle and math.floor(S.featherSalvos/interval)>math.floor((S.featherSalvos-1)/interval)
  local offset=golden and (S.featherSalvos%2==0 and .38 or -.38) or (S.burst-middle)*.13
  local rage=1-S.hp/S.maxHp
- local a=aim+offset;local speed=255+110*rage
+ local a=aim+offset;local speed=(255+110*rage)*1.3
  S.projectiles[#S.projectiles+1]={x=S.x+math.cos(a)*45,y=S.y+math.sin(a)*45,vx=math.cos(a)*speed,vy=math.sin(a)*speed,life=4.5,age=0,golden=golden}
  S.burst=S.burst+1
  if S.burst>=count then S.burst=0;S.salvos=S.salvos+1;S.featherSalvos=S.featherSalvos+1;S.shot=.95-.60*rage else S.shot=.26-.17*rage end
@@ -68,9 +78,34 @@ function S.summon()
  end
  S.pattern=S.pattern+1
 end
+function S.rainSettings()
+ local rage=clamp(1-S.hp/S.maxHp,0,1)
+ return 1+math.floor(rage*3.4),2.2-rage*1.1
+end
+function S.summonRain()
+ local count,interval=S.rainSettings();local chosen={}
+ local sites=Realms.rainSites
+ S.rainWave=S.rainWave+1
+ for j=1,count do
+  for attempt=0,math.max(15,#sites-1) do
+   local angle=S.rainWave*2.4+j*2.1+attempt*.7
+   local radius=(j==1 and attempt==0) and 0 or 70+j*35+attempt*7
+   local x=clamp(player.x+15+math.cos(angle)*radius,65,Arena.width-65)
+   local y=clamp(player.y+12+math.sin(angle)*radius,85,515)
+   -- Authored landing sites keep their positions, but follow the boss's intensity.
+   if #sites>0 then
+    local site=sites[((S.rainWave-1)*7+(j-1)*5+attempt)%#sites+1];x,y=site.x,site.y
+   end
+   local free=not Arena.blocked(x-Rain.rx,y-Rain.ry,Rain.rx*2,Rain.ry*2)
+   for _,p in ipairs(chosen) do if distance(x,y,p.x,p.y)<64 then free=false end end
+   if free then local p={x=x,y=y,age=0};S.rain[#S.rain+1]=p;chosen[#chosen+1]=p;break end
+  end
+ end
+ S.rainClock=interval
+end
 function S.finish()
  require('boss_liberation').start(S,'storm',function()
-  S.defeated=true;S.projectiles={};S.strikes={};S.trails={};S.holes={}
+  S.defeated=true;S.projectiles={};S.strikes={};S.trails={};S.holes={};S.rain={}
   objet.larme.taken=false;objet.larme.x,objet.larme.y=Arena.clearSpot(clamp(S.x,70,Arena.width-70)-15,clamp(S.y,85,515)-20,30,40)
  end)
 end
@@ -97,7 +132,7 @@ function S.reflect(p)
  BossFX.burst(p.x,p.y,{1,.8,.25},.6)
 end
 function S.featherHit(p)
- if p.returned and not p.spent and distance(p.x,p.y,S.x,S.y)<45 then
+ if p.returned and not p.spent and distance(p.x,p.y,S.x,S.y)<40 then
   p.spent=true
   return S.hurt(true) -- Each collected feather owns exactly one hit, even in a group.
  end
@@ -109,7 +144,7 @@ function S.holeAt(x,y)
  return false
 end
 function S.contact()
- if require('boss_arrival').waiting(S) then return end
+
  if not S.active or S.defeated or player.reset or player.abyssHeld then return end
  if S.holeAt(player.x+15,player.y+12) then Hazards.kill('storm');if player.reset then player.falling=true end;return end
  for i=#S.projectiles,1,-1 do
@@ -119,12 +154,17 @@ function S.contact()
    if S.featherHit(p) then if S.defeated then return end;table.remove(S.projectiles,i) end
   end
  end
- if not S.hidden and S.phase~='leave' and S.phase~='return' and distance(S.x,S.y,player.x+15,player.y+12)<39 then Hazards.kill('storm') end
+ if not S.hidden and S.phase~='leave' and S.phase~='return' and distance(S.x,S.y,player.x+15,player.y+12)<BODY_RADIUS then Hazards.kill('storm') end
 end
 function S.updateTornado() end
 function S.update(dt)
- if require('boss_arrival').waiting(S) then return end
+
  if not S.active or S.defeated or player.reset then return end
+ Rain.update(S.rain,dt);if player.reset then return end
+ if S.phase=='orbit' then
+  S.rainClock=S.rainClock-dt*(S.attackRate or 1)
+  if S.rainClock<=0 then S.summonRain() end
+ end
  S.clock=S.clock+dt;S.flash=math.max(0,S.flash-dt);S.hitGrace=math.max(0,S.hitGrace-dt)
  local oldDir=S.dir
  S.poseAge=(S.poseAge or 1)+dt
@@ -150,34 +190,30 @@ function S.update(dt)
   S.dir=Art.direction(S.returnX-S.fromX,S.returnY-S.fromY,S.dir)
   S.vx=0;S.vy=0
  elseif S.phase=='orbit' then
-  S.orbit=S.orbit+dt*(1.15+.3*(1-S.hp/S.maxHp))
-  local follow=1-math.exp(-dt*1.8)
-  S.centerX=S.centerX+(clamp(player.x+15,260,Arena.width-260)-S.centerX)*follow
-  S.centerY=S.centerY+(clamp(player.y+12,245,355)-S.centerY)*follow
-  local tx=S.centerX+math.cos(S.orbit)*200
-  local ty=S.centerY+math.sin(S.orbit)*155
-  -- A damped flight path keeps momentum through turns instead of chasing a clamped point.
+  -- Patrol time never reads the player's position; dash targeting stays separate.
   local steps=math.max(1,math.ceil(dt*120));local step=dt/steps
   for _=1,steps do
+   S.patrolClock=S.patrolClock+step*(.62+.1*(1-S.hp/S.maxHp))*(S.movementRate or 1)
+   local tx,ty=S.patrolPosition()
    S.vx=S.vx+((tx-S.x)*12-S.vx*6)*step
    S.vy=S.vy+((ty-S.y)*12-S.vy*6)*step
-   S.x=S.x+S.vx*step*(S.movementRate or 1);S.y=S.y+S.vy*step*(S.movementRate or 1)
+   S.x=S.x+S.vx*step;S.y=S.y+S.vy*step
   end
   local horizontal=S.dir=='left' or S.dir=='right'
   if math.abs(S.vx)>math.abs(S.vy)*(horizontal and .7 or 1.4) then S.dir=S.vx<0 and 'left' or 'right'
   elseif math.abs(S.vy)>math.abs(S.vx)*(horizontal and 1.4 or .7) then S.dir=S.vy<0 and 'up' or 'down' end
   S.shot=S.shot-dt*(S.attackRate or 1);S.bolt=S.bolt-dt
   if S.shot<=0 then S.fire() end
-  if S.bolt<=0 then S.summon();S.bolt=1.8 end
+  if S.bolt<=0 then S.summon();S.bolt=2.4 end
  end
  if S.dir~=oldDir then S.previousDir=oldDir;S.poseAge=0 end
  for i=#S.strikes,1,-1 do local p=S.strikes[i];p.age=p.age+dt
   if p.age>=.85 and not p.struck then
-   p.struck=true;S.holes[#S.holes+1]={x=p.x,y=p.y,age=0,r=34,seed=p.seed};BossFX.burst(p.x,p.y,{.65,.8,1},1)
+   p.struck=true;S.holes[#S.holes+1]={x=p.x,y=p.y,age=0,r=STRIKE_RADIUS,seed=p.seed};BossFX.burst(p.x,p.y,{.65,.8,1},1)
   end
   if p.age>1.4 then table.remove(S.strikes,i) end
  end
- for i=#S.holes,1,-1 do local p=S.holes[i];p.age=p.age+dt;p.r=34*math.max(0,1-p.age/6.5)^.7;if p.age>=6.5 then table.remove(S.holes,i) end end
+ for i=#S.holes,1,-1 do local p=S.holes[i];p.age=p.age+dt;p.r=STRIKE_RADIUS*math.max(0,1-p.age/6.5)^.7;if p.age>=6.5 then table.remove(S.holes,i) end end
  for i=#S.trails,1,-1 do local p=S.trails[i];p.life=p.life-dt;if p.life<=0 then table.remove(S.trails,i) end end
  for i=#S.projectiles,1,-1 do
   local p=S.projectiles[i];p.age=p.age+dt;local dead=false
@@ -208,9 +244,9 @@ function S.update(dt)
  S.contact()
 end
 function S.resize(r)
- for _,key in ipairs({'x','fromX','returnX','startX','endX','centerX','vx'}) do if S[key] then S[key]=S[key]*r end end
+ for _,key in ipairs({'x','fromX','returnX','startX','endX','vx'}) do if S[key] then S[key]=S[key]*r end end
  S.nest.x=S.nest.x*r
- for _,list in ipairs({S.projectiles,S.strikes,S.trails,S.holes}) do for _,p in ipairs(list) do p.x=p.x*r end end
+ for _,list in ipairs({S.projectiles,S.strikes,S.trails,S.holes,S.rain}) do for _,p in ipairs(list) do p.x=p.x*r end end
 end
 local function sprite(dir)
  local key='merle_flight_'..dir
@@ -218,14 +254,15 @@ local function sprite(dir)
  return Art.images[key] and key or 'merle_'..dir
 end
 local function bird(dir,x,y)
- local key=sprite(dir);local a=Art.images[key];local scale=170/math.max(a.w,a.h)
+ local key=sprite(dir);local a=Art.images[key];local scale=BODY_SIZE/math.max(a.w,a.h)
  local flap=math.sin(S.clock*14)*.025
  Art.draw(key,x,y,a.w*scale*(1+flap),0,a.h*scale*(1-flap))
 end
 function S.drawGround()
- if require('boss_arrival').waiting(S) then return end
+
  if not S.active or S.defeated then return end
  local g=love.graphics;g.push('all')
+ Rain.draw(S.rain)
  for _,p in ipairs(S.holes) do
   local points={}
   for i=0,31 do local a=i*math.pi/16;local r=p.r*(1+.07*math.sin(i*2.7+p.seed));points[#points+1]=p.x+math.cos(a)*r;points[#points+1]=p.y+math.sin(a)*r*.78 end
@@ -236,21 +273,21 @@ function S.drawGround()
  for _,p in ipairs(S.strikes) do if p.age>=0 then
   if p.age<.85 then
    local charge=math.min(1,p.age/.85)
-   FX.rune(p.x,p.y,30,S.clock,{1,.76,.20},.08+charge*.10)
+   FX.rune(p.x,p.y,STRIKE_RADIUS,S.clock,{1,.76,.20},.08+charge*.10)
    g.setColor(1,.87,.38,.9);g.setLineWidth(2)
-   g.arc('line','open',p.x,p.y,24,-math.pi/2,-math.pi/2+math.max(.01,charge)*math.pi*2)
+   g.arc('line','open',p.x,p.y,17,-math.pi/2,-math.pi/2+math.max(.01,charge)*math.pi*2)
    -- Angular gold lightning seal, matching the game's carved menu ornaments.
    g.setColor(1,.91,.53,.65+charge*.35)
    g.polygon('fill',p.x+2,p.y-14,p.x-8,p.y+2,p.x-1,p.y+2,p.x-3,p.y+14,p.x+9,p.y-3,p.x+2,p.y-3)
-   for i=0,3 do local a=i*math.pi/2;local x,y=p.x+math.cos(a)*35,p.y+math.sin(a)*35
+   for i=0,3 do local a=i*math.pi/2;local x,y=p.x+math.cos(a)*27,p.y+math.sin(a)*27
     g.polygon('fill',x,y-3,x+2,y,x,y+3,x-2,y)
    end
-  else FX.bolt(p.x,p.y,p.seed,p.age-.85) end
+  else FX.bolt(p.x,p.y,p.seed,p.age-.85,.55) end
  end end
  g.pop()
 end
 function S.previewPose()
- local a=Art.images[sprite(S.dir)];local scale=170/math.max(a.w,a.h);local w,h=a.w*scale,a.h*scale
+ local a=Art.images[sprite(S.dir)];local scale=BODY_SIZE/math.max(a.w,a.h);local w,h=a.w*scale,a.h*scale
  local x,y=S.x,S.y;local cx,cy,cw,ch
  if S.dir=='right' then x=52-w/2;y=y-h*.27;cx,cy,cw,ch=22,S.y-24,32,48
  elseif S.dir=='left' then x=Arena.width-52+w/2;y=y-h*.27;cx,cy,cw,ch=Arena.width-54,S.y-24,32,48
@@ -262,11 +299,11 @@ function S.visibleBounds()
  if not S.active or S.defeated then return end
  if S.phase=='flightTell' then local _,_,x,y,w,h=S.previewPose();return x,y,w,h end
  if S.hidden then return end
- local a=Art.images[sprite(S.dir)];local scale=175/math.max(a.w,a.h)
+ local a=Art.images[sprite(S.dir)];local scale=(BODY_SIZE+5)/math.max(a.w,a.h)
  return S.x-a.w*scale/2,S.y-a.h*scale/2,a.w*scale,a.h*scale
 end
 function S.draw()
- if require('boss_arrival').waiting(S) then return end
+
  if not S.active or (S.defeated and not S.liberating) then return end
  local g=love.graphics;g.push('all')
  for _,p in ipairs(S.trails) do g.setColor(.45,.7,1,p.life*.9);bird(p.dir,p.x,p.y) end
@@ -278,7 +315,7 @@ function S.draw()
   g.intersectScissor(sx,sy,ex-sx,ey-sy);g.setColor(1,1,1);bird(S.dir,x,y)
   if oldX then g.setScissor(oldX,oldY,oldW,oldH) else g.setScissor() end
  elseif not S.hidden then
-  require('monster_fx').halo(S.x,S.y,100)
+  require('monster_fx').halo(S.x,S.y,88)
   local blend=math.min(1,S.poseAge/.13)
   if S.previousDir and blend<1 and S.phase=='orbit' then g.setColor(1,1,1,1-blend);bird(S.previousDir,S.x,S.y) else blend=1 end
   g.setColor(1,1-S.flash*.5,1-S.flash,blend);bird(S.dir,S.x,S.y)

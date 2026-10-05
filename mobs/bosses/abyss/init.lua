@@ -54,16 +54,16 @@ end
 -- Reserve the full left column occupied by the giant head, including its tips.
 function A.playerMinX(y)
  local x=23
- if A.active and A.boss and not require('boss_arrival').waiting(A) then x=math.max(x,Cycle.playerMinX(A,y)) end
+ if A.active and A.boss then x=math.max(x,Cycle.playerMinX(A,y)) end
  if Bosses then for _,item in ipairs(Bosses.items) do
-  if item.kind=='skeleton_fish' and item.boss.boss and not require('boss_arrival').waiting(item.boss) then x=math.max(x,Cycle.playerMinX(item.boss,y)) end
+  if item.kind=='skeleton_fish' and item.boss.boss then x=math.max(x,Cycle.playerMinX(item.boss,y)) end
  end end
  return x
 end
 function A.blockedPlayer(x,y)
- if A.active and A.boss and not require('boss_arrival').waiting(A) and Cycle.blockedPlayer(A,x,y) then return true end
+ if A.active and A.boss and Cycle.blockedPlayer(A,x,y) then return true end
  if Bosses then for _,item in ipairs(Bosses.items) do
-  if item.kind=='skeleton_fish' and item.boss.boss and not require('boss_arrival').waiting(item.boss) and Cycle.blockedPlayer(item.boss,x,y) then return true end
+  if item.kind=='skeleton_fish' and item.boss.boss and Cycle.blockedPlayer(item.boss,x,y) then return true end
  end end
  return false
 end
@@ -203,7 +203,7 @@ function A.triggerTail(owner,b)
     return owner.tailSafe
 end
 function A.contact()
- if require('boss_arrival').waiting(A) then return end
+
     if not A.giant or A.defeated or player.reset or player.abyssHeld or (player.abyssGrace or 0)>0 then return end
     if A.boss then Cycle.contact(A);return end
     for _,bone in ipairs(A.bones) do if bone.key=='skeleton_tail' and A.triggerTail(A,bone) then return end end
@@ -298,7 +298,7 @@ function A.spit()
     end
 end
 function A.update(dt)
- if require('boss_arrival').waiting(A) then return end
+
     if not A.active then return end
     if A.boss then Cycle.update(A,dt);return end
     A.motionTime=A.motionTime+dt*(A.movementRate or 1)
@@ -428,7 +428,7 @@ function A.gazeDirection(b)
     return dx/d,dy/d
 end
 function A.drawBossEye(b,overlay)
- if require('boss_arrival').waiting(A) then return end
+
     local g=love.graphics;local ex,ey=b.gx,b.gy
     local dx,dy=A.gazeDirection(b)
     local aimed=A.phase=='open' or A.phase=='tell'
@@ -445,7 +445,7 @@ function A.drawBossEye(b,overlay)
     g.pop()
 end
 function A.drawBones(overlay)
- if require('boss_arrival').waiting(A) then return end
+
     if not A.giant or (A.defeated and not A.liberating) then return end
     local g=love.graphics
     for _,b in ipairs(A.bones) do
@@ -453,7 +453,7 @@ function A.drawBones(overlay)
         if A.boss and (b.key=='skeleton_head' or b.key=='skeleton_open') then
             local sprite=Art.images[b.key];local spot=sprite.glow or {u=.5,v=.5}
             local qx,qy,qw,qh=sprite.quad:getViewport();local iw,ih=sprite.image:getDimensions()
-            A.eyeShader=A.eyeShader or g.newShader([[extern vec2 eyeCenter;extern vec2 eyeSize;extern vec3 eyeTint;
+            A.eyeShader=A.eyeShader or require('prism_material').surfaceShader([[extern vec2 eyeCenter;extern vec2 eyeSize;extern vec3 eyeTint;
                 vec4 effect(vec4 color,Image image,vec2 uv,vec2 px) {
                     vec4 t=Texel(image,uv);
                     float mask=1.0-smoothstep(.09,.17,length((uv-eyeCenter)/eyeSize));
@@ -504,7 +504,7 @@ function A.eyePosition(m)
     return m.x+math.cos(angle)*x-math.sin(angle)*y,m.y+math.sin(angle)*x+math.cos(angle)*y
 end
 function A.drawLights()
- if require('boss_arrival').waiting(A) then return end
+
     if not A.active then return end
 
     local g=love.graphics; g.push('all'); g.setBlendMode('add')

@@ -40,24 +40,16 @@ function move_mob(m, dt)
 end
 
 --mouvement qui suis le joueur
-function move_mob_towards_player(m, player, dt)
-    local dx = player.x - m.x
-    local dy = player.y - m.y
-    local angle = math.atan2(dy, dx)
-    local speed = m.speed or 1
-
-    Arena.navigate(m,player.x+15,player.y+12,speed*60,dt)
-
-    -- Met à jour la direction (visuelle + logique)
-    if math.abs(dx) > math.abs(dy) then
-        m.dir = dx > 0 and "right" or "left"
-    else
-        m.dir = dy > 0 and "down" or "up"
-    end
-
-    -- Met à jour l’image si utile
-    if m.imgs and m.imgs[m.dir] then
-        m.img = m.imgs[m.dir]
+function move_mob_towards_player(m, player, dt, speedScale)
+    if m.is_frozen then return end
+    local x,y=m.x,m.y
+    Arena.navigate(m,player.x+15,player.y+12,(m.speed or 1)*60*(speedScale or 1),dt)
+    local dx,dy=m.x-x,m.y-y
+    if dx~=0 or dy~=0 then
+        -- Both pursuers face their real path, including slides along walls.
+        m.dir=Art.direction(dx,dy,m.dir)
+        if m.floatTime then m.floatTime=m.floatTime+dt end
+        if m.imgs and m.imgs[m.dir] then m.img=m.imgs[m.dir] end
     end
 end
 
@@ -84,17 +76,7 @@ end
 
 --suis le jouer si il bouge
 function move_when_player_moves(m, player, dt)
-    if not player.has_moved or m.is_frozen then return end
-
-    local x,y=m.x,m.y
-    Arena.navigate(m,player.x+15,player.y+12,(m.speed or 1)*60,dt)
-    local dx,dy=m.x-x,m.y-y
-    if dx~=0 or dy~=0 then
-        -- Face the actual route, including wall slides, rather than a second target.
-        m.dir=Art.direction(dx,dy,m.dir)
-        if m.floatTime then m.floatTime=m.floatTime+dt end
-        if m.imgs and m.imgs[m.dir] then m.img=m.imgs[m.dir] end
-    end
+    if player.has_moved then move_mob_towards_player(m, player, dt) end
 end
 
 

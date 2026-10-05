@@ -4,7 +4,7 @@ function T.run()
  Profile.save=function()end;Bestiary.save=function()end;love.focus=function()end
  App.practice=1;App.start(1);mobs={}
  spawn_ange(300,300,1,false);spawn_snake(300,300,1)
- local statues=mobs
+ local angel=mobs[1];local statues={mobs[2]}
  for _,m in ipairs(statues) do
   m.hitBox_width=28;m.hitBox_height=42;m.hitBox_offset_x=-14;m.hitBox_offset_y=-21
   assert(m.img,'Statues must be visible before the first movement')
@@ -19,6 +19,11 @@ function T.run()
   MobBehaviors[m.type].update(m,1/60)
   assert(m.x==300 and m.y==300 and m.floatTime==0,'Idle statues must stay still')
  end
+ local ax,ay=angel.x,angel.y
+ MobBehaviors.ange.update(angel,1/60)
+ assert(angel.x~=ax or angel.y~=ay,'Angels pursue even when the player stays still')
+ assert(angel.floatTime>0,'Angels keep floating during pursuit')
+ assert(math.abs(math.sqrt((angel.x-ax)^2+(angel.y-ay)^2)-1.25)<1e-8,'Angels travel 25 percent faster')
  -- Each change of direction must immediately chase the current player centre.
  for _,target in ipairs({{500,300,1,0},{300,100,0,-1},{100,300,-1,0},{300,500,0,1}}) do
   player.x,player.y=target[1]-15,target[2]-12;ix,iy=target[3],target[4]
@@ -36,19 +41,27 @@ function T.run()
   MobBehaviors[m.type].update(m,.5)
   assert(m.x==x and m.y==y and m.floatTime==phase and m.dir==dir,'Release stops both displacement and floating')
  end
+ ax,ay=angel.x,angel.y
+ MobBehaviors.ange.update(angel,1/60)
+ assert(angel.x~=ax or angel.y~=ay,'Releasing movement never stops the angel')
  player.x=23;player.y=300;ix=-1
  App.move(1/60);assert(not player.has_moved,'Pressing into boundary is not movement')
  for _,m in ipairs(statues) do
   local x,y=m.x,m.y;MobBehaviors[m.type].update(m,1/60)
   assert(m.x==x and m.y==y,'Blocked player must not move statues')
  end
+ ax,ay=angel.x,angel.y;MobBehaviors.ange.update(angel,1/60)
+ assert(angel.x~=ax or angel.y~=ay,'Angels still chase a player blocked against a wall')
  ix,iy=1,0;App.move(1/60);assert(player.has_moved)
  for _,m in ipairs(statues) do
   local x,y,phase=m.x,m.y,m.floatTime;freeze(m,2)
   MobBehaviors[m.type].update(m,1/60)
   assert(m.x==x and m.y==y and m.floatTime==phase,'Traps still freeze statues')
  end
+ ax,ay=angel.x,angel.y;local phase=angel.floatTime;freeze(angel,2)
+ MobBehaviors.ange.update(angel,1/60)
+ assert(angel.x==ax and angel.y==ay and angel.floatTime==phase,'Traps freeze angels as well')
  Input.move,Input.slow=move,slow
- print('PASS statues: visible at spawn, idle, immediate pursuit through four turns, sprite alignment, stop, blocked player, frozen traps')
+ print('PASS statues and angels: statues stop on idle and blocked movement, angels always pursue, immediate turns, sprite alignment, both obey traps')
 end
 return T

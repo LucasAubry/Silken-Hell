@@ -13,7 +13,7 @@ function P.draw()
  g.setColor(.025,.028,.03,.88);g.rectangle('fill',-300,-98,600,208,8)
  g.setColor(.82,.72,.49,.55);g.rectangle('line',-300,-98,600,208,8)
  for _,x in ipairs({-300,300}) do g.polygon('fill',x,-7,x+5,0,x,7,x-5,0) end
- g.setColor(.94,.91,.82);g.printf('Chargement des textures…',-300,-55,600,'center')
+ g.setColor(.94,.91,.82);g.printf('Chargement des assets…',-300,-55,600,'center')
  g.setColor(.7,.72,.67);g.printf('Préparation du jeu',-300,-17,600,'center')
  -- A moving silk knot signals activity without inventing a percentage.
  g.setColor(.82,.72,.49,.25);g.setLineWidth(1);g.line(-225,60,225,60)
@@ -58,7 +58,7 @@ function P.load()
  end
  for _,name in ipairs({'scie','scie_pique','scie_blanc','piege','piege_active'}) do image('assets/monstres/paradis/pieges/'..name..'.png') end
  require('paradise_ink').load()
- require('boss_arrival').load()
+
  require('silk_art').load()
  require('servant_art').load()
  local borders=require('biome_borders');borders.images=borders.images or {}

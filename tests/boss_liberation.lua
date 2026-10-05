@@ -5,14 +5,13 @@ function T.run()
  local L=require('boss_liberation');local F=require('final_spider')
  local function start(world)
   App.practice=world==3 and 1 or 10;App.singleLevel=true;App.sessionLayout=nil;App.preview=false;Secret.duel=nil
-  App.start(world);require('boss_arrival').events={};player.reset=false
+  App.start(world);player.reset=false
  end
  local cases={
   {'paradis',1,function()
-   Raven.hp=0;Raven.broken=true
-   Raven.freedChicks={{x=200,y=190,dir='down',age=1,kind='shooter',stunned=true}}
-   Raven.chicks={{x=700,y=360,dir='left',age=1,kind='charger',stunned=true}}
-   player.x=685;player.y=348;player.dashing=true;Raven.contact();return Raven
+   Raven.hp=1;Raven.inside=false
+   Raven.chicks={{x=200,y=190,dir='down',age=1,kind='shooter'},{x=700,y=360,dir='left',age=1,kind='charger'}}
+   player.x=Raven.x-15;player.y=Raven.y-12;player.dashing=true;Raven.contact();return Raven
   end},
   {'ciel',6,function()Storm.hp=1;Storm.hurt(true);return Storm end},
   {'terre',5,function()Hedgehog.hp=1;Hedgehog.finishRound();return Hedgehog end},
@@ -61,7 +60,7 @@ function T.run()
  b.hp=1;b.finishRound();L.update(2);assert(Campaign.canCollect() and Aftermath.cleared)
  start(6);Graphics.effects=false;Storm.hp=1;Storm.hurt(true);L.update(2)
  assert(Campaign.canCollect(),'Reduced effects never block progression');Graphics.effects=true
- Secret.launch({kind='boss',name='Merle noir',world=6});require('boss_arrival').events={}
+ Secret.launch({kind='boss',name='Merle noir',world=6});
  local sky=Storm.active and Storm or Bosses.items[1].boss
  sky.hp=1;sky.hurt(true);L.update(2);assert(Secret.duel and Campaign.canCollect(),'Sanctuary retains its collectible reward')
  player.x=objet.larme.x;player.y=objet.larme.y;App.simulate(.01);assert(App.state=='customVictory','Sanctuary duel ends after collection')

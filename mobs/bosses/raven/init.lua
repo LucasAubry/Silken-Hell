@@ -31,13 +31,14 @@ function B.finish()
     end)
 end
 function B.breakEgg()
+    if B.broken or B.defeated then return end
     B.broken=true;B.projectiles={};B.eggs={};objet.larme.taken=true
     for _,m in ipairs(B.chicks) do
         m.stunned=true;m.phase='stunned';m.vx=0;m.vy=0
-        local x,y=Arena.clearSpot(m.x-27,m.y-27,54,54);m.x=x+27;m.y=y+27
     end
-    B.name='L’Œuf du Merle'
-    if #B.chicks==0 then B.finish() end
+    -- Free every surviving bird together with the egg, without another contact phase.
+    B.freedChicks=B.chicks;B.chicks={}
+    B.finish()
 end
 function B.fireNext()
     if B.broken or B.defeated then return end
@@ -68,20 +69,8 @@ function B.hatch()
     if Bestiary.discover('blackbird_chick') then Bestiary.save() end
 end
 function B.contact()
- if require('boss_arrival').waiting(B) then return end
+
     if not B.active or B.defeated or player.reset then return end
-    if B.broken then
-        if player.dashing then
-            for i=#B.chicks,1,-1 do local m=B.chicks[i]
-                if (player.x+15-m.x)^2+(player.y+12-m.y)^2<35^2 then
-                    BossFX.burst(m.x,m.y,{.45,.65,1},2);B.freedChicks[#B.freedChicks+1]=m;table.remove(B.chicks,i)
-                end
-            end
-            B.name='L’Œuf du Merle'
-            if #B.chicks==0 then B.finish() end
-        end
-        return
-    end
     local inside=(player.x+15-B.x)^2+(player.y+12-B.y)^2<58^2
     if inside and not B.inside and player.dashing then
         B.hp=B.hp-1;B.flash=.25;BossFX.burst(B.x,B.y,{.76,.87,.63},3)
@@ -90,16 +79,12 @@ function B.contact()
     B.inside=inside
 end
 function B.update(dt)
- if require('boss_arrival').waiting(B) then return end
+
     if not B.active or player.reset then return end
     for _,m in ipairs(B.corpses) do m.fall=math.min(1,m.fall+dt/.28) end
     if B.defeated then return end
     B.elapsed=B.elapsed+dt;B.flash=math.max(0,B.flash-dt);B.contact()
     if B.defeated then return end
-    if B.broken then
-        for _,m in ipairs(B.chicks) do m.age=m.age+dt end
-        return
-    end
     B.shotClock=B.shotClock-dt*(B.attackRate or 1)
     if B.shotClock<=0 then B.fireNext() end
     for _,m in ipairs(B.chicks) do
@@ -150,19 +135,17 @@ local function drawCorpses()
     g.setColor(1,1,1)
 end
 local egg=require('mobs.bosses.raven.egg').draw
-B.eggPositions={{-12,-8,-.34},{6,-10,.23},{17,-1,.58},{-18,4,-.5},{-3,5,.14},{10,10,.39}}
 function B.drawGround()
- if require('boss_arrival').waiting(B) then return end
+
     if not B.active then return end
     drawCorpses()
     local g=love.graphics
     for _,n in ipairs(B.nests) do
         g.setColor(1,1,1);Art.draw('nest',n.x,n.y,80,0,60)
-        if not n.shooter then for i=1,math.ceil(B.hp/B.maxHp*#B.eggPositions) do local p=B.eggPositions[i];egg(n.x+p[1],n.y+p[2],8,0,p[3]) end end
     end
 end
 function B.draw()
- if require('boss_arrival').waiting(B) then return end
+
     if not B.active then return end
     local g=love.graphics
     if (not B.broken and not B.defeated) or B.liberating then
@@ -175,7 +158,7 @@ function B.draw()
         local servants=require('servant_art');local context=servants.current;servants.current={type='blackbird_chick',bossServant=true}
         local previous=g.getShader()
         if m.kind~='charger' then
-            B.whiteShader=B.whiteShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px){
+            B.whiteShader=B.whiteShader or require('prism_material').surfaceShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px){
                 vec4 t=Texel(tex,uv);float l=max(t.r,max(t.g,t.b));
                 if(t.b>t.r*1.08 && t.b>t.g*1.03) t.rgb=mix(vec3(.32,.36,.42),vec3(1.,.99,.94),smoothstep(.04,.42,l));
                 return t*color;

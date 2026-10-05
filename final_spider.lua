@@ -112,7 +112,7 @@ function F.updateWebs(dt)
  for _,w in ipairs(F.stuck) do if near(w,p,24) and F.snare<=0 and (F.webGrace or 0)<=0 then F.trap(player);F.snare=2.1;F.snareSource='floor';F.webGrace=3;break end end
 end
 function F.update(dt)
- if require('boss_arrival').waiting(F) then return end
+
  if not F.active then return end
  F.layPulse=math.max(0,(F.layPulse or 0)-dt)
  F.jumpCooldown=math.max(0,(F.jumpCooldown or 0)-dt)
@@ -236,7 +236,7 @@ function F.egg(e,size,progress)
  g.pop()
 end
 function F.draw()
- if require('boss_arrival').waiting(F) then return end
+
  if not F.active then return end
  local g=love.graphics;g.push('all')
  for _,s in ipairs(F.shells) do g.setColor(1,1,1,.8);ArtSet.draw('shell',s.x,s.y,34,s.seed*.7) end

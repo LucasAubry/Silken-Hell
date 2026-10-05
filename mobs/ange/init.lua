@@ -27,7 +27,7 @@ end
 
 MobBehaviors.ange = {
     update = function(m, dt)
-        move_when_player_moves(m, player, dt)
+        move_mob_towards_player(m, player, dt, 1.25)
 
 
         if isTouching(player, m) and not player.reset then

@@ -32,7 +32,7 @@ end
 function H.finishRound()
     if H.defeated then return end
     H.hp=H.hp-1
-    
+
     if H.hp==0 then
         require('boss_liberation').start(H,'hedgehog',function()
             H.defeated=true;H.projectiles={};objet.larme.taken=false
@@ -50,7 +50,7 @@ function H.fire()
     end
 end
 function H.update(dt)
- if require('boss_arrival').waiting(H) then return end
+
     if not H.active or H.defeated then return end
     H.flash=math.max(0,H.flash-dt); H.bounceGrace=math.max(0,H.bounceGrace-dt)
     if H.phase=='standing' then
@@ -94,7 +94,7 @@ function H.update(dt)
     end
 end
 function H.draw()
- if require('boss_arrival').waiting(H) then return end
+
     if not H.active or (H.defeated and not H.liberating) then return end
     require('monster_fx').halo(H.x,H.y,104)
     local g=love.graphics
