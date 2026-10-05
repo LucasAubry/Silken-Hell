@@ -112,7 +112,6 @@ function O.armAt(x,y)
     end end
 end
 function O.touches(x,y)
-    x,y=require('hitbox_tuner').inverse('octopus_arms',x,y,O.x,O.y)
     return O.armAt(x,y)~=nil
 end
 function O.ink()
@@ -239,7 +238,7 @@ function O.releaseCrabs()
 end
 function O.crabContact(c)
     if c.dead or c.emerge or c.is_frozen or c.tunnelTravel or O.defeated or player.reset then return end
-    if require('hitbox_tuner').touchCircle('crab',c.x,c.y,27) then
+    if require('collision_shapes').touchCircle('crab',c.x,c.y,27) then
         if c.inked and player.dashing then
             if not c.kickGrace or c.kickGrace<=0 then
                 local dx,dy=c.x-player.x-15,c.y-player.y-12;local d=math.sqrt(dx*dx+dy*dy)
@@ -379,7 +378,7 @@ function O.contact()
     for _,c in ipairs(mobs) do if c.type=='crab' then O.crabContact(c);if player.reset then return end end end
     local cx=math.max(player.x,math.min(O.x,player.x+30))
     local cy=math.max(player.y,math.min(O.y,player.y+24))
-    if require('hitbox_tuner').circleRect('octopus',O.x,O.y,65) then Hazards.kill();return end
+    if require('collision_shapes').circleRect('octopus',O.x,O.y,65) then Hazards.kill();return end
     if O.rider then
         if O.inCorner() then O.tearArm(O.rider.arm) end
         return
@@ -392,7 +391,7 @@ function O.contact()
         end end end
         return
     end
-    local x1,x2,y1,y2=require('hitbox_tuner').samples()
+    local x1,x2,y1,y2=require('collision_shapes').samples()
     for y=y1,y2,5 do for x=x1,x2,5 do
         if O.touches(x,y) then Hazards.kill();return end
     end end

@@ -23,7 +23,7 @@ La lumière diminue progressivement au fil des mondes et des niveaux. La foudre 
 
 ## Menu, sauvegardes et classements
 
-Le menu suit l’ambiance du monde sélectionné. Cinq skins : Soie, Perle, Braise, Écume et Royale. Le bestiaire enregistre les découvertes, avec catégories Créatures, Boss et Pièges. L’histoire reste à écrire. Les succès sont secrets jusqu’à leur accomplissement.
+Le menu suit l’ambiance du monde sélectionné. Cinq skins : Soie, Perle, Braise, Écume et Royale. Le bestiaire enregistre les découvertes, avec catégories Créatures, Boss et Pièges. L’histoire reste à écrire. Les succès affichent leur condition et leur état, avec les filtres Tous, À faire et Obtenus.
 
 Un pseudo est demandé avant la partie. Cloudflare détecte le pays de la connexion ; avec un VPN, il s’agit du pays de sortie. Les panneaux affichent les dix meilleurs scores mondiaux et nationaux, avec chrono, morts et skin. Un clic ouvre tous les scores paginés. Le meilleur score par pseudo est conservé.
 
@@ -106,7 +106,7 @@ Le Léviathan possède 10 PV. Les charges plafonnent à 3 et éclairent autour d
 
 Le bouton de monde du menu ouvre une carte verticale (molette, haut/bas ou boutons Haut/Bas). Cliquer sur un cercle déplace l’araignée avec son skin et affiche les records et les niveaux disponibles. Les mondes fermés restent sous des nuages teintés ; chaque monde exige la victoire dans le précédent. Le Sanctuaire exige les sept victoires. Les classements restent voilés jusqu’à la première victoire dans le monde concerné.
 
-Chaque victoire débloque un skin de biome. Les récompenses apparaissent en gris et tournent sur la carte avant leur déblocage. Gillou et Maxance débloquent aussi chacun un skin. Gillou demande de toucher les trois abeilles pendant le même KO, avant le réveil d’une sœur ; l’ancien critère chronométré ne débloque plus ce succès. Un bouton masque les succès déjà accomplis.
+Chaque victoire débloque un skin de biome. Les récompenses apparaissent en gris et tournent sur la carte avant leur déblocage. Gillou et Maxance débloquent aussi chacun un skin. Gillou demande de toucher les trois abeilles pendant le même KO, avant le réveil d’une sœur ; l’ancien critère chronométré ne débloque plus ce succès. Les filtres des succès séparent les objectifs à faire et ceux déjà obtenus.
 
 Les niveaux atteints sont sauvegardés pour l’entraînement indépendant, sans progression ni score de classement. Après le dernier boss présent, les créatures disparaissent en étincelles et les dangers ne tuent plus. Des inscriptions sur le mur invitent à regarder ; aucun récit n’a été inventé (contenu futur dans `Story.worlds`).
 

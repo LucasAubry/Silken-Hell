@@ -123,8 +123,11 @@ local function node(n,i,x,y)
     UI.buttons[#UI.buttons+1]={x=labelX-6,y=math.max(125,y-35),w=x+40-labelX+6,h=math.max(0,math.min(680,y+35)-math.max(125,y-35)),run=function() M.select(n,i);M.branch(false,true) end,sound='go'}
 end
 function M.draw()
-    g.push('all')
-    local sx,sy=g.transformPoint(35,125);local ex,ey=g.transformPoint(730,680);g.setScissor(sx,sy,ex-sx,ey-sy)
+    -- Render the route separately so clouds and paths fade out at the viewport edges.
+    local previousCanvas=g.getCanvas()
+    M.routeCanvas=M.routeCanvas or g.newCanvas(730,750)
+    g.push('all');g.setCanvas(M.routeCanvas);g.origin();g.setScissor();g.clear(0,0,0,0)
+    g.setScissor(35,0,695,750)
     local lastX,lastY
     for i,n in ipairs(Worlds.selection) do
         local x,y=point(i);y=y-M.scroll
@@ -149,7 +152,16 @@ function M.draw()
         end
     end
     g.setColor(1,1,1);Characters.draw(M.x or 365,(M.y or 210)-M.scroll,64,'down')
-    g.setScissor();g.pop()
+    g.setCanvas(previousCanvas);g.pop()
+    M.edgeShader=M.edgeShader or g.newShader([[
+        vec4 effect(vec4 color,Image image,vec2 uv,vec2 screen) {
+            float y=uv.y*750.;
+            float fade=smoothstep(0.,125.,y)*(1.-smoothstep(655.,750.,y));
+            return Texel(image,uv)*color*fade;
+        }
+    ]])
+    g.push('all');g.setShader(M.edgeShader);g.setColor(1,1,1)
+    g.setBlendMode('alpha','premultiplied');g.draw(M.routeCanvas);g.pop()
     -- Floating controls leave the painted terrain visible across the entire screen.
     if App.selectedWorld==8 and M.hardcore then g.setColor(.16,.018,.028,.94) else g.setColor(.015,.025,.035,.88) end;g.rectangle('fill',756,136,388,510,16,16)
     g.setColor(.86,.74,.49,.45);g.rectangle('line',756,136,388,510,16,16)

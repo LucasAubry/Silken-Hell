@@ -71,7 +71,7 @@ end
 function B.contact()
 
     if not B.active or B.defeated or player.reset then return end
-    local inside=require('hitbox_tuner').touchCircle('merle',B.x,B.y,58)
+    local inside=require('collision_shapes').touchCircle('merle',B.x,B.y,58)
     if inside and not B.inside and player.dashing then
         B.hp=B.hp-1;B.flash=.25;BossFX.burst(B.x,B.y,{.76,.87,.63},3)
         if B.hp<=0 then B.breakEgg() else B.hatch() end
@@ -118,11 +118,11 @@ function B.update(dt)
                     end
                 end
             end
-            if not dead and require('hitbox_tuner').projectile(p.x-4,p.y-4,8,8) then hitPlayer();dead=true end
+            if not dead and require('collision_shapes').projectile(p.x-4,p.y-4,8,8) then hitPlayer();dead=true end
         end
         if dead then table.remove(B.projectiles,i) end
     end
-    for _,m in ipairs(B.chicks) do if require('hitbox_tuner').touchCircle('raven_chick',m.x,m.y,25) then hitPlayer() end end
+    for _,m in ipairs(B.chicks) do if require('collision_shapes').touchCircle('raven_chick',m.x,m.y,25) then hitPlayer() end end
 end
 local function drawCorpses()
     local g=love.graphics

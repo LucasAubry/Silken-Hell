@@ -1,7 +1,3 @@
---fonction pour metre a jours les hit box en fonction  du levle
-hitbox_display_timer = 0         -- temps restant d'affichage
-hitbox_display_duration = 2      -- durée en secondes, modifiable
-
 Walls = walls_1
 function update_walls_level()
 	Walls = _G["walls_" .. tostring(player.level)] or {}
@@ -18,7 +14,7 @@ function willCollide(newX, newY)
 	local offsetX = player.hitBox_offset_x or 0
 	local offsetY = player.hitBox_offset_y or 0
 
-    local px,py,pw,ph=require('hitbox_tuner').bounds(player,newX,newY)
+    local px,py,pw,ph=require('collision_shapes').bounds(player,newX,newY)
 	for _, wall in ipairs(Walls) do
 		if checkCollision(
 			px, py, pw, ph,
@@ -45,49 +41,7 @@ function isTouching(a, b)
     if Abyss and Abyss.isPulling() and ((a==player and b~=objet.larme) or (b==player and a~=objet.larme)) then return false end
     if a.abyssHeld or b.abyssHeld or (player.abyssSpit and (a==player or b==player)) then return false end
     if (player.abyssGrace or 0)>0 and ((a==player and b~=objet.larme) or (b==player and a~=objet.larme)) then return false end
-    local T=require('hitbox_tuner')
+    local T=require('collision_shapes')
     local ax,ay,aw,ah=T.bounds(a);local bx,by,bw,bh=T.bounds(b)
     return checkCollision(ax,ay,aw,ah,bx,by,bw,bh)
-end
-
-
-
-function draw_enemy_hitboxes()
-	love.graphics.setColor(1, 0, 1, 0.5)
-
-	for _, e in ipairs(mobs) do
-		if e.hitBox_width and e.hitBox_height then
-			local offsetX = e.hitBox_offset_x or 0
-			local offsetY = e.hitBox_offset_y or 0
-			love.graphics.rectangle("fill", require('hitbox_tuner').bounds(e))
-		end
-	end
-
-	love.graphics.setColor(1, 1, 1)
-end
-
-
-function draw_hit_box()
-	-- murs
-	love.graphics.setColor(1, 0, 0, 0.5)
-	for _, wall in ipairs(Walls) do
-		love.graphics.rectangle("fill", wall.x, wall.y, wall.w, wall.h)
-	end
-
-	-- joueur
-	local offsetX = player.hitBox_offset_x or 0
-	local offsetY = player.hitBox_offset_y or 0
-	love.graphics.setColor(0, 0, 1, 0.5)
-	love.graphics.rectangle("fill", player.x + offsetX, player.y + offsetY, player.hitBox_width, player.hitBox_height)
-
-	-- larme
-	if not objet.larme.taken then
-		love.graphics.setColor(1, 1, 0, 0.5)
-		love.graphics.rectangle("fill", objet.larme.x, objet.larme.y, objet.larme.hitBox_width, objet.larme.hitBox_height)
-	end
-
-	-- ennemis
-	draw_enemy_hitboxes()
-
-	love.graphics.setColor(1, 1, 1)
 end

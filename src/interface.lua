@@ -525,41 +525,50 @@ function U.draw()
         U.button('Quitter le jeu',410,438,380,40,function() App.quitDelay=.4 end)
     elseif App.state=='workshop' then U.workshop()
     elseif App.state=='achievements' then
-        U.panel(230,75,740,635); U.text('SUCCÈS',260,98,'heading',white,680,'center')
-        local totals={{'Larmes récupérées',Profile.stats.tears},{'Œufs récupérés',Profile.stats.eggs or 0},{'Morts',Profile.stats.deaths},{'Essais',Profile.stats.attempts}}
-        for i,v in ipairs(totals) do local x=260+(i-1)*174
-            U.panel(x,142,160,58);U.text(tostring(v[2]),x+8,146,'heading',gold,144,'center');U.text(v[1],x+8,180,'small',muted,144,'center')
+        U.panel(170,55,860,665)
+        U.text('SUCCÈS',200,75,'heading',white,800,'center')
+        local completed=0
+        for _,a in ipairs(Achievements.list) do if Achievements.unlocked(a) then completed=completed+1 end end
+        local remaining=#Achievements.list-completed
+        U.text(completed..' obtenus · '..remaining..' à faire',200,116,'body',white,800,'center')
+        g.setColor(.12,.18,.20);g.rectangle('fill',300,146,600,6,3)
+        if completed>0 then g.setColor(.48,.84,.64);g.rectangle('fill',300,146,600*completed/#Achievements.list,6,3) end
+        local totals={{'Larmes',Profile.stats.tears},{'Œufs',Profile.stats.eggs or 0},{'Morts',Profile.stats.deaths},{'Essais',Profile.stats.attempts}}
+        for i,v in ipairs(totals) do local x=205+(i-1)*200
+            U.text(v[1]..' : '..tostring(v[2]),x,170,'small',muted,190,'center')
         end
-        local category=U.achievementCategory or 'worlds'
-        for i,tab in ipairs({{'secrets','Secrets'},{'worlds','Mondes'},{'mastery','Maîtrise'}}) do
+        local filter=U.achievementFilter or 'all'
+        for i,tab in ipairs({{'all','Tous ('..#Achievements.list..')'},{'todo','À faire ('..remaining..')'},{'done','Obtenus ('..completed..')'}}) do
             local id=tab[1]
-            U.button(tab[2],270+(i-1)*224,212,212,32,function() U.achievementCategory=id;U.achievementPage=1 end,false,category==id)
+            U.button(tab[2],205+(i-1)*270,203,250,36,function() U.achievementFilter=id;U.achievementPage=1 end,false,filter==id)
         end
-        U.button(U.hideCompleted and 'Afficher les succès accomplis' or 'Masquer les succès accomplis',310,252,580,28,function() U.hideCompleted=not U.hideCompleted;U.achievementPage=1 end)
+        U.text('Chaque carte indique comment obtenir le succès.',205,251,'small',muted,790,'center')
         local visible={}
         for _,a in ipairs(Achievements.list) do
-            if a.category==category and not (Achievements.unlocked(a) and U.hideCompleted) then visible[#visible+1]=a end
+            local done=Achievements.unlocked(a)
+            if filter=='all' or (filter=='done' and done) or (filter=='todo' and not done) then visible[#visible+1]=a end
         end
-        U.achievementPage=math.max(1,math.min(U.achievementPage or 1,math.ceil(#visible/8)))
-        for row=0,7 do local a=visible[(U.achievementPage-1)*8+row+1]
+        local pages=math.max(1,math.ceil(#visible/4))
+        U.achievementPage=math.max(1,math.min(U.achievementPage or 1,pages))
+        for row=0,3 do local a=visible[(U.achievementPage-1)*4+row+1]
             if a then
-                local unlocked=Achievements.unlocked(a);local hidden=category=='secrets' and not unlocked
-                local y=292+row*38
-                if row%2==0 then g.setColor(.1,.14,.16,.24);g.rectangle('fill',270,y,660,37) end
-                g.setColor(gold[1],gold[2],gold[3],.15);g.line(270,y+37,930,y+37)
-                g.setColor(unlocked and gold or muted);g.setLineWidth(1)
-                g.polygon(unlocked and 'fill' or 'line',283,y+13,287,y+17,283,y+21,279,y+17)
-                U.fitText(hidden and 'Succès secret' or (a.localizedName and a.localizedName() or a.name),300,y+2,'body',unlocked and gold or white,485)
-                U.fitText(unlocked and 'Accompli' or hidden and '???' or 'À accomplir',794,y+4,'small',unlocked and gold or muted,124,'right')
-                U.fitText(hidden and 'À découvrir en jouant.' or a.description(),300,y+21,'small',muted,618)
-
+                local done=Achievements.unlocked(a);local y=276+row*82
+                local accent=done and {.48,.84,.64} or {.92,.76,.43}
+                g.setColor(done and {.035,.13,.09,.9} or {.07,.095,.12,.96});g.rectangle('fill',205,y,790,76,6)
+                g.setColor(accent[1],accent[2],accent[3],.65);g.rectangle('fill',205,y+8,3,60,1)
+                g.setColor(accent);g.setLineWidth(2);g.circle('line',230,y+23,10)
+                if done then g.line(224,y+23,229,y+28,237,y+18) else g.circle('fill',230,y+23,2) end
+                g.setLineWidth(1)
+                U.fitText(a.localizedName and a.localizedName() or a.name,252,y+9,'body',white,566)
+                U.text(done and 'OBTENU' or 'À FAIRE',833,y+12,'small',accent,142,'right')
+                U.text(a.description(),252,y+34,'body',done and {.65,.78,.70} or {.79,.82,.84},715)
             end
         end
-        if #visible==0 then U.text('Aucun succès à afficher.',300,421,'body',muted,600,'center') end
-        U.text(U.achievementPage..' / '..math.max(1,math.ceil(#visible/8)),450,615,'small',muted,300,'center')
-        U.button('Précédent',270,608,155,30,function() U.achievementPage=U.achievementPage-1 end,U.achievementPage<=1)
-        U.button('Suivant',775,608,155,30,function() U.achievementPage=U.achievementPage+1 end,U.achievementPage*8>=#visible)
-        U.button('Retour',440,657,320,36,function() App.state='menu' end)
+        if #visible==0 then U.text(filter=='todo' and 'Tout est accompli !' or 'Aucun succès obtenu pour le moment.\nChoisis « À faire » pour voir les objectifs.',240,410,'body',white,720,'center') end
+        U.text(U.achievementPage..' / '..pages,450,619,'small',muted,300,'center')
+        U.button('Précédent',205,613,180,32,function() U.achievementPage=U.achievementPage-1 end,U.achievementPage<=1)
+        U.button('Suivant',815,613,180,32,function() U.achievementPage=U.achievementPage+1 end,U.achievementPage>=pages)
+        U.button('Retour',440,667,320,36,function() App.state='menu' end)
     elseif App.state=='customVictory' then
         U.panel(300,235,600,350); U.text(Secret.duel and 'Duel terminé' or App.practice and 'Entraînement terminé' or 'Carte terminée',330,265,'heading',white,540,'center')
         U.text(U.time(Scoring.total(timer,player.death))..' · '..player.death..' morts ('..Scoring.label(player.death)..')',330,325,'body',gold,540,'center')

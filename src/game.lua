@@ -105,8 +105,7 @@ function App.start(world)
     App.custom=os.getenv('SILKEN_PREVIEW_WORLD')~=nil
     for _,layout in pairs(LevelLayouts.read()) do if layout.world==world then App.custom=true end end
     if Worlds.isSecret(world) then App.custom=false end
-    require('hitbox_tuner').onStart()
-    if not App.hitboxTest and not App.singleLevel and not App.hardcore and world~=3 then Online.start(world,Profile.name,App.runSkin) else Online.current=nil end
+    if not App.singleLevel and not App.hardcore and world~=3 then Online.start(world,Profile.name,App.runSkin) else Online.current=nil end
 end
 function love.load()
     love.graphics.setDefaultFilter('linear','linear')
@@ -215,12 +214,10 @@ function love.update(dt)
         if App.state=='victory' or App.state=='customVictory' then Psyche.update(dt) end
         Replay.accumulator=0;return
     end
-    if require('hitbox_tuner').blocked() then Replay.accumulator=0;return end
     Replay.update(dt,App.simulate)
     if Replay.playing and not Replay.ghost and Replay.compatibility and (App.state=='victory' or App.state=='customVictory') then App.state='playing' end
 end
 function App.simulate(dt)
-    if require('hitbox_tuner').blocked() then return end
     local liberation=require('boss_liberation')
     if liberation.busy() then liberation.update(dt);return end
 
@@ -285,8 +282,7 @@ function App.simulate(dt)
         Achievements.finishLevel()
         if not Renaissance.active then Profile.record('tears') end
         if not App.singleLevel and not App.hardcore then Online.checkpoint(player.level,timer,player.death) end
-        if App.hitboxTest then App.state='customVictory'
-        elseif App.singleLevel then App.state='customVictory';if not Replay.playing then Replay.finish() end
+        if App.singleLevel then App.state='customVictory';if not Replay.playing then Replay.finish() end
         elseif player.level==Worlds.levelCount(Campaign.world) then
             if App.hardcore then Hardcore.complete(Campaign.world) elseif not App.singleLevel then Profile.complete(Campaign.world,timer,player.death) end
             require('victory_screen').enter()
@@ -326,7 +322,7 @@ function love.draw()
         Renaissance.drawBlasts(); Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false); love.graphics.setColor(1,1,1); if Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not Abyss.encounterActive() then draw_player(direction) end; Ocean.drawBubble(); Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies() end; Abyss.drawLights(); Bosses.drawLights(); if Abyss.encounterActive() then love.graphics.setColor(1,1,1);draw_player(direction) end; draw_player_beacon(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage();if not Abyss.playerHidden() then Replay.drawGhost() end
-        Prism.endScene();require('hitbox_tuner').drawWorld();love.graphics.setCanvas()
+        Prism.endScene();love.graphics.setCanvas()
     elseif App.state=='bossWorld' then
         refreshSceneResolution()
         love.graphics.setCanvas(gameCanvas);love.graphics.origin();love.graphics.clear();Prism.beginScene(gameCanvas);Secret.drawWorld();Prism.endScene();love.graphics.setCanvas()
@@ -380,7 +376,6 @@ function love.draw()
         if Graphics.showFPS then love.graphics.setColor(.7,1,.8,.8);love.graphics.print(tostring(love.timer.getFPS())..' FPS',12,h-33) end
         love.graphics.pop()
     end
-    require('hitbox_tuner').drawPanel()
     if App.capture then
         local path=App.capture; App.capture=nil
         love.graphics.captureScreenshot(function(data) data:encode('png',path) end)
@@ -388,7 +383,6 @@ function love.draw()
     Graphics.pace()
 end
 function love.mousepressed(x,y,button)
-    if require('hitbox_tuner').mousepressed(x,y,button) then return end
     Input.active=false
     if UI.binding then Input.bind('mouse:'..button);return end
     if Replay.playing then
@@ -399,8 +393,6 @@ function love.mousepressed(x,y,button)
     if App.state=='playing' and not Replay.playing then for _,key in pairs(Profile.keys) do if key=='mouse:'..button then return end end end
     if button==1 then local vx,vy=UI.mouse(x,y); UI.click(vx,vy) end
 end
-function love.mousemoved(x,y) require('hitbox_tuner').mousemoved(x,y) end
-function love.mousereleased() require('hitbox_tuner').mousereleased() end
 function love.textinput(text)
     if App.state=='workshop' then Workshop.text(text); return end
     if App.state~='entry' then return end
@@ -410,7 +402,6 @@ function love.textinput(text)
     App.error=nil
 end
 function love.keypressed(key,scancode,isrepeat)
-    if require('hitbox_tuner').key(key) then return end
     Input.active=false
     if App.state=='credits' then Ending.creditKey(key,isrepeat);return end
     if key=='escape' then Audio.play('go') end

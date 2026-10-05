@@ -165,12 +165,12 @@ function S.contact()
  if S.holeAt(player.x+15,player.y+12) then Hazards.kill('storm');if player.reset then player.falling=true end;return end
  for i=#S.projectiles,1,-1 do
   local p=S.projectiles[i]
-  if S.canReflect(p) and require('hitbox_tuner').featherTouches(p.x,p.y,GOLDEN_PICKUP_RADIUS) then S.reflect(p) end
+  if S.canReflect(p) and require('collision_shapes').featherTouches(p.x,p.y,GOLDEN_PICKUP_RADIUS) then S.reflect(p) end
   if p.returned then
    if S.featherHit(p) then if S.defeated then return end;table.remove(S.projectiles,i) end
   end
  end
- if not S.hidden and S.phase~='leave' and S.phase~='return' and require('hitbox_tuner').touchCircle('storm',S.x,S.y,BODY_RADIUS) then Hazards.kill('storm') end
+ if not S.hidden and S.phase~='leave' and S.phase~='return' and require('collision_shapes').touchCircle('storm',S.x,S.y,BODY_RADIUS) then Hazards.kill('storm') end
 end
 function S.updateTornado() end
 function S.update(dt)
@@ -251,7 +251,7 @@ function S.update(dt)
     p.x=p.x+p.vx*dt/steps;p.y=p.y+p.vy*dt/steps
     if p.x<20 or p.x>Arena.width-20 or p.y<35 or p.y>565 or Arena.blocked(p.x-3,p.y-3,6,6) then dead=true
     elseif not p.split and S.lightningAt(p.x,p.y) then dead=S.splitFeather(p)
-    elseif require('hitbox_tuner').featherTouches(p.x,p.y,S.canReflect(p) and GOLDEN_PICKUP_RADIUS or S.playerFeatherRadius) then
+    elseif require('collision_shapes').featherTouches(p.x,p.y,S.canReflect(p) and GOLDEN_PICKUP_RADIUS or S.playerFeatherRadius) then
      if S.canReflect(p) then S.reflect(p);break else Hazards.kill('storm');dead=true end
     end
    end

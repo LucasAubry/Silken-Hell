@@ -325,7 +325,7 @@ function R.moveGull(m,dt)
     R.containGull(m); m.dir=Art.direction(m.vx,m.vy,m.dir)
     if m.electric then
         R.electricTrails[#R.electricTrails+1]={x=previousX,y=previousY,tx=m.x,ty=m.y,life=2.2,seed=m.age*11}
-        if require('hitbox_tuner').touchCircle('electric_gull',m.x,m.y,30) then Hazards.kill() end
+        if require('collision_shapes').touchCircle('electric_gull',m.x,m.y,30) then Hazards.kill() end
     end
 end
 function R.trailTouches(p,x,y)
@@ -427,7 +427,7 @@ function R.updateProjectiles(dt)
             else
                 p.x=x; p.y=y
                 local radius=list==R.bolts and 5 or 3
-                if require('hitbox_tuner').projectile(x-radius,y-radius,radius*2,radius*2) then Hazards.kill(); dead=true end
+                if require('collision_shapes').projectile(x-radius,y-radius,radius*2,radius*2) then Hazards.kill(); dead=true end
             end
         end end
         if dead then

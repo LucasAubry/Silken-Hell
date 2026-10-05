@@ -5,7 +5,6 @@ function T.run()
  App.practice=1;App.start(1);mobs={}
  spawn_ange(300,300,1,false);spawn_snake(300,300,1)
  local angel=mobs[1];local statues={mobs[2]}
- local hitboxes=require('hitbox_tuner');hitboxes.reset(true)
  local ink=require('paradise_ink');local g=love.graphics
  for _,m in ipairs(mobs) do
   assert(m.hitBox_width==28 and math.abs(m.hitBox_height-58.8)<1e-8,'Approved hitbox is 100% wide and 140% tall')

@@ -5,21 +5,21 @@ function A.maxanceTime() return Scoring.total(552.732,95) end
 function A.gillouTime() return Scoring.total(2264.85,513) end
 A.list={
     {id='gillou',category='secrets',name='Plus rapide que Gillou',description=function()
-        return 'Toucher les trois abeilles pendant le même KO, avant que l’une se réveille.'
+        return 'En Enfer, fais charger les trois sœurs contre un mur, puis touche-les toutes avant le réveil de la première.'
     end},
     {id='maxance',category='secrets',name='Maxance',description=function()
-        return 'Terminer le Paradis avec au moins 95 morts.'
+        return 'Termine un parcours complet du Paradis avec au moins 95 morts.'
     end}
 }
 for _,world in ipairs({1,6,5,4,7,2,3}) do
     local w=world
-    A.list[#A.list+1]={id='flawless'..w,category='mastery',name=(Worlds.names[w] or 'Monde')..' sans faute',localizedName=function() return T('%s sans faute',T(Worlds.names[w] or 'Monde')) end,description=function() return T('Terminer %s sans mourir.',T(Worlds.names[w])) end}
+    A.list[#A.list+1]={id='flawless'..w,category='mastery',name=(Worlds.names[w] or 'Monde')..' sans faute',localizedName=function() return T('%s sans faute',T(Worlds.names[w] or 'Monde')) end,description=function() return T('Termine le parcours complet : %s, sans mourir (hors entraînement).',T(Worlds.names[w])) end}
 end
 for _,world in ipairs(Worlds.order) do
     local w=world
-    A.list[#A.list+1]={id='world'..w,world=w,category='worlds',name=Worlds.names[w],description=function() return T('Terminer %s.',T(Worlds.names[w])) end}
+    A.list[#A.list+1]={id='world'..w,world=w,category='worlds',name=Worlds.names[w],description=function() return T('Termine tous les niveaux de %s en parcours complet (hors entraînement).',T(Worlds.names[w])) end}
 end
-A.list[#A.list+1]={id='bossflawless1',category='mastery',name='Coquille parfaite',description=function() return 'Vaincre l’Œuf du Merle sans mourir pendant le niveau.' end}
+A.list[#A.list+1]={id='bossflawless1',category='mastery',name='Coquille parfaite',description=function() return 'Au Paradis, termine le niveau 10 sans mourir : percute l’Œuf du Merle à pleine vitesse pour le briser.' end}
 function A.unlocked(a)
     return a.world and Profile.hasCompleted(a.world) or Profile.achievements[a.id]==true
 end

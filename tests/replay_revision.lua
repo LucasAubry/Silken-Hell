@@ -78,13 +78,14 @@ function T.run()
     App.start(1);Replay.recording=false;Campaign.select(1);player.level=10;reset_level();App.state='playing'
     assert(Raven.active and Raven.hp==10 and #Raven.nests==6)
     player.reset=false;player.dashing=true;player.x=Raven.x-15;player.y=Raven.y-12
-    Raven.contact();assert(Raven.hp==9 and #Raven.chicks==4);assert(#Raven.projectiles==0,'Hits do not synchronize shooters');assert(Raven.interval()<=1,'Continuous alternating shots')
+    Raven.contact();assert(Raven.hp==9 and #Raven.chicks==3);assert(#Raven.projectiles==0,'Hits do not synchronize shooters');assert(Raven.interval()<=1,'Continuous alternating shots')
     for _,m in ipairs(Raven.chicks) do local n=Raven.nests[m.slot];assert(m.kind==(m.slot%2==1 and 'shooter' or 'charger')) end
     Raven.contact();assert(Raven.hp==9,'One hit per entry')
-    player.x=30;Raven.contact();player.x=Raven.x-15;Raven.contact();assert(Raven.hp==8 and #Raven.chicks==5)
+    player.x=30;Raven.contact();player.x=Raven.x-15;Raven.contact();assert(Raven.hp==8 and #Raven.chicks==4)
     for _=1,8 do player.x=30;Raven.contact();player.x=Raven.x-15;Raven.contact() end
-    assert(Raven.broken and not Raven.defeated and objet.larme.taken)
-    while #Raven.chicks>0 do local m=Raven.chicks[1];player.x=m.x-15;player.y=m.y-12;Raven.contact() end
+    assert(Raven.broken and Raven.defeated and Raven.liberating and objet.larme.taken)
+    assert(#Raven.freedChicks==6,'Living birds are freed on the tenth hit')
+    require('boss_liberation').update(2)
     assert(Raven.defeated and #Raven.chicks==0 and #Raven.projectiles==0 and not objet.larme.taken)
     for _,w in ipairs(Worlds.order) do if w~=8 then local a={};Achievements.check({world=w,time=60,deaths=0},a);assert(a['flawless'..w]) end end
     for _,name in ipairs({'go','back','selection','editor'}) do assert(Audio[name]:getDuration()>0) end
@@ -97,7 +98,7 @@ function T.run()
     end
     canvas:release()
     print('PASS replay: real completed map, save/load, deterministic playback, divergence detection, spectator isolation, exact-map validation')
-    print('PASS boss: six fixed nests, ten hits and stunned-bird cleanup, alternating bird roles, hit latch, cleanup; seven world achievements and audio sources')
+    print('PASS boss: six fixed nests, ten hits and silk liberation, alternating bird roles, hit latch, cleanup; seven world achievements and audio sources')
     io.stdout:flush()
     local tick=0
     love.update=function(dt)

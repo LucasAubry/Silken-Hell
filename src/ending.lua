@@ -28,7 +28,7 @@ function E.locked() return E.active and (require('final_spider').snare>0 or E.ph
 function E.complete()
  if E.completed then return end
  E.completed=true;E.phase='complete'
- if not Replay.playing and not App.hitboxTest then
+ if not Replay.playing then
   if App.singleLevel then Replay.finish()
   else
    if not App.hardcore then Online.checkpoint(2,timer,player.death) end

@@ -31,8 +31,9 @@ function T.run()
  local b=Raven
  local artDraw=Art.draw;local nests=0
  Art.draw=function(key,x,y,w,angle,h)
-  assert(key=='nest' and w==80 and h==60,'All nests have identical art and dimensions')
-  nests=nests+1
+  if key=='nest' then
+   assert(w==80 and h==60,'All nests have identical art and dimensions');nests=nests+1
+  else artDraw(key,x,y,w,angle,h) end
  end
  b.drawGround();Art.draw=artDraw;assert(nests==#b.nests)
  for i=1,3 do hit(b) end

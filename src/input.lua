@@ -21,7 +21,7 @@ function I.axes()
 end
 function I.down(binding)
     local button=type(binding)=='string' and binding:match('^mouse:(%d+)$')
-    if button then return not require('hitbox_tuner').pointerOver() and love.mouse.isDown(tonumber(button)) end
+    if button then return love.mouse.isDown(tonumber(button)) end
     return love.keyboard.isDown(binding)
 end
 function I.bind(key)

@@ -120,7 +120,7 @@ function A.buildBones()
 end
 function A.boneTouches(b,x,y)
     local a=Art.images[b.key]; if not a or not a.mask then return false end
-    local bx,by,bw,bh=require('hitbox_tuner').bone(b)
+    local bx,by,bw,bh=require('collision_shapes').bone(b)
     local dx,dy=x-bx,y-by; local c,s=math.cos(b.angle),math.sin(b.angle)
     local u=(c*dx+s*dy)/bw+.5; local v=(-s*dx+c*dy)/bh+.5
     if b.flip then u=1-u end
@@ -174,10 +174,10 @@ function A.inSuctionShelter(x,y)
     return false
 end
 function A.overlapsBone(b)
-    local T=require('hitbox_tuner');local bx,by,bw,bh=T.bone(b);local px,py,pw,ph=T.playerRect()
+    local T=require('collision_shapes');local bx,by,bw,bh=T.bone(b);local px,py,pw,ph=T.playerRect()
     local radius=math.sqrt(bw*bw+bh*bh)/2+math.max(30,math.sqrt(pw*pw+ph*ph)/2+10)
     if (px+pw/2-bx)^2+(py+ph/2-by)^2>=radius^2 then return false end
-    local x1,x2,y1,y2=require('hitbox_tuner').samples()
+    local x1,x2,y1,y2=require('collision_shapes').samples()
     for y=y1,y2,4 do for x=x1,x2,4 do
         if A.boneTouches(b,x,y) then return true end
     end end
@@ -217,7 +217,7 @@ function A.contact()
         -- The open mouth has an accessible throat; the skull and teeth remain solid.
         local throat=A.boss and A.open and b==A.bones[#A.bones] and player.x+15>A.head.x+24 and math.abs(player.y+12-mouthY)<85
         if not throat then
-            local x1,x2,y1,y2=require('hitbox_tuner').samples()
+            local x1,x2,y1,y2=require('collision_shapes').samples()
             for y=y1,y2,4 do for x=x1,x2,4 do
                 if A.boneTouches(b,x,y) then Hazards.kill('bone'); return end
             end end
