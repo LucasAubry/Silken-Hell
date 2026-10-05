@@ -1,5 +1,5 @@
 -- Blocking HTTPS stays on a worker thread so gameplay never waits for the network.
-local json=require 'json'
+local json=require 'src.json'
 local requests=love.thread.getChannel('silken.requests')
 local responses=love.thread.getChannel('silken.responses')
 local function quote(s) return "'"..tostring(s):gsub("'", "'\\''").."'" end

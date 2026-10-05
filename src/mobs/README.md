@@ -5,7 +5,7 @@
 - `bosses/instances.lua` crée les boss indépendants des cartes du workshop.
 - `shared/` rassemble uniquement les textures, déplacements, collisions et rendus communs.
 - `init.lua` enregistre les monstres historiques ; `infernal.lua` enregistre ceux des enfers.
-- `realms.lua`, à la racine, orchestre les décors et les groupes des biomes.
-- Les textures restent dans `assets/sprites/` et `texture/mob/` pour préserver les références des cartes et de l'éditeur.
+- `src/realms.lua`, orchestre les décors et les groupes des biomes.
+- Les images sont classées par biome et par créature dans `assets/monstres/`. `src/asset_paths.lua` maintient les anciens chemins utilisés par les chargeurs.
 
-Le packaging inclut récursivement `mobs/`. L'empreinte des replays inclut tous ses scripts.
+Le packaging inclut récursivement `src/`. L'empreinte des replays inclut tous ses scripts.

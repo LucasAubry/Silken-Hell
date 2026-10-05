@@ -54,7 +54,7 @@ end
 function M.drawBackground(w,h)
     local scale=math.min(w/1200,h/750);local edge=w
     g.push('all');g.setColor(.008,.011,.015);g.rectangle('fill',0,0,w,h);g.setScissor()
-    M.backgroundShader=M.backgroundShader or g.newShader('assets/world_map.glsl');M.backgroundShader:send('clock',UI.clock);M.backgroundShader:send('mapHeight',h/scale);M.backgroundShader:send('viewTop',(h/scale-750)/2);M.backgroundShader:send('scroll',M.scroll);local stops={};for _,n in ipairs(Worlds.selection) do stops[#stops+1]=(n==8 and M.hardcore and App.selectedWorld==8) and {.32,.025,.04} or Worlds.color(n).floor end;M.backgroundShader:send('stops',unpack(stops));g.setShader(M.backgroundShader);g.setColor(1,1,1);g.draw(UI.pixel,0,0,0,edge,h);g.setShader()
+    M.backgroundShader=M.backgroundShader or g.newShader('assets/shaders/world_map.glsl');M.backgroundShader:send('clock',UI.clock);M.backgroundShader:send('mapHeight',h/scale);M.backgroundShader:send('viewTop',(h/scale-750)/2);M.backgroundShader:send('scroll',M.scroll);local stops={};for _,n in ipairs(Worlds.selection) do stops[#stops+1]=(n==8 and M.hardcore and App.selectedWorld==8) and {.32,.025,.04} or Worlds.color(n).floor end;M.backgroundShader:send('stops',unpack(stops));g.setShader(M.backgroundShader);g.setColor(1,1,1);g.draw(UI.pixel,0,0,0,edge,h);g.setShader()
     local tint=Worlds.color(App.selectedWorld or 1).tear
     for layer=1,7 do
         local vertices={0,0}

@@ -6,7 +6,7 @@ local utf8=require 'utf8'
 local BossHUD=require 'boss_hud'
 local gold={0.82,0.72,0.49}; local muted={0.47,0.59,0.61}; local white={0.91,0.91,0.83}
 function U.load()
-    U.fonts={tiny=g.newFont(10),small=g.newFont(12),body=g.newFont(16),medium=g.newFont(22),title=g.newFont('police.ttf',82),heading=g.newFont(28)}
+    U.fonts={tiny=g.newFont(10),small=g.newFont(12),body=g.newFont(16),medium=g.newFont(22),title=g.newFont('assets/fonts/police.ttf',82),heading=g.newFont(28)}
     U.fallbackFonts={}
     for name,font in pairs(U.fonts) do
         if name~='title' then
@@ -14,7 +14,7 @@ function U.load()
             U.fallbackFonts[name]=fallback; font:setFallbacks(fallback);font:setLineHeight(1.15)
         end
     end
-    U.shader=g.newShader('assets/celestial.glsl')
+    U.shader=g.newShader('assets/shaders/celestial.glsl')
     U.pixel=g.newImage(love.image.newImageData(1,1)); U.pixel:replacePixels(love.image.newImageData(1,1))
 end
 function U.text(t,x,y,font,color,width,align)

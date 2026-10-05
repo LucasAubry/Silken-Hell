@@ -42,8 +42,8 @@ Les fichiers `custom_levels.json` et `designer/default_levels.json` sont des don
 ## Développement et vérification
 
 - `love .` : jouer depuis les sources.
-- `make package` : construire `game.love`, y compris l’éditeur intégré.
-- `SILKEN_TEST=1 love game.love` : tests isolés du jeu.
+- `make package` : construire `dist/game.love`, y compris l’éditeur intégré.
+- `SILKEN_TEST=1 love dist/game.love` : tests isolés du jeu.
 - `SILKEN_DESIGNER_TEST=1 SILKEN_PROJECT="$PWD" love designer` : tests de l’éditeur.
 - `cd server && npm test` : tests API et Workshop.
 
@@ -59,13 +59,19 @@ Le serveur vérifie l’ordre des niveaux, les compteurs, le temps et les soumis
 
 ## Organisation et assets
 
-- Modules Lua à la racine ; dispositions du Paradis dans `levels/`.
-- `assets/sprites/` : PNG actifs ; vues directionnelles dans `directional/`.
+- `src/` : modules du jeu, comportements dans `src/mobs/`, niveaux dans `src/levels/`.
+- `assets/` : ressources actives, avec images par biome dans `monstres/`, skins dans `skins/`, décors dans `environments/`, textures dans `textures/`, sons dans `audio/`, shaders dans `shaders/` et polices dans `fonts/`.
 - `assets/art-metadata.json` : limites alpha et masques précalculés.
-- `texture/` : textures d’origine encore utilisées.
+- `docs/` : notes de développement et besoins audio ; `docs/art/` conserve les prompts des images pour les reproduire.
 - `designer/`, `server/`, `tests/`, `tools/` : éditeur, API, vérifications et empaquetage.
+- `dist/game.love` : archive générée par `make package`, utilisée par les lanceurs.
+- `output/` : créations locales conservées (vidéos, sources graphiques et leurs outils), exclues du jeu et de Git.
 
-Les prompts des images sont conservés dans `assets/` pour pouvoir les reproduire. Les anciennes poses du poulpe, sprites remplacés, interfaces inutilisées et l’export web obsolète ont été retirés. Les archives générées, métadonnées Finder et caches ne sont pas versionnés.
+Seuls les points d’entrée LÖVE (`main.lua`, `conf.lua`), les lanceurs, le `Makefile`, ce guide et les niveaux personnalisés restent à la racine. Les noms des modules Lua restent stables grâce au chemin de recherche `src/` ; `src/asset_paths.lua` résout les anciens noms des images encore utilisés par les chargeurs dynamiques.
+
+Les anciennes archives numérotées, copies de travail et captures de vérification ont été retirées. Les fichiers générés, métadonnées Finder et caches ne sont pas versionnés. Conserver `custom_levels.json` et `designer/default_levels.json`, qui contiennent les niveaux éditables.
+
+Après un déplacement de fichiers, lancer `make package`, puis `SILKEN_TEST=1 SILKEN_ORGANIZATION_TEST=1 love dist/game.love` pour vérifier les ressources, les modules, les boss, les skins et le chargement du thread réseau sans requête externe.
 
 ## Manettes et Steam
 
@@ -93,7 +99,7 @@ Le Léviathan possède 10 PV. Les charges plafonnent à 3 et éclairent autour d
 
 ### Vérification du nouveau Poulpe
 
-`SILKEN_TEST=1 SILKEN_REWORK_TEST=1 love game.love` vérifie les morts/réapparitions dans les dix niveaux océaniques, la réutilisation du décor, les crabes noirs propulsés, les explosions contre les murs, l’étourdissement, les trois secondes de traction, la rage, la victoire et la larme abyssale cachée. Le bouton « i » ouvre la fiche du boss présent ; molette, touches haut/bas et stick droit font défiler le texte.
+`SILKEN_TEST=1 SILKEN_REWORK_TEST=1 love dist/game.love` vérifie les morts/réapparitions dans les dix niveaux océaniques, la réutilisation du décor, les crabes noirs propulsés, les explosions contre les murs, l’étourdissement, les trois secondes de traction, la rage, la victoire et la larme abyssale cachée. Le bouton « i » ouvre la fiche du boss présent ; molette, touches haut/bas et stick droit font défiler le texte.
 
 
 ## Révision : la Descente
@@ -112,7 +118,7 @@ L’éditeur permet d’enregistrer des **variantes de créatures et de boss** :
 
 La publication Workshop propose un biome distinct du niveau de départ et une difficulté de 1 à 5 larmes ; au niveau 5, un supplément rouge de 0 à 999. Les listes filtrent par biome/difficulté et trient par étoiles ou difficulté. Les métadonnées sont validées côté client et serveur.
 
-Vérifications de cette révision : `SILKEN_TEST=1 SILKEN_GOAL_TEST=1 love game.love`, tests de l’éditeur et `npm test` dans `server`. La migration serveur `0007_biome_skins.sql` doit être appliquée avant de déployer le Worker pour activer les nouveaux identifiants de skins. Les nouvelles fonctions serveur restent locales tant que ce déploiement n’est pas effectué.
+Vérifications de cette révision : `SILKEN_TEST=1 SILKEN_GOAL_TEST=1 love dist/game.love`, tests de l’éditeur et `npm test` dans `server`. La migration serveur `0007_biome_skins.sql` doit être appliquée avant de déployer le Worker pour activer les nouveaux identifiants de skins. Les nouvelles fonctions serveur restent locales tant que ce déploiement n’est pas effectué.
 
 
 ## Replays, coquille et corrections visuelles
@@ -123,4 +129,4 @@ Une carte Workshop doit être terminée dans sa version exacte avant publication
 
 Le premier boss est un gros œuf à six vies. Chaque impact de dash libère six oiseaux aux mêmes nids : trois tireurs et trois chargeurs. Les nouveaux tireurs lancent immédiatement une plume ; les tirs suivants sont espacés de 4,6 s minimum. Les charges ne montrent aucune ligne de visée. Le poulpe conserve sa tête PNG, détourée selon sa silhouette par un maillage texturé, sans masque circulaire. Les tentacules vectoriels reprennent les bleus de la tête et leur base passe derrière elle. Les skins respectent l’opacité des traces, le halo du menu s’estompe progressivement, les sons fournis sont chargés, et chaque monde possède un succès pour une victoire sans mourir. Le menu des succès est paginé.
 
-Vérification : `SILKEN_TEST=1 SILKEN_REPLAY_TEST=1 love game.love` (partie réellement terminée/rejouée, divergence, isolation du spectateur, échantillons physiques de tous les biomes/boss et du mode Démon, boss œuf et opacité des skins), `SILKEN_TEST=1 SILKEN_GOAL_TEST=1 love game.love` (66 niveaux), et `node --test server/worker.test.mjs`.
+Vérification : `SILKEN_TEST=1 SILKEN_REPLAY_TEST=1 love dist/game.love` (partie réellement terminée/rejouée, divergence, isolation du spectateur, échantillons physiques de tous les biomes/boss et du mode Démon, boss œuf et opacité des skins), `SILKEN_TEST=1 SILKEN_GOAL_TEST=1 love dist/game.love` (66 niveaux), et `node --test server/worker.test.mjs`.

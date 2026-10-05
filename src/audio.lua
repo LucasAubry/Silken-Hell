@@ -24,13 +24,13 @@ local function levelCue(descending)
 end
 function A.load()
     love.audio.setVolume(1)
-    local ok,source=pcall(love.audio.newSource,'music et song/music/menu paradi.mp3','stream')
+    local ok,source=pcall(love.audio.newSource,'assets/audio/music/menu paradi.mp3','stream')
     if ok then A.paradise=source;source:setLooping(true) end
     A.levelUp=levelCue(false);A.levelDown=levelCue(true)
     A.pick=tone(0.35,{659.25,987.77},0.3)
     A.death=tone(0.18,{82.41,87.31},0.35)
     A.click=tone(0.09,{440,660},0.45)
-    local files={selection='music et song/song/menu/selection niveau.mp3',go='music et song/song/menu/go.mp3',back='music et song/song/menu/back.mp3',editor='music et song/song/editeur start.mp3'}
+    local files={selection='assets/audio/effects/menu/selection niveau.mp3',go='assets/audio/effects/menu/go.mp3',back='assets/audio/effects/menu/back.mp3',editor='assets/audio/effects/editeur start.mp3'}
     for name,path in pairs(files) do
         local ok,source=pcall(love.audio.newSource,path,'static')
         A[name]=ok and source or A.click:clone()

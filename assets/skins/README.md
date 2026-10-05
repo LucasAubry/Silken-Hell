@@ -9,4 +9,4 @@ Chaque modèle contient `down.png` (face), `up.png` (dos sans losange) et `profi
 - `royale/` : Royale, Renouveau, Gillou, Maxance, Renouveau couronné.
 - `accessoires/` : couronne commune et icône démon.
 
-Les teintes, noms, identifiants et conditions de déblocage restent dans `characters.lua`. Les couleurs ne nécessitent pas de PNG dupliqués. Le modèle Royale inclut sa couronne ; les autres récompenses utilisent l'accessoire séparé.
+Les teintes, noms, identifiants et conditions de déblocage restent dans `src/characters.lua`. Les couleurs ne nécessitent pas de PNG dupliqués. Le modèle Royale inclut sa couronne ; les autres récompenses utilisent l'accessoire séparé.

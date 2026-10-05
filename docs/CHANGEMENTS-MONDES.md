@@ -10,7 +10,7 @@
 
 ## Assets
 
-Les six nouveaux PNG se trouvent dans `assets/sprites/` : `skeleton_head.png`, `skeleton_open.png`, `skeleton_rib.png`, `skeleton_spine.png`, `skeleton_tail.png`, `abyss_fish.png`. Les prompts complets imagegen intégré sont dans `assets/abyss-parts-prompts.md`.
+Les six nouveaux PNG se trouvent dans `assets/sprites/` : `skeleton_head.png`, `skeleton_open.png`, `skeleton_rib.png`, `skeleton_spine.png`, `skeleton_tail.png`, `abyss_fish.png`. Les prompts complets imagegen intégré sont dans `docs/art/abyss-parts-prompts.md`.
 
 ## Vérifications
 

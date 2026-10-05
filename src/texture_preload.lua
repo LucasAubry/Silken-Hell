@@ -27,7 +27,7 @@ function P.screen()
 end
 function P.begin()
  P.font=love.graphics.newFont(24)
- P.started=love.timer.getTime();P.shader=love.graphics.newShader('assets/celestial.glsl');P.pixel=love.graphics.newImage(love.image.newImageData(1,1))
+ P.started=love.timer.getTime();P.shader=love.graphics.newShader('assets/shaders/celestial.glsl');P.pixel=love.graphics.newImage(love.image.newImageData(1,1))
  P.screen()
  local last=love.timer.getTime()
  Art.onLoad=function()

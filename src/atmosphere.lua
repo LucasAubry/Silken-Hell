@@ -58,7 +58,7 @@ function A.draw()
     if world==7 then return end -- Abyss light also drives gameplay and keeps its own renderer.
     local g=love.graphics; local t=UI.clock; local c=palettes[world] or palettes[1]
     g.push('all'); g.setShader(); g.setColor(1,1,1)
-    A.shader=A.shader or g.newShader('assets/atmosphere.glsl')
+    A.shader=A.shader or g.newShader('assets/shaders/atmosphere.glsl')
     local settings=A.settings(world,player.level)
     A.shader:send('transmission',settings.transmission); A.shader:send('levelSeed',settings.seed); A.shader:send('depth',settings.depth)
     A.shader:send('clock',t); A.shader:send('biome',world)
@@ -75,7 +75,7 @@ function A.draw()
     -- Keep Paradise readable: no full-screen rays or translucent veil.
     if world~=1 then g.setShader(A.shader);g.rectangle('fill',0,0,Arena.width,600);g.setShader() end
     if world==5 then
-        A.mist=A.mist or g.newShader('assets/cave_mist.glsl')
+        A.mist=A.mist or g.newShader('assets/shaders/cave_mist.glsl')
         A.mist:send('clock',t);A.mist:send('dimensions',{Arena.width,600})
         A.mist:send('traveler',{player.x+15,player.y+12})
         g.setShader(A.mist);g.setColor(1,1,1);g.rectangle('fill',0,0,Arena.width,600);g.setShader()

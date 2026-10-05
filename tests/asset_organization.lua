@@ -16,7 +16,14 @@ function T.run()
    elseif name:match('%.lua$')then assert(love.filesystem.load(path),'Syntax '..path)end
   end
  end
- syntax('')
+ for _,dir in ipairs({'src','designer','tests'}) do syntax(dir) end
+ assert(love.filesystem.getInfo('assets/fonts/police.ttf'))
+ assert(love.filesystem.getInfo('assets/audio/music/menu paradi.mp3'))
+ assert(love.filesystem.getInfo('assets/textures/larme.png'))
+ -- Worker threads have their own Lua state: validate their module lookup offline.
+ love.thread.getChannel('silken.requests'):push('quit')
+ local worker=love.thread.newThread('src/network_thread.lua');worker:start();worker:wait()
+ assert(not worker:getError(),worker:getError())
  for _,world in ipairs(Worlds.order)do
   App.start(world);player.level=Worlds.levelCount(world);reset_level();Campaign.draw()
  end

@@ -4,11 +4,11 @@ Inventaire du 28 septembre 2026. Cette liste propose les sons manquants ; elle n
 
 ## Déjà disponibles et utilisés — inutile de les refaire
 
-- `music et song/music/menu paradi.mp3` : musique des menus, coupée en partie et sur les résultats.
-- `music et song/song/menu/go.mp3` : navigation, changement de monde, Échap.
-- `music et song/song/menu/back.mp3` : boutons de retour.
-- `music et song/song/menu/selection niveau.mp3` : Jouer, commencer un monde, choisir un niveau.
-- `music et song/song/editeur start.mp3` : lancement du concepteur.
+- `assets/audio/music/menu paradi.mp3` : musique des menus, coupée en partie et sur les résultats.
+- `assets/audio/effects/menu/go.mp3` : navigation, changement de monde, Échap.
+- `assets/audio/effects/menu/back.mp3` : boutons de retour.
+- `assets/audio/effects/menu/selection niveau.mp3` : Jouer, commencer un monde, choisir un niveau.
+- `assets/audio/effects/editeur start.mp3` : lancement du concepteur.
 
 Les sons de mort, certaines interactions et la montée/descente de niveau hardcore sont encore synthétiques. Le jeu n'a pas encore de bibliothèque de bruitages propre à chaque créature. L'appel `abyssRoar` existe mais son fichier n'est pas chargé : il peut retomber sur le clic générique.
 

@@ -2,7 +2,7 @@ local B={}
 function B.draw(world,width,height,time)
     if world==6 then return end
     local g=love.graphics
-    B.shader=B.shader or g.newShader('biome_floor.glsl')
+    B.shader=B.shader or g.newShader('assets/shaders/biome_floor.glsl')
     -- Only the background is downsampled; actors, walls, lights and UI retain
     -- their original resolution. The cave is static and keeps its fine grain.
     local ch=Graphics and Graphics.floorHeight() or 360

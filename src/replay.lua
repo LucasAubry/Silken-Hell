@@ -11,7 +11,7 @@ function R.hash(value) return love.data.encode('string','hex',love.data.hash('sh
 function R.build()
     if not R.buildId then
         local sources={}
-        for _,name in ipairs({'main','campaign','renaissance','ending','final_spider','input','realms','sky_rain','hazards','arena','level_layouts','replay','replay_tools','level','player','hit_box','objet','burning','aftermath','breathing_bubble','abyss_terrain','secret','world','effect','boss_liberation'}) do sources[#sources+1]=assert(love.filesystem.read(name..'.lua')) end
+        for _,name in ipairs({'game','campaign','renaissance','ending','final_spider','input','realms','sky_rain','hazards','arena','level_layouts','replay','replay_tools','level','player','hit_box','objet','burning','aftermath','breathing_bubble','abyss_terrain','secret','world','effect','boss_liberation'}) do sources[#sources+1]=assert(love.filesystem.read('src/'..name..'.lua')) end
         local function actorSources(dir)
             local names=love.filesystem.getDirectoryItems(dir);table.sort(names)
             for _,name in ipairs(names) do local path=dir..'/'..name;local info=love.filesystem.getInfo(path)
@@ -19,9 +19,9 @@ function R.build()
                 elseif name:match('%.lua$') then sources[#sources+1]=assert(love.filesystem.read(path)) end
             end
         end
-        actorSources('mobs')
-        for i=1,10 do sources[#sources+1]=assert(love.filesystem.read('levels/level_'..i..'.lua')) end
-        for _,name in ipairs({'worlds','scoring','layout_schema','hardcore','bone_cage','earth_mound'}) do sources[#sources+1]=assert(love.filesystem.read(name..'.lua')) end
+        actorSources('src/mobs')
+        for i=1,10 do sources[#sources+1]=assert(love.filesystem.read('src/levels/level_'..i..'.lua')) end
+        for _,name in ipairs({'worlds','scoring','layout_schema','hardcore','bone_cage','earth_mound'}) do sources[#sources+1]=assert(love.filesystem.read('src/'..name..'.lua')) end
         R.buildId=R.hash(table.concat(sources))
     end
     return R.buildId

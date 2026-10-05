@@ -10,7 +10,7 @@ function M.protected(path)
   or path:find('/reine/',1,true) or path:find('/pieges/',1,true))
 end
 function M.surfaceShader(source)
- M.inkSource=M.inkSource or assert(love.filesystem.read('assets/ink_material.glsl'))
+ M.inkSource=M.inkSource or assert(love.filesystem.read('assets/shaders/ink_material.glsl'))
  local base=source:gsub('vec4%s+effect%s*%(','vec4 baseEffect(',1)
  local ink=M.inkSource:gsub('inkSurface%(Texel%(tex,uv%),tex,uv%)%*color','inkSurface(baseEffect(color,tex,uv,screen),tex,uv)')
  local shader=g.newShader(base..'\n'..ink);M.surfaceShaders[shader]=true
@@ -29,8 +29,8 @@ local function ground(texture,path)
 end
 function M.load()
  if M.shader then return end
- M.shader=g.newShader('assets/prism_material.glsl')
- M.inkShader=g.newShader('assets/ink_material.glsl')
+ M.shader=g.newShader('assets/shaders/prism_material.glsl')
+ M.inkShader=g.newShader('assets/shaders/ink_material.glsl')
  local draw=g.draw
  g.draw=function(drawable,...)
   local current=g.getShader()

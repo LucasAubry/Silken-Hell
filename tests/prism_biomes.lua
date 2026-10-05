@@ -70,7 +70,7 @@ function T.run()
   if math.abs(r-nr)+math.abs(green-ng)+math.abs(b-nb)>.015 then changes=changes+1 end
  end end
  assert(changes>200,'Neutral highlights must remain visible');plain:release();prism:release();outside:release();otherBiome:release()
- local status=g.newShader('assets/polish.glsl');status:send('strength',.4)
+ local status=g.newShader('assets/shaders/polish.glsl');status:send('strength',.4)
  local data=sample(true,true,status);data:release();status:release()
  for id,biome in pairs(Worlds.secretBiomes) do Campaign.select(id);assert(Palette.current()==biome) end
  Campaign.select(7);local palette=Palette.player();FX.death(300,300);FX.collect(400,300);Campaign.select(2)

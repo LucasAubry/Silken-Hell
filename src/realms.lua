@@ -498,7 +498,7 @@ end
 function R.drawDarkness()
     if (Campaign.biome~=7 or Campaign.world==3) and not Abyss.playerHidden() then return end
     local g=love.graphics
-    R.darkShader=R.darkShader or g.newShader('assets/abyss-darkness.glsl')
+    R.darkShader=R.darkShader or g.newShader('assets/shaders/abyss-darkness.glsl')
     local exposed=(player.illuminated or 0)>0
     local lights={{player.x+15,player.y+12,exposed and Abyss.playerLightRadius() or 52,exposed and (player.circleLight and .8 or .90+.04*math.max(0,(player.charges or 0)-1)) or .23}}
     if Abyss.encounterActive() then

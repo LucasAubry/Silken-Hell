@@ -96,7 +96,7 @@ local function preview()
     os.execute(cmd); state.status='Test lancé — cette fenêtre sera réutilisée au prochain test.'
 end
 local function loadArt()
-    local paths={original='assets/skins/soie/down.png',tear_ring='texture/aureole.png',catalog_ange='assets/monstres/paradis/ange/ange_down.png',catalog_snake='assets/monstres/paradis/serpent/snake_down.png',catalog_trap='assets/monstres/paradis/pieges/piege.png'}
+    local paths={original='assets/skins/soie/down.png',tear_ring='assets/textures/aureole.png',catalog_ange='assets/monstres/paradis/ange/ange_down.png',catalog_snake='assets/monstres/paradis/serpent/snake_down.png',catalog_trap='assets/monstres/paradis/pieges/piege.png'}
     for _,c in ipairs(C) do if c.art and not Art.images[c.art] then
         local path=paths[c.art] or 'assets/sprites/'..c.art..'.png'
         if not love.filesystem.getInfo(require('asset_paths').resolve(path)) then path='assets/sprites/directional/'..c.art..'.png' end
@@ -112,6 +112,7 @@ function love.load()
     local f=assert(io.open(archive,'rb'),'Archive du jeu introuvable'); local bytes=f:read('*a'); f:close()
     state.assetData=love.filesystem.newFileData(bytes,'silken-assets.zip')
     assert(love.filesystem.mount(state.assetData,'',true),'Impossible de charger les ressources du jeu')
+    love.filesystem.setRequirePath(love.filesystem.getRequirePath()..';src/?.lua;src/?/init.lua')
     require('editor_icon').install()
     json=require 'json'; Worlds=require 'worlds'; Art=require 'art'; Biome=require 'biome_floor'
     C=require 'catalog'; M=require 'model'; state.fonts={}
@@ -122,7 +123,7 @@ function love.load()
     local ok,templates=pcall(json.decode,love.filesystem.read('creature-templates.json') or '[]')
     if ok and type(templates)=='table' then for _,t in ipairs(templates) do if t.kind=='mob' or t.kind=='boss' then C[#C+1]=t end end end
     state.templates=ok and type(templates)=='table' and templates or {}
-    state.editorSound=love.audio.newSource('music et song/song/editeur start.mp3','static');state.editorSound:setVolume(.65);state.editorSound:play()
+    state.editorSound=love.audio.newSource('assets/audio/effects/editeur start.mp3','static');state.editorSound:setVolume(.65);state.editorSound:play()
     if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require('selftest').run(M,state,select,apply,preview) end
 end
 function love.draw()

@@ -6,8 +6,8 @@ local strengths={[0]=0,[1]=.45,[2]=1}
 local pulses={'deathPulse','pickupPulse'}
 function F.strength() return strengths[Graphics.psychedelic or 2] or 1 end
 function F.load()
- F.shader=love.graphics.newShader(love.filesystem.read('assets/prism_palette.glsl')..love.filesystem.read('hyper_demon_shader.glsl'))
- F.deathShader=love.graphics.newShader('assets/respawn_legacy.glsl')
+ F.shader=love.graphics.newShader(love.filesystem.read('assets/shaders/prism_palette.glsl')..love.filesystem.read('assets/shaders/hyper_demon_shader.glsl'))
+ F.deathShader=love.graphics.newShader('assets/shaders/respawn_legacy.glsl')
 end
 function F.reset() F.deathPulse=nil;F.pickupPulse=nil;F.clock=0 end
 function F.death(x,y)

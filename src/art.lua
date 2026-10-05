@@ -144,14 +144,14 @@ function A.load()
         end
     end
     for _,name in ipairs({'cloud_snare','ink_splatter'}) do A.add(name,'assets/sprites/'..name..'.png') end
-    A.add('skull','texture/hud/death.png'); A.add('clock','texture/hud/time.png')
+    A.add('skull','assets/textures/hud/death.png'); A.add('clock','assets/textures/hud/time.png')
     A.add('catalog_ange','assets/monstres/paradis/ange/ange_down.png'); A.add('catalog_snake','assets/monstres/paradis/serpent/snake_down.png'); A.add('catalog_trap','assets/monstres/paradis/pieges/piege.png')
     A.add('original','assets/skins/soie/down.png')
     A.add('earth_tunnel','assets/monstres/terre/taupe/earth_tunnel.png')
     for _,key in ipairs({'skeleton_head','skeleton_open','skeleton_rib','skeleton_spine','skeleton_tail','abyss_fish'}) do A.add(key,'assets/sprites/'..key..'.png') end
     for _,pose in ipairs({'open','closed','dead'}) do A.add('crab_'..pose,'assets/sprites/crab_'..pose..'.png') end
     for _,key in ipairs({'electric_vent_idle','electric_vent_charge','electric_vent_active','electric_vent_spent'}) do A.add(key,'assets/sprites/'..key..'.png') end
-    A.add('tear_ring','texture/aureole.png')
+    A.add('tear_ring','assets/textures/aureole.png')
 end
 function A.draw(key,x,y,width,angle,height)
     local servants=require('servant_art')

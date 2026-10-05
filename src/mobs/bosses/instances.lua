@@ -6,7 +6,7 @@ local files={skeleton_head='mobs/bosses/abyss/init',storm='mobs/bosses/storm/ini
 local constructors={}
 for _,file in pairs(files) do
     if not constructors[file] then
-        local chunk,err=love.filesystem.load(file..'.lua')
+        local chunk,err=love.filesystem.load('src/'..file..'.lua')
         assert(chunk,'Impossible de charger le boss '..file..'.lua : '..tostring(err))
         constructors[file]=chunk
     end

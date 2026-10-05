@@ -84,7 +84,7 @@ function N.init()
     if ok and type(rows)=='table' then
         for _,r in ipairs(rows) do if (type(r.id)=='string' or type(r.name)=='string') and type(r.pending)=='table' and Worlds.playable(r.world) then N.runs[#N.runs+1]=r end end
     end
-    N.thread=love.thread.newThread('network_thread.lua'); N.thread:start()
+    N.thread=love.thread.newThread('src/network_thread.lua'); N.thread:start()
     N.locate(); N.refresh(1)
 end
 function N.begin(run)

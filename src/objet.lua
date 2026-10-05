@@ -2,7 +2,7 @@ function load_objet()
 	objet = {}
 
 	objet.larme = {
-		img = love.graphics.newImage("texture/larme.png"),
+		img = love.graphics.newImage("assets/textures/larme.png"),
 		size = 0.15,
 		x = 395,
 		y = 70,
@@ -10,7 +10,7 @@ function load_objet()
 		hitBox_height = 40
 	}
 	objet.aureole = {
-		img = love.graphics.newImage("texture/aureole.png"),
+		img = love.graphics.newImage("assets/textures/aureole.png"),
 		size = 0.2,
 		x = 600,
 		y = 280,
@@ -25,7 +25,7 @@ end
 
 
 function load_particles()
-    local img = love.graphics.newImage("texture/particle_white.png")
+    local img = love.graphics.newImage("assets/textures/particle_white.png")
     particleSystem = love.graphics.newParticleSystem(img, 100)
 
     particleSystem:setParticleLifetime(0.5, 1.2)  -- durée de vie

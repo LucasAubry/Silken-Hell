@@ -4,6 +4,8 @@ server/node_modules/
 server/.wrangler/
 server/.dev.vars
 game.love.tmp
+/dist/
+/output/
 .DS_Store
 *.log
 
