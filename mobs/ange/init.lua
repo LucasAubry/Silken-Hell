@@ -6,6 +6,7 @@ function spawn_ange(x, y, speed, has_larme)
         size = 0.2,
         speed = speed or 1,
         float = true,
+        floatTime = 0,
         dir = "right",
         has_larme = has_larme or false,
         img = nil,
@@ -20,12 +21,13 @@ function spawn_ange(x, y, speed, has_larme)
         hitBox_offset_x = -10,
         hitBox_offset_y = -50
     }
+    ange.img = ange.imgs[ange.dir]
     table.insert(mobs, ange)
 end
 
 MobBehaviors.ange = {
     update = function(m, dt)
-        move_mob_towards_player(m, player, dt)
+        move_when_player_moves(m, player, dt)
 
 
         if isTouching(player, m) and not player.reset then

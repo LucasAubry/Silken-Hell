@@ -30,6 +30,7 @@ function W.resize(ratio)
     end end
 end
 function W.contact()
+ if require('boss_arrival').waiting(W) then return end
     if not W.active or W.defeated or player.reset then return end
     W.syncAnchor()
     for _,b in ipairs(W.bees) do
@@ -244,6 +245,7 @@ function W.updateBees(dt)
     if complete then W.roundActive=false;W.rest=.04 end
 end
 function W.update(dt)
+ if require('boss_arrival').waiting(W) then return end
     if not W.active then return end
     W.syncAnchor();W.hitGrace=math.max(0,W.hitGrace-dt);W.elapsed=W.elapsed+dt;W.flash=math.max(0,W.flash-dt)
     if not W.defeated then W.updateBees(dt);W.updateLava(dt)
@@ -272,6 +274,7 @@ function W.update(dt)
     end
 end
 function W.drawGround()
+ if require('boss_arrival').waiting(W) then return end
     if not W.active or W.defeated then return end
     W.syncAnchor()
     local g=love.graphics;g.push('all')
@@ -319,12 +322,14 @@ function W.drawGlow(b,flying,alpha)
  g.pop()
 end
 function W.draw(airborne)
+ if require('boss_arrival').waiting(W) then return end
     if not W.active then return end
     local g=love.graphics
     for _,b in ipairs(W.bees) do
         local flying=b.phase~='fatigued' and b.phase~='dead'
         if airborne==flying then
             local alpha=b.hp>0 and (b.phase=='hiding' and .28 or 1) or 1
+            if b.hp>0 and b.phase~='hiding' then require('monster_fx').halo(b.x,b.y+(flying and -10 or 0),90) end
             W.drawGlow(b,flying,alpha)
             g.setColor(b.hp<=0 and .55 or 1,b.hp<=0 and .3 or 1-b.flash*.6,b.hp<=0 and .25 or 1-b.flash*.6,alpha)
             local previous=g.getShader()
@@ -350,7 +355,7 @@ function W.draw(airborne)
     end
     if airborne then
         for _,p in ipairs(W.blasts) do g.setColor(1,.45,.1,p.life/.35);g.circle('line',p.x,p.y,48*(1-p.life/.35)) end
-        for _,m in ipairs(W.minions) do g.setColor(1,1,1); Art.drawFacing('waspling',m.dir,m.x,m.y,34) end
+        for _,m in ipairs(W.minions) do require('monster_fx').halo(m.x,m.y,34);g.setColor(1,1,1); Art.drawFacing('waspling',m.dir,m.x,m.y,34) end
         for _,p in ipairs(W.projectiles) do
             if p.kind=='ember' then
                 g.setColor(1,.18,.01,.3); g.circle('fill',p.x,p.y,12)

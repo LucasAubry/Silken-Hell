@@ -22,6 +22,8 @@ function M.load()
   local texture=drawable
   if drawable:typeOf('Mesh') then texture=drawable:getTexture() end
   if not texture or not texture:typeOf('Texture') then return draw(drawable,...) end
+  local path=M.paths[texture]
+  if path and (path:match('^assets/skins/') or path:match('^assets/effects/')) then return draw(drawable,...) end
   local blend,alpha=g.getBlendMode()
   if blend~='alpha' then return draw(drawable,...) end
   local r,green,b=g.getColor()

@@ -1,5 +1,4 @@
 -- effect.lua
-local psyche=require('psychedelic_fx')
 
 ghosts = {}
 ghost_timer = 0
@@ -11,9 +10,8 @@ shake_timer = 0
 function draw_shadow_dash()
     if Abyss and Abyss.playerHidden() then return end
     for _,ghost in ipairs(ghosts) do
-        local tint=Worlds.color(Campaign.world).tear
+        local tint=Characters.effectColor()
         love.graphics.setColor(tint[1],tint[2],tint[3],ghost.alpha*0.6)
-        if psyche.strength()>0 then psyche.ghostColor(ghost.time,ghost.alpha*(.6+psyche.strength()*.6)) end
         Characters.draw(ghost.x+15,ghost.y+8,62,ghost.direction)
     end
     love.graphics.setColor(1,1,1)
@@ -62,12 +60,12 @@ function add_ghost(dt)
     if Abyss and Abyss.playerHidden() then return end
     ghost_timer = ghost_timer or 0
     ghost_timer = ghost_timer + dt
-    if ghost_timer >= 0.06 and player.dashing then
+    if ghost_timer >= 0.05 and player.dashing then
         table.insert(ghosts, {
             x = player.x,
             y = player.y,
             direction = direction,
-            alpha = psyche.strength()>0 and .48 or .26,
+            alpha = 0.26,
             time = 0
         })
         ghost_timer = 0

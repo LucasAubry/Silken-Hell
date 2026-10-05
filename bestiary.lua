@@ -1,6 +1,6 @@
 local json=require 'json'
 local B={seen={},unread={},dirty=false,entries={
- {id='ange',name='Ange gardien',art='catalog_ange',world=1,text='Il poursuit l’araignée. Certains anges portent une larme : attire-les dans un piège pour la faire tomber.'},
+ {id='ange',name='Ange gardien',art='catalog_ange',world=1,text='Il poursuit l’araignée lorsqu’elle bouge et s’arrête avec elle. Certains anges portent une larme : attire-les dans un piège pour la faire tomber.'},
  {id='snake',name='Serpent céleste',art='catalog_snake',world=1,text='Il avance lorsque tu bouges. Les pièges peuvent l’immobiliser ; le toucher est mortel.'},
  {id='scie',trap=true,name='Roue enchaînée',art='wheel',world=1,text='Sa lame tourne au bout d’une chaîne. Évite la tête mobile et traverse lorsque son passage est libre.'},
  {id='piege',trap=true,name='Piège de capture',art='catalog_trap',world=1,text='Il immobilise brièvement sa première victime. Un monstre porteur piégé lâche sa larme. Le piège se réarme après six secondes.'},

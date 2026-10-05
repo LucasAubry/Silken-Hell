@@ -9,7 +9,7 @@ function draw_mob(m, pivotX, pivotY)
 
     local float = 0
     if m.float then
-        float = math.sin(love.timer.getTime() * 4) * 5
+        float = math.sin((m.floatTime or love.timer.getTime()) * 4) * 5
     end
 
     Art.shadow(img,m.x,m.y+float,m.rotation or 0,m.size,m.size,ox,oy)
@@ -84,27 +84,16 @@ end
 
 --suis le jouer si il bouge
 function move_when_player_moves(m, player, dt)
-    if not player.has_moved then
-        return -- Ne bouge pas si le joueur n’a pas bougé
-    end
+    if not player.has_moved or m.is_frozen then return end
 
-    local dx = player.x - m.x
-    local dy = player.y - m.y
-    local angle = math.atan2(dy, dx)
-    local speed = m.speed or 1
-
-    Arena.navigate(m,player.x+15,player.y+12,speed*60,dt)
-
-    -- Met à jour la direction
-    if math.abs(dx) > math.abs(dy) then
-        m.dir = dx > 0 and "right" or "left"
-    else
-        m.dir = dy > 0 and "down" or "up"
-    end
-
-    -- Met à jour l’image
-    if m.imgs and m.imgs[m.dir] then
-        m.img = m.imgs[m.dir]
+    local x,y=m.x,m.y
+    Arena.navigate(m,player.x+15,player.y+12,(m.speed or 1)*60,dt)
+    local dx,dy=m.x-x,m.y-y
+    if dx~=0 or dy~=0 then
+        -- Face the actual route, including wall slides, rather than a second target.
+        m.dir=Art.direction(dx,dy,m.dir)
+        if m.floatTime then m.floatTime=m.floatTime+dt end
+        if m.imgs and m.imgs[m.dir] then m.img=m.imgs[m.dir] end
     end
 end
 

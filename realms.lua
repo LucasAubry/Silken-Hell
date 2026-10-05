@@ -451,6 +451,7 @@ function R.drawCreatures()
     local g=love.graphics
     for _,m in ipairs(R.larvae) do if not m.abyssHeld then
         local scale,dy=1,0; if m.tunnelTravel then scale,dy=R.travelPose(m) end
+        require('monster_fx').mob(m)
         g.setColor(1,1,1,scale); Art.drawWorm(m.dir or 'down',m.x,m.y+dy,30*scale,m.age)
     end end
     for _,p in ipairs(R.eggs) do if not p.abyssHeld then

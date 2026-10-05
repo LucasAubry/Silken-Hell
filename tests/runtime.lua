@@ -9,6 +9,8 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv("SILKEN_STATUE_TEST")=="1" then require("tests.statue_movement").run();love.event.quit();return end
+    if os.getenv('SILKEN_ARRIVAL_TEST')=='1' then require('tests.boss_arrival').run();return end
     if os.getenv('SILKEN_PRISM_TEST')=='1' then require('tests.prism_biomes').run();return end
     if os.getenv('SILKEN_PRISM_DEMO')=='1' then require('tests.prism_biomes').demo();return end
     if os.getenv('SILKEN_PSYCHE_TEST')=='1' then require('tests.psychedelic').run();return end

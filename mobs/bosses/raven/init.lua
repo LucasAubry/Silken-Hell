@@ -66,6 +66,7 @@ function B.hatch()
     if Bestiary.discover('blackbird_chick') then Bestiary.save() end
 end
 function B.contact()
+ if require('boss_arrival').waiting(B) then return end
     if not B.active or B.defeated or player.reset then return end
     if B.broken then
         if player.dashing then
@@ -87,6 +88,7 @@ function B.contact()
     B.inside=inside
 end
 function B.update(dt)
+ if require('boss_arrival').waiting(B) then return end
     if not B.active or player.reset then return end
     for _,m in ipairs(B.corpses) do m.fall=math.min(1,m.fall+dt/.28) end
     if B.defeated then return end
@@ -148,6 +150,7 @@ end
 local egg=require('mobs.bosses.raven.egg').draw
 B.eggPositions={{-12,-8,-.34},{6,-10,.23},{17,-1,.58},{-18,4,-.5},{-3,5,.14},{10,10,.39}}
 function B.drawGround()
+ if require('boss_arrival').waiting(B) then return end
     if not B.active then return end
     drawCorpses()
     local g=love.graphics
@@ -157,9 +160,11 @@ function B.drawGround()
     end
 end
 function B.draw()
+ if require('boss_arrival').waiting(B) then return end
     if not B.active then return end
     local g=love.graphics
     if not B.broken and not B.defeated then
+        require('monster_fx').halo(B.x,B.y,80)
         g.setColor(0,0,0,.25);g.ellipse('fill',B.x,B.y+47,47,15)
         egg(B.x+math.sin(B.elapsed*65)*B.flash*7,B.y-5,60,B.maxHp-B.hp)
     end
@@ -169,6 +174,7 @@ function B.draw()
         g.pop()
     end
     for _,m in ipairs(B.chicks) do
+        require('monster_fx').halo(m.x,m.y,54)
         local previous=g.getShader()
         if m.kind~='charger' then
             B.whiteShader=B.whiteShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px){

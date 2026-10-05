@@ -40,7 +40,6 @@ function C.positions(n)
     return points
 end
 function C.reset()
-    require('psychedelic_fx').resetMotion()
     shader_effect_timer=0;shake_timer=0;cameraShakeX=0;cameraShakeY=0;ghost_timer=0
     Aftermath.reset()
     AbyssTerrain.reset()
@@ -133,6 +132,7 @@ function C.reset()
     Renaissance.reset()
     Ending.reset()
     C.updateTear(0)
+    require('boss_arrival').reset();require('boss_arrival').scan()
     if App.state=='playing' then Bestiary.encounter() end
 end
 function C.spawnHell(n)
@@ -253,7 +253,7 @@ function C.drawMob(m)
         local scale,dy=Realms.travelPose(m);local travel=m.tunnelTravel;m.tunnelTravel=nil
         local g=love.graphics;g.push('all');g.translate(m.x,m.y+dy);g.scale(math.max(.001,scale));g.translate(-m.x,-m.y)
         behavior.draw(m);g.pop();m.tunnelTravel=travel
-    else behavior.draw(m) end
+    else require('monster_fx').mob(m);behavior.draw(m) end
 end
 function C.updateTear(dt)
     if Ending.active then return end

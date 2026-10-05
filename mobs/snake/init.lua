@@ -6,6 +6,7 @@ function spawn_snake(x, y, speed)
         size = 0.2,
         speed = speed or 1,
         float = true,
+        floatTime = 0,
         dir = "right",
         img = nil,
         imgs = {

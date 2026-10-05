@@ -97,6 +97,7 @@ function S.holeAt(x,y)
  return false
 end
 function S.contact()
+ if require('boss_arrival').waiting(S) then return end
  if not S.active or S.defeated or player.reset or player.abyssHeld then return end
  if S.holeAt(player.x+15,player.y+12) then Hazards.kill('storm');if player.reset then player.falling=true end;return end
  for i=#S.projectiles,1,-1 do
@@ -110,6 +111,7 @@ function S.contact()
 end
 function S.updateTornado() end
 function S.update(dt)
+ if require('boss_arrival').waiting(S) then return end
  if not S.active or S.defeated or player.reset then return end
  S.clock=S.clock+dt;S.flash=math.max(0,S.flash-dt);S.hitGrace=math.max(0,S.hitGrace-dt)
  local oldDir=S.dir
@@ -206,6 +208,7 @@ local function bird(dir,x,y)
  Art.draw(key,x,y,a.w*scale*(1+flap),0,a.h*scale*(1-flap))
 end
 function S.drawGround()
+ if require('boss_arrival').waiting(S) then return end
  if not S.active or S.defeated then return end
  local g=love.graphics;g.push('all')
  for _,p in ipairs(S.holes) do
@@ -248,6 +251,7 @@ function S.visibleBounds()
  return S.x-a.w*scale/2,S.y-a.h*scale/2,a.w*scale,a.h*scale
 end
 function S.draw()
+ if require('boss_arrival').waiting(S) then return end
  if not S.active or S.defeated then return end
  local g=love.graphics;g.push('all')
  for _,p in ipairs(S.trails) do g.setColor(.45,.7,1,p.life*.9);bird(p.dir,p.x,p.y) end
@@ -259,6 +263,7 @@ function S.draw()
   g.intersectScissor(sx,sy,ex-sx,ey-sy);g.setColor(1,1,1);bird(S.dir,x,y)
   if oldX then g.setScissor(oldX,oldY,oldW,oldH) else g.setScissor() end
  elseif not S.hidden then
+  require('monster_fx').halo(S.x,S.y,100)
   local blend=math.min(1,S.poseAge/.13)
   if S.previousDir and blend<1 and S.phase=='orbit' then g.setColor(1,1,1,1-blend);bird(S.previousDir,S.x,S.y) else blend=1 end
   g.setColor(1,1-S.flash*.5,1-S.flash,blend);bird(S.dir,S.x,S.y)

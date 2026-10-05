@@ -13,7 +13,20 @@ function P.current()
  if App and App.state=='bossWorld' then return 8 end
  return Campaign and Campaign.biome or 1
 end
-function P.get(id) return P.colors[id or P.current()] or P.colors[1] end
+function P.get(id)
+ if type(id)=='table' then return id end
+ return P.colors[id or P.current()] or P.colors[1]
+end
+P.skinColors={}
+function P.player(index)
+ index=index or Characters.selected()
+ if not P.skinColors[index] then
+  local c=Characters.effectColor(index)
+  -- Luminous, body-colored facets: shading varies, the skin hue stays recognizable.
+  P.skinColors[index]={c,{c[1]*.55,c[2]*.55,c[3]*.55},{c[1]*.72+.28,c[2]*.72+.28,c[3]*.72+.28}}
+ end
+ return P.skinColors[index]
+end
 function P.sample(phase,id)
  local p=P.get(id);local q=(phase%1)*3;local i=math.floor(q)+1
  local t=q-math.floor(q);t=t*t*(3-2*t)

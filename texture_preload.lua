@@ -44,6 +44,7 @@ function P.load()
  end
  for _,name in ipairs({'scie','scie_pique','scie_blanc','piege','piege_active'}) do image('assets/monstres/paradis/pieges/'..name..'.png') end
  require('paradise_ink').load()
+ require('boss_arrival').load()
  local borders=require('biome_borders');borders.images=borders.images or {}
  for _,biome in ipairs({3,4,7}) do borders.images[biome]=image('assets/environments/ink/wall-'..biome..'.png') end
  image('assets/icons/biome-backgrounds.png')

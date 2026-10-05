@@ -12,7 +12,8 @@ end
 function T.demo()
  setup();local key=love.keypressed;local index=1
  love.keypressed=function(k,...)
-  if k=='f5' then
+  if k=='f4' then Profile.character=(Profile.character or 1)%22+1;Characters.unlocked=function()return true end;return
+  elseif k=='f5' then
    index=index%#Worlds.order+1;local world=Worlds.order[index]
    App.practice=world==3 and 1 or 7;App.start(world);return
   elseif k=='f6' then Material.enabled=not Material.enabled;return
@@ -20,7 +21,7 @@ function T.demo()
   elseif k=='f8' and App.state=='playing' then FX.collect(player.x+15,player.y+12);return end
   key(k,...)
  end
- love.window.setTitle('Silken Hell · Couleurs originales et reflets · F5 biome · F6 comparer · F7 mort · F8 larme')
+ love.window.setTitle('Silken Hell · Couleurs originales et reflets · F4 skin · F5 biome · F6 comparer · F7 mort · F8 larme')
  print('Essai ouvert : couleurs originales conservées. F5 biome, F6 reflets, F7 mort, F8 larme.')
 end
 function T.bench()
@@ -40,7 +41,7 @@ function T.bench()
  Material.beginScene=begin;Material.enabled=true
 end
 function T.run()
- setup();local g=love.graphics;local ink=require 'paradise_ink'
+ setup();require('tests.skin_fx').run();local g=love.graphics;local ink=require 'paradise_ink'
  local function sample(enabled,scope,shader)
   Material.enabled=enabled
   local c=g.newCanvas(160,160);g.push('all');g.setCanvas(c);g.origin();g.clear(0,0,0,0);g.setColor(1,1,1,.5)
@@ -72,8 +73,8 @@ function T.run()
  local status=g.newShader('assets/polish.glsl');status:send('strength',.4)
  local data=sample(true,true,status);data:release();status:release()
  for id,biome in pairs(Worlds.secretBiomes) do Campaign.select(id);assert(Palette.current()==biome) end
- Campaign.select(7);FX.death(300,300);FX.collect(400,300);Campaign.select(2)
- assert(FX.deathPulse.biome==7 and FX.pickupPulse.biome==7,'Pulses must keep the originating biome through transitions')
+ Campaign.select(7);local palette=Palette.player();FX.death(300,300);FX.collect(400,300);Campaign.select(2)
+ assert(FX.deathPulse.palette==palette and FX.pickupPulse.palette==Palette.get(7),'Pickup must retain the source biome through transitions')
  local dir=os.getenv('SILKEN_STYLE_CAPTURE_DIR')
  local draw=love.draw;local index,drawn=0,true
  local tasks={}
@@ -96,7 +97,7 @@ function T.run()
    g.newImage=image
    assert(uploads==0,'Biome changes must reuse textures: '..uploads)
    if os.getenv('SILKEN_PRISM_BENCH')=='1' then love.draw=draw;T.bench() end
-   print('PASS neutral sheen: original RGB proportions and alpha preserved, no biome recoloring; unchanged UI/status shaders; seven biomes/bosses; effects retain biome palettes; no runtime texture uploads')
+   print('PASS neutral sheen: original RGB proportions and alpha preserved, no biome recoloring; unchanged UI/status shaders; seven biomes/bosses; pickup effects retain biome palettes; no runtime texture uploads')
    love.event.quit()
   end
  end

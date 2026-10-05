@@ -83,29 +83,15 @@ function C.selectionPortrait(x,y,size)
     return C.portrait(C.selected(),x,y,size,'down')
 end
 function C.draw(x,y,width,dir)
-    local selected=C.selected()
-    if (selected==1 or selected==22) and width<100 and player then
-        local g=love.graphics;g.push();g.translate(x,y)
-        if dir=='right' then g.scale(-1,1) end
-        local pose=dir=='right' and 'left' or (dir or 'down')
-        local key='original_'..pose
-        if not Art.images[key] then Art.add(key,'texture/spider_'..pose..'.png') end
-        local art=Art.images[key]
-        local handled,walking=require('paradise_ink').player(key,pose,width,player)
-        if not handled then
-            walking=require('brown_walk').draw(art.image,pose,0,0,width,player,art.quad)
-            if not walking then Art.draw(key,0,0,width) end
-        end
-        g.pop()
-        if selected==22 then
-            g.push();g.translate(x,y)
-            if walking then
-                local phase=player.walkPhase or 0
-                g.translate(0,math.cos(phase*2)*.55*width/62)
-                g.rotate(math.sin(phase)*.012*(dir=='right' and -1 or 1))
-            end
-            C.crown(0,0,width,dir);g.pop()
-        end
-    else C.portrait(selected,x,y,width,dir) end
+    C.portrait(C.selected(),x,y,width,dir)
+end
+-- Crown variants retain the body color of their base skin.
+C.bodyColors={original={.57,.29,.10},spider={.94,.90,.79},hell_spider={1,.20,.055},ocean_spider={.15,.68,.91},crown_spider={.94,.90,.79}}
+function C.effectColor(index)
+    index=index or C.selected();index=C.crowned[index] or index
+    local body=C.bodyColors[C.keys[index]] or C.bodyColors.original
+    if index==5 then return {.60,.32,.90} end
+    local tint=C.tints[index] or {1,1,1}
+    return {body[1]*tint[1],body[2]*tint[2],body[3]*tint[3]}
 end
 return C

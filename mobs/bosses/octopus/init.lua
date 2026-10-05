@@ -170,6 +170,7 @@ function O.updateInk(dt)
     for i=#O.blasts,1,-1 do local p=O.blasts[i];p.age=p.age+dt;if p.age>.5 then table.remove(O.blasts,i) end end
 end
 function O.drawGround()
+ if require('boss_arrival').waiting(O) then return end
     if not O.active then return end
     local g=love.graphics;g.push('all')
     if not Art.images.ink_ground then Art.add('ink_ground','assets/monstres/ocean/poulpe/ink_ground.png') end
@@ -369,6 +370,7 @@ end
 MobBehaviors.crab=require('mobs.crab')(O)
 
 function O.contact()
+ if require('boss_arrival').waiting(O) then return end
     if not O.active or O.defeated or player.reset then return end
     for _,c in ipairs(O.crabs) do O.crabContact(c);if player.reset then return end end
     for _,c in ipairs(mobs) do if c.type=='crab' then O.crabContact(c);if player.reset then return end end end
@@ -392,6 +394,7 @@ function O.contact()
     end end
 end
 function O.update(dt)
+ if require('boss_arrival').waiting(O) then return end
     if not O.active or player.reset then return end
     O.updateTether(dt)
     if O.defeated then O.updateCrabs(dt);return end
@@ -425,6 +428,7 @@ function O.update(dt)
     end end
 end
 function O.drawCrabs()
+ if require('boss_arrival').waiting(O) then return end
     local g=love.graphics
     for _,c in ipairs(O.crabs) do
         local bob=c.emerge and 0 or math.sin(c.age*23)*1.2
@@ -542,6 +546,7 @@ function O.armCurve(arm)
     return O.restCurves[arm]
 end
 function O.drawArms()
+ if require('boss_arrival').waiting(O) then return end
     local g=love.graphics
     local pulled=O.tether and O.tether.arm or 0
     local key=table.concat(O.arms,':')..':'..pulled
@@ -566,6 +571,7 @@ function O.drawArms()
     g.pop()
 end
 function O.draw()
+ if require('boss_arrival').waiting(O) then return end
     if not O.active then return end
     local g=love.graphics
     if not O.defeated then
@@ -573,6 +579,7 @@ function O.draw()
         O.updateTether(0)
         O.drawArms()
         local key,_,size=O.sprite();local a=Art.images[key];local scale=size/math.max(a.w,a.h)
+        require('monster_fx').halo(O.x,O.y,size*.8)
         Head.draw(a,O.x,O.y,angle,scale,O.flash)
         if O.stun>0 then
             g.push('all');g.setColor(.5,1,1,.75);g.setLineWidth(3)
@@ -606,6 +613,7 @@ function O.draw()
     g.setLineWidth(1); g.setColor(1,1,1)
 end
 function O.drawInk(width,height)
+ if require('boss_arrival').waiting(O) then return end
     if not O.active then return end
     local g=love.graphics
     g.push('all'); g.scale((width or Arena.width)/Arena.width,(height or 600)/600)

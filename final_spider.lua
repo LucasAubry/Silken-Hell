@@ -109,6 +109,7 @@ function F.updateWebs(dt)
  for _,w in ipairs(F.stuck) do if near(w,p,24) and F.snare<=0 and (F.webGrace or 0)<=0 then F.trap(player);F.snare=2.1;F.snareSource='floor';F.webGrace=3;break end end
 end
 function F.update(dt)
+ if require('boss_arrival').waiting(F) then return end
  if not F.active then return end
  F.layPulse=math.max(0,(F.layPulse or 0)-dt)
  F.jumpCooldown=math.max(0,(F.jumpCooldown or 0)-dt)
@@ -228,6 +229,7 @@ function F.egg(e,size,progress)
  g.pop()
 end
 function F.draw()
+ if require('boss_arrival').waiting(F) then return end
  if not F.active then return end
  local g=love.graphics;g.push('all')
  for _,s in ipairs(F.shells) do g.setColor(1,1,1,.8);ArtSet.draw('shell',s.x,s.y,34,s.seed*.7) end
@@ -237,7 +239,7 @@ function F.draw()
   local pose={crackShake=e.crackShake,seed=e.seed,x=(e.fromX or e.x)+(e.x-(e.fromX or e.x))*ease,y=(e.fromY or e.y)+(e.y-(e.fromY or e.y))*ease-math.sin(t*math.pi)*18}
   F.egg(pose,17*(.65+.35*ease),math.max(e.age/e.hatch,(e.hits or 0)>0 and .45 or 0))
  end
- for _,b in ipairs(F.babies) do if not b.dead then F.spider(b.x,b.y,36,b.variant,b.angle);if b.webbed then web(b.x,b.y,24) end end end
+ for _,b in ipairs(F.babies) do if not b.dead then require('monster_fx').halo(b.x,b.y,36);F.spider(b.x,b.y,36,b.variant,b.angle);if b.webbed then web(b.x,b.y,24) end end end
  if not F.engaged then
   UI.text('Approche-toi et touche la reine',F.x-150,F.y+46,'small',{.85,.82,.95},300,'center')
  end
@@ -246,6 +248,7 @@ function F.draw()
  local pulse=(F.layPulse or 0)/.32
  local facing=F.visualAngle()
  if F.jumpHeight>0 then g.setColor(0,0,0,.28);g.ellipse('fill',F.x,F.y+16,24,8);g.setColor(1,1,1) end
+ require('monster_fx').halo(F.x,F.y-F.jumpHeight,84)
  g.push();g.translate(F.x,F.y-F.jumpHeight);g.scale(1+pulse*.045,1-pulse*.045)
  F.spider(0,0,62,'queen',facing)
  ArtSet.clutch(0,0,62,F.carried,facing);g.pop()
