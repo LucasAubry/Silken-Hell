@@ -22,6 +22,7 @@ function R.spawnMole(x,y)
     local angle=index*2.4
     local xx,yy=Arena.clearSpot(x+math.cos(angle)*48-16,y+math.sin(angle)*48-15,32,30)
     add('mole',xx+16,yy+15,100)
+    mobs[#mobs].bossServant=true
     Bestiary.discover('mole'); Bestiary.save()
 end
 function R.spawn(w,n)

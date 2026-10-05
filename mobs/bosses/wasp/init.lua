@@ -1,6 +1,6 @@
 local W={active=false,projectiles={},minions={}}
 function W.reset(active)
-    W.hardcore=false; W.active=active; W.name='Les Trois Sœurs de braise'; W.hp=9; W.maxHp=9; W.defeated=false; W.flash=0
+    W.hardcore=false; W.active=active; W.name='Les Guêpes brûlées'; W.hp=9; W.maxHp=9; W.defeated=false; W.flash=0
     W.x=Arena.width/2; W.y=180; W.anchorX=W.x; W.anchorY=W.y; W.elapsed=0
     W.combo=nil; W.bees={}; W.round=0; W.roundClock=0; W.roundActive=false; W.rest=.25
     for i=1,3 do W.bees[i]={id=i,x=W.x+(i-2)*150,y=W.y+(i==2 and -35 or 25),hp=3,phase='ready',dir='down',flash=0} end
@@ -50,8 +50,10 @@ function W.contact()
             BossFX.burst(b.x,b.y,{1,.25,.06},b.hp==0 and 4 or 2)
             if b.hp==0 then W.rest=math.min(W.rest,.08);W.summon=1.4 end
             if W.hp==0 then
-                W.defeated=true;W.projectiles={};W.eruptions={};objet.larme.taken=false
-                W.dropTear()
+                require('boss_liberation').start(W,'wasp',function()
+                    W.defeated=true;W.projectiles={};W.eruptions={};objet.larme.taken=false
+                    W.dropTear()
+                end)
             end
             return
         end
@@ -154,7 +156,7 @@ function W.positionAttack(b)
 end
 function W.fireLarva(b)
     local x,y=Arena.clearSpot(b.x-9,b.y-9,18,18)
-    return Magma.spawn(x+9,y+9)
+    local m=Magma.spawn(x+9,y+9);m.bossServant=true;return m
 end
 function W.soloLarvae(b)
     if W.aliveCount()~=1 then return end

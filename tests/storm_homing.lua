@@ -2,7 +2,7 @@ local T={}
 local function reset()
  Online.enabled=false;Replay.disabled=true;Replay.recording=false;Replay.playing=false
  App.singleLevel=false;App.practice=nil;App.sessionLayout=nil;LevelLayouts.disabled=true
- Campaign.select(6);player.level=10;reset_level();App.state='playing';player.reset=false
+ Campaign.select(6);player.level=10;reset_level();require('boss_arrival').events={};App.state='playing';player.reset=false
  return Storm
 end
 local function gold(x,y) return {x=x,y=y,vx=280,vy=0,age=0,life=4,golden=true} end
@@ -13,9 +13,9 @@ function T.run()
   b.reset(true);b.hp=hp
   for i=1,60 do b.fire() end
   local n=0;for _,p in ipairs(b.projectiles) do if p.golden then n=n+1 end end
-  counts[#counts+1]=n;assert(#b.projectiles==60 and n>0 and n<=12,'Black feathers dominate; gold remains available')
+  counts[#counts+1]=n;assert(#b.projectiles==60 and n>0 and n<=20,'Black feathers dominate; gold remains available')
  end
- assert(counts[1]==12 and counts[2]==6 and counts[3]==4 and counts[4]==3,'Gold availability drops at each HP tier')
+ assert(counts[1]==20 and counts[2]==10 and counts[3]==4 and counts[4]==3,'Gold availability drops at each HP tier')
  b=reset();player.x=450;player.y=420;local p=gold(465,432);b.projectiles={p};player.dashing=false;b.contact()
  assert(p.returned and (p.vx~=0 or p.vy~=0),'Touch launches gold immediately without a dash')
  local oldX,oldY=p.x,p.y;player.x=80;b.shot=100;b.bolt=100;b.update(.02)
@@ -35,7 +35,9 @@ function T.run()
  b.setPhase('flightTell');b.phaseTime=100;player.x=450;player.y=400
  for i=1,10 do local f=gold(465,412);b.projectiles[i]=f;b.reflect(f) end
  for _=1,100 do b.update(.01);if b.defeated then break end end
- assert(b.defeated and b.hp==0 and #b.projectiles==0 and not objet.larme.taken,'Ten collected feathers win and clear hazards')
+ assert(b.defeated and b.hp==0 and #b.projectiles==0 and objet.larme.taken,'Ten collected feathers win and start liberation')
+ require('boss_liberation').update(2)
+ assert(not objet.larme.taken,'Reward appears after liberation')
  b=reset();Bosses.load({{type='storm',x=200,y=150},{type='storm',x=700,y=150}},{},{})
  local first,second=Bosses.items[1].boss,Bosses.items[2].boss
  first.hp=2;for _=1,5 do first.fire() end

@@ -1,9 +1,9 @@
 local C={world=1,names=Worlds.names,data={{},{},{},{},{},{},{}}}
 C.titles={
- {'Le premier souffle','Les veilleurs','La ronde des lames','Le jardin des épines','Les ailes captives','Le silence des serpents','Les quatre gardiens','Le chœur brisé','Les portes du ciel','Le Merle noir'},
- {'La chute','Les braises','Le cercle des damnés','La forge','Les ailes de cendre','Le fleuve noir','Les sept sceaux','La gueule du feu','Le trône vide','La Guêpe solitaire'}
+ {'Le premier souffle','Les veilleurs','La ronde des lames','Le jardin des épines','Les ailes captives','Le silence des serpents','Les quatre gardiens','Le chœur brisé','Les portes du ciel','L’Œuf du Merle'},
+ {'La chute','Les braises','Le cercle des damnés','La forge','Les ailes de cendre','Le fleuve noir','Les sept sceaux','La gueule du feu','Le trône vide','Les Guêpes brûlées'}
 }
-C.titles[3]={'La Gardienne des fils','Retrouvailles'}
+C.titles[3]={'La Gardienne de la Soie','Retrouvailles'}
 function C.install()
     -- Keep the authored positions and original encounters, before procedural walls were added.
     C.original=levels
@@ -40,6 +40,7 @@ function C.positions(n)
     return points
 end
 function C.reset()
+    require('boss_liberation').reset()
     shader_effect_timer=0;shake_timer=0;cameraShakeX=0;cameraShakeY=0;ghost_timer=0
     Aftermath.reset()
     AbyssTerrain.reset()
@@ -216,7 +217,8 @@ function C.draw()
     g.setColor(1,1,1)
 end
 function C.drawTear(overlay)
-    if Ending.active then return end
+    if require('boss_liberation').busy() then return end
+    if Ending.active and not require('final_spider').defeated then return end
     if Renaissance.active then Renaissance.drawEggs();return end
     if Aftermath.cleared and not overlay then return end
     if objet.larme.abyssHeld or (C.carrier and not objet.larme_dropped and (Realms.underground(C.carrier) or C.carrier.tunnelTravel)) then return end
@@ -249,11 +251,13 @@ function C.drawMob(m)
     if m.abyssHeld then return end
     local behavior=MobBehaviors[m.type]
     if not behavior or not behavior.draw then return end
+    local servants=require('servant_art');local previous=servants.current;servants.current=m
     if m.tunnelTravel then
         local scale,dy=Realms.travelPose(m);local travel=m.tunnelTravel;m.tunnelTravel=nil
         local g=love.graphics;g.push('all');g.translate(m.x,m.y+dy);g.scale(math.max(.001,scale));g.translate(-m.x,-m.y)
         behavior.draw(m);g.pop();m.tunnelTravel=travel
     else require('monster_fx').mob(m);behavior.draw(m) end
+    servants.current=previous
 end
 function C.updateTear(dt)
     if Ending.active then return end
@@ -268,7 +272,8 @@ function C.updateTear(dt)
     elseif not Bosses.hud().active and not (Abyss and Abyss.active and Abyss.open) and not Raven.active and not Wasp.active and not Hedgehog.active and not Octopus.active and not Storm.active and not (Abyss and Abyss.boss) then select_tp_larme(dt) end
 end
 function C.canCollect()
-    return not Bosses.alive() and not objet.larme.taken and (not C.carrier or objet.larme_dropped)
+    local queen=require('final_spider')
+    return not require('boss_liberation').busy() and (not queen.active or queen.defeated) and not Bosses.alive() and not objet.larme.taken and (not C.carrier or objet.larme_dropped)
         and (not Raven.active or Raven.defeated) and (not Wasp.active or Wasp.defeated) and (not Hedgehog.active or Hedgehog.defeated) and (not Octopus.active or Octopus.defeated) and (not Abyss.boss or Abyss.defeated) and (not Storm.active or Storm.defeated)
 end
 return C

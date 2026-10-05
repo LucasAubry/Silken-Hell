@@ -1,36 +1,41 @@
 local json=require 'json'
 local B={seen={},unread={},dirty=false,entries={
- {id='ange',name='Ange gardien',art='catalog_ange',world=1,text='Il poursuit l’araignée lorsqu’elle bouge et s’arrête avec elle. Certains anges portent une larme : attire-les dans un piège pour la faire tomber.'},
- {id='snake',name='Serpent céleste',art='catalog_snake',world=1,text='Il avance lorsque tu bouges. Les pièges peuvent l’immobiliser ; le toucher est mortel.'},
- {id='scie',trap=true,name='Roue enchaînée',art='wheel',world=1,text='Sa lame tourne au bout d’une chaîne. Évite la tête mobile et traverse lorsque son passage est libre.'},
- {id='piege',trap=true,name='Piège de capture',art='catalog_trap',world=1,text='Il immobilise brièvement sa première victime. Un monstre porteur piégé lâche sa larme. Le piège se réarme après six secondes.'},
- {id='merle',boss=true,name='L’Œuf du Merle',art='merle_down',world=1,text='Fonce dans le gros œuf central pour lui retirer une vie, puis éloigne-toi avant le prochain coup. Chaque impact brise un petit œuf dans chacun des six nids fixes. Trois oiseaux tirent immédiatement une plume puis tournent près de leur nid avec des tirs espacés ; trois autres chargent sans ligne d’avertissement. Leurs points de départ sont toujours les mêmes. Brise la coquille en six impacts pour libérer la larme.'},
- {id='magma_spawner',trap=true,name='Nid de larves',art='magma_nest',world=2,text='Un petit nid d’œufs qui fait naître des larves de magma. Tu peux marcher dessus sans danger : seules les larves et leurs explosions sont mortelles. Les œufs remuent avant une éclosion.'},
- {id='magma_larva',name='Larve de magma',art='magma_larva',world=2,text='Elle te poursuit très vite et contourne les murs. Elle clignote avant d’exploser après quelques secondes, ou dès qu’elle te touche. Son explosion est mortelle à proximité, sans laisser de flaque.'},
- {id='imp',name='Goule de braise',art='imp_down',world=2,text='Elle poursuit sa cible, puis accélère pendant trois secondes. Elle contourne les murs.'},
- {id='spinner',name='Serpent tournoyant',art='serpent_down',world=2,text='Il tourne sur lui-même et se déplace indépendamment de toi. Il rebondit sur les murs sans poursuivre le joueur.'},
- {id='wasp',boss=true,name='Les Trois Sœurs de braise',art='wasp_down',world=2,text='Trois abeilles, trois vies chacune. Elles s’alignent horizontalement ou verticalement attendent 0,4 seconde puis chargent tout droit, sans annoncer leur trajectoire. Un choc contre un mur les met KO : touche-les pour retirer une vie. Depuis les coins, une, deux puis trois sœurs lancent des larves de magma identiques à celles des nids. Les transitions sont rapides et deux sœurs ne chargent jamais dans le même sens en même temps. Chaque sœur éliminée accélère les survivantes et laisse un corps mortel au sol. La dernière lâche deux larves de magma au début de chaque attaque. Leur vol est très rapide et leur contact est mortel sauf pendant le KO.'},
- {id='waspling',name='Petite guêpe',art='waspling_down',world=2,text='Petite guêpe cuivrée aux yeux verts, invoquée uniquement par la dernière sœur survivante. Elle reste présente jusqu’à la fin du niveau, même après la mort du boss. Son contact est mortel.'},
- {id='storm',boss=true,name='Merle noir des orages',art='merle_flight_down',world=6,text='Les éclairs percent le sol : évite les trous jusqu’à leur fermeture. Le Merle tire ses plumes trois par trois en volant autour de toi. Esquive les plumes noires. Touche les plumes jaunes pour les garder en orbite autour de toi. Approche-les du Merle : chaque plume qui le touche lui retire une vie et disparaît. Ses traversées viennent des quatre bords : seul son bec dépasse avant le départ. Moins il lui reste de vie, plus il va vite.'},
- {id='hedgehog',boss=true,name='Hérisson des profondeurs',art='hedgehog_down',world=5,text='Il lance douze piques rapides et espacées en cercle. La première manche commence avec une taupe et un rebond. Chaque nouvelle manche ajoute une taupe et un rebond, avec un maximum de deux rebonds et cinq taupes. Il a sept vies. Chaque série terminée lui coûte une vie. Il rebondit sans pause contre les murs et est brièvement étourdi uniquement lorsqu’il perd une vie.'},
- {id='octopus',boss=true,name='Le Poulpe des marées',art='octopus_extended_down',world=4,text='Il fait surgir six crabes par vague, puis huit quand il est enragé, et des flaques d’encre qui durent sept secondes. Un crabe encré devient noir et fonce dans tous les sens, avec des changements brusques et irréguliers, sans te suivre. Fonce sur un crabe noir pour le propulser à l’opposé du point de contact. Un mur le fait exploser ; un tentacule le fait exploser et étourdit le poulpe pendant trois secondes, sans lui retirer de vie. Pendant ce délai, fonce sur une extrémité lumineuse pour t’y attacher, puis entraîne-la dans un coin éclairé afin de l’arracher. Sinon, le poulpe se réveille et le lien se détache. Chaque tentacule arraché retire une vie : il faut arracher les huit. Son corps reste mortel ; ses tentacules sont mortels quand il tourne. À quatre vies, il accélère fortement et projette une rafale d’encre pendant trois secondes. Les crabes ordinaires sont mortels ; les noirs se repoussent uniquement en fonçant.'},
- {id='crab',name='Crabe des marées',art='crab_open',world=4,text='Il te poursuit jusqu’à toucher de l’encre : devenu noir, il devient frénétique, accélère et change brutalement de direction sans te suivre. Fonce sur lui pour le propulser à l’opposé du contact ; sans élan, il reste mortel. Il explose contre un mur ou un tentacule. Un impact sur un tentacule étourdit le poulpe trois secondes. Une explosion repousse les crabes voisins, mais les crabes n’explosent pas simplement en se touchant.'},
- {id='abyss_fish',name='Gueule des profondeurs',art='abyss_fish',world=7,text='Il t’évite dans le noir. Il charge tant que tu es éclairé : sur un cercle, ou pendant les six secondes qui suivent une électrocution.'},
- {id='light_jelly',name='Pieuvre abyssale',art='abyss_octopus',world=7,text='Son contact et chaque éclair ajoutent une charge, jusqu’à trois, pour six secondes, renouvelées à chaque impact. Plus tu accumules de charges, plus tu brilles, plus les poissons te repèrent de loin et plus ils te poursuivent vite.'},
- {id='skeleton_fish',boss=true,name='Léviathan d’ivoire',art='skeleton_head',world=7,text='Le Léviathan vise avant de tirer ses lasers : quitte les lignes fines avant leur explosion. Après trois salves, il aspire : cours à contre-courant et reste loin de sa bouche. Quand il reprend son souffle, fonce sur le cœur doré devant sa bouche pour le blesser une fois. Six impacts libèrent la larme.'},
- {id='electric_gull',name='Mouette électrique',art='gull_down',world=6,text='Frappée par la foudre, elle devient jaune et conserve une petite aura jaune mortelle. Son passage laisse une traînée électrique qui tue au contact et disparaît après 2,2 secondes.'},
- {id='lanternfish',name='Poisson-lanterne',art='lanternfish_down',world=7,text='Sa lanterne éclaire les Abysses. Il t’évite dans le noir, mais te charge si une méduse t’illumine.'},
- {id='cloud_snare',trap=true,name='Tornade',art='cloud_snare',world=6,text='Elle tourne sans arrêt. La toucher fait tournoyer l’araignée, puis la projette très violemment vers un bord. Attention aux trous et aux bords !'},
- {id='earth_tunnel',trap=true,name='Tunnel de terre',art='earth_tunnel',world=5,text='Le joueur et les monstres peuvent emprunter ce terrier et ressortent par le tunnel relié après une courte animation. Éloigne-toi de la sortie avant de rentrer à nouveau pour faire le chemin inverse.'},
- {id='lava',trap=true,name='Flaque de lave',art='lava',world=2,text='Une flaque mortelle pour toi. Les monstres la traversent, s’embrasent et laissent du feu derrière eux.'},
- {id='fish',name='Poisson-lame',art='fish_down',world=4,text='Il nage en banc très lentement, puis tout le banc fonce vers ta position en un dash. Écarte-toi au moment de la charge.'},
- {id='jelly',name='Méduse électrique',art='jelly_down',world=4,text='Elle s’illumine puis lance de petits fils électriques bleus dans toutes les directions. Passe entre les éclairs.'},
- {id='worm',name='Ver des profondeurs',art='worm_down',world=5,text='Son corps ondule en zigzag. Il se dirige vers toi. Une minuscule ombre indique sa position sous terre. Il émerge et crache des œufs : lorsqu’ils touchent un mur, de minuscules vers apparaissent et te poursuivent.'},
- {id='mole',name='Taupe fouisseuse',art='mole_down',world=5,text='Elle creuse pour s’enfouir, devient invisible, puis une motte annonce sa remontée animée : éloigne-toi avant qu’elle surgisse. Elle se déplace rapidement et contourne les murs.'},
- {id='gull',name='Mouette des vents',art='gull_down',world=6,text='Elle se dirige vers la larme puis tourne autour. Le vent la pousse ; la foudre peut la transformer en mouette électrique.'},
- {id='rain',trap=true,name='Averse acérée',art='rain',world=6,text='Des averses frappent des emplacements fixes. Les ombres bleues annoncent les impacts. Évite également les trous et le bord du sol de nuages.'},
- {id='larva',name='Minuscule ver',art='worm_down',world=5,text='Né d’un œuf projeté contre un mur, il poursuit simplement l’araignée. Petit, mais mortel au contact.'},
- {id='blackbird_chick',name='Petit merle noir',art='merle_down',world=1,text='Il éclot dans un nid quand le gros œuf est frappé. Certains tournent et tirent des plumes, les autres visent puis chargent. Son contact est mortel.'}
+ {id='ange',name='Ange gardien',art='catalog_ange',world=1,text='La soie de l’Œuf a figé sa volonté. Il te suit quand tu bouges, s’arrête avec toi et abandonne sa larme dans un piège.'},
+ {id='snake',name='Serpent céleste',art='catalog_snake',world=1,text='Premier captif du Paradis, il ne sait plus choisir sa route. Il avance avec tes pas ; un piège peut rompre sa poursuite.'},
+ {id='scie',trap=true,name='Roue enchaînée',art='wheel',world=1,text='Les gardiens ont lié une lame au fil de leur maîtresse. Elle tourne sans repos ; son extrémité tranche tout sur son passage.'},
+ {id='piege',trap=true,name='Piège de capture',art='catalog_trap',world=1,text='Ces mâchoires retenaient autrefois les serviteurs rebelles. Elles immobilisent encore les captifs et leur font lâcher leurs larmes.'},
+ {id='merle',boss=true,name='L’Œuf du Merle',art='merle_down',world=1,text='La Gardienne a cousu une promesse dans cet œuf. Frappe-le en fonçant, évite ses oiseaux, puis délivre les survivants étourdis lorsque la coquille cède.'},
+ {id='magma_spawner',trap=true,name='Nid de larves',art='magma_nest',world=2,text='Les Guêpes brûlées pondent pour nourrir une armée qui ne leur appartient pas. Les œufs remuent avant de libérer leurs larves.'},
+ {id='magma_larva',name='Larve de magma',art='magma_larva',world=2,text='Née sous les fils des Guêpes, elle brûle de rage avant même de grandir. Elle te poursuit puis explose, au contact ou à bout de souffle.'},
+ {id='imp',name='Goule de braise',art='imp_down',world=2,text='Les Guêpes ont fait de sa colère une laisse. Elle te traque entre les murs et accélère par accès de fureur.'},
+ {id='spinner',name='Serpent tournoyant',art='serpent_down',world=2,text='Il tourne depuis que les Guêpes lui ont arraché le repos. Il rebondit sur les murs, incapable de choisir une cible.'},
+ {id='wasp',boss=true,name='Les Guêpes brûlées',art='wasp_down',world=2,text='La Gardienne a brûlé leurs ailes sans couper ses fils. Leurs charges finissent contre les murs : touche-les pendant leur KO. Les survivantes deviennent plus rapides.'},
+ {id='waspling',name='Petite guêpe',art='waspling_down',world=2,text='Dernière enfant des Guêpes, déjà prisonnière à sa naissance. Elle poursuit l’intrus et reste dangereuse même lorsque ses maîtresses tombent.'},
+ {id='storm',boss=true,name='Merle noir',art='merle_flight_down',world=6,text='Il croyait le ciel hors de portée de la Gardienne. Renvoie ses plumes dorées : il charge après trois blessures, puis deux, puis chacune. Son bec annonce une seule traversée ; ses tirs s’accélèrent.'},
+ {id='hedgehog',boss=true,name='Hérisson Brise-Roche',art='hedgehog_down',world=5,text='La Gardienne a noué ses fils entre ses piquants. Il les projette, puis roule et rebondit jusqu’à se blesser lui-même, entraînant ses taupes terrifiées.'},
+ {id='octopus',boss=true,name='Pieuvre des Larmes Noires',art='octopus_extended_down',world=4,text='Elle garde l’Océan pour celle qui tient ses huit bras. Projette un crabe encré sur un tentacule, puis profite de son étourdissement pour tirer une extrémité lumineuse vers un coin.'},
+ {id='crab',name='Crabe des marées',art='crab_open',world=4,text='Esclave de la Pieuvre, il cherche à mourir pour rompre ses fils. L’encre le rend frénétique : projette-le contre un mur ou un tentacule pour le faire exploser.'},
+ {id='abyss_fish',name='Gueule des profondeurs',art='abyss_fish',world=7,text='Le Monstre d’os lui a appris à craindre la lumière. Il t’évite dans le noir, puis te charge dès que tu brilles.'},
+ {id='light_jelly',name='Pieuvre abyssale',art='abyss_octopus',world=7,text='Le Monstre d’os se sert de sa lueur pour marquer ses proies. Ses décharges te font briller davantage et attirent les poissons.'},
+ {id='skeleton_fish',boss=true,name='Le Monstre d’os',art='skeleton_head',world=7,text='Même la mort n’a pas libéré cet ancien gardien des fils de la Soie. Évite ses lasers, résiste à son aspiration, puis frappe le cœur doré lorsqu’il reprend son souffle.'},
+ {id='electric_gull',name='Mouette électrique',art='gull_down',world=6,text='La foudre du Merle a resserré ses liens. Son aura jaune et la traînée électrique qu’elle abandonne sont mortelles.'},
+ {id='lanternfish',name='Poisson-lanterne',art='lanternfish_down',world=7,text='Sa lampe n’éclaire plus que les chasses du Monstre d’os. Il fuit ton ombre mais fonce sur toi lorsque l’électricité te révèle.'},
+ {id='cloud_snare',trap=true,name='Tornade',art='cloud_snare',world=6,text='Le Merle emprisonne dans ces vents les fils tombés du ciel. Ils t’emportent en spirale avant de te projeter vers le bord.'},
+ {id='earth_tunnel',trap=true,name='Tunnel de terre',art='earth_tunnel',world=5,text='Les taupes creusent ces passages pour fuir leur maître. Entre dans l’un pour ressortir par son jumeau ; leurs poursuivants savent aussi les emprunter.'},
+ {id='lava',trap=true,name='Flaque de lave',art='lava',world=2,text='Les Guêpes y ont perdu leurs ailes. Le feu te tue, mais leurs serviteurs le traversent et le traînent derrière eux.'},
+ {id='fish',name='Poisson-lame',art='fish_down',world=4,text='La Pieuvre les a liés les uns aux autres. Le banc avance lentement, puis tous chargent ensemble ta dernière position.'},
+ {id='jelly',name='Méduse électrique',art='jelly_down',world=4,text='La Pieuvre a fait de sa peur une arme. Elle s’illumine avant de répandre ses fils électriques : glisse-toi entre eux.'},
+ {id='worm',name='Ver des profondeurs',art='worm_down',world=5,text='Le Hérisson lui ordonne de creuser toujours plus loin. Il ondule sous terre, émerge et crache des œufs qui deviennent de petits poursuivants contre les murs.'},
+ {id='mole',name='Taupe fouisseuse',art='mole_down',world=5,text='Elle ne te hait pas : elle a peur du Hérisson et de ses fils. Elle se cache sous terre ; une motte trahit l’endroit où elle ose remonter.'},
+ {id='gull',name='Mouette des vents',art='gull_down',world=6,text='Le Merle lui a confié une larme qu’elle n’a pas le droit de rendre. Elle tourne autour ; la foudre peut la changer en sentinelle électrique.'},
+ {id='rain',trap=true,name='Averse acérée',art='rain',world=6,text='Le ciel pleure sous les fils du Merle. Les ombres bleues annoncent les impacts ; les trous restent une menace après l’averse.'},
+ {id='larva',name='Minuscule ver',art='worm_down',world=5,text='Le Hérisson réclame des serviteurs toujours plus jeunes. À peine sorti de son œuf, ce petit ver te poursuit sans comprendre pourquoi.'},
+ {id='blackbird_chick',name='Petit merle noir',art='merle_down',world=1,text='L’Œuf les a fait éclore dans une cage de soie. Les oiseaux clairs tirent ; les sombres poursuivent. Quand la coquille cède, tous restent étourdis.'}
+ ,{id='final_spider',boss=true,name='La Gardienne de la Soie',art='final_queen',world=3,text='Elle tient les gardiens, qui tiennent leurs créatures. Toute cette descente était sa toile. Attire sa charge vers ses enfants pris dans la soie pour retourner ses liens contre elle.'}
+ ,{id='queen_child',name='Enfant de la Soie',art='final_baby_red',world=3,text='La Gardienne noue ses propres enfants avant leur premier pas. Ils te poursuivent ; pris dans sa toile, ils deviennent vulnérables à la charge de leur mère.'}
+ ,{id='rebirth_bush',name='Buisson captif',art='rebirth_bush',world=3,text='La Gardienne a noué les racines de ce jardin. Le buisson tremble avant d’exploser et de laisser ses rejetons poursuivre sa peine.'}
+ ,{id='walking_tree',name='Arbre errant',art='rebirth_walking_tree',world=3,text='Ses racines ont quitté la terre, mais les fils de la Gardienne les retiennent. Il erre et abandonne derrière lui un sol infranchissable.'}
+ ,{id='white_spider',name='Araignée captive',art='rebirth_white_spider',world=3,text='La soie retient aussi les innocents. Cette prisonnière suit tes pas sans te blesser ; elle espère que tu rompras les liens de la Gardienne.'}
 }}
 function B.load()
     local ok,data=pcall(json.decode,love.filesystem.read('bestiary.json') or '{}')
@@ -52,6 +57,7 @@ function B.list(category)
     return rows
 end
 function B.currentBoss()
+    local queen=require('final_spider');if queen.active and not queen.defeated then return 'final_spider',queen end
     local found,distance
     for _,item in ipairs(Bosses.items) do local b=item.boss
         if b.active and b.boss~=false and not b.defeated then
@@ -72,10 +78,8 @@ function B.openBoss()
 end
 function B.description(e,hardcore)
     if not hardcore then return e.text end
-    if e.id=='wasp' then
-        return 'LES SŒURS DE LAVE — MODE DÉMON\n\nTrois sœurs noires et rouges, trois vies chacune. Elles gardent les vitesses originales : 4 % de plus que les sœurs normales, et environ 14 % de plus pour la dernière survivante.\n\n'..e.text..'\n\nAccès : porte droite du Sanctuaire. Ce combat dispose de son propre classement. Gillou récompense trois touches pendant un même KO des sœurs.'
-    end
-    return 'Cette version démon n’est pas encore disponible. Pour le moment, seules les Sœurs de lave se trouvent derrière la porte démon du Sanctuaire.\n\nVERSION NORMALE\n\n'..e.text
+    if e.id=='wasp' then return 'DÉMON — La soie a noirci leurs ailes. Leurs charges accélèrent ; frappe les trois sœurs pendant le même KO pour relever le défi.\n\n'..e.text end
+    return e.text
 end
 function B.open(id,hardcore)
     UI.bestScroll=0;UI.bestHardcore=hardcore or false
@@ -88,6 +92,7 @@ function B.encounter()
     if Magma and #Magma.spawners>0 then B.discover('magma_spawner') end
     if Bosses then for _,item in ipairs(Bosses.items) do B.discover(item.kind) end end
     for _,m in ipairs(mobs) do B.discover(m.capture and m.art or m.type) end
+    if require('final_spider').active then B.discover('final_spider') end
     if Raven.active then B.discover('merle') end
     if Storm.active then B.discover('storm') end
     if Wasp.active then B.discover('wasp') end

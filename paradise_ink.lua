@@ -27,6 +27,7 @@ function P.draw(key,x,y,width,angle,height,flip)
  if flip then sx=-sx end
  Art.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
  g.draw(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
+ require('servant_art').web(a,a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
 end
 local aliases={merle_egg='egg',nest='nest',wheel='wheel',catalog_ange='ange_down',catalog_snake='snake_down'}
 function P.sprite(key)

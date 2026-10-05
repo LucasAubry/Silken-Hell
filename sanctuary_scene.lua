@@ -94,13 +94,12 @@ function R.draw(S)
   if hero then
    g.push();g.translate(x,by);g.scale(.75,.75);R.boss(entry,0,0);g.pop()
   else sprite(entry,x,by) end
-  UI.text(entry.type=='skeleton_head' and 'Le Léviathan des Abysses' or entry.name,x-(hero and 260 or 125),hero and 435 or y+30,hero and 'medium' or 'small',{c[1],c[2],c[3]},hero and 520 or 250,'center')
+  UI.text(entry.type=='skeleton_head' and 'Le Monstre d’os' or entry.name,x-(hero and 260 or 125),hero and 435 or y+30,hero and 'medium' or 'small',{c[1],c[2],c[3]},hero and 520 or 250,'center')
   local near=(S.x-x)^2+(S.y+22-y)^2<90^2
   g.setColor(c[1],c[2],c[3],near and .85 or .4);g.setLineWidth(2)
   g.ellipse('line',x,y,38,17);g.ellipse('line',x,y,44,21)
   for j=1,8 do local a=j*math.pi/4+UI.clock*.12;g.circle('fill',x+math.cos(a)*41,y+math.sin(a)*19,1.5) end
   if S.charging==i then g.push();g.translate(x,y);g.scale(1,17/38);g.setColor(1,.94,.65);g.setLineWidth(4);g.arc('line','open',0,0,38,-math.pi/2,-math.pi/2+math.max(.001,(S.charge or 0)/1.4)*math.pi*2);g.pop() end
-  if hero then UI.text(S.charging==i and 'Reste sur le cercle…' or 'Reste sur le cercle pour défier le gardien',x-250,y+27,'small',{.68,.77,.83},500,'center') end
  end
  -- Floating dust catches the light; the foreground mist stays below faces.
  for i=1,55 do local x=(i*139.7+math.sin(UI.clock*.3+i)*15)%w;local y=(i*83-UI.clock*(3+i%5))%570

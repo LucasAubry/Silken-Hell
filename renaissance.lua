@@ -112,6 +112,7 @@ local function sprite(key,x,y,size,angle)
     local scale=size/math.max(a.w,a.h)
     local g=love.graphics
     g.draw(a.image,a.quad,x,y,angle or 0,scale,scale,a.w/2,a.h/2)
+    require('servant_art').web(a,a.image,a.quad,x,y,angle or 0,scale,scale,a.w/2,a.h/2)
 end
 function N.drawSoil(s)
     local g=love.graphics;g.push('all');g.setColor(1,1,1,math.min(1,s.life))

@@ -88,6 +88,7 @@ function App.start(world)
     if App.hardcore and not Replay.playing and not Hardcore.available(world) then return false end
     if world==8 then if Worlds.canEnter(8) then Secret.open() end;return end
     if not App.sessionLayout and not Worlds.canEnter(world) and not App.preview and os.getenv('SILKEN_TEST')~='1' and not Replay.playing then return end
+    Achievements.level=nil
     Profile.record('attempts')
     Arena.configure(love.graphics.getDimensions())
     if Replay.playing then Arena.width=Replay.data.width end
@@ -121,7 +122,7 @@ function love.load()
     Arena.configure(love.graphics.getDimensions())
     Campaign.install()
     local resetReplayLevel=reset_level
-    reset_level=function() Replay.beforeLevelReset();return resetReplayLevel() end
+    reset_level=function() Replay.beforeLevelReset();Achievements.enterLevel();return resetReplayLevel() end
     Campaign.select(1);reset_level()
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
     polishShader=love.graphics.newShader('assets/polish.glsl')
@@ -198,6 +199,7 @@ function love.update(dt)
     if App.quitDelay then App.quitDelay=App.quitDelay-dt;if App.quitDelay<=0 then love.event.quit() end;return end
     PreviewBridge.update(dt)
     UI.clock=UI.clock+dt
+    UI.updatePress(dt)
     Online.update(dt)
     Input.update(dt)
     if App.state=='worlds' then WorldMap.update(dt) end
@@ -216,6 +218,8 @@ function love.update(dt)
     if Replay.playing and not Replay.ghost and Replay.compatibility and (App.state=='victory' or App.state=='customVictory') then App.state='playing' end
 end
 function App.simulate(dt)
+    local liberation=require('boss_liberation')
+    if liberation.busy() then liberation.update(dt);return end
     require('boss_arrival').update(dt)
     Psyche.update(dt)
     Secret.updateDuel(dt);if App.state~='playing' then return end
@@ -240,7 +244,7 @@ function App.simulate(dt)
     Abyss.updatePlayer(dt)
     Aftermath.update(dt)
     update_shadow_dash(dt); update_freezes(dt); App.move(dt)
-    if App.resolveDeath() then return end
+    if liberation.busy() or App.resolveDeath() then return end
     particleSystem:update(dt)
     Abyss.refreshLight()
     Campaign.updateTear(dt)
@@ -250,31 +254,32 @@ function App.simulate(dt)
         if not m.abyssHeld and not Abyss.inSuctionShelter(m.x,m.y) and behavior and behavior.update then behavior.update(m,dt) end
         if player.reset then break end
     end
-    if App.resolveDeath() then return end
+    if liberation.busy() or App.resolveDeath() then return end
     Burning.update(dt)
-    if App.resolveDeath() then return end
+    if liberation.busy() or App.resolveDeath() then return end
     Magma.update(dt)
-    if App.resolveDeath() then return end
+    if liberation.busy() or App.resolveDeath() then return end
     Renaissance.update(dt)
-    if App.resolveDeath() then return end
+    if liberation.busy() or App.resolveDeath() then return end
     Realms.update(dt)
-    if App.resolveDeath() then return end
+    if liberation.busy() or App.resolveDeath() then return end
     Ocean.update(dt)
     Campaign.updateTear(0)
     for _,boss in ipairs({Raven,Wasp,Hedgehog,Octopus,Storm,Bosses}) do
         boss.update(dt)
         Aftermath.update(0)
-        if App.resolveDeath() then return end
+        if liberation.busy() or App.resolveDeath() then return end
     end
     Abyss.refreshLight()
     BossFX.update(dt)
     shader_effect_timer=math.max(0,shader_effect_timer-dt)
-    if App.resolveDeath() then return end
+    if liberation.busy() or App.resolveDeath() then return end
     if Ending.checkHellVictory() then return end
     local collected=Renaissance.active and Renaissance.collect()
     if not player.tunnelTravel and (collected or (not Renaissance.active and Campaign.canCollect() and isTouching(player,objet.larme))) then
         Psyche.collect(Renaissance.active and player.x+15 or objet.larme.x+15,
             Renaissance.active and player.y+12 or objet.larme.y+20,player.x+15,player.y+12)
+        Achievements.finishLevel()
         if not Renaissance.active then Profile.record('tears') end
         if not App.singleLevel and not App.hardcore then Online.checkpoint(player.level,timer,player.death) end
         if App.singleLevel then App.state='customVictory';if not Replay.playing then Replay.finish() end
@@ -316,7 +321,7 @@ function love.draw()
         for _,m in ipairs(mobs) do if m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
         Renaissance.drawBlasts(); Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false); love.graphics.setColor(1,1,1); if Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not Abyss.encounterActive() then draw_player(direction) end; Ocean.drawBubble(); Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end
-        if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies() end; Abyss.drawLights(); Bosses.drawLights(); if Abyss.encounterActive() then love.graphics.setColor(1,1,1);draw_player(direction) end; draw_player_beacon(); BossFX.draw();require('boss_arrival').draw(true);Aftermath.draw();Story.drawWallMessage();if not Abyss.playerHidden() then Replay.drawGhost() end
+        if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies() end; Abyss.drawLights(); Bosses.drawLights(); if Abyss.encounterActive() then love.graphics.setColor(1,1,1);draw_player(direction) end; draw_player_beacon(); BossFX.draw();require('boss_arrival').draw(true);Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage();if not Abyss.playerHidden() then Replay.drawGhost() end
         Prism.endScene();love.graphics.setCanvas()
     elseif App.state=='bossWorld' then
         refreshSceneResolution()

@@ -8,22 +8,24 @@ function S.speed() return (3000+2200*(1-S.hp/S.maxHp))*(S.movementRate or 1) end
 function S.reset(active)
  if player.skyWhirl and player.skyWhirl.boss==S then player.skyWhirl=nil end
  if player.skyThrow and player.skyThrow.boss==S then player.skyThrow=nil end
- S.active=active;S.name='Le Merle noir des orages';S.hp=10;S.maxHp=10;S.defeated=false;S.electric=false
+ S.active=active;S.name='Merle noir';S.hp=10;S.maxHp=10;S.defeated=false;S.electric=false
  S.x=Arena.width*.5;S.y=150;S.dir='down';S.clock=0;S.flash=0;S.hitGrace=0;S.chargeTime=0;S.charges=0
  S.projectiles={};S.strikes={};S.trails={};S.holes={};S.tornado=nil;S.pattern=0;S.pass=0;S.round=0;S.featherSalvos=0
- S.vx=0;S.vy=0;S.centerX=player.x+15;S.centerY=player.y+12;S.poseAge=1
+ S.pendingDashes=0;S.nextDashHP=7;S.vx=0;S.vy=0;S.centerX=player.x+15;S.centerY=player.y+12;S.poseAge=1
  S.nest={x=Arena.width-105,y=115};S.setPhase('orbit')
 end
 function S.setPhase(phase)
  S.phase=phase;S.phaseAge=0;S.hidden=false
  if phase=='orbit' or phase=='lightning' then
-  S.phase='orbit';S.phaseTime=5.5;S.shot=.45;S.bolt=.6;S.burst=0;S.salvos=0;S.round=S.round+1
+  S.phase='orbit';S.phaseTime=math.huge;S.shot=.7;S.bolt=.6;S.burst=0;S.salvos=0;S.round=S.round+1
   S.orbit=math.atan2(S.y-player.y-12,S.x-player.x-15)
- elseif phase=='leave' then S.phaseTime=.45;S.fromX=S.x;S.fromY=S.y;S.pass=0
+ elseif phase=='leave' then S.phaseTime=.22;S.fromX=S.x;S.fromY=S.y;S.pass=0;S.vx=0;S.vy=0
  elseif phase=='flightTell' then
-  S.phaseTime=.65-.17*(1-S.hp/S.maxHp);S.hidden=true;S.pass=S.pass+1
-  local mode=({0,1,3})[(S.pass+S.round-2)%3+1]
+  S.phaseTime=.60-.16*(1-S.hp/S.maxHp);S.hidden=true;S.pass=S.pass+1
   local px,py=clamp(player.x+15,38,Arena.width-38),clamp(player.y+12,35,565)
+  -- Choose the player's closest side in normalized arena space, then lock it.
+  local dx=(px-Arena.width*.5)/(Arena.width*.5-38);local dy=(py-300)/265
+  local mode=math.abs(dx)>math.abs(dy) and (dx<0 and 0 or 1) or (dy<=0 and 2 or 3)
   if mode==0 then S.startX=-110;S.endX=Arena.width+110;S.startY=py;S.endY=py;S.dir='right'
   elseif mode==1 then S.startX=Arena.width+110;S.endX=-110;S.startY=py;S.endY=py;S.dir='left'
   elseif mode==2 then S.startX=px;S.endX=px;S.startY=-100;S.endY=700;S.dir='down'
@@ -41,13 +43,16 @@ function S.goldenInterval()
 end
 function S.fire()
  local aim=math.atan2(player.y+12-S.y,player.x+15-S.x)
- -- Five-shot salvos surround an occasional offset gold feather with lethal black ones.
- local golden=S.burst==2 and S.featherSalvos%S.goldenInterval()==0
- local offset=golden and (S.featherSalvos%2==0 and .38 or -.38) or (S.burst-2)*.13
- local a=aim+offset;local speed=285+80*(1-S.hp/S.maxHp)
+ -- Sparse opening salvos grow denser and faster as the silk tightens.
+ local count=S.hp>S.maxHp*.5 and 3 or 5
+ local middle=math.floor(count/2)
+ local golden=S.burst==middle and S.featherSalvos%S.goldenInterval()==0
+ local offset=golden and (S.featherSalvos%2==0 and .38 or -.38) or (S.burst-middle)*.13
+ local rage=1-S.hp/S.maxHp
+ local a=aim+offset;local speed=255+110*rage
  S.projectiles[#S.projectiles+1]={x=S.x+math.cos(a)*45,y=S.y+math.sin(a)*45,vx=math.cos(a)*speed,vy=math.sin(a)*speed,life=4.5,age=0,golden=golden}
  S.burst=S.burst+1
- if S.burst==5 then S.burst=0;S.salvos=S.salvos+1;S.featherSalvos=S.featherSalvos+1;S.shot=.55 else S.shot=.14 end
+ if S.burst>=count then S.burst=0;S.salvos=S.salvos+1;S.featherSalvos=S.featherSalvos+1;S.shot=.95-.60*rage else S.shot=.26-.17*rage end
 end
 function S.summon()
  local cx,cy=player.x+15,player.y+12;local chosen={}
@@ -64,14 +69,21 @@ function S.summon()
  S.pattern=S.pattern+1
 end
 function S.finish()
- S.defeated=true;S.projectiles={};S.strikes={};S.trails={};S.holes={}
- objet.larme.taken=false;objet.larme.x,objet.larme.y=Arena.clearSpot(clamp(S.x,70,Arena.width-70)-15,clamp(S.y,85,515)-20,30,40)
+ require('boss_liberation').start(S,'storm',function()
+  S.defeated=true;S.projectiles={};S.strikes={};S.trails={};S.holes={}
+  objet.larme.taken=false;objet.larme.x,objet.larme.y=Arena.clearSpot(clamp(S.x,70,Arena.width-70)-15,clamp(S.y,85,515)-20,30,40)
+ end)
 end
 function S.hurt(fromFeather)
  if S.defeated or (S.hitGrace>0 and not fromFeather) then return false end
  S.hp=math.max(0,S.hp-1);S.flash=.3;S.hitGrace=.24;S.electric=S.hp<=S.maxHp*.5
  BossFX.burst(S.x,S.y,{.65,.9,1},3)
- if S.hp==0 then S.finish() end
+ if S.hp==0 then S.finish()
+ elseif S.hp<=S.nextDashHP then
+  S.nextDashHP=S.nextDashHP==7 and 5 or S.nextDashHP-1
+  if S.phase=='orbit' then S.setPhase('leave')
+  else S.pendingDashes=S.pendingDashes+1 end
+ end
  return true
 end
 function S.canReflect(p)
@@ -119,16 +131,19 @@ function S.update(dt)
  S.phaseAge=S.phaseAge+dt;S.phaseTime=S.phaseTime-dt
  if S.phaseTime<=0 and S.phase~='flight' then
   local nextPhase={orbit='leave',leave='flightTell',flightTell='flight',['return']='orbit'}
-  if S.phase=='flight' then S.setPhase(S.pass<(S.hp<=5 and 4 or 3) and 'flightTell' or 'return') else S.setPhase(nextPhase[S.phase] or 'orbit') end
+  if S.phase=='return' and S.pendingDashes>0 then
+   S.pendingDashes=S.pendingDashes-1;S.setPhase('leave')
+  else S.setPhase(nextPhase[S.phase] or 'orbit') end
  end
  if S.phase=='flight' then
   local t=math.min(1,S.phaseAge/S.flightDuration);local tx=S.startX+(S.endX-S.startX)*t;local ty=S.startY+(S.endY-S.startY)*t
   local ox,oy=S.x,S.y;local steps=math.max(1,math.ceil(distance(ox,oy,tx,ty)/6))
   for i=1,steps do S.x=ox+(tx-ox)*i/steps;S.y=oy+(ty-oy)*i/steps;S.contact();if player.reset or S.defeated then return end end
   S.trails[#S.trails+1]={x=S.x,y=S.y,life=.13,dir=S.dir}
-  if S.phaseTime<=0 then S.setPhase(S.pass<(S.hp<=5 and 4 or 3) and 'flightTell' or 'return') end
+  if S.phaseTime<=0 then S.setPhase('return') end
  elseif S.phase=='leave' then
-  S.vy=S.vy-6000*dt;S.x=S.x+S.vx*dt;S.y=S.y+S.vy*dt;S.dir='up'
+  local t=math.min(1,S.phaseAge/.22)
+  S.x=S.fromX;S.y=S.fromY+(-120-S.fromY)*t;S.dir='up'
  elseif S.phase=='return' then
   local t=math.min(1,S.phaseAge/.65);t=t*t*(3-2*t)
   S.x=S.fromX+(S.returnX-S.fromX)*t;S.y=S.fromY+(S.returnY-S.fromY)*t
@@ -237,10 +252,10 @@ end
 function S.previewPose()
  local a=Art.images[sprite(S.dir)];local scale=170/math.max(a.w,a.h);local w,h=a.w*scale,a.h*scale
  local x,y=S.x,S.y;local cx,cy,cw,ch
- if S.dir=='right' then x=34-w/2;cx,cy,cw,ch=22,y-24,14,48
- elseif S.dir=='left' then x=Arena.width-34+w/2;cx,cy,cw,ch=Arena.width-36,y-24,14,48
- elseif S.dir=='down' then y=42-h/2;cx,cy,cw,ch=x-24,22,48,22
- else y=558+h/2;cx,cy,cw,ch=x-24,556,48,22 end
+ if S.dir=='right' then x=52-w/2;y=y-h*.27;cx,cy,cw,ch=22,S.y-24,32,48
+ elseif S.dir=='left' then x=Arena.width-52+w/2;y=y-h*.27;cx,cy,cw,ch=Arena.width-54,S.y-24,32,48
+ elseif S.dir=='down' then y=52-h/2;cx,cy,cw,ch=x-24,22,48,32
+ else y=548+h/2;cx,cy,cw,ch=x-24,546,48,32 end
  return x,y,cx,cy,cw,ch
 end
 function S.visibleBounds()
@@ -252,7 +267,7 @@ function S.visibleBounds()
 end
 function S.draw()
  if require('boss_arrival').waiting(S) then return end
- if not S.active or S.defeated then return end
+ if not S.active or (S.defeated and not S.liberating) then return end
  local g=love.graphics;g.push('all')
  for _,p in ipairs(S.trails) do g.setColor(.45,.7,1,p.life*.9);bird(p.dir,p.x,p.y) end
  if S.phase=='flightTell' then

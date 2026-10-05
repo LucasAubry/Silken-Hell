@@ -53,7 +53,7 @@ function T.install(R)
   U.panel(160,656,880,81)
   if R.job then
    U.text('Recherche du niveau '..R.job.level..' · '..math.floor(R.frame/R.data.frames*100)..' %',180,671,'body',nil,840,'center')
-   U.text('Échap : quitter',180,708,'small',nil,840,'center');return
+   return
   end
   U.text('NIVEAU',180,674,'small');local levels=R.levels()
   for i,n in ipairs(levels) do local target=n;U.button(tostring(n),250+(i-1)*50,664,45,32,function() R.seekLevel(target) end,false,player.level==n) end

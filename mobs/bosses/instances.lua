@@ -48,7 +48,7 @@ end
 function B.update(dt)
     for _,item in ipairs(B.items) do
         item.boss.update(dt)
-        if player.reset then break end
+        if player.reset or require('boss_liberation').busy() then break end
     end
     if B.alive() then objet.larme.taken=true end
 end

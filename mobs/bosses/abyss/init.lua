@@ -21,7 +21,7 @@ function A.reset(w,n)
     A.swimHead=nil;A.chain=nil;A.waves={};A.lightTrail={};A.lumenParticles={};A.debris={};A.vacuumCargo={}
     A.active=w==7; A.clock=0; A.threads={}; A.bones={}; A.open=false; A.head=nil; A.swallowed=nil; A.cargo={}; A.ejected={}; A.spitFlash=0; A.breathAt=5.5; A.motionTime=0; A.spinTime=0; A.spinAngle=0
     A.tailTouch=false; A.tailSafe=false; A.headOnly=false; A.skeletonStage=n; A.giant=A.active and n>=8; A.boss=A.active and n==10; A.origin={x=Arena.width/2,y=280}; player.illuminated=0; player.electrified=0; player.charges=0; player.abyssHeld=nil; player.abyssKnock=nil; player.abyssSpit=nil; player.abyssGrace=0
-    A.hp=10; A.maxHp=10; A.defeated=false; A.flash=0; A.hitGrace=0; A.lightLock=false; A.name="Le Léviathan des Abysses"
+    A.hp=10; A.maxHp=10; A.defeated=false; A.flash=0; A.hitGrace=0; A.lightLock=false; A.name="Le Monstre d’os"
     A.lightSites={{x=Arena.width*.12,y=105},{x=Arena.width*.88,y=495},{x=Arena.width*.12,y=495},{x=Arena.width*.88,y=105}}
     A.laserHeadY=nil;A.eyeFrom=nil;A.eyeBlend=1;A.phase=nil;A.phaseTime=0;A.plankton={};A.nextShot=1.1;A.volley=0;A.lightMotes={};A.pressure=nil;A.nextPressure=1.35;A.pressureCount=0;A.recoil=0;A.mines={};A.mineSerial=0;A.nextMine=0
     if A.boss then A.setupEncounter() end
@@ -224,8 +224,10 @@ function A.hurt(amount,quiet)
     A.hp=math.max(0,A.hp-(amount or 1)); A.flash=quiet and .08 or .35;
     if A.hp==0 then
         if A.swallowed then A.spit() end
-        A.defeated=true; A.giant=false; A.open=false; A.bones={}; A.threads={}; A.plankton={};A.pressure=nil;A.lightMotes={};A.mines={};A.beam=nil;A.beams={}
-        objet.larme.taken=false; objet.larme.x=Arena.width/2-15; objet.larme.y=280
+        require('boss_liberation').start(A,'skeleton_fish',function()
+            A.defeated=true;A.giant=false;A.open=false;A.bones={};A.threads={};A.plankton={};A.pressure=nil;A.lightMotes={};A.mines={};A.beam=nil;A.beams={}
+            objet.larme.taken=false;objet.larme.x=Arena.width/2-15;objet.larme.y=280
+        end)
     end
 end
 function A.emit(m)
@@ -444,7 +446,7 @@ function A.drawBossEye(b,overlay)
 end
 function A.drawBones(overlay)
  if require('boss_arrival').waiting(A) then return end
-    if not A.giant or A.defeated then return end
+    if not A.giant or (A.defeated and not A.liberating) then return end
     local g=love.graphics
     for _,b in ipairs(A.bones) do
         local previous=g.getShader()

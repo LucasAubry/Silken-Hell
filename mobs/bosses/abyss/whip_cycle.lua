@@ -10,7 +10,7 @@ function C.lockPlayer(a)
  return false
 end
 function C.setup(a)
- a.hp=6;a.maxHp=6;a.name='Le Léviathan des Abysses';a.round=0
+ a.hp=6;a.maxHp=6;a.name='Le Monstre d’os';a.round=0
  a.threads={};a.lightMotes={};a.octopuses={};a.mines={};a.beams={};a.waves={};a.lightSites={}
  a.lightTrail={};a.lumenParticles={};a.debris={};a.vacuumCargo={};a.energy=0;a.hitGrace=0
  a.swimHead={x=35,y=300,angle=0};a.chain={};a.aim=nil

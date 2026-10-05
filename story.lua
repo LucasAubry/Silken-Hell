@@ -23,6 +23,8 @@ Elle est passée par là.
 Elle t’a laissé des messages.
 Elle espère encore que tu viendras.
 
+Sur les bêtes, tu reconnais la même soie. Elles servent les gardiens par peur, par rage, faute de pouvoir fuir. Et les gardiens eux-mêmes portent les fils de la Gardienne.
+
 Chaque gardien vaincu te rapproche de sa voix. Chaque monde traversé donne un sens à cette promesse : tu ne la laisseras pas seule.
 
 Mais la Reine n’a pas encore révélé le prix du retour.
@@ -52,6 +54,7 @@ function S.localizedWorld(world)
  return (S.worldTranslations[biome] or {})[language] or require('localization').render(S.worlds[biome] or '')
 end
 function S.drawWallMessage()
+ if require('boss_liberation').busy() then return end
  local final=require('final_spider')
  if not Aftermath.cleared and not (final.active and final.defeated) then return end
  local biome=Campaign.biome;local line=S.inscriptions[biome];if not line then return end

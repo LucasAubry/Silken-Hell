@@ -2,7 +2,7 @@ local TentacleVector=require 'mobs.bosses.octopus.tentacle'
 local Head=require 'mobs.bosses.octopus.head'
 local O={active=false,projectiles={},blots={},crabs={},crabProbes={{0,0},{-10,0},{10,0},{0,-8},{0,8}}}
 function O.reset(active)
-    O.active=active; O.name='Le Poulpe des marées'; O.hp=8; O.maxHp=8; O.flash=0; O.defeated=false
+    O.active=active; O.name='Pieuvre des Larmes Noires'; O.hp=8; O.maxHp=8; O.flash=0; O.defeated=false
     O.x=Arena.width/2; O.y=300; O.angle=0; O.faceAngle=0; O.spin=1; O.clock=0
     O.angularVelocity=.32; O.shot=2; O.summon=1.2; O.extension=1
     O.rider=nil; O.escape=nil; O.grace=0; O.waveActive=false; O.waveId=0; O.dashHeld=false
@@ -60,9 +60,11 @@ function O.tearArm(arm)
         O.enraged=true;O.barrage=3;O.barrageShot=0
     end
     if O.hp==0 then
-        O.defeated=true;O.projectiles={};O.blots={};O.inkPools={};O.blasts={}
-        for _,c in ipairs(O.crabs) do if not c.dead then c.dead=0 end end
-        objet.larme.taken=false;objet.larme.x=O.x-15;objet.larme.y=O.y-20
+        require('boss_liberation').start(O,'octopus',function()
+            O.defeated=true;O.projectiles={};O.blots={};O.inkPools={};O.blasts={}
+            for _,c in ipairs(O.crabs) do if not c.dead then c.dead=0 end end
+            objet.larme.taken=false;objet.larme.x=O.x-15;objet.larme.y=O.y-20
+        end)
     end
 end
 function O.armAt(x,y)
@@ -431,6 +433,7 @@ function O.drawCrabs()
  if require('boss_arrival').waiting(O) then return end
     local g=love.graphics
     for _,c in ipairs(O.crabs) do
+        local servants=require('servant_art');local context=servants.current;servants.current={type='crab',bossServant=true}
         local bob=c.emerge and 0 or math.sin(c.age*23)*1.2
         g.push('all'); g.translate(c.x,c.y+bob)
         -- The sprite faces its walking direction.
@@ -438,7 +441,7 @@ function O.drawCrabs()
         if c.emerge and not c.dead then
             local amount=math.max(0,math.min(1,(c.emerge-.15)/.65))
             if amount>0 then
-                local a=Art.images.crab_open
+                local a=servants.image('crab_open')
                 local qx,qy,qw,qh=a.quad:getViewport();local iw,ih=a.image:getDimensions()
                 a.emerging=a.emerging or g.newQuad(qx,qy,qw,qh,iw,ih)
                 a.emerging:setViewport(qx,qy,qw,math.max(1,qh*amount),iw,ih)
@@ -452,7 +455,7 @@ function O.drawCrabs()
             local scale=46/math.max(qw,qh); g.setColor(1,1,1,amount)
             g.draw(a.image,a.sink,-qw*scale/2,qh*scale/2-qh*amount*scale,0,scale,scale)
         else g.setColor(c.inked and .08 or 1,c.inked and .07 or 1,c.inked and .1 or 1); Art.draw(math.floor(c.age*(c.frenzy and 24 or 6))%2==0 and 'crab_open' or 'crab_closed',0,0,46) end
-        g.pop()
+        g.pop();servants.current=context
     end
 end
 -- All eight arms share one vector skin and curve, at rest and under tension.
@@ -574,7 +577,7 @@ function O.draw()
  if require('boss_arrival').waiting(O) then return end
     if not O.active then return end
     local g=love.graphics
-    if not O.defeated then
+    if not O.defeated or O.liberating then
         local angle=O.angle
         O.updateTether(0)
         O.drawArms()

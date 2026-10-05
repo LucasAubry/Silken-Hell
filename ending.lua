@@ -119,7 +119,6 @@ function E.drawHud()
  UI.text('Niveau '..player.level,520,18,'small',{1,.94,.86},160,'center')
  if F.active then
   require('boss_hud').draw(F)
-  if F.defeated then UI.text('Le combat est terminé. Rejoins la porte de soie.',250,123,'body',{.85,1,.91},700,'center') end
  else UI.text('Rejoins l’araignée blanche.',300,66,'body',{1,.97,.9},600,'center') end
  if not Replay.playing then
   UI.iconButton(1090,31,'pause',function() App.state='pause' end)

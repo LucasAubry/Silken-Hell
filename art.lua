@@ -99,6 +99,7 @@ function A.drawSwimmer(key,x,y,size,angle,time)
     local scale=size/math.max(a.w,a.h)
     A.shadow(a.swimMesh,x,y,angle,scale,scale)
     love.graphics.draw(a.swimMesh,x,y,angle,scale,scale)
+    require('servant_art').web(a,a.swimMesh,x,y,angle,scale,scale)
 end
 -- A traveling contraction wave thickens and shortens each ring in turn.
 function A.drawLarva(x,y,size,angle,time)
@@ -153,11 +154,13 @@ function A.load()
     A.add('tear_ring','texture/aureole.png')
 end
 function A.draw(key,x,y,width,angle,height)
-    if require('paradise_ink').art(key,x,y,width,angle,height) then return end
-    local a=assert(A.images[key],key)
+    local servants=require('servant_art')
+    if not servants.variant(key) and require('paradise_ink').art(key,x,y,width,angle,height) then return end
+    local a=assert(servants.image(key),key)
     local sx=width/a.w; local sy=height and height/a.h or sx
     if creature(key) then A.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2) end
     love.graphics.draw(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
+    require('servant_art').web(a,a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
 end
 function A.drawTinted(key,x,y,width,angle,height)
     A.tintShader=A.tintShader or love.graphics.newShader([[vec4 effect(vec4 color,Image image,vec2 uv,vec2 px) {
@@ -173,11 +176,13 @@ function A.direction(dx,dy,previous)
     return dy>0 and 'down' or 'up'
 end
 function A.drawFacing(name,dir,x,y,size)
-    if require('paradise_ink').facing(name,dir,x,y,size) then return end
-    local key=name..'_'..(dir or 'down'); local a=assert(A.images[key],key)
+    local key=name..'_'..(dir or 'down');local servants=require('servant_art')
+    if not servants.variant(key) and require('paradise_ink').facing(name,dir,x,y,size) then return end
+    local a=assert(servants.image(key),key)
     local scale=size/math.max(a.w,a.h)
     if not name:find('spider') then A.shadow(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2) end
     love.graphics.draw(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
+    require('servant_art').web(a,a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
 end
 function A.drawWorm(dir,x,y,size,time)
     local a=A.images['worm_'..dir]; local qx,qy,qw,qh=a.quad:getViewport()
@@ -192,16 +197,18 @@ function A.drawWorm(dir,x,y,size,time)
         if not a.strips[i] then a.strips[i]=love.graphics.newQuad(sx,sy,sw,sh,iw,ih) end
         local wiggle=math.sin(time*10+t*math.pi*3)*size*(vertical and .014 or .035)*math.sin((t+endpoint)*math.pi/2)
         love.graphics.draw(a.image,a.strips[i],x-qw*scale/2+(vertical and wiggle or qw*t*scale),y-qh*scale/2+(vertical and qh*t*scale or wiggle),0,scale,scale)
+        require('servant_art').web(a,a.image,a.strips[i],x-qw*scale/2+(vertical and wiggle or qw*t*scale),y-qh*scale/2+(vertical and qh*t*scale or wiggle),0,scale,scale)
     end
 end
 -- Reveal the original proportions above the soil line as the body moves vertically.
 function A.drawBurrowing(name,dir,x,y,size,amount)
-    local a=A.images[name..'_'..dir]; amount=math.max(.001,math.min(1,amount))
+    local a=require('servant_art').image(name..'_'..dir); amount=math.max(.001,math.min(1,amount))
     local qx,qy,qw,qh=a.quad:getViewport(); local iw,ih=a.image:getDimensions()
     a.burrowQuad=a.burrowQuad or love.graphics.newQuad(qx,qy,qw,qh,iw,ih)
     a.burrowQuad:setViewport(qx,qy,qw,qh*amount,iw,ih)
     local scale=size/math.max(qw,qh)
         A.shadow(a.image,a.burrowQuad,x-qw*scale/2,y+qh*scale/2-qh*amount*scale,0,scale,scale)
     love.graphics.draw(a.image,a.burrowQuad,x-qw*scale/2,y+qh*scale/2-qh*amount*scale,0,scale,scale)
+    require('servant_art').web(a,a.image,a.burrowQuad,x-qw*scale/2,y+qh*scale/2-qh*amount*scale,0,scale,scale)
 end
 return A

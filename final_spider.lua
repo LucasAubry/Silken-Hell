@@ -1,6 +1,6 @@
 -- Renaissance guardian. Eggs are independent actors, including the carried clutch.
 local ArtSet=require 'final_art'
-local F={active=false,name='La Gardienne des fils',maxHp=20}
+local F={active=false,name='La Gardienne de la Soie',maxHp=20}
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 local function length(x,y) return math.sqrt(x*x+y*y) end
 local function towards(o,x,y,speed,dt)
@@ -36,9 +36,12 @@ function F.damage()
  if F.defeated then return end
  F.hp=math.max(0,F.hp-1);F.flash=.25
  if F.hp==0 then
-  F.defeated=true;F.phase='retreat';F.phaseTime=0;F.snare=0;F.webs={};F.stuck={};F.target=nil
-  for _,b in ipairs(F.babies) do b.webbed=false end
-  for _,e in ipairs(F.eggs) do F.shells[#F.shells+1]={x=e.x,y=e.y,seed=e.seed} end;F.eggs={}
+  require('boss_liberation').start(F,'final_spider',function()
+   F.defeated=true;F.phase='retreat';F.phaseTime=0;F.snare=0;F.webs={};F.stuck={};F.target=nil
+   for _,b in ipairs(F.babies) do b.webbed=false end
+   for _,e in ipairs(F.eggs) do F.shells[#F.shells+1]={x=e.x,y=e.y,seed=e.seed} end;F.eggs={}
+   objet.larme.taken=false;objet.larme.x=Arena.width/2-15;objet.larme.y=280
+  end)
  end
 end
 function F.breakEgg(index)
@@ -117,8 +120,11 @@ function F.update(dt)
  if F.defeated then
   towards(F,Arena.width*.5,95,110,dt)
   for i,b in ipairs(F.babies) do towards(b,Arena.width*.5+((i-1)%9-4)*36,55+math.floor((i-1)/9)*25,140,dt) end
-  if F.phaseTime>2.4 then F.gate=true end
-  if F.gate and near(playerPoint(),{x=Arena.width*.5,y=38},42) then Ending.openReunion() end
+  Aftermath.update(dt)
+  if Campaign.canCollect() and isTouching(player,objet.larme) then
+   require('psychedelic_fx').collect(objet.larme.x+15,objet.larme.y+20,player.x+15,player.y+12)
+   Profile.record('tears');objet.larme.taken=true;Ending.openReunion()
+  end
   return
  end
  local p=playerPoint()
@@ -150,6 +156,7 @@ function F.update(dt)
   elseif not near(e,p,40) then e.touching=false end
   if not broken and e.age>=e.hatch then
    table.remove(F.eggs,i);F.shells[#F.shells+1]={x=e.x,y=e.y,seed=e.seed}
+   if Bestiary.discover('queen_child') then Bestiary.save() end
    F.babies[#F.babies+1]={x=e.x,y=e.y,age=0,variant=e.seed%11==0 and 'black' or e.seed%2==0 and 'white' or 'red',seed=e.seed}
   end
  end
@@ -240,9 +247,6 @@ function F.draw()
   F.egg(pose,17*(.65+.35*ease),math.max(e.age/e.hatch,(e.hits or 0)>0 and .45 or 0))
  end
  for _,b in ipairs(F.babies) do if not b.dead then require('monster_fx').halo(b.x,b.y,36);F.spider(b.x,b.y,36,b.variant,b.angle);if b.webbed then web(b.x,b.y,24) end end end
- if not F.engaged then
-  UI.text('Approche-toi et touche la reine',F.x-150,F.y+46,'small',{.85,.82,.95},300,'center')
- end
  if F.phase=='aim' then g.setColor(1,.28,.25,.5);g.setLineWidth(2);g.circle('line',F.chargeX,F.chargeY,34+math.sin(F.clock*18)*3) end
  -- Keep the body grounded; only a deliberate escape leap raises it.
  local pulse=(F.layPulse or 0)/.32

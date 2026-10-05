@@ -1,5 +1,5 @@
 -- PNG entrance phase: bosses are hidden and inert until their final frame has played.
-local F={events={},seen={},known={},sheets={}}
+local F={events={},seen={},known={},sheets={},sizeScale=.42}
 local sizes={merle=290,wasp=370,hedgehog=310,octopus=460,storm=330,skeleton_fish=340,final_spider=290}
 -- Each PNG contains 16 painted frames, laid out left-to-right in a 4x4 atlas.
 function F.load()
@@ -68,7 +68,7 @@ function F.draw(over)
    local sheet=assert(F.sheets[e.kind],'Boss arrival textures must be preloaded: '..e.kind)
    local t=e.age/e.duration
    local alpha=math.min(1,t/.055)*math.min(1,(1-t)/.15)
-   local size=sizes[e.kind]*(e.retry and .7 or 1)
+   local size=sizes[e.kind]*F.sizeScale*(e.retry and .7 or 1)
    g.setColor(1,1,1,alpha)
    g.draw(sheet.image,sheet.frames[F.frame(e)],e.x,e.y,0,size/sheet.w,size/sheet.h,sheet.w/2,sheet.h/2)
   end

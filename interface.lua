@@ -24,6 +24,12 @@ function U.rawText(t,x,y,font,color,width,align)
     g.setFont(U.fonts[font or 'body']); g.setColor(color or white)
     if width then g.printf(t,x,y,width,align or 'left') else g.print(t,x,y) end
 end
+-- Fit labels on one line without letting long names intrude into neighbouring art.
+function U.fitText(text,x,y,font,color,width,align)
+    text=L.render(text);local f=U.fonts[font];local scale=math.min(1,width/math.max(1,f:getWidth(text)))
+    local offset=align=='center' and (width-f:getWidth(text)*scale)/2 or align=='right' and width-f:getWidth(text)*scale or 0
+    g.push();g.translate(x+offset,y);g.scale(scale,scale);U.rawText(text,0,0,font,color);g.pop()
+end
 local podiumColors={[1]={1,.81,.38},[2]={1,.28,.12},[3]={.55,1,.42},[4]={.15,.91,1},[5]={.91,.64,.32},[6]={.62,.72,1},[7]={.25,.61,1}}
 function U.podiumName(name,x,y,font,rank,world)
  if rank>3 then U.rawText(name,x,y,font,white);return end
@@ -56,8 +62,11 @@ end
 function U.button(label,x,y,w,h,callback,disabled,primary,sound,raw,tint)
     local gold=tint or gold
     local mx,my=U.mouse(); local hover=not disabled and mx>=x and mx<=x+w and my>=y and my<=y+h
+    local originalY=y
+    local pressed=U.pressed and U.pressed.state==App.state and U.pressed.x==x and U.pressed.y==y
+    if pressed then y=y+3 end
     local cut=math.min(10,h/4); local pulse=0.5+0.5*math.sin(U.clock*2.5)
-    g.setColor(0,0.015,0.02,0.55); bevel('fill',x,y+4,w,h,cut)
+    g.setColor(0,0.015,0.02,0.55); bevel('fill',x,originalY+4,w,h,cut)
     if not disabled and (primary or hover) then
         g.setBlendMode('add')
         for i=4,1,-1 do
@@ -85,7 +94,7 @@ function U.button(label,x,y,w,h,callback,disabled,primary,sound,raw,tint)
     g.push();g.translate(x+w/2,y+h/2);g.scale(scale,scale)
     U.rawText(translated,-U.fonts[font]:getWidth(translated)/2,-U.fonts[font]:getHeight()/2,font,disabled and muted or primary and {1,0.93,0.7} or white)
     g.pop()
-    U.buttons[#U.buttons+1]={x=x,y=y,w=w,h=h,run=callback,disabled=disabled,sound=sound or ((label:lower():find('retour') or label:lower():find('quitter')) and 'back' or 'go')}
+    U.buttons[#U.buttons+1]={x=x,y=originalY,w=w,h=h,run=callback,disabled=disabled,sound=sound or ((label:lower():find('retour') or label:lower():find('quitter')) and 'back' or 'go')}
 end
 function U.mouse(x,y)
     if not x then x,y=love.mouse.getPosition() end
@@ -95,15 +104,25 @@ end
 function U.click(x,y)
     for i=#U.buttons,1,-1 do local b=U.buttons[i]
         if x>=b.x and x<=b.x+b.w and y>=b.y and y<=b.y+b.h then
-            if not b.disabled then Audio.play(b.sound or 'go'); b.run() end; return true
+            if not b.disabled then
+                if U.pressed then return true end
+                Audio.play(b.sound or 'go')
+                if App.state=='menu' then U.pressed={x=b.x,y=b.y,state=App.state,age=0,run=b.run} else b.run() end
+            end; return true
         end
     end
+end
+function U.updatePress(dt)
+    local p=U.pressed;if not p then return end
+    p.age=p.age+dt
+    if App.state~=p.state then U.pressed=nil
+    elseif p.age>=.11 then U.pressed=nil;p.run() end
 end
 function U.theme()
     local w=App.selectedWorld==3 and 3 or App.selectedWorld==8 and 8 or Worlds.biome(App.selectedWorld or 1,1); local palette=Worlds.color(w)
     U.shader:send('time',U.clock); U.shader:send('biome',w)
-    U.shader:send('deep',w==1 and {.95,.89,.77} or palette.floor); U.shader:send('fog',w==1 and {1,.93,.80} or palette.ink)
-    local tint=({[1]={1,.97,.89},[2]={1,.22,.08},[3]={1,.3,.4},[4]={.15,.9,1},[5]={.75,.46,.22},[6]={.65,.87,1},[7]={.45,.48,1},[8]={.72,.55,1}})[w] or {1,.83,.47}
+    U.shader:send('deep',w==1 and {.91,.81,.65} or palette.floor); U.shader:send('fog',w==1 and {.96,.86,.70} or palette.ink)
+    local tint=({[1]={1,.97,.89},[2]={1,.22,.08},[3]={.48,.91,.38},[4]={.15,.9,1},[5]={.75,.46,.22},[6]={.65,.87,1},[7]={.45,.48,1},[8]={.72,.55,1}})[w] or {1,.83,.47}
     U.shader:send('accent',tint)
     for i=1,3 do gold[i]=tint[i]*.8+.12 end
     return w,tint
@@ -123,7 +142,7 @@ function U.background()
         end
         g.setColor(tint[1],tint[2],tint[3],.55+.06*math.sin(U.clock*.8));g.draw(U.halo,x,y,0,155,115)
         g.setBlendMode('alpha')
-        if w==1 then g.setColor(1,.97,.9,.5) else g.setColor(.86,.80,.57,.5) end; g.line(x,62,x,y-80)
+        require('silk_art').menuThread(x,62,y,216)
         g.setColor(1,1,1); Characters.selectionPortrait(x,y,216)
     end
     for i=1,95 do
@@ -229,7 +248,6 @@ function U.entry()
     if Input.active then
         U.panel(270,150,660,550)
         U.rawText(T('TON PSEUDO : ')..App.draftName,290,174,'heading',white,620,'center')
-        U.text('A : ajouter une lettre · X : effacer · B : retour',290,223,'small',muted,620,'center')
         local letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
         for i=1,#letters do local letter=letters:sub(i,i)
             U.button(letter,300+((i-1)%9)*67,270+math.floor((i-1)/9)*58,57,44,function() love.textinput(letter) end)
@@ -304,7 +322,11 @@ function U.bestiaryIcon(entry,x,y,size)
         g.setColor(.79,.87,.95); g.ellipse('fill',x,y,size*.45,size*.2); g.circle('fill',x-size*.16,y-size*.1,size*.23); g.circle('fill',x+size*.14,y-size*.14,size*.28)
     elseif entry.art=='rain' then
         g.setColor(.35,.75,1); g.setLineWidth(3); for i=-1,1 do g.line(x+i*size*.2,y-size*.3,x+i*size*.2-size*.12,y+size*.3) end; g.setLineWidth(1)
-    else Art.draw(entry.art,x,y,size) end
+    else
+        local a=Art.images[entry.art]
+        local width=a and size*a.w/math.max(a.w,a.h) or size
+        Art.draw(entry.art,x,y,width)
+    end
     g.setColor(1,1,1)
 end
 function U.scrollBestiary(amount)
@@ -331,7 +353,7 @@ function U.bestiary()
         if U.bestTextEntry~=e.id then U.bestTextEntry=e.id;U.bestScroll=0 end
         if U.bestHardcore and e.id=='wasp' then g.setShader(Wasp.lavaMaterial(U.clock)) end
         U.bestiaryIcon(e,780,245,132);g.setShader()
-        U.text(U.bestHardcore and e.id=='wasp' and 'Les Sœurs de lave' or e.name,490,332,'heading',white,570,'center')
+        U.fitText(U.bestHardcore and e.id=='wasp' and 'Les Guêpes brûlées · Démon' or e.name,490,332,'heading',white,570,'center')
         U.text(Worlds.names[e.world],490,373,'small',gold,570,'center')
         if e.boss then
             U.button(U.bestHardcore and 'Voir la version normale' or 'Voir la version démon',585,399,390,34,function() U.bestHardcore=not U.bestHardcore;U.bestScroll=0 end)
@@ -348,7 +370,6 @@ function U.bestiary()
             local thumb=math.max(22,161*161/height)
             g.setColor(.3,.35,.4,.45);g.rectangle('fill',1047,448,4,161)
             g.setColor(gold);g.rectangle('fill',1047,448+(161-thumb)*U.bestScroll/U.bestScrollMax,4,thumb)
-            U.text('Molette · touches haut/bas · stick droit',535,621,'small',muted,350)
             U.button('-',915,615,54,26,function() U.scrollBestiary(-80) end)
             U.button('+',977,615,54,26,function() U.scrollBestiary(80) end)
         end
@@ -359,11 +380,13 @@ function U.bestiary()
     U.button('Retour',490,668,220,38,function() App.state=U.bestReturn or 'menu' end)
 end
 function U.arrow(cx,cy,dir,callback)
+    local originalY=cy
+    if U.pressed and U.pressed.state==App.state and U.pressed.x==cx-24 and U.pressed.y==cy-24 then cy=cy+3 end
     local mx,my=U.mouse(); local hover=(mx-cx)^2+(my-cy)^2<24^2
     g.setColor(0.08,0.06,0.025,0.9); g.polygon('fill',cx,cy-24,cx+24,cy,cx,cy+24,cx-24,cy)
     g.setColor(hover and {1,0.95,0.7} or gold); g.polygon('line',cx,cy-24,cx+24,cy,cx,cy+24,cx-24,cy)
     g.polygon('fill',cx+dir*8,cy,cx-dir*5,cy-8,cx-dir*5,cy+8)
-    U.buttons[#U.buttons+1]={x=cx-24,y=cy-24,w=48,h=48,run=callback}
+    U.buttons[#U.buttons+1]={x=cx-24,y=originalY-24,w=48,h=48,run=callback}
 end
 function U.outlined(text,x,y,font,color,width)
     text=L.render(text)
@@ -503,28 +526,41 @@ function U.draw()
         U.button('Quitter le jeu',410,438,380,40,function() App.quitDelay=.4 end)
     elseif App.state=='workshop' then U.workshop()
     elseif App.state=='achievements' then
-        U.panel(230,105,740,563); U.text('SUCCÈS',260,130,'heading',white,680,'center')
+        U.panel(230,75,740,635); U.text('SUCCÈS',260,98,'heading',white,680,'center')
         local totals={{'Larmes récupérées',Profile.stats.tears},{'Œufs récupérés',Profile.stats.eggs or 0},{'Morts',Profile.stats.deaths},{'Essais',Profile.stats.attempts}}
         for i,v in ipairs(totals) do local x=260+(i-1)*174
-            U.panel(x,184,160,76);U.text(tostring(v[2]),x+8,194,'heading',gold,144,'center');U.text(v[1],x+8,232,'small',muted,144,'center')
+            U.panel(x,142,160,58);U.text(tostring(v[2]),x+8,146,'heading',gold,144,'center');U.text(v[1],x+8,180,'small',muted,144,'center')
         end
-        U.button(U.hideCompleted and 'Afficher les succès accomplis' or 'Masquer les succès accomplis',310,276,580,34,function() U.hideCompleted=not U.hideCompleted;U.achievementPage=1 end)
-        local row=0;local visible=0;U.achievementPage=U.achievementPage or 1
+        local category=U.achievementCategory or 'worlds'
+        for i,tab in ipairs({{'secrets','Secrets'},{'worlds','Mondes'},{'mastery','Maîtrise'}}) do
+            local id=tab[1]
+            U.button(tab[2],270+(i-1)*224,212,212,32,function() U.achievementCategory=id;U.achievementPage=1 end,false,category==id)
+        end
+        U.button(U.hideCompleted and 'Afficher les succès accomplis' or 'Masquer les succès accomplis',310,252,580,28,function() U.hideCompleted=not U.hideCompleted;U.achievementPage=1 end)
+        local visible={}
         for _,a in ipairs(Achievements.list) do
-            local unlocked=Profile.achievements[a.id]
-            if not (unlocked and U.hideCompleted) then
-                visible=visible+1
-                if math.floor((visible-1)/2)+1==U.achievementPage then
-                local y=323+row*121;row=row+1;U.panel(270,y,660,108)
-                U.text(unlocked and (a.localizedName and a.localizedName() or a.name) or 'Succès secret',292,y+12,'medium',unlocked and gold or white,616)
-                U.text(unlocked and a.description() or 'À découvrir en jouant.',292,y+46,'body',muted,616)
-                U.text(unlocked and ('DÉBLOQUÉ'..(a.id=='gillou' and ' · Skin Gillou' or a.id=='maxance' and ' · Skin Maxance' or '')) or '???',292,y+84,'small',gold,616)
-            end
+            if a.category==category and not (Achievements.unlocked(a) and U.hideCompleted) then visible[#visible+1]=a end
+        end
+        U.achievementPage=math.max(1,math.min(U.achievementPage or 1,math.ceil(#visible/8)))
+        for row=0,7 do local a=visible[(U.achievementPage-1)*8+row+1]
+            if a then
+                local unlocked=Achievements.unlocked(a);local hidden=category=='secrets' and not unlocked
+                local y=292+row*38
+                if row%2==0 then g.setColor(.1,.14,.16,.24);g.rectangle('fill',270,y,660,37) end
+                g.setColor(gold[1],gold[2],gold[3],.15);g.line(270,y+37,930,y+37)
+                g.setColor(unlocked and gold or muted);g.setLineWidth(1)
+                g.polygon(unlocked and 'fill' or 'line',283,y+13,287,y+17,283,y+21,279,y+17)
+                U.fitText(hidden and 'Succès secret' or (a.localizedName and a.localizedName() or a.name),300,y+2,'body',unlocked and gold or white,485)
+                U.fitText(unlocked and 'Accompli' or hidden and '???' or 'À accomplir',794,y+4,'small',unlocked and gold or muted,124,'right')
+                U.fitText(hidden and 'À découvrir en jouant.' or a.description(),300,y+21,'small',muted,618)
+
             end
         end
-        U.button('Précédent',270,575,155,30,function() U.achievementPage=U.achievementPage-1 end,U.achievementPage<=1)
-        U.button('Suivant',775,575,155,30,function() U.achievementPage=U.achievementPage+1 end,U.achievementPage*2>=visible)
-        U.button('Retour',440,610,320,40,function() App.state='menu' end)
+        if #visible==0 then U.text('Aucun succès à afficher.',300,421,'body',muted,600,'center') end
+        U.text(U.achievementPage..' / '..math.max(1,math.ceil(#visible/8)),450,615,'small',muted,300,'center')
+        U.button('Précédent',270,608,155,30,function() U.achievementPage=U.achievementPage-1 end,U.achievementPage<=1)
+        U.button('Suivant',775,608,155,30,function() U.achievementPage=U.achievementPage+1 end,U.achievementPage*8>=#visible)
+        U.button('Retour',440,657,320,36,function() App.state='menu' end)
     elseif App.state=='customVictory' then
         U.panel(300,235,600,350); U.text(Secret.duel and 'Duel terminé' or App.practice and 'Entraînement terminé' or 'Carte terminée',330,265,'heading',white,540,'center')
         U.text(U.time(Scoring.total(timer,player.death))..' · '..player.death..' morts ('..Scoring.label(player.death)..')',330,325,'body',gold,540,'center')

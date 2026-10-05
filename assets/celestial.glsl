@@ -9,7 +9,7 @@ vec4 effect(vec4 color, Image tex, vec2 uv, vec2 pixel) {
     float bend=sin(r*12.0-time*.35+sin(a*3.0))*.035;
     float mist=sin(p.x*4.0+sin(p.y*5.0+time*.18))*sin(p.y*4.0-time*.12+bend*15.0);
     vec3 c=deep*.15+fog*(mist*.5+.5)*.35;
-    if (biome==1.0) c=deep*.30+fog*(mist*.5+.5)*.24;
+    if (biome==1.0) c=deep*.36+fog*(mist*.5+.5)*.25;
     if (biome==1.0 || biome==3.0) {
         float halo=exp(-abs(r-.52-bend)*60.0);
         float rays=pow(max(0.0,sin(a*22.0+time*.045)),14.0)*exp(-r*1.8);
@@ -21,8 +21,8 @@ vec4 effect(vec4 color, Image tex, vec2 uv, vec2 pixel) {
         }
         if (biome==1.0) {
             float cloud=smoothstep(.0,.95,mist)*(.4+.6*uv.y);
-            c+=vec3(1.0,.98,.93)*cloud*.22;
-            c+=vec3(1.0,.98,.94)*exp(-r*2.8)*.08;
+            c+=vec3(.99,.89,.71)*cloud*.20;
+            c+=vec3(.99,.90,.75)*exp(-r*2.8)*.08;
         }
         if (biome==6.0) c+=vec3(.23,.28,.33)*smoothstep(-.2,.8,mist);
     } else if (biome==6.0) {

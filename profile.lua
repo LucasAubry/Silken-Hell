@@ -18,7 +18,7 @@ function P.load()
         elseif k=='totalAttempts' then P.stats.attempts=math.max(0,math.floor(tonumber(v) or 0))
         elseif k=='achievementGillou' then P.achievements.gillou=v=='2'
         elseif k=='achievementMaxance' then P.achievements.maxance=v=='2'
-        elseif k and k:match('^flawless%d+$') then P.achievements[k]=v=='1'
+        elseif k and (k:match('^flawless%d+$') or k:match('^bossflawless%d+$')) then P.achievements[k]=v=='1'
         elseif k=='language' then P.language=require('localization').valid(v) and v or 'fr'
         elseif k=='speedMode' then P.speedMode=v=='slow' and 'slow' or 'accelerate'
         elseif k=='name' then P.name=v
@@ -57,7 +57,7 @@ end
 function P.save()
     if Replay and Replay.playing then return end
     local rows={'iconBiome='..(P.iconBiome or 0),'speedMode='..P.speedMode,'statsVersion=1','totalTears='..P.stats.tears,'totalEggs='..(P.stats.eggs or 0),'totalDeaths='..P.stats.deaths,'totalAttempts='..P.stats.attempts,'achievementGillou='..(P.achievements.gillou and '2' or '0'),'achievementMaxance='..(P.achievements.maxance and '2' or '0'),'progressVersion=2','name='..P.name,'country='..P.country,'language='..P.language,'character='..(P.character or 1),'unlocked='..P.unlocked,'music='..P.music,'sound='..P.sound}
-    for id,done in pairs(P.achievements) do if id:match('^flawless%d+$') and done then rows[#rows+1]=id..'=1' end end
+    for id,done in pairs(P.achievements) do if (id:match('^flawless%d+$') or id:match('^bossflawless%d+$')) and done then rows[#rows+1]=id..'=1' end end
     for world,n in pairs(P.levels or {}) do rows[#rows+1]='level'..world..'='..n end
     for world,done in pairs(P.completed or {}) do if done then rows[#rows+1]='completed'..world..'=1' end end
     for _,a in ipairs(actions) do table.insert(rows,a..'='..P.keys[a]) end

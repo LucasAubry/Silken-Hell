@@ -153,11 +153,10 @@ function M.draw()
     -- Floating controls leave the painted terrain visible across the entire screen.
     g.setColor(.015,.025,.035,.83);g.rectangle('fill',45,32,670,85,12,12)
     UI.text('LA DESCENTE',68,48,'heading',{.98,.90,.71})
-    UI.text('Un fil à suivre, un monde à découvrir.',70,88,'small',{.77,.81,.82})
     if App.selectedWorld==8 and M.hardcore then g.setColor(.16,.018,.028,.94) else g.setColor(.015,.025,.035,.88) end;g.rectangle('fill',756,136,388,510,16,16)
     g.setColor(.86,.74,.49,.45);g.rectangle('line',756,136,388,510,16,16)
-    UI.button('Haut',55,151,62,40,function() M.step(-1,true) end,false,false,'go')
-    UI.button('Bas',55,620,62,40,function() M.step(1,true) end,false,false,'go')
+    UI.button('↑',55,151,62,40,function() M.step(-1,true) end,false,false,'go')
+    UI.button('↓',55,620,62,40,function() M.step(1,true) end,false,false,'go')
     g.setColor(.95,.84,.59,.2);g.rectangle('fill',733,195,2,390)
     g.setColor(.95,.84,.59,.9);g.rectangle('fill',730,195+M.scroll/1270*356,8,34,4,4)
     local n=App.selectedWorld;local unlocked=Worlds.canEnter(n)
@@ -176,8 +175,6 @@ function M.draw()
     else UI.text('Toutes les rencontres, dans l’ordre.\nChoisis Normal ou Démon sur la carte.',790,320,'body',{.75,.78,.81},320,'center') end
     if n~=8 and not M.hardcore and not Hardcore.available(n) then UI.text(Hardcore.unlocked() and 'Hardcore : termine ce monde.' or 'Hardcore : termine Terre (monde 3).',785,548,'small',{.82,.71,.51},330,'center') end
     UI.button(n==8 and (M.hardcore and 'Sanctuaire Démon' or 'Entrer au Sanctuaire') or M.hardcore and 'Commencer en hardcore' or 'Commencer le monde',790,578,320,45,function() App.openEntry(n,M.hardcore) end,not unlocked,true,'selection')
-    g.setColor(.015,.025,.035,.8);g.rectangle('fill',45,688,670,38,8,8)
-    UI.text(n==8 and 'Haut / Bas : monde   ·   Droite : Démon   ·   Gauche : normal' or 'Haut / Bas : monde   ·   Droite : hardcore   ·   Gauche : normal',65,700,'small',{.85,.87,.84})
     UI.button('Retour',850,685,260,38,function() App.state='menu' end)
 end
 return M

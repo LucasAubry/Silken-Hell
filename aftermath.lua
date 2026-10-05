@@ -2,7 +2,7 @@
 local A={cleared=false,sparks={}}
 function A.reset() A.cleared=false;A.sparks={};A.lookTime=0 end
 function A.ready()
-    local present=Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active or Abyss.boss or Bosses.hud().active
+    local present=Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active or Abyss.boss or Bosses.hud().active or require('final_spider').active
     return present and Campaign.canCollect()
 end
 function A.centerTear()
@@ -12,6 +12,7 @@ function A.centerTear()
     tear.abyssHeld=nil;tear.taken=false
 end
 function A.update(dt)
+    if require('boss_liberation').busy() then return end
     if not A.cleared and A.ready() then
         A.cleared=true
         local seen={}

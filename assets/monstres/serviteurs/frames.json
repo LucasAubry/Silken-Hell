@@ -1,0 +1,79 @@
+{
+  "mole_down": {
+    "path": "assets/monstres/serviteurs/mole.png",
+    "x": 46,
+    "y": 30,
+    "w": 676,
+    "h": 474
+  },
+  "mole_up": {
+    "path": "assets/monstres/serviteurs/mole.png",
+    "x": 822,
+    "y": 30,
+    "w": 663,
+    "h": 460
+  },
+  "mole_left": {
+    "path": "assets/monstres/serviteurs/mole.png",
+    "x": 48,
+    "y": 539,
+    "w": 671,
+    "h": 459
+  },
+  "mole_right": {
+    "path": "assets/monstres/serviteurs/mole.png",
+    "x": 829,
+    "y": 542,
+    "w": 661,
+    "h": 458
+  },
+  "crab_open": {
+    "path": "assets/monstres/serviteurs/crab.png",
+    "x": 51,
+    "y": 71,
+    "w": 783,
+    "h": 727
+  },
+  "crab_closed": {
+    "path": "assets/monstres/serviteurs/crab.png",
+    "x": 941,
+    "y": 71,
+    "w": 780,
+    "h": 702
+  },
+  "merle_down": {
+    "path": "assets/monstres/serviteurs/bird.png",
+    "x": 12,
+    "y": 41,
+    "w": 702,
+    "h": 500
+  },
+  "merle_up": {
+    "path": "assets/monstres/serviteurs/bird.png",
+    "x": 731,
+    "y": 41,
+    "w": 697,
+    "h": 482
+  },
+  "merle_left": {
+    "path": "assets/monstres/serviteurs/bird.png",
+    "x": 93,
+    "y": 561,
+    "w": 585,
+    "h": 497
+  },
+  "merle_right": {
+    "path": "assets/monstres/serviteurs/bird.png",
+    "x": 766,
+    "y": 561,
+    "w": 580,
+    "h": 497
+  },
+  "magma_larva": {
+    "path": "assets/monstres/serviteurs/larva.png",
+    "x": 276,
+    "y": 21,
+    "w": 602,
+    "h": 1245
+  }
+}

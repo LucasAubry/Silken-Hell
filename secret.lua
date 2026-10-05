@@ -13,11 +13,11 @@ function S.catalog()
             table.insert(e.kind=='boss' and S.normalBosses or S.creatures,entry)
         end
     end
-    S.normalBosses[#S.normalBosses+1]={kind='boss',type='final_spider',name='La Gardienne des fils',art='final_queen',world=3}
+    S.normalBosses[#S.normalBosses+1]={kind='boss',type='final_spider',name='La Gardienne de la Soie',art='final_queen',world=3}
     table.sort(S.normalBosses,function(a,b) return Worlds.rank(a.world)<Worlds.rank(b.world) end)
     for _,entry in ipairs(S.normalBosses) do
         if entry.type=='merle' then entry.art='merle_egg';entry.name='L’Œuf du Merle'
-        elseif entry.type=='storm' then entry.name='Le Merle noir';entry.art='merle_flight_down' end
+        elseif entry.type=='storm' then entry.name='Merle noir';entry.art='merle_flight_down' end
     end
     S.demonBosses={}
     local ids={[1]=9,[6]=10,[5]=11,[4]=12,[7]=13,[2]=14}
@@ -107,7 +107,6 @@ end
 function S.drawWorld() require('sanctuary_scene').draw(S) end
 function S.draw()
     UI.text(S.hardcore and 'SANCTUAIRE · MODE DÉMON' or 'LE SANCTUAIRE',300,24,'heading',{1,1,.94},600,'center')
-    UI.text(S.category=='mobs' and not S.hardcore and 'Un cercle par monstre · Reste dessus pour un 1 contre 1 de 20 secondes.' or 'Gauche / droite : gardien précédent / suivant. Reste sur le cercle pour entrer.',300,68,'small',{.8,.85,.9},600,'center')
     if S.hardcore and S.portals[1] then
         local index=Characters.crownedByWorld[Worlds.biome(S.portals[1].world)]
         if index then
@@ -129,7 +128,7 @@ function S.configure()
     if Campaign.world==14 then
         local layout=require('json').decode(assert(love.filesystem.read('assets/hardcore-wasp-layout.json')))
         LevelLayouts.apply(layout)
-        for _,item in ipairs(Bosses.items) do if item.kind=='wasp' then item.boss.hardcore=true;item.boss.name='Les Sœurs de lave' end end
+        for _,item in ipairs(Bosses.items) do if item.kind=='wasp' then item.boss.hardcore=true;item.boss.name='Les Guêpes brûlées · Démon' end end
     else
         for _,b in ipairs({Raven,Storm,Hedgehog,Octopus,Abyss}) do if b.active then b.movementRate=1.35;b.attackRate=1.3 end end
     end

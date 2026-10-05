@@ -1,6 +1,6 @@
 local H={active=false,projectiles={}}
 function H.reset(active)
-    H.active=active; H.name='Le Hérisson des profondeurs'; H.hp=10; H.maxHp=10
+    H.active=active; H.name='Hérisson Brise-Roche'; H.hp=10; H.maxHp=10
     H.defeated=false; H.flash=0; H.phase='standing'; H.phaseTime=1.35; H.shot=.28
     H.x=Arena.width/2; H.y=185; H.dir='down'; H.stage=1; H.bounces=0; H.rotation=0
     H.hitBox_width=64; H.hitBox_height=64; H.hitBox_offset_x=-32; H.hitBox_offset_y=-32
@@ -34,8 +34,10 @@ function H.finishRound()
     H.hp=H.hp-1
     
     if H.hp==0 then
-        H.defeated=true; H.projectiles={}; objet.larme.taken=false
-        objet.larme.x,objet.larme.y=Arena.clearSpot(H.x-15,H.y-20,30,40)
+        require('boss_liberation').start(H,'hedgehog',function()
+            H.defeated=true;H.projectiles={};objet.larme.taken=false
+            objet.larme.x,objet.larme.y=Arena.clearSpot(H.x-15,H.y-20,30,40)
+        end)
     else
         H.stage=H.stage+1; H.phase='stunned'; H.phaseTime=.45; H.shot=.05
         if H.stage<=5 then H.mole() end
@@ -93,7 +95,7 @@ function H.update(dt)
 end
 function H.draw()
  if require('boss_arrival').waiting(H) then return end
-    if not H.active or H.defeated then return end
+    if not H.active or (H.defeated and not H.liberating) then return end
     require('monster_fx').halo(H.x,H.y,104)
     local g=love.graphics
     g.setColor(0,0,0,.25); g.ellipse('fill',H.x,H.y+25,42,17)

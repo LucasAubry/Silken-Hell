@@ -98,7 +98,7 @@ function I.press(j,b)
     end
     if App.state=='playing' then if b=='y' then Bestiary.openBoss() end;return end
     if UI.binding then UI.binding=nil;return end
-    if b=='a' then local v=UI.buttons[I.index];if v and not v.disabled then Audio.play(v.sound or 'go');v.run() end
+    if b=='a' then local v=UI.buttons[I.index];if v and not v.disabled then UI.click(v.x+v.w/2,v.y+v.h/2) end
     elseif b=='leftshoulder' and App.state=='menu' then Characters.cycle(-1)
     elseif b=='rightshoulder' and App.state=='menu' then Characters.cycle(1)
     elseif b=='x' and App.state=='entry' then love.keypressed('backspace');I.active=true end
@@ -109,6 +109,5 @@ function I.draw()
     if b and not b.disabled and App.state~='playing' and App.state~='bossWorld' and App.state~='worlds' then
         local g=love.graphics;g.setColor(1,.85,.3);g.setLineWidth(3);g.rectangle('line',b.x-4,b.y-4,b.w+8,b.h+8,6);g.setLineWidth(1)
     end
-    UI.text('Stick / croix : déplacement   ·   A : valider / vitesse   ·   B / Start : retour / pause',160,725,'small',{.8,.85,.9},880,'center')
 end
 return I

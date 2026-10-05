@@ -20,6 +20,8 @@ function A.pose(angle)
  return dir,delta
 end
 function A.spider(name,x,y,width,angle)
+ local servants=require('servant_art');local context=servants.current
+ servants.current={type='queen_child',bossServant=name~='queen'}
  local dir,turn=A.pose(angle)
  local graphics=love.graphics;graphics.push('all');graphics.translate(x,y);graphics.rotate(turn)
  x,y=0,0
@@ -46,7 +48,7 @@ function A.spider(name,x,y,width,angle)
    graphics.setColor(1,1,1);Art.draw('queen_crown',0,width*.025-ch*.5,cw,0,ch)
   end
  end
- graphics.pop()
+ graphics.pop();servants.current=context
  return dir
 end
 function A.clutch(x,y,width,count,angle)

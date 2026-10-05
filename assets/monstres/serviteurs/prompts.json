@@ -1,0 +1,27 @@
+{
+  "tool": "built-in image_gen",
+  "silk": "Use case: texture asset. Create a transparent PNG texture for a dark fantasy spider game. One delicate vertical strand of natural spider silk exactly down the middle of the image from the top edge to bottom edge. Narrow silver ivory twisted microscopic fibers, subtle uneven thickness, tiny knots and pearly highlights, wispy fine fibers along the edges. Entire visible strand occupies only the central 15 percent of the image width, all other pixels transparent. No spider, no text, no objects, no background, no glow cloud. Designed to stretch vertically in a game menu while retaining tiny natural silk fibrils, not a metal cable or rope. White ivory color, very fine and delicate.",
+  "web": "Use case: game texture. Create a transparent square PNG of delicate pale ivory spider web fragments. Sparse irregular wisps and three small partial cobweb fans attached to invisible corners, several diagonal natural silk threads with knots, fine silvery fibers. Most of the image must be truly transparent. No full circular spiderweb, no spider, no objects, no background, no shadow or glow cloud, no text. Thin threads only, not ropes. This will be overlaid lightly on creature sprites in a dark fantasy game, retaining their original colors and shape. Spread the sparse fragments across the square, with plenty of negative space.",
+  "servants": [
+    [
+      "mole",
+      "assets/monstres/terre/taupe/mole_down.png",
+      "Create a 2 by 2 sprite sheet of this SAME mole for a dark fantasy game, same brown fur pink nose and ivory claws, exact same recognizable design and illustrated rendering. Four equal square cells, complete creature centered in each, with comfortable transparent padding: top left facing DOWN toward viewer, top right facing UP away from viewer, bottom left facing LEFT, bottom right facing RIGHT. The boss-servant variant looks very frightened and sad: raised inner brows, wet worried eyes, lowered head, subtle exhausted expression. Add only two or three fine ivory spider silk threads trapped in fur around shoulder and claws. Do not change anatomy, colors or silhouette. No shadows outside body, no labels, no text, no grid lines. Transparent background."
+    ],
+    [
+      "crab",
+      "assets/monstres/ocean/crabe/crab_open.png",
+      "Create a 2 by 1 horizontal sprite sheet, equal square cells, of the EXACT SAME orange and teal spiny crab in the input, same silhouette, colors, illustrated line art and top/front downward-facing pose. Left frame claws open like reference; right frame claws closed for its walk animation. Full body centered, transparent padding. It is a desperate sad servant of a giant octopus: make the black eyes heavy-lidded and tearful, with two tiny blue tear marks, preserve crab design. Add a few very fine pale spider silk threads across shell, not thick wrapping. No new accessories, no ground shadow, no background, no labels or grid."
+    ],
+    [
+      "bird",
+      "assets/monstres/paradis/merle/merle_down.png",
+      "Create a 2 by 2 directional sprite sheet of the EXACT SAME pixel-art dark navy blackbird with golden beak, yellow eyes, gold cross markings on its wings and chest. Preserve the COARSE PIXEL ART, design and navy/gold colors exactly, no smooth painting. Equal square cells, full body centered with transparent padding. top left DOWN toward viewer, top right UP away, bottom left LEFT side, bottom right RIGHT side. Boss-servant variant slightly angrier and exhausted, angry brows, subtly frayed feathers and just two pale silk threads binding its wings. Do not change species, wing design or recognizable silhouette. Transparent background; no text, borders, labels."
+    ],
+    [
+      "larva",
+      "assets/monstres/enfer/larve/magma_larva.png",
+      "Edit this sprite into a boss-servant skin of exactly this same magma larva. Preserve its exact top-down orientation, silhouette, segmented red shell, green sacs, limb count, illustrated style and transparent background. Change only the eyes to a visibly more furious expression and add a few fine ivory spider silk bindings across three segments, sparse enough that original red and green remain dominant. Do not add accessories, background, flames, shadow or new anatomy. Full body isolated with transparency."
+    ]
+  ]
+}

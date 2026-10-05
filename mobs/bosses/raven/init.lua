@@ -1,7 +1,7 @@
 local B={active=false,projectiles={},eggs={},nests={},chicks={},name='L’Œuf du Merle'}
 local function hitPlayer() Hazards.kill() end
 function B.reset(active)
-    B.active=active;B.corpses={};B.projectiles={};B.eggs={};B.nests={};B.chicks={};B.hp=10;B.maxHp=10;B.elapsed=0;B.flash=0;B.defeated=false;B.broken=false;B.name="L’Œuf du Merle";B.inside=false;B.relocations=0;B.shooterCursor=0;B.shotClock=.22;B.featherSpeed=440
+    B.active=active;B.freedChicks={};B.corpses={};B.projectiles={};B.eggs={};B.nests={};B.chicks={};B.hp=10;B.maxHp=10;B.elapsed=0;B.flash=0;B.defeated=false;B.broken=false;B.name="L’Œuf du Merle";B.inside=false;B.relocations=0;B.shooterCursor=0;B.shotClock=.22;B.featherSpeed=440
     B.x=Arena.width/2;B.y=300
     if not active then return end
     B.setupNests()
@@ -25,8 +25,10 @@ end
 function B.interval() return .32-.10*(1-B.hp/B.maxHp) end
 function B.chaseSpeed() return (125+60*(1-B.hp/B.maxHp))*(B.movementRate or 1) end
 function B.finish()
-    B.defeated=true;B.chicks={};B.projectiles={};B.eggs={}
-    objet.larme.x=B.x-15;objet.larme.y=B.y-20;objet.larme.taken=false
+    require('boss_liberation').start(B,'merle',function()
+        B.defeated=true;B.chicks={};B.freedChicks={};B.projectiles={};B.eggs={}
+        objet.larme.x=B.x-15;objet.larme.y=B.y-20;objet.larme.taken=false
+    end)
 end
 function B.breakEgg()
     B.broken=true;B.projectiles={};B.eggs={};objet.larme.taken=true
@@ -34,7 +36,7 @@ function B.breakEgg()
         m.stunned=true;m.phase='stunned';m.vx=0;m.vy=0
         local x,y=Arena.clearSpot(m.x-27,m.y-27,54,54);m.x=x+27;m.y=y+27
     end
-    B.name='Œuf brisé · '..#B.chicks..' oiseaux étourdis'
+    B.name='L’Œuf du Merle'
     if #B.chicks==0 then B.finish() end
 end
 function B.fireNext()
@@ -72,10 +74,10 @@ function B.contact()
         if player.dashing then
             for i=#B.chicks,1,-1 do local m=B.chicks[i]
                 if (player.x+15-m.x)^2+(player.y+12-m.y)^2<35^2 then
-                    BossFX.burst(m.x,m.y,{.45,.65,1},2);table.remove(B.chicks,i)
+                    BossFX.burst(m.x,m.y,{.45,.65,1},2);B.freedChicks[#B.freedChicks+1]=m;table.remove(B.chicks,i)
                 end
             end
-            B.name='Œuf brisé · '..#B.chicks..' oiseaux étourdis'
+            B.name='L’Œuf du Merle'
             if #B.chicks==0 then B.finish() end
         end
         return
@@ -163,18 +165,14 @@ function B.draw()
  if require('boss_arrival').waiting(B) then return end
     if not B.active then return end
     local g=love.graphics
-    if not B.broken and not B.defeated then
+    if (not B.broken and not B.defeated) or B.liberating then
         require('monster_fx').halo(B.x,B.y,80)
         g.setColor(0,0,0,.25);g.ellipse('fill',B.x,B.y+47,47,15)
         egg(B.x+math.sin(B.elapsed*65)*B.flash*7,B.y-5,60,B.maxHp-B.hp)
     end
-    if B.broken then
-        g.push('all');g.setColor(.83,.84,.8)
-        if not B.defeated then g.setColor(.9,.94,1);g.setFont(UI.fonts.small);g.printf(require('localization').text('Fonce sur les oiseaux étourdis'),B.x-150,B.y+52,300,'center') end
-        g.pop()
-    end
-    for _,m in ipairs(B.chicks) do
+    for _,m in ipairs(B.liberating and B.freedChicks or B.chicks) do
         require('monster_fx').halo(m.x,m.y,54)
+        local servants=require('servant_art');local context=servants.current;servants.current={type='blackbird_chick',bossServant=true}
         local previous=g.getShader()
         if m.kind~='charger' then
             B.whiteShader=B.whiteShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px){
@@ -185,7 +183,7 @@ function B.draw()
             g.setShader(B.whiteShader)
         end
         g.setColor(m.stunned and {.65,.8,1} or {1,1,1});Art.drawFacing('merle',m.dir,m.x,m.y+(not m.stunned and m.kind=='shooter' and math.sin(m.age*2)*1.2 or 0),54)
-        g.setShader(previous)
+        g.setShader(previous);servants.current=context
         if m.stunned then for i=1,3 do local a=m.age*2+i*math.pi*2/3;g.setColor(1,.87,.35);g.circle('fill',m.x+math.cos(a)*20,m.y-31+math.sin(a)*5,2) end end
     end
     for _,p in ipairs(B.projectiles) do g.setColor(1,1,1);Art.draw('black_feather',p.x,p.y,30,math.atan2(p.vy,p.vx)) end
