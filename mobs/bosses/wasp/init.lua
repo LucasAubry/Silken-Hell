@@ -191,7 +191,7 @@ end
 function W.touches(b)
     local grounded=b.hp<=0 or b.phase=='fatigued'
     local y=b.y+(grounded and 0 or -10)
-    return checkCollision(player.x,player.y,30,24,b.x-26,y-32,52,64)
+    return require('hitbox_tuner').touchRect('wasp',b.x-26,y-32,52,64)
 end
 function W.chargeContact(b)
     if b.hp<=0 or b.phase=='fatigued' then return end
@@ -262,7 +262,7 @@ function W.update(dt)
         for _=1,steps do
             if dead then break end
             p.x=p.x+p.vx*dt/steps; p.y=p.y+p.vy*dt/steps
-            if checkCollision(p.x-5,p.y-5,10,10,player.x,player.y,30,24) then
+            if require('hitbox_tuner').projectile(p.x-5,p.y-5,10,10) then
                 if p.kind=='venom' then player.venom=3 elseif W.hitGrace<=0 then Hazards.kill() end; dead=true
             elseif Arena.blocked(p.x-4,p.y-4,8,8) then dead=true end
         end
@@ -272,7 +272,7 @@ function W.update(dt)
         local a=math.atan2(player.y+12-m.y,player.x+15-m.x)
         m.dir=Art.direction(math.cos(a),math.sin(a))
         m.x=m.x+math.cos(a)*95*dt; m.y=m.y+math.sin(a)*95*dt
-        if (player.x+15-m.x)^2+(player.y+12-m.y)^2<20^2 and W.hitGrace<=0 then Hazards.kill() end
+        if require('hitbox_tuner').touchCircle('wasp_minion',m.x,m.y,20) and W.hitGrace<=0 then Hazards.kill() end
     end
 end
 function W.drawGround()

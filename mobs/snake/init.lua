@@ -27,6 +27,7 @@ end
 
 MobBehaviors.snake = {
     update = function(m, dt)
+        update_mob_float(m, dt)
 		move_when_player_moves(m, player, dt)
 
 

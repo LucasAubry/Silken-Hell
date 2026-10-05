@@ -1,5 +1,5 @@
 local FX=require 'mobs.bosses.encounter_fx'
-local S={active=false}
+local S={active=false,playerFeatherRadius=17}
 local Rain=require 'sky_rain'
 local STRIKE_RADIUS=22
 local BODY_SIZE=150
@@ -46,23 +46,39 @@ function S.patrolPosition()
  local t=S.patrolClock
  return Arena.width*.5+math.sin(t)*math.max(0,Arena.width*.5-135),300+math.sin(t*1.35-math.pi*.5)*160
 end
-function S.goldenInterval()
- if S.hp>=9 then return 1 elseif S.hp>=6 then return 1.6 elseif S.hp>=3 then return 2.4 else return 3.2 end
-end
 function S.fire()
  local aim=math.atan2(player.y+12-S.y,player.x+15-S.x)
  -- Sparse opening salvos grow denser and faster as the silk tightens.
  local count=S.hp>S.maxHp*.5 and 3 or 5
  local middle=math.floor(count/2)
- -- Fractional intervals spread the extra gold evenly without adding larger salvos.
- local interval=S.goldenInterval()
- local golden=S.burst==middle and math.floor(S.featherSalvos/interval)>math.floor((S.featherSalvos-1)/interval)
- local offset=golden and (S.featherSalvos%2==0 and .38 or -.38) or (S.burst-middle)*.13
+ -- Two gold feathers bracket every salvo, at every health level.
+ local golden=S.burst==0 or S.burst==count-1
+ local offset=golden and (S.burst==0 and -.38 or .38) or (S.burst-middle)*.13
  local rage=1-S.hp/S.maxHp
  local a=aim+offset;local speed=(255+110*rage)*1.3
  S.projectiles[#S.projectiles+1]={x=S.x+math.cos(a)*45,y=S.y+math.sin(a)*45,vx=math.cos(a)*speed,vy=math.sin(a)*speed,life=4.5,age=0,golden=golden}
  S.burst=S.burst+1
  if S.burst>=count then S.burst=0;S.salvos=S.salvos+1;S.featherSalvos=S.featherSalvos+1;S.shot=.95-.60*rage else S.shot=.26-.17*rage end
+end
+function S.lightningAt(x,y)
+ for _,strike in ipairs(S.strikes) do
+  if strike.age>=.85 and strike.age<1.33 then
+   strike.boltPoints=strike.boltPoints or FX.boltPoints(strike.x,strike.y,strike.seed,.55)
+   if FX.boltTouches(strike.x,strike.y,strike.seed,.55,x,y,8,strike.boltPoints) then return strike end
+  end
+ end
+end
+function S.splitFeather(p)
+ if p.split or p.returned then return false end
+ local angle=math.atan2(p.vy,p.vx)+math.pi
+ local speed=distance(0,0,p.vx,p.vy)*1.2
+ for i=0,2 do
+  local a=angle+i*math.pi*2/3
+  S.projectiles[#S.projectiles+1]={x=p.x,y=p.y,vx=math.cos(a)*speed,vy=math.sin(a)*speed,
+   life=p.life,age=0,golden=p.golden,split=true}
+ end
+ BossFX.burst(p.x,p.y,p.golden and {1,.82,.3} or {.65,.85,1},.5)
+ return true
 end
 function S.summon()
  local cx,cy=player.x+15,player.y+12;local chosen={}
@@ -149,12 +165,12 @@ function S.contact()
  if S.holeAt(player.x+15,player.y+12) then Hazards.kill('storm');if player.reset then player.falling=true end;return end
  for i=#S.projectiles,1,-1 do
   local p=S.projectiles[i]
-  if S.canReflect(p) and distance(p.x,p.y,player.x+15,player.y+12)<GOLDEN_PICKUP_RADIUS then S.reflect(p) end
+  if S.canReflect(p) and require('hitbox_tuner').featherTouches(p.x,p.y,GOLDEN_PICKUP_RADIUS) then S.reflect(p) end
   if p.returned then
    if S.featherHit(p) then if S.defeated then return end;table.remove(S.projectiles,i) end
   end
  end
- if not S.hidden and S.phase~='leave' and S.phase~='return' and distance(S.x,S.y,player.x+15,player.y+12)<BODY_RADIUS then Hazards.kill('storm') end
+ if not S.hidden and S.phase~='leave' and S.phase~='return' and require('hitbox_tuner').touchCircle('storm',S.x,S.y,BODY_RADIUS) then Hazards.kill('storm') end
 end
 function S.updateTornado() end
 function S.update(dt)
@@ -234,7 +250,8 @@ function S.update(dt)
     if dead then break end
     p.x=p.x+p.vx*dt/steps;p.y=p.y+p.vy*dt/steps
     if p.x<20 or p.x>Arena.width-20 or p.y<35 or p.y>565 or Arena.blocked(p.x-3,p.y-3,6,6) then dead=true
-    elseif distance(p.x,p.y,player.x+15,player.y+12)<(S.canReflect(p) and GOLDEN_PICKUP_RADIUS or 17) then
+    elseif not p.split and S.lightningAt(p.x,p.y) then dead=S.splitFeather(p)
+    elseif require('hitbox_tuner').featherTouches(p.x,p.y,S.canReflect(p) and GOLDEN_PICKUP_RADIUS or S.playerFeatherRadius) then
      if S.canReflect(p) then S.reflect(p);break else Hazards.kill('storm');dead=true end
     end
    end
@@ -246,7 +263,7 @@ end
 function S.resize(r)
  for _,key in ipairs({'x','fromX','returnX','startX','endX','vx'}) do if S[key] then S[key]=S[key]*r end end
  S.nest.x=S.nest.x*r
- for _,list in ipairs({S.projectiles,S.strikes,S.trails,S.holes,S.rain}) do for _,p in ipairs(list) do p.x=p.x*r end end
+ for _,list in ipairs({S.projectiles,S.strikes,S.trails,S.holes,S.rain}) do for _,p in ipairs(list) do p.x=p.x*r;p.boltPoints=nil end end
 end
 local function sprite(dir)
  local key='merle_flight_'..dir

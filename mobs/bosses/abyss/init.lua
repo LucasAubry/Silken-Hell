@@ -120,8 +120,9 @@ function A.buildBones()
 end
 function A.boneTouches(b,x,y)
     local a=Art.images[b.key]; if not a or not a.mask then return false end
-    local dx,dy=x-b.x,y-b.y; local c,s=math.cos(b.angle),math.sin(b.angle)
-    local u=(c*dx+s*dy)/b.w+.5; local v=(-s*dx+c*dy)/b.h+.5
+    local bx,by,bw,bh=require('hitbox_tuner').bone(b)
+    local dx,dy=x-bx,y-by; local c,s=math.cos(b.angle),math.sin(b.angle)
+    local u=(c*dx+s*dy)/bw+.5; local v=(-s*dx+c*dy)/bh+.5
     if b.flip then u=1-u end
     if u<0 or u>=1 or v<0 or v>=1 then return false end
     return a.mask[math.floor(v*192)*192+math.floor(u*192)] or false
@@ -173,9 +174,11 @@ function A.inSuctionShelter(x,y)
     return false
 end
 function A.overlapsBone(b)
-    local radius=math.sqrt(b.w*b.w+b.h*b.h)/2+30
-    if (player.x+15-b.x)^2+(player.y+12-b.y)^2>=radius^2 then return false end
-    for y=player.y+2,player.y+22,4 do for x=player.x+2,player.x+28,4 do
+    local T=require('hitbox_tuner');local bx,by,bw,bh=T.bone(b);local px,py,pw,ph=T.playerRect()
+    local radius=math.sqrt(bw*bw+bh*bh)/2+math.max(30,math.sqrt(pw*pw+ph*ph)/2+10)
+    if (px+pw/2-bx)^2+(py+ph/2-by)^2>=radius^2 then return false end
+    local x1,x2,y1,y2=require('hitbox_tuner').samples()
+    for y=y1,y2,4 do for x=x1,x2,4 do
         if A.boneTouches(b,x,y) then return true end
     end end
     return false
@@ -213,8 +216,9 @@ function A.contact()
     for _,b in ipairs(A.bones) do
         -- The open mouth has an accessible throat; the skull and teeth remain solid.
         local throat=A.boss and A.open and b==A.bones[#A.bones] and player.x+15>A.head.x+24 and math.abs(player.y+12-mouthY)<85
-        if not throat and math.abs(player.x+15-b.x)<math.sqrt(b.w*b.w+b.h*b.h)/2+40 and math.abs(player.y+12-b.y)<math.sqrt(b.w*b.w+b.h*b.h)/2+40 then
-            for y=player.y+2,player.y+22,4 do for x=player.x+2,player.x+28,4 do
+        if not throat then
+            local x1,x2,y1,y2=require('hitbox_tuner').samples()
+            for y=y1,y2,4 do for x=x1,x2,4 do
                 if A.boneTouches(b,x,y) then Hazards.kill('bone'); return end
             end end
         end

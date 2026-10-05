@@ -17,7 +17,8 @@ function T.run()
  App.move(1/60);assert(not player.has_moved)
  for _,m in ipairs(statues) do
   MobBehaviors[m.type].update(m,1/60)
-  assert(m.x==300 and m.y==300 and m.floatTime==0,'Idle statues must stay still')
+  assert(m.x==300 and m.y==300,'Idle statues must stay in place')
+  assert(m.floatTime>0,'Idle statues keep their visual floating animation')
  end
  local ax,ay=angel.x,angel.y
  MobBehaviors.ange.update(angel,1/60)
@@ -39,7 +40,8 @@ function T.run()
  for _,m in ipairs(statues) do
   local x,y,phase,dir=m.x,m.y,m.floatTime,m.dir
   MobBehaviors[m.type].update(m,.5)
-  assert(m.x==x and m.y==y and m.floatTime==phase and m.dir==dir,'Release stops both displacement and floating')
+  assert(m.x==x and m.y==y and m.dir==dir,'Release stops displacement and facing')
+  assert(m.floatTime>phase,'Floating continues independently of movement')
  end
  ax,ay=angel.x,angel.y
  MobBehaviors.ange.update(angel,1/60)
@@ -62,6 +64,6 @@ function T.run()
  MobBehaviors.ange.update(angel,1/60)
  assert(angel.x==ax and angel.y==ay and angel.floatTime==phase,'Traps freeze angels as well')
  Input.move,Input.slow=move,slow
- print('PASS statues and angels: statues stop on idle and blocked movement, angels always pursue, immediate turns, sprite alignment, both obey traps')
+ print('PASS statues and angels: idle/blocked statues stay in place while floating, angels always pursue, independent floating clock, immediate turns, both obey traps')
 end
 return T

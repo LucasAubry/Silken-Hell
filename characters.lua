@@ -55,10 +55,11 @@ function C.cycle(step)
     repeat index=(index-1+step)%#C.keys+1 until C.unlocked(index)
     Profile.character=index;Profile.save()
 end
-function C.portrait(index,x,y,size,dir,locked)
+C.playerWidth=59
+function C.portrait(index,x,y,size,dir,locked,walk)
     index=math.max(1,math.min(#C.keys,tonumber(index) or 1))
     if C.crowned[index] then
-        C.portrait(C.crowned[index],x,y,size,dir,locked);C.crown(x,y,size,dir,locked,C.crowned[index]);return
+        C.portrait(C.crowned[index],x,y,size,dir,locked,walk);C.crown(x,y,size,dir,locked,C.crowned[index]);return
     end
     local g=love.graphics;g.push('all');local red,green,blue,alpha=g.getColor()
     if locked then
@@ -71,10 +72,15 @@ function C.portrait(index,x,y,size,dir,locked)
         local key='original_'..pose
         if not Art.images[key] then Art.add(key,'texture/spider_'..pose..'.png') end
         g.translate(x,y);if dir=='right' then g.scale(-1,1) end
-        Art.draw(key,0,0,size,0)
+        local a=Art.images[key]
+        if not (walk and require('brown_walk').draw(a.image,pose,0,0,size,walk,a.quad)) then Art.draw(key,0,0,size,0) end
     else
         g.translate(x,y);if dir=='right' then g.scale(-1,1) end
-        Art.drawFacing(C.keys[index],dir=='right' and 'left' or (dir or 'down'),0,0,size)
+        local pose=dir=='right' and 'left' or (dir or 'down');local a=Art.images[C.keys[index]..'_'..pose]
+        local width=size*a.w/math.max(a.w,a.h)
+        if not (walk and require('brown_walk').draw(a.image,pose,0,0,width,walk,a.quad)) then
+            Art.drawFacing(C.keys[index],pose,0,0,size)
+        end
     end
     g.pop()
 end
@@ -82,8 +88,8 @@ end
 function C.selectionPortrait(x,y,size)
     return C.portrait(C.selected(),x,y,size,'down')
 end
-function C.draw(x,y,width,dir)
-    C.portrait(C.selected(),x,y,width,dir)
+function C.draw(x,y,width,dir,walk)
+    C.portrait(C.selected(),x,y,width,dir,nil,walk)
 end
 -- Crown variants retain the body color of their base skin.
 C.bodyColors={original={.57,.29,.10},spider={.94,.90,.79},hell_spider={1,.20,.055},ocean_spider={.15,.68,.91},crown_spider={.94,.90,.79}}

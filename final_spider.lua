@@ -146,7 +146,7 @@ function F.update(dt)
   F.leap(F.phase);jumping=true
  end
  F.contactGrace=math.max(0,(F.contactGrace or 0)-dt)
- if F.contactGrace<=0 and near(F,p,27) then Hazards.kill();return end
+ if F.contactGrace<=0 and require('hitbox_tuner').touchCircle('queen',F.x,F.y,27) then Hazards.kill();return end
  for i=#F.eggs,1,-1 do local e=F.eggs[i];e.age=e.age+dt;e.crackShake=math.max(0,(e.crackShake or 0)-dt)
   local touching=near(e,p,32)
   local broken=false
@@ -165,8 +165,9 @@ function F.update(dt)
   if not b.dead and not b.webbed then
    local dx,dy=p.x-b.x,p.y-b.y;local d=math.max(1,length(dx,dy));local tx,ty=p.x,p.y
    for _,other in ipairs(F.babies) do if other~=b and not other.dead then local x,y=b.x-other.x,b.y-other.y;local n=length(x,y);if n>0 and n<30 then tx=tx+x/n*(30-n)*2;ty=ty+y/n*(30-n)*2 end end end
+   local contactX,contactY=b.x,b.y
    towards(b,tx,ty,120+(b.seed%5)*9,dt);b.x=clamp(b.x,35,Arena.width-35);b.y=clamp(b.y,35,565)
-   if b.age>.7 and d<25 then Hazards.kill();return end
+   if b.age>.7 and require('hitbox_tuner').touchCircle('queen_baby',contactX,contactY,25) then Hazards.kill();return end
   end
  end
  F.updateWebs(dt)
@@ -179,7 +180,7 @@ function F.update(dt)
   for _,b in ipairs(F.babies) do if not b.dead and b.webbed and segment(ox,oy,F.x,F.y,b,27) then
    b.dead=true;F.shells[#F.shells+1]={x=b.x,y=b.y,seed=b.seed,silk=true};F.damage();if F.defeated then return end
   end end
-  if F.contactGrace<=0 and segment(ox,oy,F.x,F.y,p,27) then Hazards.kill();return end
+  if F.contactGrace<=0 and require('hitbox_tuner').sweptCircle('queen',ox,oy,F.x,F.y,27) then Hazards.kill();return end
   if length(F.x-F.chargeX,F.y-F.chargeY)<4 or F.phaseTime>1.7 then F.phase='recover';F.phaseTime=0;F.target=nil end
  elseif F.phase=='recover' then
   if F.phaseTime>1 then F.phase='webs';F.phaseTime=0;F.shot=.5 end
@@ -211,7 +212,7 @@ function F.update(dt)
    end
   end
  end
- if F.contactGrace<=0 and near(F,p,27) then Hazards.kill();return end
+ if F.contactGrace<=0 and require('hitbox_tuner').touchCircle('queen',F.x,F.y,27) then Hazards.kill();return end
  for i=#F.babies,1,-1 do if F.babies[i].dead then table.remove(F.babies,i) end end
 end
 function F.spider(x,y,size,variant,angle)

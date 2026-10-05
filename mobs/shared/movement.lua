@@ -40,6 +40,12 @@ function move_mob(m, dt)
 end
 
 --mouvement qui suis le joueur
+function update_mob_float(m, dt)
+    if m.float and not m.is_frozen and not m.tunnelTravel and not m.abyssHeld then
+        m.floatTime=(m.floatTime or 0)+dt
+    end
+end
+
 function move_mob_towards_player(m, player, dt, speedScale)
     if m.is_frozen then return end
     local x,y=m.x,m.y
@@ -48,7 +54,6 @@ function move_mob_towards_player(m, player, dt, speedScale)
     if dx~=0 or dy~=0 then
         -- Both pursuers face their real path, including slides along walls.
         m.dir=Art.direction(dx,dy,m.dir)
-        if m.floatTime then m.floatTime=m.floatTime+dt end
         if m.imgs and m.imgs[m.dir] then m.img=m.imgs[m.dir] end
     end
 end

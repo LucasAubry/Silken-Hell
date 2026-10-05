@@ -76,11 +76,11 @@ function H.update(dt)
             H.dir=Art.direction(H.vx,H.vy,H.dir); H.rotation=H.rotation+dt/steps*9
             if (hx or hy) and H.bounceGrace<=0 then H.bounceGrace=.035; H.impact() end
             if H.defeated or H.phase~='ball' then break end
-            if checkCollision(player.x,player.y,30,24,H.x-30,H.y-30,60,60) then Hazards.kill(); return end
+            if require('hitbox_tuner').touchRect('hedgehog',H.x-30,H.y-30,60,60) then Hazards.kill(); return end
         end
     end
     if H.defeated then return end
-    if checkCollision(player.x,player.y,30,24,H.x-30,H.y-30,60,60) then Hazards.kill(); return end
+    if require('hitbox_tuner').touchRect('hedgehog',H.x-30,H.y-30,60,60) then Hazards.kill(); return end
     for i=#H.projectiles,1,-1 do
         local p=H.projectiles[i]; p.life=p.life-dt; local dead=p.life<=0
         local steps=math.max(1,math.ceil(300*dt/4))
@@ -88,7 +88,7 @@ function H.update(dt)
             if dead then break end
             p.x=p.x+p.vx*dt/steps; p.y=p.y+p.vy*dt/steps
             if Arena.blocked(p.x-3,p.y-3,6,6) then dead=true
-            elseif checkCollision(p.x-4,p.y-4,8,8,player.x,player.y,30,24) then Hazards.kill(); dead=true end
+            elseif require('hitbox_tuner').projectile(p.x-4,p.y-4,8,8) then Hazards.kill(); dead=true end
         end
         if dead then table.remove(H.projectiles,i) end
     end

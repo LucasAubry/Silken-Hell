@@ -27,6 +27,7 @@ end
 
 MobBehaviors.ange = {
     update = function(m, dt)
+        update_mob_float(m, dt)
         move_mob_towards_player(m, player, dt, 1.25)
 
 

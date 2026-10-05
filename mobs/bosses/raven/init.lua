@@ -71,7 +71,7 @@ end
 function B.contact()
 
     if not B.active or B.defeated or player.reset then return end
-    local inside=(player.x+15-B.x)^2+(player.y+12-B.y)^2<58^2
+    local inside=require('hitbox_tuner').touchCircle('merle',B.x,B.y,58)
     if inside and not B.inside and player.dashing then
         B.hp=B.hp-1;B.flash=.25;BossFX.burst(B.x,B.y,{.76,.87,.63},3)
         if B.hp<=0 then B.breakEgg() else B.hatch() end
@@ -118,11 +118,11 @@ function B.update(dt)
                     end
                 end
             end
-            if not dead and checkCollision(p.x-4,p.y-4,8,8,player.x,player.y,30,24) then hitPlayer();dead=true end
+            if not dead and require('hitbox_tuner').projectile(p.x-4,p.y-4,8,8) then hitPlayer();dead=true end
         end
         if dead then table.remove(B.projectiles,i) end
     end
-    for _,m in ipairs(B.chicks) do if (player.x+15-m.x)^2+(player.y+12-m.y)^2<25^2 then hitPlayer() end end
+    for _,m in ipairs(B.chicks) do if require('hitbox_tuner').touchCircle('raven_chick',m.x,m.y,25) then hitPlayer() end end
 end
 local function drawCorpses()
     local g=love.graphics
@@ -135,6 +135,7 @@ local function drawCorpses()
     g.setColor(1,1,1)
 end
 local egg=require('mobs.bosses.raven.egg').draw
+local eggPositions={{-12,-8,-.34},{6,-10,.23},{17,-1,.58},{-18,4,-.5},{-3,5,.14},{10,10,.39}}
 function B.drawGround()
 
     if not B.active then return end
@@ -142,6 +143,11 @@ function B.drawGround()
     local g=love.graphics
     for _,n in ipairs(B.nests) do
         g.setColor(1,1,1);Art.draw('nest',n.x,n.y,80,0,60)
+        if not n.shooter and not B.broken and not B.defeated then
+            for i=1,math.ceil(B.hp/B.maxHp*#eggPositions) do
+                local p=eggPositions[i];egg(n.x+p[1],n.y+p[2],8,0,p[3])
+            end
+        end
     end
 end
 function B.draw()

@@ -18,10 +18,10 @@ function willCollide(newX, newY)
 	local offsetX = player.hitBox_offset_x or 0
 	local offsetY = player.hitBox_offset_y or 0
 
+    local px,py,pw,ph=require('hitbox_tuner').bounds(player,newX,newY)
 	for _, wall in ipairs(Walls) do
 		if checkCollision(
-			newX + offsetX, newY + offsetY,
-			player.hitBox_width, player.hitBox_height,
+			px, py, pw, ph,
 			wall.x, wall.y, wall.w, wall.h
 		) then
 			return true
@@ -45,15 +45,9 @@ function isTouching(a, b)
     if Abyss and Abyss.isPulling() and ((a==player and b~=objet.larme) or (b==player and a~=objet.larme)) then return false end
     if a.abyssHeld or b.abyssHeld or (player.abyssSpit and (a==player or b==player)) then return false end
     if (player.abyssGrace or 0)>0 and ((a==player and b~=objet.larme) or (b==player and a~=objet.larme)) then return false end
-	local ax = a.x + (a.hitBox_offset_x or 0)
-	local ay = a.y + (a.hitBox_offset_y or 0)
-	local bx = b.x + (b.hitBox_offset_x or 0)
-	local by = b.y + (b.hitBox_offset_y or 0)
-
-	return checkCollision(
-		ax, ay, a.hitBox_width, a.hitBox_height,
-		bx, by, b.hitBox_width, b.hitBox_height
-	)
+    local T=require('hitbox_tuner')
+    local ax,ay,aw,ah=T.bounds(a);local bx,by,bw,bh=T.bounds(b)
+    return checkCollision(ax,ay,aw,ah,bx,by,bw,bh)
 end
 
 
@@ -97,4 +91,3 @@ function draw_hit_box()
 
 	love.graphics.setColor(1, 1, 1)
 end
-

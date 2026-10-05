@@ -9,6 +9,8 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_HITBOX_TUNER_TEST')=='1' then require('tests.hitbox_tuner').run();return end
+    if os.getenv('SILKEN_SPIDER_FEATHER_TEST')=='1' then require('tests.spider_feathers').run();return end
     if os.getenv('SILKEN_RAIN_REVISION_TEST')=='1' then require('tests.rain_revision').run();return end
     if os.getenv('SILKEN_INK_MATERIAL_TEST')=='1' then require('tests.ink_material').run();return end
     if os.getenv('SILKEN_STORM_DASH_TEST')=='1' then require('tests.storm_dash_revision').run();return end

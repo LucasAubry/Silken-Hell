@@ -17,9 +17,9 @@ function T.run()
    local speed=math.sqrt(p.vx*p.vx+p.vy*p.vy)
    assert(speed>=(255+110*(1-hp/10))*1.25,'Both feather colors travel noticeably faster')
   end
-  counts[#counts+1]=n;assert(#b.projectiles==60 and n>0 and n<=20,'Black feathers dominate; gold remains available')
+  counts[#counts+1]=n;assert(#b.projectiles==60 and n>0 and n<60,'Every health tier mixes black and gold feathers')
  end
- assert(counts[1]==20 and counts[2]==12 and counts[3]==5 and counts[4]==4,'More gold is distributed across salvos while keeping the HP tiers')
+ assert(counts[1]==40 and counts[2]==40 and counts[3]==24 and counts[4]==24,'Exactly two gold feathers per salvo, independent of health')
  b=reset();player.x=450;player.y=420;local p=gold(465,432);b.projectiles={p};player.dashing=false;b.contact()
  assert(p.returned and (p.vx~=0 or p.vy~=0),'Touch launches gold immediately without a dash')
  local oldX,oldY=p.x,p.y;player.x=80;b.shot=100;b.bolt=100;b.update(.02)
@@ -47,7 +47,7 @@ function T.run()
  first.hp=2;for _=1,5 do first.fire() end
  assert(first.featherSalvos==1 and second.featherSalvos==0 and second.hp==10,'Custom encounters retain separate feather cadence')
  local p=gold(first.x,first.y);p.returned=true;first.featherHit(p);assert(first.hp==1 and second.hp==10,'Returned feather damages its owner only')
- print('PASS sky boss: immediate gold homing, one HP per feather, simultaneous hits, offscreen pursuit, lethal black feathers, decreasing gold tiers, persistent cadence, victory/reset, custom instances')
+ print('PASS sky boss: immediate gold homing, one HP per feather, simultaneous hits, offscreen pursuit, lethal black feathers, two gold feathers per salvo, persistent cadence, victory/reset, custom instances')
  local frame=0;love.focus=function() end
  love.update=function()
   frame=frame+1
