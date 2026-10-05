@@ -67,7 +67,7 @@ function P.mob(m)
  if m.type=='ange' or m.type=='snake' then
   if not m.img then return true end
   local key=m.type..'_'..(m.dir or 'down');local a=P.frame(key);local s=a.source
-  local float=m.float and math.sin((m.floatTime or love.timer.getTime())*4)*5 or 0
+  local float=require('mobs.shared.floating').offset(m)
   -- The source canvas/pivot and visible size stay aligned with existing hitboxes.
   g.push();g.translate(m.x,m.y+float);g.rotate(m.rotation or 0)
   P.draw(key,(s.x+s.w/2-s.iw/2)*m.size,(s.y+s.h/2-s.ih/2)*m.size,s.w*m.size,0,s.h*m.size)

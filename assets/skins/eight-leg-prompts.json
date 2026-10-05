@@ -1,0 +1,162 @@
+{
+  "date": "2026-10-05",
+  "mode": "built-in image_gen imagegen edit, transparent background",
+  "checkpoint": "cae2b45",
+  "request": "Conserver les designs et ajouter la paire de pattes manquante sur tous les skins.",
+  "assets": [
+    {
+      "skin": "soie",
+      "view": "down",
+      "path": "assets/skins/soie/down.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-a46cbc28-5d64-426a-931d-3cec096becaa.png",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target, a finished game sprite. Change ONLY its anatomy by adding ONE matching pair of full-length walking legs: final spider has EIGHT long articulated walking legs, four on each side, plus its existing short mouthparts if visible. Do not count mouthparts as legs. Keep this exact front view with orange eyes. There are currently THREE long legs on each side; add a FOURTH tier of long bent legs to each side, visibly separated by transparent gaps, for FOUR independent feet on LEFT and FOUR independent feet on RIGHT. Preserve EXACT body/head shapes, proportions, dark warm brown color palette, plain unmarked body, simple broad pixel shading, coarse pixel size, outlines, eyes, highlights, pose and framing. Only small repositioning of legs allowed to fit the fourth pair within current overall width. No grain, no extra texture, no new markings, no redesign, no text, no shadow. True transparent background."
+    },
+    {
+      "skin": "soie",
+      "view": "up",
+      "path": "assets/skins/soie/up.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-c3333ac8-10fa-438b-a1e6-dd68b8f05f05.png",
+      "prompt": "Use case: precise-object-edit. Image 1 is the rear-view brown spider to correct. Image 2 is the SAME brown spider front view with the CORRECT EIGHT legs. Transfer the EXACT FOUR-PAIRS leg silhouette from image 2 onto image 1 while keeping the two plain brown rear body lobes of image 1, no eyes, no mouthparts, no markings. Four clearly separated long legs on each side: upper, upper-middle, lower-middle, bottom. Do not retain the incorrect three-pairs legs of image 1. Match brown palette, pixel size, outlines, body shape and broad simple shading exactly. Only legs change; body stays. True transparent background, no text or shadows."
+    },
+    {
+      "skin": "soie",
+      "view": "profil",
+      "path": "assets/skins/soie/profil.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-a4e997ea-61c7-4189-a345-386244fbf7f3.png",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target, a finished game sprite. Change ONLY its anatomy by adding ONE matching pair of full-length walking legs: final spider has EIGHT long articulated walking legs, four on each side, plus its existing short mouthparts if visible. Do not count mouthparts as legs. Keep this exact left-facing three-quarter profile, one eye, head at lower left and abdomen at upper right. Show FOUR clearly separated foreground walking legs and four far-side walking legs with separate visible tips; add the missing pair without changing body orientation. Preserve EXACT body/head shapes, proportions, dark warm brown color palette, plain unmarked body, simple broad pixel shading, coarse pixel size, outlines, eyes, highlights, pose and framing. Only small repositioning of legs allowed to fit the fourth pair within current overall width. No grain, no extra texture, no new markings, no redesign, no text, no shadow. True transparent background."
+    },
+    {
+      "skin": "perle",
+      "view": "down",
+      "path": "assets/skins/perle/down.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-1669540a-fbc2-4979-b2b9-ae367a87e075.png",
+      "prompt": "Use case: precise-object-edit. Image 1 is the white/gold spider edit target. Image 2 is ONLY an anatomy reference with CORRECT FOUR PAIRS of long legs. Replace the six-legged silhouette in image 1 with the EIGHT-legged silhouette of image 2: FOUR separate bent walking legs on EACH side, arranged in FOUR tiers. Keep all image 1 body and head details, white cream and gold palette, gold markings, blue eyes and short mouthparts, shading, coarse pixels and outlines. New legs must be white and gold matching image 1, NEVER brown. The two central short mouthparts are NOT legs. Keep body proportions and framing. True transparent background."
+    },
+    {
+      "skin": "perle",
+      "view": "up",
+      "path": "assets/skins/perle/up.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-a74da302-960b-443c-a33b-d2f850d47cdf.png",
+      "prompt": "Use case: precise-object-edit. Image 1 is the white/gold spider edit target. Image 2 is ONLY an anatomy reference with CORRECT FOUR PAIRS of long legs. Replace the six-legged silhouette in image 1 with the EIGHT-legged silhouette of image 2: FOUR separate bent walking legs on EACH side, arranged in FOUR tiers. Keep all image 1 body and head details, white cream and gold palette, gold markings, rear view without eyes, shading, coarse pixels and outlines. New legs must be white and gold matching image 1, NEVER brown. The two central short mouthparts are NOT legs. Keep body proportions and framing. True transparent background."
+    },
+    {
+      "skin": "perle",
+      "view": "profil",
+      "path": "assets/skins/perle/profil.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-4acf57a3-8c66-4c7d-9d9e-b171895574cc.png",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target, a finished game sprite. Add ONLY the missing pair of full-length walking legs. It currently has only three pairs of walking legs; it must have EIGHT long articulated walking legs (four pairs), plus the original two short mouthparts when visible. Mouthparts are NOT walking legs. Keep exact left-facing three-quarter profile. Show four distinct bent foreground legs and four distinct far-side legs/tips. Make the two new legs clearly visible, separated from neighboring legs. Preserve the body, head, eyes, framing, coarse pixel style, shading, pixel size, proportions, and color palette: white and cream with the same gold markings and blue eyes. Do not redesign or recolor any existing feature. Preserve width and body size as much as possible; new legs fit into gaps between existing legs. No text, no diagram, no glow background, no floor shadow. True transparent background."
+    },
+    {
+      "skin": "braise",
+      "view": "down",
+      "path": "assets/skins/braise/down.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-3f9e0737-4148-4f40-a6b5-ac1719b52760.png",
+      "prompt": "Image 1 is the EIGHT-LEGGED anatomy to preserve exactly. Image 2 supplies the skin design. Render image 1 spider with image 2 colors, body patterns, face, texture and coarse pixel style: charcoal black stone, orange-red molten seams, fiery orange eyes. Copy the lava body patterns from image 2. CRITICAL preserve the FOUR FULL-LENGTH walking legs on EACH SIDE from image 1, exactly eight, plus two short mouthparts. Do not copy the six-leg anatomy of image 2. Keep body/head shapes and design of image 2 while retaining the complete eight-leg silhouette of image 1. Transparent background, same framing, no text."
+    },
+    {
+      "skin": "braise",
+      "view": "up",
+      "path": "assets/skins/braise/up.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-47e6c1f9-e06f-4e98-ad78-72437eee6282.png",
+      "prompt": "Image 1 is the edit target: rear-view black lava spider. Image 2 is an anatomy reference ONLY with FOUR legs on each side. Give image 1 the EIGHT-legged silhouette of image 2, four tiers of long bent legs left and four right. Preserve original body lobes, no eyes, lava markings, charcoal stone shading, pixel size and framing of image 1. New legs black stone with lava bands, never brown. Clearly separate all four legs per side with transparent gaps. Transparent background."
+    },
+    {
+      "skin": "braise",
+      "view": "profil",
+      "path": "assets/skins/braise/profil.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-63f55209-571e-4034-a55d-9636bd6784d6.png",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target, a finished game sprite. Add ONLY the missing pair of full-length walking legs. It currently has only three pairs of walking legs; it must have EIGHT long articulated walking legs (four pairs), plus the original two short mouthparts when visible. Mouthparts are NOT walking legs. Keep exact left-facing three-quarter profile. Show four distinct bent foreground legs and four distinct far-side legs/tips. Make the two new legs clearly visible, separated from neighboring legs. Preserve the body, head, eyes, framing, coarse pixel style, shading, pixel size, proportions, and color palette: charcoal stone with the same orange-red lava seams and fiery orange eyes. Do not redesign or recolor any existing feature. Preserve width and body size as much as possible; new legs fit into gaps between existing legs. No text, no diagram, no glow background, no floor shadow. True transparent background."
+    },
+    {
+      "skin": "ecume",
+      "view": "down",
+      "path": "assets/skins/ecume/down.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-aab45562-7723-45e5-80f5-d199104a4469.png",
+      "prompt": "Image 1 is the EIGHT-LEGGED anatomy to preserve exactly. Image 2 supplies the skin design. Render image 1 spider with image 2 colors, body patterns, face, texture and coarse pixel style: dark blue turquoise, ivory markings, cyan eyes. Copy all aquatic body patterns from image 2. CRITICAL preserve the FOUR FULL-LENGTH walking legs on EACH SIDE from image 1, exactly eight, plus two short mouthparts. Do not copy the six-leg anatomy of image 2. Keep body/head shapes and design of image 2 while retaining the complete eight-leg silhouette of image 1. Transparent background, same framing, no text."
+    },
+    {
+      "skin": "ecume",
+      "view": "up",
+      "path": "assets/skins/ecume/up.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-68765771-9b43-426f-8e6d-aa7f54006c30.png",
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target, a finished game sprite. Add ONLY the missing pair of full-length walking legs. It currently has only three pairs of walking legs; it must have EIGHT long articulated walking legs (four pairs), plus the original two short mouthparts when visible. Mouthparts are NOT walking legs. Keep exact rear view, without eyes. Add a fourth tier of bent walking legs on both sides. There must be FOUR separate full-length feet down the LEFT edge and FOUR separate full-length feet down the RIGHT edge. Transparent gaps between all legs. Preserve the body, head, eyes, framing, coarse pixel style, shading, pixel size, proportions, and color palette: dark blue and turquoise with the same cream markings and cyan eyes. Do not redesign or recolor any existing feature. Preserve width and body size as much as possible; new legs fit into gaps between existing legs. No text, no diagram, no glow background, no floor shadow. True transparent background."
+    },
+    {
+      "skin": "ecume",
+      "view": "profil",
+      "path": "assets/skins/ecume/profil.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-78e7ce84-6878-42f5-acd7-0c67819b7acb.png",
+      "prompt": "Edit target image 1: turquoise spider profile. Anatomy reference image 2: white gold spider profile with EIGHT long walking legs. Match the full eight-leg arrangement of image 2, including the far-side limbs visible behind the upper body and front head, but keep EXACT turquoise/blue color, cream markings, cyan eye, rounded body silhouette, left-facing angle and pixel style of image 1. FOUR foreground walking legs and FOUR far-side legs, each with a visible separate foot. Short mouth fangs do not count. Preserve body artwork; only add missing limbs. Transparent background."
+    },
+    {
+      "skin": "royale",
+      "view": "profil",
+      "path": "assets/skins/royale/profil.png",
+      "unchanged": true,
+      "reason": "Original profile already has four foreground and four far-side legs."
+    },
+    {
+      "skin": "royale",
+      "view": "down",
+      "path": "assets/skins/royale/down.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-c4aa6fb5-2795-4cc2-a644-040e1daf6482.png",
+      "prompt": "Image 1 supplies the CORRECT eight-legged anatomy: four long walking legs per side, four separate tiers. Image 2 supplies the royal skin design. Recreate the royal spider of image 2 with EIGHT long legs arranged EXACTLY as in image 1. Keep royal purple white gold coloring, all original markings, intact golden crown with red jewel in exactly its original position, gold eyes and two short mouth fangs, original body and head shapes and pixel shading. Do NOT copy image 2 incorrect six-leg arrangement. Use image 1 four-pairs silhouette, but all legs royal purple white and gold. Transparent background."
+    },
+    {
+      "skin": "royale",
+      "view": "up",
+      "path": "assets/skins/royale/up.png",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-be60843a-2ccc-4528-8e9e-7af075eab097.png",
+      "prompt": "Image 1 supplies the CORRECT eight-legged anatomy: four long walking legs per side, four separate tiers. Image 2 supplies the royal skin design. Recreate the royal spider of image 2 with EIGHT long legs arranged EXACTLY as in image 1. Keep royal purple white gold coloring, all original markings, intact golden crown with red jewel in exactly its original position, rear view without eyes, original body and head shapes and pixel shading. Do NOT copy image 2 incorrect six-leg arrangement. Use image 1 four-pairs silhouette, but all legs royal purple white and gold. Transparent background."
+    }
+  ],
+  "corrections": [
+    {
+      "date": "2026-10-05",
+      "path": "assets/skins/soie/profil.png",
+      "mode": "built-in image_gen imagegen edit",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-36e13b51-290b-4aa9-91af-66bfbfd04844.png",
+      "request": "Corriger uniquement le profil marron trop chargé en pattes ; garder face, dos et autres skins.",
+      "prompts": [
+        "Use case: precise-object-edit. Edit this brown pixel-art spider SIDE VIEW only. The legs are too crowded and look excessively numerous. Correct to anatomically EIGHT walking legs total (four per side), with proper profile occlusion: exactly FOUR clearly readable long articulated foreground legs in a clean fan underneath the body; far-side legs mostly hidden behind body/foreground legs, only two discreet far-side tips may peek out. Remove the extra long overlapping legs and especially the two protrusions above/behind the abdomen at upper right; no legs grow from top of abdomen. Keep the two short mouthparts by the face distinct from walking legs. Preserve EXACT approved dark warm brown unmarked body, broad simple shading, orange eye and white reflection, head and abdomen shape, coarse pixel size, black-brown outline, left-facing angle, scale and framing. Do not add patterns, noise, highlights, fur or brighten it. This is a small anatomy cleanup, not a redesign. True transparent background; no shadow, no text.",
+        "Precisely edit this dark-brown pixel-art spider side sprite. Clean up leg anatomy: FOUR separate long walking legs on the visible near side, each attached independently at the underside of the head/thorax, each bending at one raised knee and ending in its own foot. Space these four long legs in a clear fan, with four feet across the lower half. No forked or branching legs. Far-side four legs are naturally occluded by body and near legs, with at most two small glimpses of their lower ends. REMOVE the little horn-like leg stumps sticking above the head and behind the abdomen. Spider remains anatomically eight-legged but not all eight legs need to be fully visible from this side. Keep EXACT existing orange eye, dark warm brown plain body, head and abdomen shapes/locations, same broad shading, coarse pixel style, outlines and left-facing pose. Keep two short mouthparts only. Transparent background, no shadow, no text. Do not redesign or brighten."
+      ]
+    },
+    {
+      "date": "2026-10-05",
+      "path": "assets/skins/soie/profil.png",
+      "mode": "built-in image_gen imagegen edit",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a0f20c-79ed-7723-9f05-4adcbe22623f/exec-46ed23e3-823f-4d81-87df-3628c852a7d4.png",
+      "request": "Harmoniser le profil marron avec face et dos : pattes courtes, corps rond compact et proportions coherentes.",
+      "prompts": [
+        "Use case: precise-object-edit, directional game sprite consistency. Images 1 and 2 are the APPROVED front and rear views of the SAME brown spider. They are authoritative for its design, proportions, palette, shading and pixel size. Image 3 is the INCORRECT side view to replace: its legs are far too long and its abdomen too large/elongated. Output ONE corrected left-facing three-quarter SIDE sprite of the EXACT character in images 1 and 2. Maintain their compact low squat silhouette, nearly round head, modest rounded abdomen (similar size to head, not a giant raised oval), short stout bent legs, same thickness and relative reach as front/back. SHORTEN side-view walking legs by about 35% versus image 3; knees sit close beside body, feet just below head bottom, NOT stilt legs extending a full head-height below body. Abdomen and head remain close together at the same low height, no tall elevated rump. Eight legs anatomically, FOUR visible near-side bent legs; far-side legs naturally occluded, no extra protrusions or horn-like stumps. Same orange amber eye, black pupil and square white reflection from front. Two tiny mouthparts only. Match EXACT dark walnut brown plain body, broad simple shaded pixel clusters and thick dark brown outline of images 1-2. No noise, no markings, no brighter colors. Keep left-facing gameplay orientation, centered single full sprite, generous transparent margins; genuine transparent background, no floor shadow, no labels. Highest priority is front/rear/side coherence: it must look like the SAME short-legged compact spider rotated, not a different character.",
+        "Image 1 is the current side-view edit target; image 2 is the approved front view and authoritative model. Finish matching the same compact spider: shorten the large diagonal head into the ROUND head shape of image 2 seen from its side (no elongated snout), with the same orange eye and two short mouthparts. Keep the rounded abdomen and SHORT bent legs of image 1. Fix walking legs into FOUR individual compact knees and FOUR feet on the visible side, each independently connected to the thorax, no branch/fork from the front knee: four staggered knees spaced evenly from left/front to right/back. Far-side legs hidden naturally. Do not lengthen legs; body stays low, feet only a little below face. Preserve dark brown plain body, color shading and coarse pixel size from image 2, not brighter, no extra detail. Keep the same left-facing three-quarter perspective as image 1. True transparent background, same framing, no shadow, no text. This is one coherent rotation of the approved front character.",
+        "Use case: precise-object-edit. Image 1 is the nearly finished compact brown spider profile. Image 2 is its approved front view. Make ONE small proportion correction only to image 1: reduce the rear abdomen by about 15% in width and height so it is approximately the same diameter as the round head, matching the equal-sized body lobes in image 2. Move the smaller abdomen closer to the head to keep the body compact, connected. Keep the head, orange eye, mouthparts, FOUR short visible walking feet, leg length/pose, brown palette, pixel size, broad simple shading and outlines completely unchanged. Keep left-facing perspective and transparency. Do not lengthen legs or body, no new limbs, no new details. Output one transparent game sprite."
+      ]
+    }
+  ],
+  "restorations": [
+    {
+      "date": "2026-10-05",
+      "request": "Restaurer exactement les trois PNG marron fournis par l’utilisateur.",
+      "mode": "Exact file copy; no image generation or pixel modification.",
+      "assets": [
+        {
+          "path": "assets/skins/soie/profil.png",
+          "source": "/var/folders/sj/69gwdk0x21g121fzv0rm9c7r0000gn/T/codex-clipboard-97d6fedc-ce62-4460-a05e-946d869017ef.png",
+          "sha256": "e6c7ce4bd719bcf3fff54039a804884e3c0753556daf37f533ae3dfd6f443f88"
+        },
+        {
+          "path": "assets/skins/soie/down.png",
+          "source": "/var/folders/sj/69gwdk0x21g121fzv0rm9c7r0000gn/T/codex-clipboard-decf99d2-adc0-4d14-9b08-0a651fbd8412.png",
+          "sha256": "b2a3d835ced125e5a5a9f1ecd591172e8cc9b4d9fa2bd9f263ace7187ec7e721"
+        },
+        {
+          "path": "assets/skins/soie/up.png",
+          "source": "/var/folders/sj/69gwdk0x21g121fzv0rm9c7r0000gn/T/codex-clipboard-cf490b9c-e700-478e-81e3-09b78c316c27.png",
+          "sha256": "ffa1e8dbdb128921f30a7575127d3af3ef8742c41501296029776770ab913322"
+        }
+      ]
+    }
+  ]
+}

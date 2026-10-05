@@ -59,7 +59,7 @@ function draw_enemy_hitboxes()
 		if e.hitBox_width and e.hitBox_height then
 			local offsetX = e.hitBox_offset_x or 0
 			local offsetY = e.hitBox_offset_y or 0
-			love.graphics.rectangle("fill", e.x + offsetX, e.y + offsetY, e.hitBox_width, e.hitBox_height)
+			love.graphics.rectangle("fill", require('hitbox_tuner').bounds(e))
 		end
 	end
 

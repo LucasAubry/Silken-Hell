@@ -75,7 +75,7 @@ function L.spawn(e)
     if m.has_larme then Campaign.carrier=m; objet.larme_dropped=false end
     if m.type=='scie' then setup_rotor(m) elseif m.type=='spinner' then setup_spinner(m) end
     if m.imgs then m.img=m.imgs.down or m.imgs.up end
-    if kind=='ange' or kind=='snake' then m.hitBox_width=28; m.hitBox_height=42; m.hitBox_offset_x=-14; m.hitBox_offset_y=-21 end
+    if kind=='ange' or kind=='snake' then require('mobs.shared.floating').hitbox(m) end
 end
 function L.apply(layout)
     if not layout or type(layout.entities)~='table' then return false end

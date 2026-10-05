@@ -15,12 +15,9 @@ function spawn_ange(x, y, speed, has_larme)
             down = mobImage("assets/monstres/paradis/ange/ange_down.png"),
             left = mobImage("assets/monstres/paradis/ange/ange_left.png"),
             right = mobImage("assets/monstres/paradis/ange/ange_right.png")
-        },
-        hitBox_width = 20,
-        hitBox_height = 110,
-        hitBox_offset_x = -10,
-        hitBox_offset_y = -50
+        }
     }
+    require('mobs.shared.floating').hitbox(ange)
     ange.img = ange.imgs[ange.dir]
     table.insert(mobs, ange)
 end
@@ -56,7 +53,7 @@ MobBehaviors.ange = {
 	    local offsetX = m.hitBox_offset_x or 0
 	    local offsetY = m.hitBox_offset_y or 0
 	    local centerX = m.x + offsetX + (m.hitBox_width or 0) / 2
-	    local centerY = m.y + offsetY + (m.hitBox_height or 0) / 2
+	    local centerY = m.y + offsetY + (m.hitBox_height or 0) / 2 + require('mobs.shared.floating').offset(m)
 
 	    -- Glow pulsant
 	    local pulse = math.sin(love.timer.getTime() * 5) * 5 -- oscillation

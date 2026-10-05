@@ -11,7 +11,7 @@ function T.rect(key,x,y,w,h)
  return x+(w-ww)/2+c.dx,y+(h-hh)/2+c.dy,ww,hh
 end
 function T.bounds(e,x,y)
- return T.rect(e==player and 'player' or e.type or 'enemy',(x or e.x)+(e.hitBox_offset_x or 0),(y or e.y)+(e.hitBox_offset_y or 0),e.hitBox_width,e.hitBox_height)
+ return T.rect(e==player and 'player' or e.type or 'enemy',(x or e.x)+(e.hitBox_offset_x or 0),(y or e.y)+(e.hitBox_offset_y or 0)+require('mobs.shared.floating').offset(e),e.hitBox_width,e.hitBox_height)
 end
 function T.playerRect()return T.bounds(player)end
 function T.center()
@@ -90,7 +90,8 @@ function T.collect()
   if m.type=='crab' then circle('crab',m.x,m.y,27)
   elseif m.type=='light_jelly' then rect('light_jelly',m.x-22,m.y-22,44,44)
   elseif m.hitBox_width and m.hitBox_height then
-   rect(m.type or 'enemy',m.x+(m.hitBox_offset_x or 0),m.y+(m.hitBox_offset_y or 0),m.hitBox_width,m.hitBox_height)
+   local x,y,w,h=T.bounds(m)
+   list[#list+1]={key=m.type or 'enemy',shape='rect',x=x,y=y,w=w,h=h}
   end
   if m.electric then circle('electric_gull',m.x,m.y,30) end
  end

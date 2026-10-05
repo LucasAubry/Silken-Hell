@@ -5,8 +5,38 @@ function T.run()
  App.practice=1;App.start(1);mobs={}
  spawn_ange(300,300,1,false);spawn_snake(300,300,1)
  local angel=mobs[1];local statues={mobs[2]}
+ local hitboxes=require('hitbox_tuner');hitboxes.reset(true)
+ local ink=require('paradise_ink');local g=love.graphics
+ for _,m in ipairs(mobs) do
+  assert(m.hitBox_width==28 and math.abs(m.hitBox_height-58.8)<1e-8,'Approved hitbox is 100% wide and 140% tall')
+  assert(math.abs(m.hitBox_offset_y+24.4)<1e-8,'Approved hitbox centre is shifted down five pixels')
+  local ys,drawYs={},{}
+  local originalDraw=ink.draw
+  ink.draw=function(_,x,y) local _,yy=g.transformPoint(x,y);drawYs[#drawYs+1]=yy end
+  for _,phase in ipairs({math.pi/8,3*math.pi/8}) do
+   m.floatTime=phase
+   local x,y,w,h=hitboxes.bounds(m);ys[#ys+1]=y
+   assert(math.abs(y-(m.y-24.4+require('mobs.shared.floating').offset(m)))<1e-8)
+   local shape
+   for _,v in ipairs(hitboxes.collect()) do if v.key==m.type then shape=v;break end end
+   assert(shape and shape.x==x and shape.y==y and shape.w==w and shape.h==h,'Displayed box matches actual contact bounds')
+   player.x=x;player.y=y-23
+   assert(isTouching(player,m),'Contact at the floating top edge must hit')
+   player.y=y-25;assert(not isTouching(player,m),'Outside floating top edge stays safe')
+   g.push();g.origin();assert(ink.mob(m));g.pop()
+  end
+  ink.draw=originalDraw
+  assert(math.abs(ys[1]-ys[2]-16)<1e-8,'Collision follows the full vertical bob')
+  assert(math.abs(drawYs[1]-drawYs[2]-16)<1e-8,'Paradise artwork follows the same bob')
+  local biome=Campaign.biome;Campaign.biome=2
+  local rawDraw=g.draw;local normalYs={};local lastY
+  g.draw=function(img,x,y,...)if img==m.img then lastY=y end end
+  for _,phase in ipairs({math.pi/8,3*math.pi/8})do m.floatTime=phase;draw_mob(m);normalYs[#normalYs+1]=lastY end
+  g.draw=rawDraw;Campaign.biome=biome
+  assert(math.abs(normalYs[#normalYs-1]-normalYs[#normalYs]-16)<1e-8,'Original artwork floats as well')
+  m.floatTime=0
+ end
  for _,m in ipairs(statues) do
-  m.hitBox_width=28;m.hitBox_height=42;m.hitBox_offset_x=-14;m.hitBox_offset_y=-21
   assert(m.img,'Statues must be visible before the first movement')
  end
  mobs={}

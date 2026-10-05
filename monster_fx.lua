@@ -39,6 +39,6 @@ function F.mob(m)
  if m.dead or m.abyssHeld or m.tunnelTravel or Realms.underground(m) then return end
  local h=m.hitBox or {};local size=math.min(88,math.max(34,h.w or 40,h.h or 40))
  local x,y=m.tipX or m.x,m.tipY or m.y
- F.halo(x,y,size,colors[m.type])
+ F.halo(x,y+require('mobs.shared.floating').offset(m),size,colors[m.type])
 end
 return F

@@ -99,7 +99,7 @@ function C.reset()
         if world==1 and m.type~='piege' and m.speed then m.speed=m.speed*1.08 end
         if m.has_larme then C.carrier=m; objet.larme_dropped=false end
         if m.type=='scie' then m.hitBox_width=42; m.hitBox_height=42; m.hitBox_offset_x=-21; m.hitBox_offset_y=-21 end
-        if m.type=='ange' or m.type=='snake' then m.hitBox_width=28; m.hitBox_height=42; m.hitBox_offset_x=-14; m.hitBox_offset_y=-21 end
+        if m.type=='ange' or m.type=='snake' then require('mobs.shared.floating').hitbox(m) end
         local ox,oy=m.hitBox_offset_x or 0,m.hitBox_offset_y or 0
         local x,y=Arena.clearSpot(m.x+ox,m.y+oy,m.hitBox_width,m.hitBox_height)
         m.x=x-ox; m.y=y-oy

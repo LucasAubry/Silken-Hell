@@ -7,10 +7,7 @@ function draw_mob(m, pivotX, pivotY)
     local ox = pivotX or w / 2
     local oy = pivotY or h / 2
 
-    local float = 0
-    if m.float then
-        float = math.sin((m.floatTime or love.timer.getTime()) * 4) * 5
-    end
+    local float = require('mobs.shared.floating').offset(m)
 
     Art.shadow(img,m.x,m.y+float,m.rotation or 0,m.size,m.size,ox,oy)
     love.graphics.draw(
