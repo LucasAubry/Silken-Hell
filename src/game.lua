@@ -89,7 +89,7 @@ function App.start(world)
     if world==8 then if Worlds.canEnter(8) then Secret.open() end;return end
     if not App.sessionLayout and not Worlds.canEnter(world) and not App.preview and os.getenv('SILKEN_TEST')~='1' and not Replay.playing then return end
     Achievements.level=nil
-    Profile.record('attempts')
+    Profile.record('attempts',world)
     Arena.configure(love.graphics.getDimensions())
     if Replay.playing then Arena.width=Replay.data.width end
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
@@ -129,6 +129,7 @@ function love.load()
     Psyche.load()
     Prism.load()
     App.selectedWorld=1
+    require('skin_unlock').init()
     Online.init()
     if os.getenv('SILKEN_EXPORT_LEVELS')=='1' then require('designer.export').run(); love.event.quit(); return end
     local preview=tonumber(os.getenv('SILKEN_PREVIEW_WORLD'))
@@ -200,6 +201,7 @@ function love.update(dt)
     PreviewBridge.update(dt)
     UI.clock=UI.clock+dt
     UI.updatePress(dt)
+    require('skin_unlock').update(dt)
     Online.update(dt)
     Input.update(dt)
     if App.state=='worlds' then WorldMap.update(dt) end
@@ -346,6 +348,8 @@ function love.draw()
         if not psychedelic and Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
         love.graphics.draw(gameCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale); love.graphics.setShader()
         if App.state=='playing' then Realms.drawWind(w,h); Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
+    elseif App.state=='skinUnlock' then
+        love.graphics.clear(.008,.015,.027)
     elseif App.state=='credits' then
         Ending.drawCredits(w,h)
     elseif App.state=='worlds' then
@@ -369,7 +373,7 @@ function love.draw()
         Psyche.draw();love.graphics.pop()
     end
     if App.state=='playing' then Ending.drawOverlay(w,h) end
-    if App.state~='credits' and not Ending.active then
+    if App.state~='credits' and App.state~='skinUnlock' and not Ending.active then
         love.graphics.push('all');love.graphics.origin();love.graphics.setShader()
         love.graphics.setFont(UI.fonts.tiny)
         love.graphics.setColor(.78,.78,.71,.7);love.graphics.print('v'..require('version'),12,h-18)
@@ -403,6 +407,11 @@ function love.textinput(text)
 end
 function love.keypressed(key,scancode,isrepeat)
     Input.active=false
+    if key=='escape' and App.state=='victory' and require('podium_celebration').closePreview() then return end
+    if App.state=='skinUnlock' then
+        if not isrepeat and (key=='escape' or key=='return' or key=='space') then require('skin_unlock').close() end
+        return
+    end
     if App.state=='credits' then Ending.creditKey(key,isrepeat);return end
     if key=='escape' then Audio.play('go') end
     if Replay.playing then Replay.key(key);return end

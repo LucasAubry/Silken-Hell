@@ -107,7 +107,10 @@ function I.draw()
     if not I.active then return end
     local b=UI.buttons[I.index]
     if b and not b.disabled and App.state~='playing' and App.state~='bossWorld' and App.state~='worlds' then
-        local g=love.graphics;g.setColor(1,.85,.3);g.setLineWidth(3);g.rectangle('line',b.x-4,b.y-4,b.w+8,b.h+8,6);g.setLineWidth(1)
+        local g=love.graphics;g.setColor(1,.85,.3);g.setLineWidth(3)
+        if b.radius then g.circle('line',b.x+b.w/2,b.y+b.h/2,b.radius+4)
+        else g.rectangle('line',b.x-4,b.y-4,b.w+8,b.h+8,6) end
+        g.setLineWidth(1)
     end
 end
 return I

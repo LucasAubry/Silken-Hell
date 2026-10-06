@@ -224,26 +224,23 @@ function C.drawTear(overlay)
     if objet.larme.abyssHeld or (C.carrier and not objet.larme_dropped and (Realms.underground(C.carrier) or C.carrier.tunnelTravel)) then return end
     local g=love.graphics
     if not objet.larme.taken then
-        local x,y=objet.larme.x,objet.larme.y+(Aftermath.cleared and 0 or math.sin(larme_float_timer*2)*4)
+        local x,y=objet.larme.x,objet.larme.y+math.sin(UI.clock*2)*3
+        local fx=require('tear_fx');g.push('all')
         local tint=Worlds.color(C.biome).tear
         if C.biome==5 then tint={.86,.65,.39} end
-        if C.biome~=5 then g.setColor(tint);g.draw(particleSystem,x+15,y+20) end
+        fx.draw(x+15,y+20,tint,UI.clock);g.setColor(tint)
+        local sx,sy=fx.breath(UI.clock)
+        g.translate(x+15,y+20);g.scale(sx,sy);g.translate(-x-15,-y-20)
         local previous=g.getShader()
-        if overlay then
-            C.victoryTearShader=C.victoryTearShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
-                vec4 p=Texel(tex,uv);
-                return vec4(vec3(.4,.55,.65)+p.rgb*vec3(.6,.45,.35),p.a)*color;
-            }]])
-            g.setShader(C.victoryTearShader);g.setColor(1,1,1)
-        elseif C.biome==5 then
-            C.tearShader=C.tearShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
-                vec4 p=Texel(tex,uv);float v=max(p.r,max(p.g,p.b));
-                return vec4(.66+.30*v,.43+.33*v,.22+.28*v,p.a)*color;
-            }]])
-            g.setShader(C.tearShader);g.setColor(1,1,1)
-        end
+        C.biomeTearShader=C.biomeTearShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
+            vec4 p=Texel(tex,uv);float light=max(p.r,max(p.g,p.b));
+            vec3 base=color.rgb*(.42+.58*light);
+            float highlight=smoothstep(.88,1.,min(p.r,min(p.g,p.b)))*.45;
+            return vec4(mix(base,vec3(1.),highlight),p.a*color.a);
+        }]])
+        g.setShader(C.biomeTearShader);g.setColor(tint)
         if not require('paradise_ink').tear(x,y,objet.larme.size) then g.draw(objet.larme.img,x,y,0,objet.larme.size) end
-        g.setShader(previous)
+        g.setShader(previous);g.pop()
     end
     g.setColor(1,1,1)
 end

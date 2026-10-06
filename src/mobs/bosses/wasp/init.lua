@@ -154,6 +154,11 @@ function W.positionAttack(b)
     local x,y=Arena.clearSpot(b.tx-24,b.ty-24,48,48);b.tx,b.ty=x+24,y+24
     b.phase='position'
 end
+-- Track the player along the chosen wall until launch; the airborne dash stays straight.
+function W.trackPlayer(b)
+    if b.attack==1 then b.ty=math.max(65,math.min(535,player.y+12))
+    elseif b.attack==2 then b.tx=math.max(65,math.min(Arena.width-65,player.x+15)) end
+end
 function W.fireLarva(b)
     local x,y=Arena.clearSpot(b.x-9,b.y-9,18,18)
     local m=Magma.spawn(x+9,y+9);m.bossServant=true;return m
@@ -210,10 +215,15 @@ function W.updateBees(dt)
         elseif b.phase=='queued' then
             if W.roundClock>=b.delay then W.positionAttack(b) end
         elseif b.phase=='position' then
-            if W.approach(b,b.tx,b.ty,1165*tempo*move,dt) then
-                b.phase='aim';b.time=b.attack==3 and .5 or .23
+            W.trackPlayer(b)
+            if W.approach(b,b.tx,b.ty,1250*tempo*move,dt) then
+                b.phase='aim';b.time=b.attack==3 and .5 or .20
             end
         elseif b.phase=='aim' then
+            if b.attack~=3 then
+                W.trackPlayer(b);W.approach(b,b.tx,b.ty,1250*tempo*move,dt)
+                b.dir=Art.direction(b.vx,b.vy,b.dir)
+            end
             b.time=b.time-dt*(b.attack==3 and cadence or 1)
             if b.time<=0 then
                 if b.attack==3 then
@@ -228,7 +238,7 @@ function W.updateBees(dt)
                     b.dashesLeft=(b.dashesLeft or 1)-1
                     if b.dashesLeft>0 then
                         b.vx,b.vy=-b.vx,-b.vy;b.dir=Art.direction(b.vx,b.vy,b.dir)
-                        b.phase='aim';b.time=.20
+                        b.tx,b.ty=b.x,b.y;b.phase='aim';b.time=.18
                     else b.phase='fatigued';b.time=1.65 end
                     BossFX.burst(b.x,b.y,{1,.7,.2},2);break
                 end
@@ -315,11 +325,6 @@ function W.drawGlow(b,flying,alpha)
  local y=b.y+(flying and -10 or 0);local pulse=.75+.25*math.sin(W.elapsed*4+b.id)
  for ring=8,1,-1 do
   g.setColor(1,.16,.025,.010*alpha*pulse);g.ellipse('fill',b.x,y,20+ring*7,15+ring*5)
- end
- for i=1,7 do
-  local t=(W.elapsed*.55+i*.137)%1;local a=i*2.399
-  local x=b.x+math.cos(a)*(20+12*t);local yy=y+18-t*70
-  g.setColor(1,.34+.25*t,.04,(1-t)*.65*alpha);g.circle('fill',x,yy,1.1+(1-t))
  end
  g.pop()
 end

@@ -17,6 +17,7 @@ function S.load()
  S.shader:send('silk',S.webImage)
 end
 function S.variant(key)
+ if key:match('^mole_') then return nil end -- All moles use their normal directional art.
  return S.current and S.current.bossServant and S.frames[key]
 end
 function S.image(key) return S.variant(key) or require('art').images[key] end

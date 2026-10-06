@@ -191,8 +191,10 @@ function O.drawGround()
 end
 function O.splash()
     O.blots={}; player.ink=4
-    -- Broad irregular overlapping stains cover most of the view, then fade.
-    for i=1,7 do O.blots[i]={x=.12+(i-1)%3*.37,y=.14+math.floor((i-1)/3)*.34,r=Arena.width*.32,life=4,seed=i} end
+    -- Separated splashes obscure patches of the view while leaving readable gaps.
+    for i,p in ipairs({{.10,.23,.23},{.62,.13,.22},{.91,.50,.24},{.22,.83,.24},{.65,.85,.22},{.48,.49,.16}}) do
+        O.blots[i]={x=p[1],y=p[2],r=Arena.width*p[3],life=4,seed=i}
+    end
 end
 function O.hurt(crab,arm)
     if O.defeated or crab.dead or crab.emerge then return end
@@ -618,14 +620,29 @@ function O.draw()
     g.setLineWidth(1); g.setColor(1,1,1)
 end
 function O.drawInk(width,height)
-
-    if not O.active then return end
+    if not O.active or #O.blots==0 then return end
+    width=width or Arena.width;height=height or 600
     local g=love.graphics
-    g.push('all'); g.scale((width or Arena.width)/Arena.width,(height or 600)/600)
+    O.inkScreenShader=O.inkScreenShader or g.newShader([[
+        extern vec2 screenSize;
+        vec4 effect(vec4 color,Image image,vec2 uv,vec2 screen) {
+            vec2 p=screen/screenSize;
+            // The same apertures apply to every overlapping stain.
+            float a=length((p-vec2(.33,.35))/vec2(.13,.17));
+            float b=length((p-vec2(.68,.63))/vec2(.14,.16));
+            float ripple=sin(p.x*47.+p.y*33.)*.07;
+            float mask=smoothstep(.86,1.08,min(a,b)+ripple);
+            vec4 ink=Texel(image,uv)*color;ink.a*=mask;return ink;
+        }
+    ]])
+    local canvas=g.getCanvas();local pixelWidth,pixelHeight
+    if canvas then pixelWidth,pixelHeight=canvas:getPixelDimensions() else pixelWidth,pixelHeight=g.getPixelDimensions() end
+    g.push('all');g.setShader(O.inkScreenShader);O.inkScreenShader:send('screenSize',{pixelWidth,pixelHeight})
+    g.scale(width/Arena.width,height/600)
     for _,b in ipairs(O.blots) do
-        g.setColor(.025,.015,.04,math.min(.82,b.life*.28))
-        Art.draw('ink_splatter',b.x*Arena.width,b.y*600,b.r*2.3,b.seed*2.4,600*.95)
+        g.setColor(.025,.015,.04,math.min(.90,b.life*.32))
+        Art.draw('ink_splatter',b.x*Arena.width,b.y*600,b.r*2,b.seed*2.4,600*(b.r/Arena.width)*2.3)
     end
-    g.pop(); g.setColor(1,1,1)
+    g.pop()
 end
 return O

@@ -16,7 +16,7 @@ function F.death(x,y)
 end
 function F.collect(x,y,targetX,targetY)
  if Replay and Replay.ghost then return end
- F.pickupPulse={x=x,y=y,age=0,duration=.95,palette=Palette.get(),targetX=targetX or player.x+15,targetY=targetY or player.y+12}
+ F.pickupPulse={x=x,y=y,age=0,duration=.95,palette=Palette.player(),targetX=targetX or player.x+15,targetY=targetY or player.y+12}
 end
 function F.update(dt)
  F.clock=F.clock+dt
@@ -110,10 +110,27 @@ local function seal(p)
  end
  g.pop()
 end
+-- A small finishing glint acknowledges collection at its original destination.
+local function pickupGlint(p)
+ local t=p.age/.42
+ if t>=1 then return end
+ local g=love.graphics;local fade=math.sin(t*math.pi)^2*F.strength()
+ local radius=3+6*math.sin(t*math.pi)
+ g.setColor(1,.95,.78,fade*.82)
+ g.polygon('fill',p.targetX-radius,p.targetY,p.targetX-1.5,p.targetY-1.5,
+  p.targetX,p.targetY-radius,p.targetX+1.5,p.targetY-1.5,
+  p.targetX+radius,p.targetY,p.targetX+1.5,p.targetY+1.5,
+  p.targetX,p.targetY+radius,p.targetX-1.5,p.targetY+1.5)
+ for i=1,6 do
+  local a=i*tau/6;local reach=9+18*(1-(1-t)^2)
+  spectrum(a,fade*.65,p.palette)
+  g.circle('fill',p.targetX+math.cos(a)*reach,p.targetY+math.sin(a)*reach*.75,1.2*(1-t)+.3)
+ end
+end
 function F.draw()
  if F.strength()<=0 or not F.pickupPulse or F.deathPulse then return end
  local g=love.graphics;g.push('all');g.setShader();g.setBlendMode('alpha')
- seal(F.pickupPulse);silk(F.pickupPulse)
+ seal(F.pickupPulse);silk(F.pickupPulse);pickupGlint(F.pickupPulse)
  g.pop()
 end
 return F

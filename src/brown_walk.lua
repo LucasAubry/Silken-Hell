@@ -32,17 +32,16 @@ local function build(img,dir,bounds)
 end
 function W.draw(img,dir,x,y,width,p,bounds)
  if not p.walkMoving or p.reset or p.falling or p.abyssHeld or p.abyssSpit or p.abyssKnock or p.whirl or p.skyWhirl or p.throw or p.skyThrow or p.tunnelTravel then return false end
- local cached=W.meshes[dir]
- if not cached or cached.image~=img then
-  if cached then cached.mesh:release() end
-  cached=build(img,dir,bounds);cached.image=img;W.meshes[dir]=cached
- end
+ local poses=W.meshes[img]
+ if not poses then poses={};W.meshes[img]=poses end
+ local cached=poses[dir]
+ if not cached then cached=build(img,dir,bounds);cached.image=img;poses[dir]=cached end
  local phase=p.walkPhase or 0
  for i,r in ipairs(cached.rig) do
   local stride=math.sin(phase+r.offset);local lift=math.max(0,math.cos(phase+r.offset))
   local v=cached.vertices[i]
-  v[1]=r.x+(stride*r.side*.025)*cached.w*r.weight
-  v[2]=r.y+(stride*.019-lift*.014)*cached.h*r.weight
+  v[1]=r.x+(stride*r.side*.043)*cached.w*r.weight
+  v[2]=r.y+(stride*.031-lift*.024)*cached.h*r.weight
   cached.mesh:setVertex(i,v)
  end
  local scale=width/cached.w;local bob=math.cos(phase*2)*.55*width/62

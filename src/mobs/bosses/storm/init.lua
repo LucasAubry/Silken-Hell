@@ -227,6 +227,7 @@ function S.update(dt)
   if p.age>=.85 and not p.struck then
    p.struck=true;S.holes[#S.holes+1]={x=p.x,y=p.y,age=0,r=STRIKE_RADIUS,seed=p.seed};BossFX.burst(p.x,p.y,{.65,.8,1},1)
   end
+  if p.age>=.85 and p.age<1.33 then Rain.electrify(p.x,p.y,STRIKE_RADIUS) end
   if p.age>1.4 then table.remove(S.strikes,i) end
  end
  for i=#S.holes,1,-1 do local p=S.holes[i];p.age=p.age+dt;p.r=STRIKE_RADIUS*math.max(0,1-p.age/6.5)^.7;if p.age>=6.5 then table.remove(S.holes,i) end end

@@ -43,6 +43,19 @@ function A.build(spawn,targets,boss)
             end
         end
     end
+    if Campaign.biome==4 and not boss then
+        -- Small separated reefs leave routes around every side; reconciliation
+        -- reserves the spawn, tears and fixed hazards before accepting them.
+        local n=player.level
+        local sites={{.30,190},{.70,395},{.70,190},{.30,395}}
+        local count=n<=3 and 2 or n<=6 and 3 or 4
+        for i=1,count do
+            local site=sites[i];local vertical=(n+i)%3==0
+            local w,h=vertical and 28 or 122,vertical and 108 or 28
+            local r={x=A.width*site[1]-w/2,y=site[2]-h/2,w=w,h=h}
+            A.interior[#A.interior+1]=r;A.walls[#A.walls+1]=r
+        end
+    end
     Walls=A.walls
     A.navigationVersion=(A.navigationVersion or 0)+1
 end

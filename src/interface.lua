@@ -103,7 +103,8 @@ function U.mouse(x,y)
 end
 function U.click(x,y)
     for i=#U.buttons,1,-1 do local b=U.buttons[i]
-        if x>=b.x and x<=b.x+b.w and y>=b.y and y<=b.y+b.h then
+        if x>=b.x and x<=b.x+b.w and y>=b.y and y<=b.y+b.h
+            and (not b.radius or (x-b.x-b.w/2)^2+(y-b.y-b.h/2)^2<=b.radius^2) then
             if not b.disabled then
                 if U.pressed then return true end
                 Audio.play(b.sound or 'go')
@@ -130,6 +131,16 @@ end
 function U.background()
     local w,tint=U.theme()
     g.setShader(U.shader); g.setColor(1,1,1); g.draw(U.pixel,0,0,0,1200,750); g.setShader()
+    -- Ambient motes stay behind the opaque character, including its eyes.
+    for i=1,95 do
+        local x=(i*139+math.sin(U.clock*0.15+i)*18)%1200
+        local y=(i*83-U.clock*(3+i%5))%750
+        local alpha=0.18+0.3*(math.sin(U.clock+i)*0.5+0.5)
+        g.setBlendMode('add'); g.setColor(tint[1],tint[2],tint[3],alpha*0.15); g.circle('fill',x,y,5)
+        g.setColor(tint[1],tint[2],tint[3],alpha); g.circle('fill',x,y,i%3==0 and 1.6 or 0.8)
+        if i%11==0 then g.line(x-4,y,x+4,y); g.line(x,y-4,x,y+4) end
+        g.setBlendMode('alpha')
+    end
     -- The actual player sprite is the menu's living centerpiece.
     if player and Art.images.original then
         local x=600+math.sin(U.clock*0.32)*9
@@ -144,15 +155,6 @@ function U.background()
         g.setBlendMode('alpha')
         require('silk_art').menuThread(x,62,y,216)
         g.setColor(1,1,1); Characters.selectionPortrait(x,y,216)
-    end
-    for i=1,95 do
-        local x=(i*139+math.sin(U.clock*0.15+i)*18)%1200
-        local y=(i*83-U.clock*(3+i%5))%750
-        local alpha=0.18+0.3*(math.sin(U.clock+i)*0.5+0.5)
-        g.setBlendMode('add'); g.setColor(tint[1],tint[2],tint[3],alpha*0.15); g.circle('fill',x,y,5)
-        g.setColor(tint[1],tint[2],tint[3],alpha); g.circle('fill',x,y,i%3==0 and 1.6 or 0.8)
-        if i%11==0 then g.line(x-4,y,x+4,y); g.line(x,y-4,x,y+4) end
-        g.setBlendMode('alpha')
     end
     g.setColor(0.55,0.64,0.59,0.18); g.line(32,56,1168,56)
 end
@@ -230,6 +232,20 @@ function U.countryName()
 end
 function U.menu()
     U.board(32,214,290,true); U.board(878,214,290,false)
+    local selected=Characters.selected();local base=Characters.crowned[selected] or selected
+    local variant=Characters.variants[base];local unlocked=variant and Characters.unlocked(variant)
+    if unlocked then
+        local x,y,r=738,301,16;local active=selected==variant
+        local mx,my=U.mouse();local hover=(mx-x)^2+(my-y)^2<=r*r
+        g.push('all');g.setLineWidth(hover and 2 or 1)
+        g.setColor(active and {.35,.25,.09,.96} or {.04,.07,.09,.96});g.circle('fill',x,y,r)
+        g.setColor(active and {1,.82,.36} or {.70,.59,.34});g.circle('line',x,y,r)
+        local points={}
+        for i=0,7 do local a=-math.pi/2+i*math.pi/4;local d=i%2==0 and 9 or 3.5;points[#points+1]=x+math.cos(a)*d;points[#points+1]=y+math.sin(a)*d end
+        g.polygon(active and 'fill' or 'line',points);g.pop()
+        U.buttons[#U.buttons+1]={x=x-r,y=y-r,w=r*2,h=r*2,radius=r,run=function()Characters.selectVariant(not active)end,sound='go'}
+    end
+    U.button('STATISTIQUES',32,76,188,36,function()App.state='statistics' end)
     U.text('Silken Hell',320,332,'title',white,560,'center')
     U.arrow(430,248,-1,function() Characters.cycle(-1) end)
     U.arrow(770,248,1,function() Characters.cycle(1) end)
@@ -320,7 +336,7 @@ function U.bestiaryIcon(entry,x,y,size)
     if entry.art=='cloud' then
         g.setColor(.79,.87,.95); g.ellipse('fill',x,y,size*.45,size*.2); g.circle('fill',x-size*.16,y-size*.1,size*.23); g.circle('fill',x+size*.14,y-size*.14,size*.28)
     elseif entry.art=='rain' then
-        g.setColor(.35,.75,1); g.setLineWidth(3); for i=-1,1 do g.line(x+i*size*.2,y-size*.3,x+i*size*.2-size*.12,y+size*.3) end; g.setLineWidth(1)
+        g.setColor(1,.85,.32);g.polygon('fill',x+size*.14,y-size*.42,x-size*.25,y+size*.05,x-size*.04,y+size*.05,x-size*.14,y+size*.42,x+size*.25,y-size*.06,x+size*.04,y-size*.06)
     else
         local a=Art.images[entry.art]
         local width=a and size*a.w/math.max(a.w,a.h) or size
@@ -511,6 +527,7 @@ function U.workshop()
 end
 function U.draw()
     U.buttons={}
+    if App.state=='skinUnlock' then require('skin_unlock').draw();return end
     if App.state=='playing' then U.gameHud();if Replay and Replay.playing then Replay.controls() end;if Secret.duel and Secret.duel.kind=='mob' then U.text(Secret.duel.name..(Secret.duel.kind=='mob' and (' · Survie '..math.ceil(math.max(0,20-Secret.duel.time))..' s') or ' · Duel'),300,90,'body',white,600,'center') end;return end
     if App.state=='bossWorld' then Secret.draw();return end
     if App.state=='worlds' then U.theme() else U.background() end
@@ -524,6 +541,7 @@ function U.draw()
         U.button('Rester',410,378,380,44,function() App.state='menu' end,false,true)
         U.button('Quitter le jeu',410,438,380,40,function() App.quitDelay=.4 end)
     elseif App.state=='workshop' then U.workshop()
+    elseif App.state=='statistics' then require('statistics').draw()
     elseif App.state=='achievements' then
         U.panel(170,55,860,665)
         U.text('SUCCÈS',200,75,'heading',white,800,'center')
@@ -533,9 +551,11 @@ function U.draw()
         U.text(completed..' obtenus · '..remaining..' à faire',200,116,'body',white,800,'center')
         g.setColor(.12,.18,.20);g.rectangle('fill',300,146,600,6,3)
         if completed>0 then g.setColor(.48,.84,.64);g.rectangle('fill',300,146,600*completed/#Achievements.list,6,3) end
-        local totals={{'Larmes',Profile.stats.tears},{'Œufs',Profile.stats.eggs or 0},{'Morts',Profile.stats.deaths},{'Essais',Profile.stats.attempts}}
-        for i,v in ipairs(totals) do local x=205+(i-1)*200
-            U.text(v[1]..' : '..tostring(v[2]),x,170,'small',muted,190,'center')
+        local totals={{'Larmes',Profile.stats.tears},{'Morts',Profile.stats.deaths},{'Essais',Profile.stats.attempts}}
+        for i,v in ipairs(totals) do local x=205+(i-1)*270
+            g.setColor(.04,.10,.13,.98);g.rectangle('fill',x,158,250,40,5)
+            U.text(v[1],x+12,169,'body',white)
+            U.text(tostring(v[2]),x+94,162,'heading',{1,.85,.48},142,'right')
         end
         local filter=U.achievementFilter or 'all'
         for i,tab in ipairs({{'all','Tous ('..#Achievements.list..')'},{'todo','À faire ('..remaining..')'},{'done','Obtenus ('..completed..')'}}) do

@@ -9,7 +9,7 @@ Puis elle est morte.
 
 Emportée loin de toi, ta compagne s’est retrouvée prisonnière des Enfers. Il ne te restait d’elle qu’un fil blanc, trop fragile pour te guider, trop précieux pour l’abandonner.
 
-C’est alors que la Reine des araignées est apparue. Rouge, marquée de blanc et couronnée d’or, elle t’a proposé un défi :
+C’est alors que la Reine des araignées est apparue. Rouge et marquée de blanc, elle t’a proposé un défi :
 
 « Traverse les mondes. Parviens jusqu’aux Enfers. Si tu survis à cette descente, tu pourras la retrouver. »
 
@@ -53,24 +53,51 @@ function S.localizedWorld(world)
  local language=Profile and Profile.language or 'fr';local biome=Worlds.biome(world)
  return (S.worldTranslations[biome] or {})[language] or require('localization').render(S.worlds[biome] or '')
 end
+function S.isBossLevel()
+ return Worlds.isSecret(Campaign.world) or player.level==(Campaign.world==3 and 1 or 10)
+end
+function S.wallSpot()
+ local spots={[1]={'bottom',.28},[6]={'top',.72},[5]={'left',.64},[4]={'right',.38},[7]={'bottom',.64},[2]={'top',.30},[3]={'left',.36}}
+ local spot=spots[Campaign.biome] or {'bottom',.5};local side=spot[1]
+ local horizontal=side=='top' or side=='bottom';local span=horizontal and Arena.width or 600
+ local position=span*spot[2]
+ for _,offset in ipairs({0,40,-40,80,-80,120,-120}) do
+  local candidate=math.max(80,math.min(span-80,position+offset))
+  local x=horizontal and candidate or side=='left' and 12 or Arena.width-12
+  local y=horizontal and (side=='top' and 12 or 588) or candidate
+  local bx=horizontal and x-15 or side=='left' and 22 or Arena.width-60
+  local by=horizontal and (side=='top' and 22 or 540) or y-12
+  if not Arena.blocked(bx,by,horizontal and 30 or 38,horizontal and 38 or 24) then return x,y,side end
+ end
+ return horizontal and position or (side=='left' and 12 or Arena.width-12),horizontal and (side=='top' and 12 or 588) or position,side
+end
+function S.atWall(x,y,side)
+ side=side or (y<22 and 'top' or x<22 and 'left' or x>Arena.width-22 and 'right' or 'bottom')
+ if side=='top' then return math.abs(player.x+15-x)<=22 and player.y>=y and player.y<=y+38 end
+ if side=='left' then return math.abs(player.y+12-y)<=22 and player.x>=x and player.x<=x+38 end
+ if side=='right' then return math.abs(player.y+12-y)<=22 and player.x+30>=x-38 and player.x+30<=x end
+ return math.abs(player.x+15-x)<=22 and player.y+24>=y-38 and player.y+24<=y
+end
 function S.drawWallMessage()
- if require('boss_liberation').busy() then return end
- local final=require('final_spider')
- if not Aftermath.cleared and not (final.active and final.defeated) then return end
- local biome=Campaign.biome;local line=S.inscriptions[biome];if not line then return end
- local g=love.graphics;local x=Arena.width*.5;local width=math.min(590,Arena.width-140)
- g.push('all');g.setShader();g.setColor(.06,.065,.075,.96);g.rectangle('fill',x-width/2,577,width,22,3)
- g.setColor(.77,.76,.65,.65);g.setLineWidth(1);g.rectangle('line',x-width/2+2,579,width-4,18,2)
- g.setFont(UI.fonts.tiny);g.setColor(0,0,0,.9);g.printf(line,x-width/2+10,583,width-20,'center')
- g.setColor(.97,.92,.79,.95);g.printf(line,x-width/2+10,582,width-20,'center')
- local near=math.abs(player.x+15-x)<width/2+25 and player.y>430
- if near then
-  local w=math.min(530,Arena.width-100)
-  g.setColor(.025,.032,.045,.94);g.rectangle('fill',x-w/2,410,w,112,8)
-  g.setColor(.84,.84,.75,.6);g.rectangle('line',x-w/2,410,w,112,8)
-  UI.text('Un message d’elle',x-w/2+20,420,'small',{1,.9,.68},w-40,'center')
-  UI.text(S.localizedWorld(Campaign.world),x-w/2+24,446,'body',{.94,.95,.92},w-48,'center')
- else UI.text('Elle a laissé un message sur le mur du bas.',x-240,548,'small',{.94,.93,.82},480,'center') end
+ if not S.isBossLevel() or require('boss_liberation').busy() or Secret.inArena() or App.sessionLayout or App.preview then return end
+ local line=S.inscriptions[Campaign.biome];if not line then return end
+ local g=love.graphics;local x,y,side=S.wallSpot()
+ local key=tostring(Campaign.world)..':'..tostring(player.level)
+ if S.wallKey~=key then S.wallKey=key;S.nearSince=nil end
+ local near=S.atWall(x,y,side)
+ if not near then S.nearSince=nil else S.nearSince=S.nearSince or UI.clock end
+ local alpha=near and math.min(1,(UI.clock-S.nearSince)*4) or 0
+ g.push('all');g.setShader()
+ -- Tiny lettering engraved directly into the masonry, without a sign or hint.
+ g.push();g.translate(x,y);if side=='left' then g.rotate(-math.pi/2) elseif side=='right' then g.rotate(math.pi/2) end;g.scale(.42)
+ g.setFont(UI.fonts.tiny);g.setColor(.03,.035,.04,.75);g.printf(line,-110,1,220,'center')
+ g.setColor(.78,.73,.61,.44);g.printf(line,-110,0,220,'center');g.pop()
+ if alpha>0 then
+  local width=math.min(460,Arena.width-100);local left=math.max(35,math.min(Arena.width-width-35,x-width/2))
+  local top=side=='top' and 62 or side=='bottom' and 440 or math.max(80,math.min(450,y-45))
+  g.setColor(.025,.032,.045,.94*alpha);g.rectangle('fill',left,top,width,91,6)
+  UI.text(S.localizedWorld(Campaign.world),left+20,top+15,'body',{.94,.91,.82,alpha},width-40,'center')
+ end
  g.pop()
 end
 return S

@@ -12,7 +12,7 @@ function T.run()
   for k=1,3 do assert(palette[1][k]==c[k]) end
   for world=1,7 do
    Campaign.select(world);assert(P.player()==palette,'Skin palette cannot change with biome')
-   F.collect(200,200);assert(F.pickupPulse.palette==P.get(world),'Pickup must match the biome for every skin')
+   F.collect(200,200);assert(F.pickupPulse.palette==P.player(i),'Pickup must match the equipped skin in every biome')
    for _,pose in ipairs({'up','down','left','right'}) do Characters.portrait(i,60,60,50,pose) end
   end
   if Characters.crowned[i] then
@@ -23,7 +23,7 @@ function T.run()
  Characters.selected=function()return 3 end
  F.death(100,100);F.collect(200,200);local old=F.deathPulse.palette;local pickup=F.pickupPulse.palette
  Characters.selected=function()return 4 end;Campaign.select(2)
- assert(F.deathPulse.palette==old and F.pickupPulse.palette==pickup and pickup==P.get(7) and P.player()~=old,'Events must retain their source palette through skin/biome transitions')
+ assert(F.deathPulse.palette==old and F.pickupPulse.palette==pickup and pickup==P.player(3) and P.player()~=old,'Events must retain their source palette through skin/biome transitions')
  Replay.playing=true;Replay.ghost=false;Replay.data={skin=3};Characters.selected=selected
  assert(P.player()==P.player(3),'Playback must use recorded skin');Replay.playing=false;Replay.data=replayData;Replay.ghost=ghost
  local count=0;local halo=M.halo;M.halo=function(...)count=count+1;return halo(...)end

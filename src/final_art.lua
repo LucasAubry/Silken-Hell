@@ -19,11 +19,18 @@ function A.pose(angle)
  local delta=math.atan2(math.sin((angle or 0)-base),math.cos((angle or 0)-base))
  return dir,delta
 end
-function A.spider(name,x,y,width,angle)
+function A.spider(name,x,y,width,angle,walk)
  local servants=require('servant_art');local context=servants.current
  servants.current={type='queen_child',bossServant=name~='queen'}
  local dir,turn=A.pose(angle)
- local graphics=love.graphics;graphics.push('all');graphics.translate(x,y);graphics.rotate(turn)
+ local graphics=love.graphics
+ local function body(sprite)
+  local key='final_'..sprite
+  if not Art.images[key] then Art.add(key,'assets/sprites/final/'..sprite..'.png') end
+  local a=Art.images[key]
+  if not (walk and require('brown_walk').draw(a.image,dir,0,0,width,walk,a.quad)) then A.draw(sprite,0,0,width,0) end
+ end
+ graphics.push('all');graphics.translate(x,y);graphics.rotate(turn)
  x,y=0,0
  if dir~='down' then
   local variant=(name=='queen' or name=='baby_red') and 'red' or name=='baby_black' and 'black' or 'white'
@@ -34,19 +41,10 @@ function A.spider(name,x,y,width,angle)
    }]])
    g.setShader(A.babyEyeShader)
   end
-  A.draw((dir=='right' and 'side_' or dir..'_')..variant,0,0,width,0)
-  if name=='queen' then
-   if not Art.images.queen_crown then Art.add('queen_crown','assets/monstres/renaissance/reine/crown.png') end
-   g.setColor(1,1,1);Art.draw('queen_crown',dir=='up' and 0 or (dir=='left' and -1 or 1)*width*.19,dir=='up' and -width*.29 or -width*.09,dir=='up' and width*.18 or width*.24,dir=='left' and -.25 or dir=='right' and .25 or 0)
-  end
+  body((dir=='right' and 'side_' or dir..'_')..variant)
   g.pop()
  else
-  A.draw(name,x,y,width,0)
-  if name=='queen' then
-   if not Art.images.queen_crown then Art.add('queen_crown','assets/monstres/renaissance/reine/crown.png') end
-   local crown=Art.images.queen_crown;local cw=width*.24;local ch=cw*crown.h/crown.w
-   graphics.setColor(1,1,1);Art.draw('queen_crown',0,width*.025-ch*.5,cw,0,ch)
-  end
+  body(name)
  end
  graphics.pop();servants.current=context
  return dir

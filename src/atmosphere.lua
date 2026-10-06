@@ -100,9 +100,6 @@ function A.draw()
         if not m.abyssHeld and not m.spent then
             if m.type=='imp' or m.type=='magma_larva' then
                 glow(m.x,m.y+7,28,{1,.2,.025},.22)
-                for i=1,3 do local age=(t*1.2+i*.31)%1
-                    g.setColor(1,.45,.1,(1-age)*.65); g.circle('fill',m.x+math.sin(i*7+t)*12,m.y-age*29,.8)
-                end
             elseif m.type=='jelly' then glow(m.x,m.y,39,{.2,.7,1},.16+.1*math.sin(t*4)^2)
             elseif m.type=='gull' and m.electric then glow(m.x,m.y,28,{1,.85,.08},.22)
             elseif m.type=='worm' and Realms.wormPhase(m.age)=='surface' then

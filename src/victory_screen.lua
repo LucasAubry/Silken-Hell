@@ -4,12 +4,13 @@ local palettes={
  [5]={.83,.62,.35},[6]={.66,.77,1},[7]={.32,.65,1}
 }
 function V.enter(continuation)
- V.run={world=Campaign.world,biome=Campaign.biome,time=timer,deaths=player.death,hardcore=App.hardcore,
+ V.run={skin=App.runSkin or Characters.selected(),world=Campaign.world,biome=Campaign.biome,time=timer,deaths=player.death,hardcore=App.hardcore,
   rows=RunDetails.snapshot(),started=UI.clock,online=Online.current,continuation=continuation,page=1,name=Profile.name}
  V.run.replayData=Replay.recording and Replay.data or nil
  App.state='victory';UI.boardWorld=Campaign.world
 end
 function V.rank(r)
+ if r.podiumPreview then return '#'..r.podiumPreview,'Aperçu · aucun score enregistré' end
  if r.hardcore then return 'HARDCORE','Hors classement normal' end
  local run=r.online
  if not Online.enabled or not run or run.failed then
@@ -57,16 +58,18 @@ end
 function V.draw()
  if not V.run then V.enter() end
  local r=V.run;local g=love.graphics;local c=V.backdrop(r);local white={.94,.96,1};local muted={.57,.65,.74}
+ UI.panel(70,166,400,430,true);UI.panel(490,166,640,430,true)
+ local rank,label=V.rank(r)
+ require('podium_celebration').drawLight(r,rank,95,467)
  UI.text(Worlds.names[r.biome]:upper(),80,76,'heading',white,1040,'center')
  UI.rawText(r.name,100,119,'body',muted,1000,'center')
- UI.panel(70,166,400,430,true);UI.panel(490,166,640,430,true)
+
  UI.text('TEMPS CLASSÉ',95,189,'small',c)
  g.push();g.translate(92,217);g.scale(1.8);UI.rawText(UI.time(Scoring.total(r.time,r.deaths)),0,0,'heading',white);g.pop()
  UI.text(r.deaths..' morts · pénalité '..Scoring.label(r.deaths),95,281,'small',muted)
  g.setColor(c[1],c[2],c[3],.3);g.line(95,318,445,318)
  UI.text('TEMPS ACTIF',95,339,'small',muted);UI.rawText(UI.time(r.time),95,365,'heading',c)
- local rank,label=V.rank(r)
- UI.rawText(rank,95,467,'heading',white);UI.text(label,95,513,'small',muted,350)
+ require('podium_celebration').drawRank(r,rank,95,467);UI.text(label,95,513,'small',muted,350)
  UI.text('VOTRE PARCOURS',516,189,'small',c)
  UI.text('NIVEAU',516,222,'small',muted);UI.text('TEMPS',873,222,'small',muted);UI.text('MORTS',1030,222,'small',muted)
  local rows={};for _,row in ipairs(r.rows) do rows[row.level]=row end
@@ -78,6 +81,11 @@ function V.draw()
   UI.rawText(string.format('%02d',n),518,y,'small',c);UI.text(name,553,y,'body',white,300)
   UI.rawText(row and UI.time(row.time) or '—',873,y,'body',white)
   UI.rawText(row and tostring(row.deaths) or '—',1045,y,'body',muted)
+ end
+ if r.podiumPreview then
+  UI.button('Tester la place suivante',70,617,474,47,function() require('podium_celebration').test() end)
+  UI.button('Retour au menu',560,617,570,47,function() require('podium_celebration').closePreview() end,false,true)
+  return
  end
  local replay=r.replayData
  UI.button('Voir ma traversée',70,617,250,47,function() Replay.play(replay) end,not (replay and replay.completed))

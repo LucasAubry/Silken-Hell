@@ -3,6 +3,20 @@ function T.run()
  io.stdout:setvbuf('no');Online.enabled=false;Replay.disabled=true
  Profile.save=function()end;Bestiary.save=function()end;love.focus=function()end;Profile.language='fr'
  local g=love.graphics;local C=require('collision_shapes')
+ local completed,hardcore,achievements,scores=Profile.completed,Hardcore.completed,Profile.achievements,Profile.scores
+ Profile.scores={}
+ Profile.completed={[1]=true,[6]=true};Hardcore.completed={};Profile.achievements={};Profile.character=6
+ assert(not Characters.selectVariant(true) and Profile.character==6,'Locked variant cannot be equipped')
+ Hardcore.completed['1']=true
+ assert(Characters.selectVariant(true) and Profile.character==15,'Gold variant equips within its family')
+ assert(Characters.selectVariant(false) and Profile.character==6,'Classic variant can be restored')
+ Characters.selectVariant(true);Characters.cycle(1)
+ assert(Profile.character==7,'Next family falls back to its unlocked classic')
+ Characters.cycle(-1);assert(Profile.character==6,'Arrows cycle families, not duplicate variants')
+ Profile.character=2;assert(not Characters.selectVariant(true),'No fabricated variant for a skin without one')
+ Profile.completed={};Profile.character=15;Characters.cycle(-1);Characters.cycle(1)
+ assert(Profile.character==15,'A family unlocked only through hardcore remains selectable')
+ Profile.completed=completed;Hardcore.completed=hardcore;Profile.achievements=achievements;Profile.scores=scores;Profile.character=1
  App.singleLevel=true;App.practice=2;App.start(1);player.reset=false;player.x=100;player.y=200
  local px,py,pw,ph=C.playerRect()
  assert(C.projectile(px,py,1,1) and not C.projectile(px+pw,py,1,1))
@@ -26,6 +40,75 @@ function T.run()
   pixels:release();assert(maximum<.13 and maximum>.02,'Skin opacity '..id)
  end
  canvas:release()
+ -- Compare the same unadorned body material, not eyes, outlines or crowns.
+ -- These UVs lie on the lit abdomen of each source drawing.
+ local colorCanvas=g.newCanvas(256,256)
+ for id=1,22 do
+  local front
+  for _,dir in ipairs({'down','up','left','right'}) do
+   g.push('all');g.setCanvas(colorCanvas);g.origin();g.clear(0,0,0,0);g.setColor(1,1,1)
+   Characters.portrait(id,128,128,220,dir);g.pop()
+   local art=Art.images[Characters.model(dir)];local qx,qy,qw,qh=art.quad:getViewport()
+   local iw,ih=art.image:getDimensions();local scale=220/math.max(qw,qh)
+   local side=dir=='left' or dir=='right'
+   -- The profile's central abdomen now carries the shared marking; sample beside it.
+   local dx=(iw*(side and .62 or .42)-qx-qw/2)*scale;local dy=(ih*(side and .29 or .26)-qy-qh/2)*scale
+   local data=colorCanvas:newImageData();local rgb={0,0,0}
+   for y=-1,1 do for x=-1,1 do
+    local r,g,b,a=data:getPixel(math.floor(128+(dir=='right' and -dx or dx))+x,math.floor(128+dy)+y)
+    assert(a>.99,'Opaque skin material');rgb[1]=rgb[1]+r/9;rgb[2]=rgb[2]+g/9;rgb[3]=rgb[3]+b/9
+   end end
+   if dir=='down' then
+    for _,eyeX in ipairs({590,851}) do
+     local ex=math.floor(128+(eyeX-qx-qw/2)*scale)
+     local ey=math.floor(128+(637-qy-qh/2)*scale)
+     local r,g,b,a=data:getPixel(ex,ey)
+     assert(math.min(r,g,b)>.9 and a>.99,'White opaque eye catchlight: skin '..id)
+    end
+    for _,irisX in ipairs({.384,.616}) do
+     local ex=math.floor(128+(iw*irisX-qx-qw/2)*scale)
+     local ey=math.floor(128+(ih*.585-qy-qh/2)*scale)
+     local r,g,b,a=data:getPixel(ex,ey)
+     local base=Characters.crowned[id] or id
+     assert(a>.99,'Opaque iris')
+     if base==1 then assert(r>g and g>b,'Clean amber iris without blue/body fragments')
+     else assert(b>r+.2,'Blue iris retained independently of body tint') end
+    end
+   end
+   if side then
+    local markX=(iw*.57-qx-qw/2)*scale
+    local markY=(ih*.24-qy-qh/2)*scale
+    local r,g,b,a=data:getPixel(math.floor(128+(dir=='right' and -markX or markX)),math.floor(128+markY))
+    local base=Characters.crowned[id] or id
+    assert(a>.99,'Opaque profile marking')
+    if base==1 then assert(r<rgb[1]*.8,'Brown profile retains the dark abdomen marking')
+    else assert(r>b*1.4+.06 and g>b*1.1+.02,'Gold abdomen marking in profile: skin '..id..' '..dir) end
+   end
+   data:release()
+   if not front then front=rgb else for channel=1,3 do
+    assert(math.abs(front[channel]-rgb[channel])<.065,'Consistent body color: '..id..' '..dir..' channel '..channel..' ('..front[channel]..' / '..rgb[channel]..')')
+   end end
+  end
+ end
+ colorCanvas:release()
+ -- Background motes must never brighten any opaque part of the menu spider.
+ local menuCanvas=g.newCanvas(1200,750);local actorCanvas=g.newCanvas(1200,750)
+ Profile.character=1;App.selectedWorld=1
+ for _,time in ipairs({0,3,9,15}) do
+  UI.clock=time;local x=600+math.sin(time*.32)*9;local y=247+math.sin(time*.9)*7
+  g.push('all');g.origin();g.setCanvas(menuCanvas);g.clear();UI.background()
+  g.setCanvas(actorCanvas);g.clear(0,0,0,0);g.setColor(1,1,1);Characters.selectionPortrait(x,y,216);g.pop()
+  local scene=menuCanvas:newImageData();local actor=actorCanvas:newImageData()
+  for py=160,330,2 do for px=490,710,2 do
+   local r,g,b,a=actor:getPixel(px,py)
+   if a>.999 then
+    local sr,sg,sb=scene:getPixel(px,py)
+    assert(math.max(math.abs(sr-r),math.abs(sg-g),math.abs(sb-b))<.01,'Menu particles remain behind the body and eyes')
+   end
+  end end
+  scene:release();actor:release()
+ end
+ menuCanvas:release();actorCanvas:release()
  for _,a in ipairs(Achievements.list)do
   local _,lines=UI.fonts.body:getWrap(a.description(),715)
   assert(#lines<=2,'Readable card text: '..a.id)
@@ -60,7 +143,11 @@ function T.run()
    capture('skins-shared')
   elseif tick==6 then
    App.singleLevel=true;App.practice=2;App.start(1);player.reset=false;draw();capture('game-clean')
-  elseif tick>=7 then print('PASS fixed collisions, swept contacts, F3 removal, all boss renderers, achievement filters and readable descriptions, map and skin captures');love.event.quit() end
+  elseif tick==7 then
+   App.state='menu';App.selectedWorld=1;Profile.character=1;UI.clock=9;draw();capture('menu-opaque')
+  elseif tick==8 then
+   g.clear(.08,.09,.10);g.setColor(1,1,1);Characters.portrait(1,600,360,650,'down');capture('skin-brown-detail')
+  elseif tick>=9 then print('PASS fixed collisions, swept contacts, F3 removal, all boss renderers, achievement filters and readable descriptions, consistent body colors, PNG profile markings, clean irises and white eye catchlights for all 22 skins, opaque menu sprite over particles, map and skin captures');love.event.quit() end
  end
 end
 return T

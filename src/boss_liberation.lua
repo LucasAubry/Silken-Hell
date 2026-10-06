@@ -11,6 +11,7 @@ function L.start(boss,kind,complete)
  if boss.liberating or boss.defeated then return end
  -- Compatibility playback follows the timing of the recorded, older game.
  if Replay and (Replay.ghost or Replay.playing and Replay.compatibility) then complete();return end
+ Profile.recordBoss(kind)
  boss.defeated=true;boss.liberating=true;boss.flash=0
  local e={boss=boss,kind=kind,complete=complete,age=0,threads={},width=Arena.width}
  local seen={}

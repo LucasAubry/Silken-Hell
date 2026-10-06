@@ -97,12 +97,18 @@ local function circle(mode,x,y,r,color,soft)
     M.circleShader:send('filled',mode=='fill' and 1 or 0)
     g.draw(UI.pixel,x-52,y-52,0,104,104);g.pop()
 end
+local function markerMob(name,dir,x,y)
+    local a=Art.images[name..'_'..dir]
+    local min,mag,anisotropy=a.image:getFilter();local mip,bias=a.image:getMipmapFilter()
+    a.image:setFilter('nearest','nearest');a.image:setMipmapFilter()
+    g.setColor(1,1,1);local scale=44/math.max(a.w,a.h)
+    g.draw(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
+    a.image:setFilter(min,mag,anisotropy);a.image:setMipmapFilter(mip,bias)
+end
 local function node(n,i,x,y)
     local c=Worlds.color(n);local locked=not Worlds.canEnter(n)
     if locked then
-        g.setColor(.72+c.tear[1]*.28,.72+c.tear[2]*.28,.75+c.tear[3]*.25,.98)
-        Art.draw('map_cloud',x+math.sin(UI.clock*.25+n)*5,y,420,0,165)
-        UI.text('?',x-20,y-12,'heading',{.92,.94,1},40,'center')
+        require('map_cocoon').draw(x,y,n,UI.clock)
         return
     end
     for r=5,1,-1 do g.setColor(c.tear[1],c.tear[2],c.tear[3],.018);g.ellipse('fill',x,y,42+r*12,24+r*7) end
@@ -118,14 +124,15 @@ local function node(n,i,x,y)
     g.setColor(.015,.025,.035,.96);g.rectangle('fill',labelX-6,y-20,187,40,8,8)
     UI.text(Worlds.names[n],labelX,y-10,'medium',{.97,.90,.72},175,'right')
     for j=1,2 do local a=UI.clock*.25+j*math.pi
-        g.setColor(1,1,1,.9);Art.drawFacing(monsters[n],Art.direction(-math.sin(a),math.cos(a)),x+math.cos(a)*76,y+math.sin(a)*29,38)
+        markerMob(monsters[n],Art.direction(-math.sin(a),math.cos(a)),x+math.cos(a)*76,y+math.sin(a)*29)
     end
     UI.buttons[#UI.buttons+1]={x=labelX-6,y=math.max(125,y-35),w=x+40-labelX+6,h=math.max(0,math.min(680,y+35)-math.max(125,y-35)),run=function() M.select(n,i);M.branch(false,true) end,sound='go'}
 end
 function M.draw()
-    -- Render the route separately so clouds and paths fade out at the viewport edges.
+    -- Render the route separately so cocoons and paths fade out at the viewport edges.
     local previousCanvas=g.getCanvas()
     M.routeCanvas=M.routeCanvas or g.newCanvas(730,750)
+    M.routeCanvas:setFilter('nearest','nearest')
     g.push('all');g.setCanvas(M.routeCanvas);g.origin();g.setScissor();g.clear(0,0,0,0)
     g.setScissor(35,0,695,750)
     local lastX,lastY

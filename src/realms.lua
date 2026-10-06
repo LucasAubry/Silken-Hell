@@ -258,9 +258,7 @@ function R.updateLightning(dt)
         if p.age<.8 and p.target then p.x,p.y=p.target.x,p.target.y end
         if p.age>=.8 and not p.struck then
             p.struck=true
-            for _,m in ipairs(mobs) do if m.type=='gull' and (m.x-p.x)^2+(m.y-p.y)^2<45^2 then
-                m.electric=true; Bestiary.discover('electric_gull'); Bestiary.save()
-            end end
+            require('sky_rain').electrify(p.x,p.y,45)
             if (player.x+15-p.x)^2+(player.y+12-p.y)^2<34^2 then Hazards.kill() end
         end
         if p.age>1.15 then table.remove(R.lightning,i) end
@@ -342,18 +340,22 @@ function R.updateElectricTrails(dt)
 end
 function R.drawWind(width,height)
     if Campaign.biome~=6 then return end
-    width=width or Arena.width; height=height or 600
-    local w=R.wind; local strength=math.sqrt(w.x*w.x+w.y*w.y)
-    if strength<4 then return end
-    local dx,dy=w.x/strength,w.y/strength; local g=love.graphics
-    g.push('all'); g.setColor(.30,.48,.60,.30); g.setLineWidth(.8)
-    local count=math.floor(width*height/11000)
+    width=width or Arena.width;height=height or 600
+    local w=R.wind;local strength=math.sqrt(w.x*w.x+w.y*w.y)
+    require('sky_rain').ambient(width,height,R.clock,w)
+    local dx,dy=1,-.08
+    if strength>=4 then dx,dy=w.x/strength,w.y/strength end
+    local g=love.graphics;g.push('all');g.setShader()
+    local count=math.floor(width*height/(Graphics.quality==1 and 12000 or 7500))
     for i=1,count do
-        local u=math.sin(i*127.1)*43758.5453; local v=math.sin(i*311.7)*19341.371
-        local x=((u-math.floor(u))*width+R.clock*w.x*1.4)%width
-        local y=((v-math.floor(v))*height+R.clock*w.y*1.4)%height
-        local length=4+math.min(strength,150)*.025
-        g.line(x-dx*length,y-dy*length,x,y)
+        local age=(R.clock*(.18+strength*.001)+i*.173)%1
+        local x=(i*137.31+R.clock*dx*(80+strength))%width
+        local y=(i*79.73+R.clock*dy*(80+strength)+math.sin(i+R.clock)*8)%height
+        local length=30+strength*.25;local alpha=math.sin(age*math.pi)*(.32+math.min(1,strength/150)*.20)
+        g.setColor(.18,.32,.45,alpha*.65);g.setLineWidth(3)
+        g.line(x-dx*length,y-dy*length,x-dx*length*.5-dy*3,y-dy*length*.5+dx*3,x,y)
+        g.setColor(.88,.95,1,alpha);g.setLineWidth(1.4)
+        g.line(x-dx*length,y-dy*length,x-dx*length*.5-dy*3,y-dy*length*.5+dx*3,x,y)
     end
     g.pop()
 end
@@ -627,6 +629,14 @@ end
 function R.drawWall(r)
     local g=love.graphics; local w=Campaign.biome
     if w==6 then return end
+    if w==4 then
+        local horizontal=r.w>=r.h
+        g.setColor(1,1,1)
+        Art.draw('ocean_coral_wall',r.x+r.w/2,r.y+r.h/2,
+            horizontal and r.w or r.h,horizontal and 0 or math.pi/2,
+            (horizontal and r.h or r.w)+4)
+        return
+    end
     if w==5 then
         local horizontal=r.w>=r.h;local length=horizontal and r.w or r.h;local thickness=horizontal and r.h or r.w
         local count=math.max(1,math.ceil(length/math.max(40,thickness*3)));local span=length/count

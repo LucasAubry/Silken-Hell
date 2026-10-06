@@ -7,9 +7,13 @@ function T.run()
  Hazards.kill=function()hits=hits+1 end
  player.x=485;player.y=288
  local p={x=500,y=300,age=0};local drops={p}
- R.update(drops,.84);assert(hits==0,'Rain warning must be safe until the visible landing')
+ local originalMobs=mobs;local hit={type='gull',x=500,y=300};local outside={type='gull',x=525,y=300};local dead={type='gull',x=500,y=300,dead=true};mobs={hit,outside,dead}
+ R.update(drops,.84);assert(not hit.electric,'Telegraph does not electrify early');assert(hits==0,'Rain warning must be safe until the visible landing')
  R.update(drops,.011);assert(hits==1,'Damage starts exactly when the drop lands')
+ assert(hit.electric and not outside.electric and not dead.electric,'Only live gulls inside the strike become electric')
+ local late={type='gull',x=500,y=300};mobs[#mobs+1]=late
  p.age=1.21;R.update(drops,.01);assert(hits==1,'Fading impact is harmless')
+ assert(not late.electric,'Fading bolt is harmless to gulls');mobs=originalMobs
  for _,offset in ipairs({{24.1,0},{0,12.1},{25,13}}) do
   player.x=485+offset[1];player.y=288+offset[2];R.update({{x=500,y=300,age=.9}},.01)
  end
@@ -42,7 +46,7 @@ function T.run()
  for _,p in ipairs(b.rain) do local found=false;for _,site in ipairs(Realms.rainSites) do if p.x==site.x and p.y==site.y then found=true end end;assert(found,'Authored impact locations are preserved')end
  b.hurt(true);Realms.rainClock=0;Realms.update(.01);assert(#Realms.rain==0,'Authored rain cannot restart after boss death')
  Hazards.kill=kill
- print('PASS rain revision: impact timing, exact hit area, expiry, HP density and cadence, separated sites, dash pause, smaller strikes, liberation cleanup')
+ print('PASS lightning replacement and gull electrification: impact timing, exact hit area, expiry, HP density and cadence, separated sites, dash pause, smaller strikes, liberation cleanup')
  -- Render actual menus and the boss arena, including the discreet version footer.
  local draw=love.draw;local step=0;local g=love.graphics
  local frames={'menu','worlds','rain-warning','rain-impact','rain-final','lightning','loading'}

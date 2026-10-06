@@ -17,6 +17,7 @@ local function segment(x,y,xx,yy,p,r)
 end
 function F.reset(active)
  F.active=active;F.hp=20;F.maxHp=20;F.defeated=false;F.x=Arena.width*.5;F.y=165;F.angle=0;F.clock=0;F.flash=0
+ F.afterimages={};F.ghostClock=0;F.walkPhase=0;F.walkMoving=false;F.surge=1;F.dashing=false
  F.phase='passive';F.engaged=false;F.jumpCooldown=0;F.jump=nil;F.jumpHeight=0;F.contactGrace=0;F.phaseTime=0;F.shot=.65;F.volley=0;F.snareSource=nil;F.layPulse=0;F.eggs={};F.babies={};F.shells={};F.webs={};F.stuck={};F.carried=24;F.wave=0;F.snare=0;F.webGrace=0;F.target=nil;F.gate=false;F.batch=0;F.nest=nil
 end
 function F.visualAngle()
@@ -111,7 +112,7 @@ function F.updateWebs(dt)
  end
  for _,w in ipairs(F.stuck) do if near(w,p,24) and F.snare<=0 and (F.webGrace or 0)<=0 then F.trap(player);F.snare=2.1;F.snareSource='floor';F.webGrace=3;break end end
 end
-function F.update(dt)
+local function updateBehavior(dt)
 
  if not F.active then return end
  F.layPulse=math.max(0,(F.layPulse or 0)-dt)
@@ -194,7 +195,7 @@ function F.update(dt)
    local value=length(tx-p.x,ty-p.y)+travel*.4
    if not score or value>score then best={x=tx,y=ty};score=value end
   end
-  towards(F,best.x,best.y,270,dt)
+  towards(F,best.x,best.y,270*F.surge,dt)
   F.nest={x=F.x,y=F.y}
   if F.phaseTime>=.65+F.batch*.34 and F.batch<8 then F.layEgg() end
   if F.batch>=8 or F.phaseTime>4.5 then F.phase='webs';F.phaseTime=0;F.shot=.5 end
@@ -208,16 +209,39 @@ function F.update(dt)
    local webbed;for _,b in ipairs(F.babies) do if b.webbed and not b.dead then webbed=b;break end end
    if webbed then F.trap(webbed)
    else
-    towards(F,Arena.width*.5+math.sin(F.clock*.5)*Arena.width*.18,175+math.cos(F.clock*.65)*45,90,dt)
+    towards(F,Arena.width*.5+math.sin(F.clock*.5)*Arena.width*.18,175+math.cos(F.clock*.65)*45,90*F.surge,dt)
    end
   end
  end
  if F.contactGrace<=0 and require('collision_shapes').touchCircle('queen',F.x,F.y,27) then Hazards.kill();return end
  for i=#F.babies,1,-1 do if F.babies[i].dead then table.remove(F.babies,i) end end
 end
-function F.spider(x,y,size,variant,angle)
+function F.update(dt)
+ if not F.active then return end
+ local x,y=F.x,F.y
+ for i=#F.afterimages,1,-1 do
+  local ghost=F.afterimages[i];ghost.alpha=ghost.alpha-dt*2.4
+  if ghost.alpha<=0 then table.remove(F.afterimages,i) end
+ end
+ local cycle=(F.clock+dt)%4.8
+ local u=clamp((cycle-2.9)/.85,0,1)
+ F.surge=1+math.sin(u*math.pi)^2*.65
+ updateBehavior(dt)
+ local distance=length(F.x-x,F.y-y)
+ require('brown_walk').advance(F,distance,dt)
+ if F.jumpHeight>0 or F.phase=='intro_jump' then F.walkMoving=false end
+ F.dashing=not F.defeated and F.walkMoving and (F.phase=='charge' or F.surge>1.2)
+ if F.dashing then
+  F.ghostClock=F.ghostClock+dt
+  if F.ghostClock>=.05 then
+   F.afterimages[#F.afterimages+1]={x=x,y=y,angle=F.visualAngle(),alpha=.26,walkPhase=F.walkPhase,walkMoving=true}
+   F.ghostClock=0
+  end
+ else F.ghostClock=0 end
+end
+function F.spider(x,y,size,variant,angle,walk)
  local name=(variant=='queen' or size>=100) and 'queen' or variant=='black' and 'baby_black' or variant=='white' and 'baby_white' or 'baby_red'
- love.graphics.setColor(1,1,1);ArtSet.spider(name,x,y,size,angle)
+ love.graphics.setColor(1,1,1);ArtSet.spider(name,x,y,size,angle,walk)
 end
 local function web(x,y,r,alpha)
  love.graphics.setColor(1,1,1,alpha or .85);ArtSet.draw('web_wall',x,y,r*2)
@@ -250,12 +274,16 @@ function F.draw()
  for _,b in ipairs(F.babies) do if not b.dead then require('monster_fx').halo(b.x,b.y,36);F.spider(b.x,b.y,36,b.variant,b.angle);if b.webbed then web(b.x,b.y,24) end end end
  if F.phase=='aim' then g.setColor(1,.28,.25,.5);g.setLineWidth(2);g.circle('line',F.chargeX,F.chargeY,34+math.sin(F.clock*18)*3) end
  -- Keep the body grounded; only a deliberate escape leap raises it.
+ for _,ghost in ipairs(F.afterimages) do
+  g.setColor(1,.35,.28,ghost.alpha*.6)
+  ArtSet.spider('queen',ghost.x,ghost.y,62,ghost.angle,ghost)
+ end
  local pulse=(F.layPulse or 0)/.32
  local facing=F.visualAngle()
  if F.jumpHeight>0 then g.setColor(0,0,0,.28);g.ellipse('fill',F.x,F.y+16,24,8);g.setColor(1,1,1) end
  require('monster_fx').halo(F.x,F.y-F.jumpHeight,84)
  g.push();g.translate(F.x,F.y-F.jumpHeight);g.scale(1+pulse*.045,1-pulse*.045)
- F.spider(0,0,62,'queen',facing)
+ F.spider(0,0,62,'queen',facing,F)
  ArtSet.clutch(0,0,62,F.carried,facing);g.pop()
  for _,w in ipairs(F.webs) do g.setColor(1,1,1);ArtSet.draw('web_shot',w.x,w.y,32,math.atan2(w.vy,w.vx)) end
  if F.snare>0 and F.snareSource~='floor' then web(player.x+15,player.y+12,32) end
@@ -268,6 +296,6 @@ end
 function F.resize(r)
  if F.nest then F.nest.x=F.nest.x*r end
  F.x=F.x*r;if F.chargeX then F.chargeX=F.chargeX*r end
- for _,list in ipairs({F.eggs,F.babies,F.shells,F.webs,F.stuck}) do for _,o in ipairs(list or {}) do o.x=o.x*r;if o.vx then o.vx=o.vx*r end end end
+ for _,list in ipairs({F.eggs,F.babies,F.shells,F.webs,F.stuck,F.afterimages}) do for _,o in ipairs(list or {}) do o.x=o.x*r;if o.vx then o.vx=o.vx*r end end end
 end
 return F

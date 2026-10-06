@@ -9,6 +9,13 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_PODIUM_TEST')=='1' then require('tests.podium').run();return end
+    if os.getenv('SILKEN_VISIBILITY_STATS_TEST')=='1' then require('tests.visibility_stats').run();return end
+    if os.getenv('SILKEN_SKIN_CLEANUP_TEST')=='1' then require('tests.skin_cleanup').run();return end
+    if os.getenv('SILKEN_SKIN_UNLOCK_TEST')=='1' then require('tests.skin_unlock').run();return end
+    if os.getenv('SILKEN_OCEAN_CORAL_TEST')=='1' then require('tests.ocean_coral').run();return end
+    if os.getenv('SILKEN_SKIN_REWARD_TEST')=='1' then require('tests.skin_polish').run();return end
+    if os.getenv('SILKEN_OCTOBER_REVISION_TEST')=='1' then require('tests.october_revision').run();return end
     if os.getenv('SILKEN_ORGANIZATION_TEST')=='1' then require('tests.asset_organization').run();return end
     if os.getenv('SILKEN_UI_REVISION_TEST')=='1' then require('tests.ui_revision').run();return end
     if os.getenv('SILKEN_SPIDER_FEATHER_TEST')=='1' then require('tests.spider_feathers').run();return end

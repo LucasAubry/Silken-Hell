@@ -4,8 +4,8 @@ function S.load()
  Art.add('silk_strand','assets/effects/silk/strand.png')
  for i,key in ipairs(Characters.keys) do
   if not Characters.crowned[i] then
-   local a=Art.images.spider_down
-   local path='assets/skins/perle/down.png'
+   local a=Art.images[Characters.model('down')]
+   local path='assets/skins/commun/down.png'
    if a then
     local data=Art.imageData(path);local qx,qy,qw,qh=a.quad:getViewport()
     local top=qh*.2

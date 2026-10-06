@@ -126,6 +126,10 @@ function A.drawLarva(x,y,size,angle,time)
     g.pop()
 end
 function A.load()
+    A.add('ocean_coral_wall','assets/environments/ocean/coral-wall.png')
+    for _,pose in ipairs({'down','up','profil'}) do
+        A.add('player_skin_'..pose,'assets/skins/commun/'..pose..'.png')
+    end
     for _,key in ipairs({'bush','mini_bush','walking_tree','white_spider','white_egg','brown_egg','soil'}) do
         A.add('rebirth_'..key,'assets/sprites/renaissance/'..key..'.png')
     end

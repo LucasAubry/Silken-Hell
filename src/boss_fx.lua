@@ -26,10 +26,26 @@ function F.offset() return math.sin(F.clock*59)*F.power,math.cos(F.clock*71)*F.p
 function F.draw()
     local g=love.graphics; g.push('all'); g.setBlendMode('add')
     for _,p in ipairs(F.events) do
-        local t=p.age/.65; local c=p.color; g.setColor(c[1],c[2],c[3],(1-t)*.55); g.setLineWidth(1.5)
-        g.ellipse('line',p.x,p.y,14+t*65,8+t*38)
-        for i=1,12 do local a=i*math.pi/6+p.x*.01; local r=t*(30+p.power*9)
-            g.setColor(c[1],c[2],c[3],(1-t)*.8); g.circle('fill',p.x+math.cos(a)*r,p.y+math.sin(a)*r*.7,2*(1-t)+.4)
+        local t=math.min(1,p.age/.65);local c=p.color
+        -- A quick outward snap eases into a short tail without adding camera shake.
+        local spread=1-(1-t)^3;local fade=(1-t)^1.6
+        g.setColor(c[1],c[2],c[3],fade*.42);g.setLineWidth(1.2)
+        g.ellipse('line',p.x,p.y,14+spread*65,8+spread*38)
+        local flash=math.max(0,1-p.age/.12)
+        if flash>0 then
+            local r=3+flash*(3+p.power)
+            g.setColor(1,.95,.82,flash*.65)
+            g.polygon('fill',p.x-r,p.y,p.x-2,p.y-2,p.x,p.y-r*.75,
+                p.x+2,p.y-2,p.x+r,p.y,p.x+2,p.y+2,p.x,p.y+r*.75,p.x-2,p.y+2)
+        end
+        for i=1,12 do
+            local a=i*math.pi/6+p.x*.01;local r=spread*(30+p.power*9)
+            local x,y=p.x+math.cos(a)*r,p.y+math.sin(a)*r*.7
+            local tail=(2+p.power)*math.max(0,1-t*2.5)
+            g.setColor(c[1],c[2],c[3],fade*.65);g.setLineWidth(1)
+            g.line(x-math.cos(a)*tail,y-math.sin(a)*tail*.7,x,y)
+            g.setColor(c[1]*.65+.35,c[2]*.65+.35,c[3]*.65+.35,fade*.8)
+            g.circle('fill',x,y,1.5*(1-t)+.3)
         end
     end
     g.pop()
