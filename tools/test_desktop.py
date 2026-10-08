@@ -23,5 +23,6 @@ tests = [
 for flags, args in tests:
     env = {k: v for k, v in os.environ.items() if not k.startswith("SILKEN_")}
     env.update(flags)
+    if os.environ.get("CI"): env["ALSOFT_DRIVERS"] = "null"
     print("Testing", ", ".join(flags), *args, flush=True)
     subprocess.run(prefix + [runtime, archive] + args, cwd=root, env=env, check=True, timeout=120)

@@ -24,6 +24,7 @@ if [[ ! -s "$CACHE_DIR/Silken Hell.love" || "$GAME_DIR/dist/game.love" -nt "$CAC
   mv -f "$CACHE_DIR/Silken Hell.love.new" "$CACHE_DIR/Silken Hell.love"
 fi
 if [[ "${SILKEN_PREPARE_ONLY:-0}" == 1 ]]; then exit 0; fi
+export SILKEN_ASSET_ARCHIVE="$CACHE_DIR/Silken Hell.love"
 # Une partie conserve sa propre archive, même si une mise à jour est publiée.
 SESSION_DIR=$(mktemp -d "$CACHE_DIR/session.XXXXXX")
 trap 'rm -f "$SESSION_DIR/Silken Hell.love"; rmdir "$SESSION_DIR"' EXIT

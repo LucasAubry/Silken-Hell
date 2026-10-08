@@ -41,6 +41,16 @@ jobs:
           Expand-Archive "$env:RUNNER_TEMP/love.zip" "$env:RUNNER_TEMP/love"
           $exe = Get-ChildItem "$env:RUNNER_TEMP/love" -Recurse -Filter lovec.exe | Select-Object -First 1
           "LOVE_BIN=$($exe.FullName)" >> $env:GITHUB_ENV
+      - name: Software OpenGL for the Windows test VM
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://github.com/pal1000/mesa-dist-win/releases/download/26.2.4/mesa3d-26.2.4-release-msvc.7z -OutFile "$env:RUNNER_TEMP/mesa.7z"
+          7z x "$env:RUNNER_TEMP/mesa.7z" "-o$env:RUNNER_TEMP/mesa" -y > $null
+          $gl = Get-ChildItem "$env:RUNNER_TEMP/mesa" -Recurse -Filter opengl32.dll | Where-Object { $_.FullName -match '[\\/]x64[\\/]' } | Select-Object -First 1
+          if (!$gl) { throw "Mesa x64 driver missing" }
+          Copy-Item "$($gl.DirectoryName)/*.dll" (Split-Path $env:LOVE_BIN)
+          "GALLIUM_DRIVER=llvmpipe" >> $env:GITHUB_ENV
       - run: python tools/package.py
       - name: Test packaged game and editor
         run: python tools/test_desktop.py

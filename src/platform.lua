@@ -35,7 +35,7 @@ function P.command(executable,args,background,system)
 end
 function P.launch(mode,target)
  local args={}
- if not love.filesystem.isFused() then args[1]=target or love.filesystem.getSource() end
+ if not love.filesystem.isFused() then args[1]=target or os.getenv('SILKEN_ASSET_ARCHIVE') or love.filesystem.getSource() end
  args[#args+1]=mode
  local ok=os.execute(P.command(love.filesystem.getExecutablePath(),args,true))
  return ok==true or ok==0

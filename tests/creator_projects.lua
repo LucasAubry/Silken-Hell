@@ -3,6 +3,7 @@ function T.run()
  io.stdout:setvbuf('no');love.focus=function()end
  Online.enabled=false;Replay.disabled=true;Replay.playing=false;Replay.ghost=false;Replay.recording=false;Replay.input=nil
  Profile.save=function()end;Profile.recordBoss=function()end;Bestiary.save=function()end;LevelLayouts.disabled=true
+ Profile.completed={[5]=true};Profile.scores={} -- Unlock Ocean explicitly; never depend on a previous test save.
  App.sessionLayout=nil;App.preview=false;App.practice=nil;App.hardcore=false;Secret.duel=nil
  local P=require('creator_projects');local B=require('creator_bridge');local json=require('json');local root=love.filesystem.getSaveDirectory()
  local project=assert(P.new(root,4,nil,1));local e=project.entries[1];e.name='Ma carte autonome';e.author='Lucas';e.difficulty=3;assert(P.save(root,project))

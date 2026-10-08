@@ -20,10 +20,24 @@ function T.run()
  local result=pipe:read('*a');pipe:close();assert(result:find('curl',1,true),'HTTP executable must be available')
  love.filesystem.remove('platform-child.txt')
  assert(P.launch('--platform-child'),'Launch the same archive with a mode flag')
+ local http
+ if os.getenv('SILKEN_PLATFORM_HTTP_TEST')=='1' then
+  http=love.thread.newThread('src/network_thread.lua');http:start()
+  love.thread.getChannel('silken.requests'):push({id=991,url=require('online_config').url..'/v1/location'})
+ end
+ local httpDone=not http
  local elapsed=0
  love.update=function(dt)
   elapsed=elapsed+dt
-  if love.filesystem.read('platform-child.txt')=='ok' then
+  if http and not httpDone then
+   assert(not http:getError(),http:getError())
+   local response=love.thread.getChannel('silken.responses'):pop()
+   if response then
+    assert(response.code==200 and require('json').decode(response.body).country,'HTTPS thread must return valid JSON')
+    love.thread.getChannel('silken.requests'):push('quit');httpDone=true
+   end
+  end
+  if httpDone and love.filesystem.read('platform-child.txt')=='ok' then
    love.filesystem.remove('platform-child.txt')
    print('PASS native platform: atomic Unicode replacement, save identity, HTTP process, child process ('..P.os()..')')
    love.event.quit()
