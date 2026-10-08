@@ -16,7 +16,11 @@ function T.run()
  assert(cfg:find('data-binary',1,true) and cfg:find('Content-Type',1,true))
  local cmd=P.command('C:/Program Files/LÖVE/love.exe',{'a & b',[[C:a b]],'--editor'},true,'Windows')
  assert(cmd:match('^powershell.exe .+ %-EncodedCommand [%w+/=]+$'),'Only encoded script reaches cmd.exe')
- local pipe=assert(io.popen(P.command(P.httpExecutable(),{'--version'},false),'r'))
+ local httpExecutable=P.httpExecutable()
+ if os.getenv('SILKEN_STANDALONE_TEST')=='1' and P.os()~='OS X' then
+  assert(httpExecutable:find('/network/',1,true),'Standalone packages must use their own network helper')
+ end
+ local pipe=assert(io.popen(P.command(httpExecutable,{'--version'},false),'r'))
  local result=pipe:read('*a');pipe:close();assert(result:find('curl',1,true),'HTTP executable must be available')
  love.filesystem.remove('platform-child.txt')
  assert(P.launch('--platform-child'),'Launch the same archive with a mode flag')

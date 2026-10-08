@@ -147,6 +147,8 @@ def linux(folder, work):
                         "sh", "/work/tools/build_linux_curl.sh"], check=True)
     shutil.copytree(curl, folder / "network")
     shutil.copy2(download("ca-bundle"), folder / "network/cacert.pem")
+    for key in ("openssl-license", "zlib-license", "musl-license", "gcc-runtime-license", "gcc-gpl-license"):
+        shutil.copy2(download(key), folder / "network/licenses" / (key + ".txt"))
     (folder / "network/curl").chmod(0o755)
     script = folder / "SilkenHell.sh"
     script.write_text("""#!/bin/sh

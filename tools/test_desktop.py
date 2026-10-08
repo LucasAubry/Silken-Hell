@@ -34,7 +34,9 @@ tests = [
 for flags, args in tests:
     env = {k: v for k, v in os.environ.items() if not k.startswith("SILKEN_")}
     env.update(flags)
-    if standalone and flags.get("SILKEN_PLATFORM_TEST"): env["SILKEN_PLATFORM_HTTP_TEST"] = "1"
+    if standalone:
+        env["SILKEN_STANDALONE_TEST"] = "1"
+        if flags.get("SILKEN_PLATFORM_TEST"): env["SILKEN_PLATFORM_HTTP_TEST"] = "1"
     if os.environ.get("CI"): env["ALSOFT_DRIVERS"] = "null"
     print("Testing", ", ".join(flags), *args, flush=True)
     subprocess.run(prefix + base + args, cwd=root, env=env, check=True, timeout=180)
