@@ -1,18 +1,17 @@
 name: Standalone Steam packages
 on:
   workflow_dispatch:
+    inputs:
+      linux_only:
+        description: Build only Linux
+        type: boolean
+        default: false
 jobs:
   package:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-22.04
-            platform: linux
-          - os: windows-latest
-            platform: windows
-          - os: macos-latest
-            platform: macos
+        include: ${{ fromJSON(inputs.linux_only && '[{"os":"ubuntu-22.04","platform":"linux"}]' || '[{"os":"ubuntu-22.04","platform":"linux"},{"os":"windows-latest","platform":"windows"},{"os":"macos-latest","platform":"macos"}]') }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 25
     steps:

@@ -10,7 +10,7 @@ LDFLAGS="-static" LIBS="-lssl -lcrypto -lz -pthread" ./configure \
  --without-libpsl --without-libidn2 --without-brotli --without-zstd --without-libssh2 \
  --without-nghttp2 --without-nghttp3 --without-librtmp --disable-manual \
  --disable-docs --disable-libcurl-option --with-ca-bundle=/etc/ssl/cert.pem
-make -j2
+make -j2 CURL_LDFLAGS_BIN=-all-static
 mkdir -p /work/dist/linux-network/licenses
 cp src/curl /work/dist/linux-network/curl
 cp COPYING /work/dist/linux-network/licenses/curl.txt
