@@ -181,7 +181,8 @@ function U.background()
         end
         g.setColor(tint[1],tint[2],tint[3],.55+.06*math.sin(U.clock*.8));g.draw(U.halo,x,y,0,155,115)
         g.setBlendMode('alpha')
-        require('silk_art').menuThread(x,62,y,216)
+        local _,screenTop=g.inverseTransformPoint(0,0)
+        require('silk_art').menuThread(x,screenTop-2,y,216)
         g.setColor(1,1,1); Characters.selectionPortrait(x,y,216)
     end
 end
