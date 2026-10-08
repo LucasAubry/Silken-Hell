@@ -1,0 +1,8 @@
+{
+  "love-windows": {"url":"https://github.com/love2d/love/releases/download/11.5/love-11.5-win64.zip","sha256":"ba6e56be2685e53c817749c4a5007f51137136fe5a3ab64920508babc2e74369"},
+  "love-macos": {"url":"https://github.com/love2d/love/releases/download/11.5/love-11.5-macos.zip","sha256":"6795bb3a1656af6a2fdfe741e150787b481886d3a280327a261a3fdded586913"},
+  "love-linux": {"url":"https://github.com/love2d/love/releases/download/11.5/love-11.5-x86_64.AppImage","sha256":"65a673406431eff7167a15a032bf7a2e4ba50108e091eb7b176465831f9b5e00"},
+  "curl-windows": {"url":"https://curl.se/windows/dl-8.22.0_3/curl-8.22.0_3-win64-mingw.zip","sha256":"f38b0ac2e3a280fd414b607c874a21e6dd4d1ed0e2ae622afbf0020917446561"},
+  "curl-source": {"url":"https://curl.se/download/curl-8.22.0.tar.xz","sha256":"f7ef3ae8a22e521f289803fe93543eb64c329b58aa73a9e224dfd915a2a5f4f7"},
+  "ca-bundle": {"url":"https://curl.se/ca/cacert.pem","sha256":"a41b5d356aea97a529fe27e0f7316d2f9d946d75927476cf9cf1b90637d00505"}
+}

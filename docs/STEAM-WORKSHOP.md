@@ -51,8 +51,8 @@ sauvegardes du jeu. Aucun contenu n’est envoyé à Steam par ce bouton.
 5. Tester publication, mise à jour, téléchargement et vote avec deux comptes
    autorisés sur l’App ID réel, puis les versions Windows/Linux/macOS livrées.
 
-L’éditeur actuel s’ouvre par le lanceur macOS. Les autres plateformes auront
-besoin d’un lanceur adapté avant distribution Steam.
+L’éditeur est intégré aux trois paquets desktop. Leur configuration SteamPipe
+est décrite dans [STEAM-DISTRIBUTION.md](STEAM-DISTRIBUTION.md).
 
 Références : [guide Workshop](https://partner.steamgames.com/doc/features/workshop/implementation),
 [API UGC](https://partner.steamgames.com/doc/api/isteamugc),

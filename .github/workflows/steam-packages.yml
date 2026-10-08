@@ -1,0 +1,56 @@
+name: Standalone Steam packages
+on:
+  workflow_dispatch:
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            platform: linux
+          - os: windows-latest
+            platform: windows
+          - os: macos-latest
+            platform: macos
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            dist/downloads
+            dist/linux-network
+          key: standalone-${{ runner.os }}-${{ hashFiles('tools/desktop_dependencies.json', 'tools/build_linux_curl.sh') }}
+      - name: Linux test display
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgl1 libglu1-mesa libopenal1 libsdl2-2.0-0
+      - run: python tools/package.py
+      - run: python tools/build_desktop.py --platform ${{ matrix.platform }}
+      - name: Test-only software OpenGL on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://github.com/pal1000/mesa-dist-win/releases/download/26.2.4/mesa3d-26.2.4-release-msvc.7z -OutFile "$env:RUNNER_TEMP/mesa.7z"
+          7z x "$env:RUNNER_TEMP/mesa.7z" "-o$env:RUNNER_TEMP/mesa" -y > $null
+          $gl = Get-ChildItem "$env:RUNNER_TEMP/mesa" -Recurse -Filter opengl32.dll | Where-Object { $_.FullName -match '[\\/]x64[\\/]' } | Select-Object -First 1
+          if (!$gl) { throw "Mesa x64 missing" }
+          # The deliverable ZIP was already built and contains no test driver.
+          Copy-Item "$($gl.DirectoryName)/*.dll" dist/steam/content/windows
+          "GALLIUM_DRIVER=llvmpipe" >> $env:GITHUB_ENV
+      - run: python tools/test_desktop.py --standalone ${{ matrix.platform }}
+      - run: python tools/steam_config.py --templates
+      - uses: actions/upload-artifact@v4
+        with:
+          name: steam-${{ matrix.platform }}
+          compression-level: 0
+          path: |
+            dist/steam/Silken-Hell-*.zip
+            dist/steam/Silken-Hell-*.tar.gz
+            dist/steam/scripts/

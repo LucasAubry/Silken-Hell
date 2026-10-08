@@ -1,0 +1,5 @@
+[
+  {"os": "windows", "architecture": "64", "executable": "SilkenHell.exe", "arguments": "", "description": "Jouer à Silken Hell"},
+  {"os": "macos", "architecture": "universal", "executable": "Silken Hell.app", "arguments": "", "description": "Jouer à Silken Hell"},
+  {"os": "linux", "architecture": "64", "executable": "SilkenHell.sh", "arguments": "", "description": "Jouer à Silken Hell"}
+]

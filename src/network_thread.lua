@@ -10,8 +10,10 @@ while true do
  local filename='http-'..tostring(job.id)..'.cfg'
  local ok,result=pcall(function()
   assert(love.filesystem.write(filename,require('http_command').config(job)))
-  local executable=platform.os()=='Windows' and 'curl.exe' or 'curl'
-  local command=platform.command(executable,{'--disable','--config',love.filesystem.getSaveDirectory()..'/'..filename},false)
+  local executable,certificates=platform.httpExecutable()
+  local args={'--disable','--config',love.filesystem.getSaveDirectory()..'/'..filename}
+  if certificates then args[#args+1]='--cacert';args[#args+1]=certificates end
+  local command=platform.command(executable,args,false)
   local pipe=io.popen(command,'r');if not pipe then return '' end
   local text=pipe:read('*a');pipe:close();return text
  end)

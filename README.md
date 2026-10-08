@@ -13,6 +13,13 @@ Construire la version locale avec `python3 tools/package.py`. Aucun Python n’e
 
 Flèches pour se déplacer à pleine vitesse, maintenir Espace pour ralentir, Échap pour la pause. Touches et volumes se règlent dans les paramètres ; F11 gère le plein écran. Le bouton de recommencement remet le monde courant au niveau 1. Le jeu se met en pause lorsqu’il perd le focus.
 
+## Versions autonomes pour Steam
+
+Les paquets avec moteur intégré sont produits dans `dist/steam/`. Le joueur n’a
+pas à installer LÖVE ou curl séparément. Les commandes de construction, les
+options de lancement Steam et les étapes restantes de signature/publication
+sont dans [docs/STEAM-DISTRIBUTION.md](docs/STEAM-DISTRIBUTION.md).
+
 ## Mondes et boss
 
 Ordre : **Paradis → Ciel → Terre → Océan → Abysse → Enfer → Renaissance**. Les six premiers mondes ont dix niveaux ; Renaissance enchaîne leurs six boss, dans cet ordre, avec une ambiance rouge, noire et blanche.

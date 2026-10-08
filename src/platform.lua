@@ -40,6 +40,17 @@ function P.launch(mode,target)
  local ok=os.execute(P.command(love.filesystem.getExecutablePath(),args,true))
  return ok==true or ok==0
 end
+function P.httpExecutable()
+ local system=P.os()
+ local executable=love.filesystem.getExecutablePath():gsub('\\','/')
+ local base=executable:match('^(.*)/[^/]+$') or '.'
+ if system=='OS X' then return '/usr/bin/curl' end
+ if system=='Linux' then base=os.getenv('SILKEN_BUNDLE_ROOT') or love.filesystem.getSourceBaseDirectory() end
+ local path=base..'/network/'..(system=='Windows' and 'curl.exe' or 'curl')
+ local f=P.open(path,'rb')
+ if f then f:close();return path,base..'/network/cacert.pem' end
+ return system=='Windows' and 'curl.exe' or 'curl'
+end
 function P.saveDirectory(identity)
  local old=love.filesystem.getIdentity()
  love.filesystem.setIdentity(identity);love.filesystem.createDirectory('')

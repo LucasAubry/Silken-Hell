@@ -21,3 +21,5 @@ server/* [0-9]*.*
 server/migrations/* [0-9]*.sql
 /custom_levels.before-*.json
 /archive/
+
+/steam/config.local.json
