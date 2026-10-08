@@ -78,8 +78,7 @@ function N.init()
     if not N.enabled then N.country='FR'; return end
     N.token=love.filesystem.read('online-identity.txt')
     if not N.token or not N.token:match('^[a-f0-9]+$') or #N.token~=64 then
-        local file=io.open('/dev/urandom','rb'); local bytes=file and file:read(32)
-        if file then file:close() end
+        local bytes=require('platform').randomBytes(32)
         if not bytes or #bytes~=32 then N.enabled=false; return end
         N.token=love.data.encode('string','hex',bytes); love.filesystem.write('online-identity.txt',N.token)
     end

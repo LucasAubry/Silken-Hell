@@ -4,7 +4,12 @@ Jeu d’esquive en Lua avec LÖVE 11.5, éditeur de niveaux et classements/Works
 
 ## Lancer le jeu
 
-Double-cliquer **Jouer à Silken Hell.app** ou **Lancer Silken Hell.command**. Le lanceur utilise l’archive locale publiée et installe LÖVE au premier lancement si nécessaire. Pour publier des modifications des sources, exécuter `python3 tools/package.py`. Le cache se trouve dans `~/Library/Application Support/Silken Hell/Silken Hell.love`.
+- **macOS** : double-cliquer **Jouer à Silken Hell.app** ou **Lancer Silken Hell.command**.
+- **Windows 10/11** : installer [LÖVE 11.5](https://love2d.org), puis ouvrir **Lancer Silken Hell.cmd**. Le lanceur cherche aussi `runtime/love.exe`.
+- **Linux** : installer LÖVE 11.5 et `curl`, puis lancer `./Lancer Silken Hell.sh`. La variable `SILKEN_LOVE` peut désigner un autre exécutable LÖVE.
+- **Les trois systèmes** : `love dist/game.love` lance le jeu ; `love dist/game.love --editor` lance l’éditeur intégré. Les aperçus et validations réutilisent le même exécutable et le même paquet.
+
+Construire la version locale avec `python3 tools/package.py`. Aucun Python n’est nécessaire pour jouer avec LÖVE et l’archive déjà construite. Les fonctions en ligne utilisent `curl` (fourni sur les Windows 10 récents/Windows 11 et macOS ; à installer sur Linux). Les exécutables ne sont pas encore signés pour une distribution commerciale.
 
 Flèches pour se déplacer à pleine vitesse, maintenir Espace pour ralentir, Échap pour la pause. Touches et volumes se règlent dans les paramètres ; F11 gère le plein écran. Le bouton de recommencement remet le monde courant au niveau 1. Le jeu se met en pause lorsqu’il perd le focus.
 
@@ -29,7 +34,12 @@ Un pseudo est demandé avant la partie. Cloudflare détecte le pays de la connex
 
 Le classement et le chronomètre final incluent **une seconde pour trois morts (⅓ de seconde par mort)**. Le temps brut reste enregistré séparément pour éviter toute double pénalité. Renaissance utilise un seul chrono pour ses six combats.
 
-Les réglages, découvertes, déblocages et scores locaux sont dans `~/Library/Application Support/LOVE/silken-hell`. Les scores démarrés hors ligne restent locaux. Une partie connectée interrompue peut reprendre ses envois en attente.
+Les réglages, découvertes, déblocages et scores locaux utilisent le dossier de sauvegarde natif LÖVE :
+- macOS : `~/Library/Application Support/LOVE/silken-hell` ;
+- Windows : `%APPDATA%/LOVE/silken-hell` ;
+- Linux : `$XDG_DATA_HOME/love/silken-hell` (par défaut `~/.local/share/love/silken-hell`).
+
+L’éditeur partage les projets de ce dossier ; ses préférences restent dans `silken-hell-designer`. Les scores démarrés hors ligne restent locaux. Une partie connectée interrompue peut reprendre ses envois en attente.
 
 ## Éditeur et Workshop
 
@@ -46,6 +56,8 @@ Les fichiers `custom_levels.json` et `designer/default_levels.json` sont des don
 - `python3 tools/build_icons.py` : reconstruire les deux icônes macOS avec l’araignée marron actuelle, le même cadre et les mêmes marges, puis signer et actualiser les lanceurs. Relancer ensuite `python3 tools/package.py` pour le jeu et l’éditeur embarqués.
 - `SILKEN_TEST=1 love dist/game.love` : tests isolés du jeu.
 - `SILKEN_DESIGNER_TEST=1 SILKEN_PROJECT="$PWD" love designer` : tests de l’éditeur.
+- `python3 tools/test_desktop.py` : tests natifs du paquet, du lancement de processus, des sauvegardes Unicode, du boss et de l’éditeur. `LOVE_BIN` permet de choisir le moteur.
+- `.github/workflows/desktop.yml` : les mêmes tests sur Windows, macOS et Linux à chaque push.
 - `cd server && npm test` : tests API et Workshop.
 
 Les tests utilisent des sauvegardes séparées. `SILKEN_ONLINE_TEST=1` active un test réel de l’API qui crée un score `SilkenGameQA` à nettoyer après validation.

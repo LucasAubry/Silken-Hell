@@ -1,0 +1,50 @@
+name: Desktop compatibility
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install LÖVE on Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb curl libgl1 libglu1-mesa libopenal1 libsdl2-2.0-0
+          curl -fL https://github.com/love2d/love/releases/download/11.5/love-11.5-x86_64.AppImage -o /tmp/love.AppImage
+          chmod +x /tmp/love.AppImage
+          cd /tmp
+          ./love.AppImage --appimage-extract > /dev/null
+          echo "LOVE_BIN=/tmp/squashfs-root/AppRun" >> "$GITHUB_ENV"
+
+      - name: Install LÖVE on macOS
+        if: runner.os == 'macOS'
+        run: |
+          curl -fL https://github.com/love2d/love/releases/download/11.5/love-11.5-macos.zip -o /tmp/love.zip
+          unzip -q /tmp/love.zip -d /tmp/love-runtime
+          echo "LOVE_BIN=/tmp/love-runtime/love.app/Contents/MacOS/love" >> "$GITHUB_ENV"
+      - name: Install LÖVE on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://github.com/love2d/love/releases/download/11.5/love-11.5-win64.zip -OutFile "$env:RUNNER_TEMP/love.zip"
+          Expand-Archive "$env:RUNNER_TEMP/love.zip" "$env:RUNNER_TEMP/love"
+          $exe = Get-ChildItem "$env:RUNNER_TEMP/love" -Recurse -Filter lovec.exe | Select-Object -First 1
+          "LOVE_BIN=$($exe.FullName)" >> $env:GITHUB_ENV
+      - run: python tools/package.py
+      - name: Test packaged game and editor
+        run: python tools/test_desktop.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: silken-hell-${{ runner.os }}
+          path: dist/game.love

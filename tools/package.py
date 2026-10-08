@@ -4,6 +4,8 @@ from zipfile import ZipFile, ZIP_DEFLATED
 import tempfile
 import shutil
 import re
+import os
+import sys
 
 root = Path(__file__).resolve().parents[1]
 paths = set()
@@ -27,7 +29,12 @@ with tempfile.TemporaryDirectory(prefix='silken-build-') as folder:
     staged = dist / 'game.love.tmp'
     shutil.copyfile(output, staged)
     staged.replace(dist / 'game.love')
-    cache = Path.home() / 'Library/Application Support/Silken Hell'
+    if sys.platform == 'darwin':
+        cache = Path.home() / 'Library/Application Support/Silken Hell'
+    elif sys.platform == 'win32':
+        cache = Path(os.environ.get('LOCALAPPDATA', Path.home() / 'AppData/Local')) / 'Silken Hell'
+    else:
+        cache = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share')) / 'silken-hell'
     cache.mkdir(parents=True, exist_ok=True)
     staged = cache / 'Silken Hell.love.new'
     shutil.copyfile(output, staged)

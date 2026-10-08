@@ -49,7 +49,7 @@ end
 function V.openPublish()
  resetTools();V.publication=true;V.status='';V.ticket=nil
  local e=M.currentProject.entries[M.currentProject.current]
- if e.author=='' then local f=io.open(M.save..'/profile.txt','rb');local raw=f and f:read('*a') or '';if f then f:close()end;e.author=('\n'..raw):match('\nname=([^\n]*)') or '' end
+ if e.author=='' then local f=require('platform').open(M.save..'/profile.txt','rb');local raw=f and f:read('*a') or '';if f then f:close()end;e.author=('\n'..raw):match('\nname=([^\n]*)') or '' end
  V.validated=P.proof(M.save,M.currentProject,M.currentProject.current)
 end
 function V.request(action)
@@ -64,10 +64,8 @@ function V.request(action)
  local heartbeat=P.read(M.save,'creator-heartbeat.json')
  if not heartbeat or os.time()-(heartbeat.time or 0)>5 then
   if not V.launching or love.timer.getTime()-V.launching>25 then
-   local runtime=os.getenv('HOME')..'/Library/Application Support/Silken Hell/runtime/love.app/Contents/MacOS/love'
-   local archive=os.getenv('HOME')..'/Library/Application Support/Silken Hell/Silken Hell.love'
-   local cmd='SILKEN_CREATOR_BRIDGE=1 '..q(runtime)..' '..q(archive)..' > '..q(M.save..'/creator-game.log')..' 2>&1 &'
-   local started=os.execute(cmd);if started~=true and started~=0 then V.status='Impossible de lancer le jeu.' else V.launching=love.timer.getTime() end
+   local started=require('platform').launch('--creator-bridge',M.launchTarget)
+   if not started then V.status='Impossible de lancer le jeu.' else V.launching=love.timer.getTime() end
   end
  end
 end

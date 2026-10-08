@@ -3,14 +3,14 @@ local json=require('json')
 local P={index='creator-projects.json'}
 function P.clone(value) return json.decode(json.encode(value)) end
 function P.read(root,name)
- local f=io.open(root..'/'..name,'rb');if not f then return nil end
+ local f=require('platform').open(root..'/'..name,'rb');if not f then return nil end
  local raw=f:read('*a');f:close();local ok,value=pcall(json.decode,raw)
  return ok and value or nil
 end
 function P.write(root,name,value)
- local path=root..'/'..name;local f,err=io.open(path..'.new','wb');if not f then return nil,err end
+ local path=root..'/'..name;local f,err=require('platform').open(path..'.new','wb');if not f then return nil,err end
  local ok,why=f:write(json.encode(value));f:close();if not ok then return nil,why end
- return os.rename(path..'.new',path)
+ return require('platform').replace(path..'.new',path)
 end
 function P.validId(id) return type(id)=='string' and id:match('^[%w%-]+$')~=nil end
 function P.load(root,id)

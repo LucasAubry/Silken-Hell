@@ -96,16 +96,17 @@ local function preview()
     if not apply() then return end
     state.previewTicket=tostring(os.time())..'-'..tostring(love.timer.getTime())
     local request=json.encode({ticket=state.previewTicket,layout=M.layout,workshop=M.workshop==true})
-    local f=assert(io.open(M.save..'/preview-request.json.new','wb')); f:write(request); f:close()
-    os.rename(M.save..'/preview-request.json.new',M.save..'/preview-request.json')
-    local h=io.open(M.save..'/preview-heartbeat.txt','rb'); local heartbeat=h and tonumber(h:read('*a')) or 0; if h then h:close() end
+    local f=assert(require('platform').open(M.save..'/preview-request.json.new','wb')); f:write(request); f:close()
+    local saved,err=require('platform').replace(M.save..'/preview-request.json.new',M.save..'/preview-request.json')
+    if not saved then state.status=err;state.error=true;return end
+    local h=require('platform').open(M.save..'/preview-heartbeat.txt','rb'); local heartbeat=h and tonumber(h:read('*a')) or 0; if h then h:close() end
     if heartbeat and os.time()-heartbeat<5 then state.status=M.workshop and 'Carte rechargée.' or 'Niveau rechargé dans la fenêtre de test.'; return end
     if state.launching and love.timer.getTime()-state.launching<25 then state.status=M.workshop and 'Démarrage du test…' or 'Le jeu démarre ; le dernier niveau sélectionné sera chargé.'; return end
     state.launching=love.timer.getTime()
-    local runtime=os.getenv('HOME')..'/Library/Application Support/Silken Hell/runtime/love.app/Contents/MacOS/love'
-    local archive=os.getenv('HOME')..'/Library/Application Support/Silken Hell/Silken Hell.love'
-    local cmd='SILKEN_PREVIEW_WORLD='..M.world..' SILKEN_PREVIEW_LEVEL='..M.level..' '..q(runtime)..' '..q(archive)..' > '..q(os.getenv('HOME')..'/Library/Application Support/Silken Hell/preview.log')..' 2>&1 &'
-    os.execute(cmd); state.status=M.workshop and 'Test lancé.' or 'Test lancé — cette fenêtre sera réutilisée au prochain test.'
+    local ok=require('platform').launch('--preview',M.launchTarget)
+    state.status=ok and 'Test lancé.' or 'Impossible de lancer le test.'
+    state.error=not ok
+
 end
 local function loadArt()
     local paths={original='assets/skins/soie/down.png',tear_ring='assets/textures/aureole.png',catalog_ange='assets/monstres/paradis/ange/ange_down.png',catalog_snake='assets/monstres/paradis/serpent/snake_down.png',catalog_trap='assets/monstres/paradis/pieges/piege.png'}
@@ -115,26 +116,35 @@ local function loadArt()
         Art.add(c.art,path)
     end end
     for _,key in ipairs({'skeleton_spine','skeleton_rib','skeleton_tail'}) do Art.add(key,'assets/sprites/'..key..'.png') end
-    if love.filesystem.getInfo('sky_floor.png') then state.sky=g.newImage('sky_floor.png') end
+    local sky=love.filesystem.getInfo('designer/sky_floor.png') and 'designer/sky_floor.png' or 'sky_floor.png'
+    if love.filesystem.getInfo(sky) then state.sky=g.newImage(sky) end
 end
 function love.load()
-    local project=os.getenv('SILKEN_PROJECT') or love.filesystem.getSource():match('^(.*)/designer/?$')
-    assert(project,'Dossier du projet introuvable')
-    local archive=os.getenv('SILKEN_ASSET_ARCHIVE') or os.getenv('HOME')..'/Library/Application Support/Silken Hell/Silken Hell.love'
-    local f=assert(io.open(archive,'rb'),'Archive du jeu introuvable'); local bytes=f:read('*a'); f:close()
-    state.assetData=love.filesystem.newFileData(bytes,'silken-assets.zip')
-    assert(love.filesystem.mount(state.assetData,'',true),'Impossible de charger les ressources du jeu')
+    local source=love.filesystem.getSource():gsub('\\','/')
+    local project=os.getenv('SILKEN_PROJECT') or source:match('^(.*)/designer/?$')
+    local launchTarget=source
+    if not SILKEN_EMBEDDED_EDITOR then
+        assert(project,'Dossier du projet introuvable')
+        local archive=os.getenv('SILKEN_ASSET_ARCHIVE') or project..'/dist/game.love'
+        local f=assert(io.open(archive,'rb'),'Construis le jeu avec python3 tools/package.py avant de lancer cet éditeur.')
+        local bytes=f:read('*a');f:close()
+        state.assetData=love.filesystem.newFileData(bytes,'silken-assets.zip')
+        assert(love.filesystem.mount(state.assetData,'',true),'Impossible de charger les ressources du jeu')
+        launchTarget=archive
+    end
     love.filesystem.setRequirePath(love.filesystem.getRequirePath()..';src/?.lua;src/?/init.lua')
     require('editor_icon').install()
     json=require 'json'; Worlds=require 'worlds'; Art=require 'art'; Biome=require 'biome_floor'
     C=require 'catalog'; M=require 'model'; state.fonts={}
     for _,size in ipairs({12,14,16,18,22,28}) do state.fonts[size]=g.newFont(size) end
     loadArt()
-    local save=os.getenv('HOME')..'/Library/Application Support/LOVE/'..(os.getenv('SILKEN_DESIGNER_TEST')=='1' and 'silken-hell-tests' or 'silken-hell')
+    local save=require('platform').saveDirectory(os.getenv('SILKEN_DESIGNER_TEST')=='1' and 'silken-hell-tests' or 'silken-hell')
+    project=project or (not love.filesystem.isFused() and not source:match('%.love$') and source) or save
     M.init(project,save,tonumber(os.getenv('SILKEN_WORKSHOP_BIOME')));if M.workshop then state.status='' end
     if os.getenv('SILKEN_DESIGNER_TEST')~='1' or os.getenv('SILKEN_CREATOR_PROJECT_TEST')=='1' then
         require('project_model').install(M);Projects=require('project_ui');Projects.init(M,state,text,button,backdrop);state.status=''
     end
+    M.launchTarget=launchTarget
     backdrop()
     local ok,templates=pcall(json.decode,love.filesystem.read('creature-templates.json') or '[]')
     if ok and type(templates)=='table' then for _,t in ipairs(templates) do if t.kind=='mob' or t.kind=='boss' then C[#C+1]=t end end end

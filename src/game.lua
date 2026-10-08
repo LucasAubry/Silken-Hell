@@ -105,7 +105,7 @@ function App.start(world)
     reset_level()
     Replay.leave()
     App.runSkin=Characters.selected()
-    App.custom=os.getenv('SILKEN_PREVIEW_WORLD')~=nil
+    App.custom=os.getenv('SILKEN_PREVIEW_WORLD')~=nil or require('platform').flag('--preview')
     for _,layout in pairs(LevelLayouts.read()) do if layout.world==world then App.custom=true end end
     if Worlds.isSecret(world) then App.custom=false end
     if not App.singleLevel then Online.start(world,Profile.name,App.runSkin,App.hardcore) else Online.current=nil end
@@ -139,7 +139,7 @@ function love.load()
     Online.init()
     if os.getenv('SILKEN_EXPORT_LEVELS')=='1' then require('designer.export').run(); love.event.quit(); return end
     local preview=tonumber(os.getenv('SILKEN_PREVIEW_WORLD'))
-    if preview then
+    if preview or require('platform').flag('--preview') then
         App.preview=true;PreviewBridge.update(.2)
     end
     if os.getenv('SILKEN_WORKSHOP_LIVE_TEST')=='1' then require('tests.workshop_live').run()

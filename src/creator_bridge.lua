@@ -30,9 +30,9 @@ function B.consume(request)
  end
 end
 function B.update(dt)
- if os.getenv('SILKEN_CREATOR_BRIDGE')~='1' then return end
+ if os.getenv('SILKEN_CREATOR_BRIDGE')~='1' and not require('platform').flag('--creator-bridge') then return end
  B.clock=B.clock+dt;if B.clock<.2 then return end;B.clock=0
  local root=love.filesystem.getSaveDirectory();P.write(root,'creator-heartbeat.json',{time=os.time()})
- local r=P.read(root,'creator-request.json');if r then os.remove(root..'/creator-request.json');B.consume(r) end
+ local r=P.read(root,'creator-request.json');if r then love.filesystem.remove('creator-request.json');B.consume(r) end
 end
 return B

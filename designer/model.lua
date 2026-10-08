@@ -1,13 +1,13 @@
 local json=require 'json'
 local M={world=1,level=1,history={},future={},dirty={},drafts={},applied={version=1,levels={}}}
 local function read(path)
-    local f=io.open(path,'rb'); if not f then return end
+    local f=require('platform').open(path,'rb'); if not f then return end
     local s=f:read('*a'); f:close(); return s
 end
 local function atomic(path,text)
-    local tmp=path..'.new'; local f,err=io.open(tmp,'wb'); if not f then return nil,err end
+    local tmp=path..'.new'; local f,err=require('platform').open(tmp,'wb'); if not f then return nil,err end
     local ok,why=f:write(text); f:close(); if not ok then os.remove(tmp); return nil,why end
-    local result,msg=os.rename(tmp,path); if not result then os.remove(tmp) end
+    local result,msg=require('platform').replace(tmp,path); if not result then os.remove(tmp) end
     return result,msg
 end
 function M.clone(t) return json.decode(json.encode(t)) end
@@ -16,7 +16,7 @@ function M.init(project,save,workshopBiome)
     M.project=project; M.save=save;M.workshop=workshopBiome~=nil
     M.filename=M.workshop and require('workshop_maps').file or 'custom_levels.json'
     M.applied={version=1,levels={}}
-    M.defaults=json.decode(assert(love.filesystem.read('default_levels.json')))
+    M.defaults=json.decode(assert((love.filesystem.read('default_levels.json') or love.filesystem.read('designer/default_levels.json'))))
     local raw=read(save..'/'..M.filename)
     if raw then local ok,t=pcall(json.decode,raw); if ok and t.version==1 then M.applied=t end end
     local draft=love.filesystem.read('drafts.json')
