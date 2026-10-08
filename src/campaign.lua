@@ -8,7 +8,7 @@ function C.install()
     -- Keep the authored positions and original encounters, before procedural walls were added.
     C.original=levels
     for w=1,7 do for n=1,10 do C.data[w][n]={} end end
-    C.data[3]={{},{}}
+    C.data[3]={{},{}};C.data[8]={}
     for w=9,14 do C.data[w]={{}} end
     C.floor=love.graphics.newCanvas(800,600)
     love.graphics.setCanvas(C.floor); love.graphics.clear(0.105,0.035,0.04)
@@ -45,7 +45,7 @@ function C.reset()
     Aftermath.reset()
     AbyssTerrain.reset()
     C.biome=Worlds.biome(C.world,player.level)
-    local world=C.biome; local n=(Worlds.isSecret(C.world)) and 10 or player.level
+    local world=C.biome; local n=(Worlds.isSecret(C.world) or C.world==8) and (world==3 and 1 or 10) or player.level
     BossFX.reset()
     if Bosses then Bosses.reset() end
     local previousSide=C.lastSide
@@ -55,7 +55,7 @@ function C.reset()
     player.lastMoveX=0; player.lastMoveY=1
     player.hitBox_width=30; player.hitBox_height=24; player.hitBox_offset_x=0; player.hitBox_offset_y=0
     local boss=n==10 and (world<=2 or world==5 or world==4 or world==7 or world==6)
-    player.x=world==1 and Arena.mapX(C.original[n].player_position.x) or Arena.width/2-15; player.y=boss and 505 or 265
+    player.x=Arena.width/2-15; player.y=boss and 505 or (world==1 and Arena.height/2-12 or 265)
     local level={player_position={x=player.x,y=player.y},larme_position=C.positions(n),aureole_position={x=0,y=0}}
     if boss then level.larme_position={{x=Arena.width/2-15,y=280}} end
     levels[player.level]=level
@@ -83,7 +83,7 @@ function C.reset()
         C.lastSide=math.floor((a+math.pi/4)%(2*math.pi)/(math.pi/2))+1
     end
     objet.larme.abyssHeld=nil; objet.larme.taken=boss; objet.larme_dropped=true
-    if not boss and C.world~=3 then
+    if not boss and C.world~=3 and C.world~=8 then
         if world>=4 then Realms.spawn(world,n)
         elseif world==2 then C.spawnHell(n) else
             _G['mob_lv'..n]()
@@ -122,7 +122,7 @@ function C.reset()
     Ocean.reset(world)
     Abyss.reset(world,n)
     Magma.reset()
-    if LevelLayouts and (C.world~=3 or App.sessionLayout) and not Worlds.isSecret(C.world) then LevelLayouts.applyCurrent() end
+    if LevelLayouts and (C.world~=3 or App.sessionLayout) and C.world~=8 and not Worlds.isSecret(C.world) then LevelLayouts.applyCurrent() end
     if C.world==4 and not boss and not App.sessionLayout then require('mobs.crab.runners').spawn(n) end
     if not Realms.custom then C.clearGroundSites(); if world==2 then Magma.populate(n) end end
     if Secret then Secret.configure();if Secret.duel then Secret.duel.time=0;if Secret.duel.kind=='mob' then objet.larme.taken=true end end end
@@ -202,7 +202,7 @@ function C.drawCircles()
 end
 function C.draw()
     local g=love.graphics; local hell=C.biome==2
-    if Secret.inArena() then require('sanctuary_scene').arena(Worlds.isSecret(C.world))
+    if Secret.inArena() then require('sanctuary_scene').arena(App.hardcore or Worlds.isSecret(C.world))
     else Arena.drawFloor(hell);if C.world==3 then Meadow.draw() end end
     C.drawCircles(); Abyss.drawSites()
     if hell and not Secret.inArena() then
@@ -213,8 +213,10 @@ function C.draw()
         end
     end
     Hazards.draw(); Realms.drawGround(); Ocean.drawGround(); Octopus.drawGround(); Raven.drawGround(); Wasp.drawGround(); Storm.drawGround(); Bosses.drawGround(); Arena.drawWalls(hell)
-    C.drawTear()
     g.setColor(1,1,1)
+end
+function C.tearCarried()
+    return not Renaissance.active and C.carrier~=nil and not objet.larme_dropped
 end
 function C.drawTear(overlay)
     if require('boss_liberation').busy() then return end

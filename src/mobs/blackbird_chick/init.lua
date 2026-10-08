@@ -3,6 +3,7 @@ return {
         m.age=m.age+dt;Realms.capture(m);if m.is_frozen or m.tunnelTravel then return end
         m.x=m.cx+math.cos(m.age*1.6)*m.radius; m.y=m.cy+math.sin(m.age*1.6)*m.radius*.75
         m.dir=Art.direction(-math.sin(m.age*1.6),math.cos(m.age*1.6))
+        Realms.capture(m)
         if isTouching(player,m) then Hazards.kill() end
     end,
     draw=function(m)

@@ -58,3 +58,13 @@ Appliquer la migration additive `0008_replays_and_validation.sql` avant de dépl
 - `POST /v1/workshop` exige désormais `proof`. Une carte modifiée ou le justificatif d’une autre installation est refusé. Le client propose uniquement le biome et normalise la carte publiée au niveau interne 1.
 
 Replays limités à 1,5 Mo, 24 h de simulation, 100 000 séquences de commandes. La validation est une attestation client cohérente avec les données, pas une simulation LÖVE exécutée sur le serveur ; elle ne constitue pas une protection contre un client modifié. Les 22 tests API couvrent aussi propriété, incohérences et publication sans validation.
+
+### Modes normal et hardcore
+
+Appliquer `0010_hardcore_rankings.sql` puis déployer le Worker. La migration conserve les parties, scores et replays historiques ; leurs anciens identifiants de boss 9–14 restent distincts du nouveau parcours du Sanctuaire.
+
+- `GET /v1/leaderboard?world=1&mode=hardcore` filtre les scores hardcore. Sans `mode`, le classement reste normal ; `scope` et `page` fonctionnent dans les deux modes.
+- `POST /v1/runs` accepte `hardcore: true`. Cette valeur est fixée au départ et copiée dans le score final. Les clients antérieurs restent en mode normal.
+- Le monde 8 est réservé au parcours hardcore du Sanctuaire et se termine après sept boss. Le mode libre ne publie pas de score de parcours.
+- Après un recul, le client conserve le même chrono et envoie seulement les jalons encore jamais atteints. Les compteurs restent croissants. Le replay conserve tous les retours en arrière et son mode doit correspondre au score.
+- Les tests couvrent l’isolation des modes, pays et pages, les sept boss, la cohérence des replays et la conservation des données après migration.

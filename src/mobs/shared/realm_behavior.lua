@@ -25,6 +25,7 @@ local function update(m,dt)
     end
     if hx then m.vx=-m.vx; m.phase=m.phase+math.pi end
     if hy then m.vy=-m.vy; m.phase=-m.phase+1 end
+    R.capture(m)
     if dangerous and isTouching(player,m) then Hazards.kill() end
 end
 local function draw(m)

@@ -20,7 +20,16 @@ function T.run()
  Replay.data.completed=true;UI.buttons={};V.draw();assert(not UI.buttons[1].disabled)
  local play=Replay.play;local watched
  Replay.play=function(data) watched=data end;UI.buttons[1].run();assert(watched==captured);Replay.play=play;Replay.recording=false
- V.run.hardcore=true;assert(V.rank(V.run)=='HARDCORE')
+ V.run.hardcore=true;assert(V.rank(V.run)=='—','Normal scores are absent from hardcore rank')
+ -- Restart the captured result's world, even after visiting another screen.
+ local start=App.start;local restarted
+ App.start=function(world)restarted=world end
+ for _,hardcore in ipairs({false,true}) do
+  V.run.world=6;V.run.hardcore=hardcore;App.practice=10;App.singleLevel=true
+  UI.buttons={};V.draw();UI.buttons[3].run()
+  assert(restarted==6 and App.hardcore==hardcore and not App.practice and not App.singleLevel,'Restart keeps world/mode and resets practice')
+ end
+ App.start=start;App.hardcore=false
  local frame=0;love.focus=function() end
  love.update=function()
   frame=frame+1;UI.clock=frame/60

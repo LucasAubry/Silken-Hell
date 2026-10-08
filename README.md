@@ -43,6 +43,7 @@ Les fichiers `custom_levels.json` et `designer/default_levels.json` sont des don
 
 - `love .` : jouer depuis les sources.
 - `make package` : construire `dist/game.love`, y compris l’éditeur intégré.
+- `python3 tools/build_icons.py` : reconstruire les deux icônes macOS avec l’araignée marron actuelle, le même cadre et les mêmes marges, puis signer et actualiser les lanceurs. Relancer ensuite `python3 tools/package.py` pour le jeu et l’éditeur embarqués.
 - `SILKEN_TEST=1 love dist/game.love` : tests isolés du jeu.
 - `SILKEN_DESIGNER_TEST=1 SILKEN_PROJECT="$PWD" love designer` : tests de l’éditeur.
 - `cd server && npm test` : tests API et Workshop.
@@ -81,21 +82,23 @@ La prise en charge utilise le gamepad standard, qui peut être émulé par Steam
 
 ## Le Sanctuaire et succès
 
-Le Sanctuaire est le huitième choix de monde, accessible après avoir terminé les sept mondes. Se déplacer librement dans son arène et toucher une miniature lance le boss du mode démon correspondant. Les records de chaque combat restent séparés.
+Le Sanctuaire est le huitième choix de monde, accessible après avoir terminé les sept mondes. En mode normal, on parcourt horizontalement une galerie de trônes pour choisir un boss ou une créature. En mode hardcore, on enchaîne les sept boss, du Paradis à Renaissance. Chaque mort ramène au boss précédent, avec un minimum au premier ; le chrono et les morts restent cumulés sur tout le parcours.
 
 Maxance : terminer le Paradis avec au moins 95 morts et un temps final au moins égal à son record (552,732 secondes brutes + 95/3 secondes de pénalité, affiché 9:44.40). Les anciens déblocages sont réévalués à partir des scores sauvegardés.
 
 ### Révision du Sanctuaire
 
-Sélectionner le Sanctuaire dans les mondes, puis cliquer sur Jouer. La salle normale propose six boss et toutes les créatures du catalogue ; les rencontres de créatures sont des survies de 20 secondes contre un seul adversaire. La porte de droite alterne avec la salle du mode démon, qui contient uniquement les Sœurs de lave pour le moment. À la manette, Y change la catégorie et les boutons d’épaule changent de page.
+Sélectionner le Sanctuaire dans les mondes, puis cliquer sur Jouer. La salle normale propose sept boss et toutes les créatures du catalogue ; les rencontres de créatures sont des survies de 20 secondes contre un seul adversaire. La branche hardcore lance directement le parcours des boss après la saisie du pseudo. Devant un trône, appuyer vers le haut ouvre une confirmation avec le nom de l’adversaire. « Oui » lance un décompte 3–2–1 pendant lequel le combat et le chrono restent figés. À la manette, Y change la catégorie, les boutons d’épaule passent au trône voisin, gauche/droite choisissent Oui/Non et A confirme.
 
-Les abeilles marquent une pause fixe de 0,4 seconde avant de charger. La première charge abyssale est faible ; la lumière augmente avec les charges suivantes. Le contour lumineux de la bulle d’air est purement visuel. Le joueur est invulnérable sur tout le trajet d’éjection du Léviathan et perd sa charge lumineuse en étant recraché.
+Les Guêpes retrouvent leur délai court (0,20 s, puis 0,18 s au rebond, modulés par leur cadence) et restent immobiles dès leur arrivée au mur. La Gardienne a 13 vies : chaque bébé écrasé lui coûte une vie et chaque œuf touché prend un cran par dash. Le boss des Abysses retrouve ses traversées, volées d’os, aspiration et expiration. Le système de charges lumineuses est retiré : l’aspiration est suivie d’une expulsion sans dégâts. Il entre sur le côté à mi-hauteur et accélère en poursuivant le joueur. Les bombes explosent au contact du joueur ou lorsqu’il les avale (un dégât au boss). Pendant la poursuite, il tire ses côtes vers le joueur à 640 pixels par seconde toutes les 1,2 seconde : côté supérieur ou inférieur selon la position du joueur, les deux côtés simultanément si le joueur est devant sa tête. Les os lancés restent manquants tant qu’ils ne sont pas récupérés. Les côtes épuisées, il lance sa queue puis ses vertèbres, jusqu’à ne conserver que sa tête. Les os retombés restent dans l’arène ; ceux qui le touchent se plantent au point d’impact et peuvent être relancés. L’aspiration remet chaque os récupéré à sa place d’origine. Son corps horizontal lance ses côtes depuis le haut de l’arène ; la tête ne tire plus d’éclairs. Deux os visent le joueur toutes les 1,05 seconde à 680 pixels par seconde. La vitesse dépend uniquement de la quantité d’os restante : de 190 pixels par seconde avec tout le squelette à 105 % de la vitesse maximale du joueur lorsqu’il ne reste que la tête. Les bombes n’accélèrent plus le boss et leur disposition change à chaque nouvelle salve. Le combat commence par une expulsion de particules et de bombes qui envoie le joueur au fond du terrain, dans une zone libre de bombes. Le boss revient directement à gauche après chaque expulsion. Chaque transition de combat passe par une sortie rapide hors écran. L’expulsion disperse les particules dans toute l’arène et projette six nouvelles bombes. Les éclairs diffusent une brume lumineuse et les particules ambiantes réagissent au passage du joueur. Le Sanctuaire affiche les boss à leur taille de jeu, avec une alcôve élargie pour le squelette.
 
 ### Compteurs et lumière abyssale
 
 L’écran Succès conserve le total de larmes collectées, de morts et d’essais. Un départ de combat, un redémarrage manuel ou une reprise après mort compte comme un essai ; les changements de niveau et le Sanctuaire n’en ajoutent pas. Les anciens records locaux initialisent les totaux connus une seule fois. Les parties abandonnées avant cette version ne peuvent pas être reconstituées.
 
-Le Léviathan possède 10 PV. Les charges plafonnent à 3 et éclairent autour du joueur. La larme est bleu sombre et reste cachée par l’obscurité : elle se révèle sous la lumière, y compris après le boss. Le Sanctuaire utilise la même surface de jeu que les niveaux, un sol infernal aux fissures blanches et des miniatures ancrées avec une respiration discrète.
+Le Monstre d’os possède 18 PV. Seules les bombes avalées le blessent ; son corps reste dangereux. Les inscriptions murales minuscules et dorées apparaissent après la mort et la libération de chaque boss, y compris au Sanctuaire et en hardcore. Les messages d’un même biome partagent la progression des succès.
+
+`SILKEN_TEST=1 SILKEN_SANCTUARY_REVISION_TEST=1 love dist/game.love` vérifie les trônes, la confirmation au clavier, à la souris et à la manette, le décompte, les délais des Guêpes, le nouveau combat abyssal et les inscriptions après les sept boss.
 
 ### Vérification du nouveau Poulpe
 
@@ -130,3 +133,11 @@ Une carte Workshop doit être terminée dans sa version exacte avant publication
 Le premier boss est un gros œuf à six vies. Chaque impact de dash libère six oiseaux aux mêmes nids : trois tireurs et trois chargeurs. Les nouveaux tireurs lancent immédiatement une plume ; les tirs suivants sont espacés de 4,6 s minimum. Les charges ne montrent aucune ligne de visée. Le poulpe conserve sa tête PNG, détourée selon sa silhouette par un maillage texturé, sans masque circulaire. Les tentacules vectoriels reprennent les bleus de la tête et leur base passe derrière elle. Les skins respectent l’opacité des traces, le halo du menu s’estompe progressivement, les sons fournis sont chargés, et chaque monde possède un succès pour une victoire sans mourir. Le menu des succès est paginé.
 
 Vérification : `SILKEN_TEST=1 SILKEN_REPLAY_TEST=1 love dist/game.love` (partie réellement terminée/rejouée, divergence, isolation du spectateur, échantillons physiques de tous les biomes/boss et du mode Démon, boss œuf et opacité des skins), `SILKEN_TEST=1 SILKEN_GOAL_TEST=1 love dist/game.love` (66 niveaux), et `node --test server/worker.test.mjs`.
+
+### Classements hardcore
+
+Le bouton « Mode hardcore » affiche les parcours hardcore des sept mondes et du Sanctuaire, séparés des parcours normaux dans les classements mondiaux, nationaux et locaux. Le chrono inclut les retours en arrière et la pénalité habituelle de mort. Les nouveaux scores locaux hardcore sont enregistrés dans `hardcore-scores.json` ; les anciens records de boss isolés sont conservés sans être transformés en parcours complets.
+
+Le fond conserve le biome sélectionné et un contour rouge animé indique le mode hardcore, dans le menu, la carte, le classement et en jeu, même lorsque les effets décoratifs sont désactivés. Le Sanctuaire hardcore enchaîne : Œuf du Merle, Merle noir, Hérisson, Pieuvre, Monstre d’os, Guêpes brûlées, Gardienne de la Soie.
+
+Vérification : `SILKEN_TEST=1 SILKEN_HARDCORE_MODES_TEST=1 love dist/game.love`, puis `npm test --prefix server`. Le classement en ligne nécessite la migration `0010_hardcore_rankings.sql` et le Worker correspondant.

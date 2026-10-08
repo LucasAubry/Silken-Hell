@@ -7,14 +7,13 @@ function V.enter(continuation)
  V.run={skin=App.runSkin or Characters.selected(),world=Campaign.world,biome=Campaign.biome,time=timer,deaths=player.death,hardcore=App.hardcore,
   rows=RunDetails.snapshot(),started=UI.clock,online=Online.current,continuation=continuation,page=1,name=Profile.name}
  V.run.replayData=Replay.recording and Replay.data or nil
- App.state='victory';UI.boardWorld=Campaign.world
+ App.state='victory';UI.boardWorld=Campaign.world;UI.boardHardcore=App.hardcore==true
 end
 function V.rank(r)
  if r.podiumPreview then return '#'..r.podiumPreview,'Aperçu · aucun score enregistré' end
- if r.hardcore then return 'HARDCORE','Hors classement normal' end
  local run=r.online
  if not Online.enabled or not run or run.failed then
-  for i,s in ipairs(Profile.ranking(r.world)) do
+  for i,s in ipairs(Profile.ranking(r.world,nil,r.hardcore)) do
    if s.name==r.name and math.abs((s.rawTime or 0)-r.time)<.001 and s.deaths==r.deaths then return '#'..i,'Classement sur cet appareil' end
   end
   return '—','Partie non classée'
@@ -22,12 +21,17 @@ function V.rank(r)
  if not run.id or #run.pending>0 then return 'ENVOI…','Score en attente de publication' end
  if r.rank then return '#'..r.rank,'Classement mondial · cette partie' end
  if r.notFound then return '—','Score absent du classement actuel' end
- local data,status=Online.page(r.world,false,r.page)
+ local data,status=Online.page(r.world,false,r.page,r.hardcore)
  if status=='loading' then return '…','Recherche du rang mondial' end
  if status~='online' then return 'HORS LIGNE','Rang mondial indisponible' end
  for i,s in ipairs(data.scores) do if s.runId==run.id then r.rank=(r.page-1)*10+i;return '#'..r.rank,'Classement mondial · cette partie' end end
  if data.hasMore then r.page=r.page+1 else r.notFound=true end
  return '…','Recherche du rang mondial'
+end
+function V.restart(r)
+ App.hardcore=r.hardcore==true;App.practice=nil;App.singleLevel=false
+ App.sessionLayout=nil;App.workshopMap=nil;Secret.duel=nil
+ App.start(r.world)
 end
 function V.backdrop(r)
  local g=love.graphics;local c=palettes[r.biome] or palettes[1];local t=UI.clock-r.started
@@ -61,7 +65,7 @@ function V.draw()
  UI.panel(70,166,400,430,true);UI.panel(490,166,640,430,true)
  local rank,label=V.rank(r)
  require('podium_celebration').drawLight(r,rank,95,467)
- UI.text(Worlds.names[r.biome]:upper(),80,76,'heading',white,1040,'center')
+ UI.text(Worlds.names[r.world==8 and 8 or r.biome]:upper()..(r.hardcore and ' · HARDCORE' or ''),80,76,'heading',white,1040,'center')
  UI.rawText(r.name,100,119,'body',muted,1000,'center')
 
  UI.text('TEMPS CLASSÉ',95,189,'small',c)
@@ -71,13 +75,14 @@ function V.draw()
  UI.text('TEMPS ACTIF',95,339,'small',muted);UI.rawText(UI.time(r.time),95,365,'heading',c)
  require('podium_celebration').drawRank(r,rank,95,467);UI.text(label,95,513,'small',muted,350)
  UI.text('VOTRE PARCOURS',516,189,'small',c)
- UI.text('NIVEAU',516,222,'small',muted);UI.text('TEMPS',873,222,'small',muted);UI.text('MORTS',1030,222,'small',muted)
+ UI.text(r.world==8 and 'BOSS' or 'NIVEAU',516,222,'small',muted);UI.text('TEMPS',873,222,'small',muted);UI.text('MORTS',1030,222,'small',muted)
  local rows={};for _,row in ipairs(r.rows) do rows[row.level]=row end
  for n=1,Worlds.levelCount(r.world) do
   local y=249+(n-1)*31;local row=rows[n]
   if n%2==1 then g.setColor(c[1],c[2],c[3],.045);g.rectangle('fill',506,y-3,608,29,3) end
   local boss=Worlds.isSecret(r.world) or n==10 or (r.world==3 and n==1)
   local name=boss and ((Campaign.titles[r.biome] or {})[Worlds.isSecret(r.world) and 10 or n] or 'Le gardien') or 'Niveau '..n
+  if r.world==8 then name=Secret.rushBoss(n).name end
   UI.rawText(string.format('%02d',n),518,y,'small',c);UI.text(name,553,y,'body',white,300)
   UI.rawText(row and UI.time(row.time) or '—',873,y,'body',white)
   UI.rawText(row and tostring(row.deaths) or '—',1045,y,'body',muted)
@@ -89,9 +94,10 @@ function V.draw()
  end
  local replay=r.replayData
  UI.button('Voir ma traversée',70,617,250,47,function() Replay.play(replay) end,not (replay and replay.completed))
- UI.button('Classement',334,617,210,47,function() UI.boardReturn='victory';UI.boardWorld=r.world;UI.boardCountry=false;UI.boardLocal=false;UI.boardPage=1;App.state='rankings' end,r.hardcore)
- UI.button(r.continuation and 'Continuer' or r.hardcore and 'Rejouer en hardcore' or Worlds.next(r.world) and 'Monde suivant' or 'Rejouer ce monde',560,617,570,47,function()
-  if r.continuation then r.continuation() else App.openEntry(r.hardcore and r.world or Worlds.next(r.world) or r.world,r.hardcore) end
+ UI.button('Classement',334,617,210,47,function() UI.boardReturn='victory';UI.boardWorld=r.world;UI.boardHardcore=r.hardcore==true;UI.boardCountry=false;UI.boardLocal=false;UI.boardPage=1;App.state='rankings' end)
+ UI.button('Recommencer',560,617,220,47,function() V.restart(r) end)
+ UI.button(r.continuation and 'Continuer' or r.hardcore and 'Choix des mondes' or Worlds.next(r.world) and 'Monde suivant' or 'Rejouer ce monde',796,617,334,47,function()
+  if r.continuation then r.continuation() elseif r.hardcore then App.selectedWorld=r.world;WorldMap.hardcore=true;WorldMap.open() else App.openEntry(r.hardcore and r.world or Worlds.next(r.world) or r.world,r.hardcore) end
  end,false,true,nil,nil,palettes[Worlds.biome((not r.hardcore and Worlds.next(r.world)) or r.world)] or c)
  UI.button('Retour au menu',450,685,300,33,function() if Worlds.isSecret(r.world) then Secret.open() else App.state='menu' end end)
 end

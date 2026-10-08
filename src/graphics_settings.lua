@@ -22,7 +22,6 @@ function G.pace()
 end
 function G.draw()
  local U=UI;U.panel(305,95,590,565);U.text(T('Graphismes'),340,125,'heading')
- U.text(T('Choisis le rendu qui reste fluide sur ton écran.'),340,174,'small',{.7,.8,.8})
  U.button(T('Qualité : %s',T(({'Légère','Équilibrée','Élevée'})[G.quality])),340,215,520,45,function() G.quality=G.quality%3+1;G.save() end)
  U.button(T('Lumières décoratives : %s',T(G.effects and 'activées' or 'désactivées')),340,280,520,45,function() G.effects=not G.effects;G.save() end)
  U.button(T('Synchronisation verticale : %s',T(({[-1]='adaptative',[0]='désactivée',[1]='activée'})[G.vsync])),340,345,520,45,function()
@@ -31,7 +30,6 @@ function G.draw()
  U.button(T('Compteur FPS : %s',T(G.showFPS and 'visible' or 'masqué')),340,410,520,45,function() G.showFPS=not G.showFPS;G.save() end)
  U.button(T('Limite FPS : %s',G.limit==0 and T('sans limite') or tostring(G.limit)),340,475,520,45,function() G.limit=G.limit==120 and 60 or G.limit==60 and 0 or 120;G.save() end)
  U.button(T('Effets psychédéliques : %s',T(({[0]='désactivés',[1]='atténués',[2]='intenses'})[G.psychedelic])),340,532,520,42,function() G.psychedelic=(G.psychedelic+1)%3;G.save() end)
- U.text(T('Mort, vitesse et larmes : choisis leur intensité visuelle.'),340,582,'small',{.65,.77,.79},520)
  U.button('Retour',340,611,520,36,function() App.state='settings' end)
 end
 return G

@@ -12,7 +12,15 @@ function P.update(dt)
     if not ok or not r.ticket or r.ticket==P.last or not r.layout then return end
     local valid=LayoutSchema.validate(r.layout)
     if not valid then return end
-    P.last=r.ticket; App.sessionLayout=r.layout; App.singleLevel=true; App.custom=true
+    P.last=r.ticket
+    if r.workshop then
+        local allowed,why=require('workshop_access').check(r.layout)
+        if not allowed then
+            love.filesystem.write('preview-response.json',json.encode({ticket=r.ticket,message=why}))
+            Workshop.status=why;App.state='workshop';return
+        end
+    end
+    App.sessionLayout=r.layout; App.singleLevel=true; App.custom=true
     Campaign.select(r.layout.world); player.level=r.layout.level; timer=0; player.death=0
     App.state='playing'; reset_level()
 end

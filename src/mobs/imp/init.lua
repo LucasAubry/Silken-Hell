@@ -20,6 +20,7 @@ MobBehaviors.imp={
         if m.charge<0 then speed=speed*2.1 end
         if m.charge < -3 then m.charge=2.0 end
         Arena.navigate(m,player.x+15,player.y+12,speed,dt)
+        Realms.capture(m)
         if isTouching(player,m) then die() end
     end,
     draw=function(m)

@@ -3430,5 +3430,429 @@
     "pt": " PV",
     "zh": " 生命值",
     "ja": " HP"
+  },
+  "Mode hardcore": {
+    "en": "Hardcore mode",
+    "es": "Modo hardcore",
+    "ru": "Хардкорный режим",
+    "pt": "Modo hardcore",
+    "zh": "硬核模式",
+    "ja": "ハードコアモード"
+  },
+  "Mode normal": {
+    "en": "Normal mode",
+    "es": "Modo normal",
+    "ru": "Обычный режим",
+    "pt": "Modo normal",
+    "zh": "普通模式",
+    "ja": "ノーマルモード"
+  },
+  "Classement hardcore": {
+    "en": "Hardcore leaderboard",
+    "es": "Clasificación hardcore",
+    "ru": "Хардкорный рейтинг",
+    "pt": "Classificação hardcore",
+    "zh": "硬核排行榜",
+    "ja": "ハードコアランキング"
+  },
+  "JOUER · HARDCORE": {
+    "en": "PLAY · HARDCORE",
+    "es": "JUGAR · HARDCORE",
+    "ru": "ИГРАТЬ · ХАРДКОР",
+    "pt": "JOGAR · HARDCORE",
+    "zh": "开始游戏 · 硬核",
+    "ja": "プレイ · ハードコア"
+  },
+  "Sanctuaire hardcore": {
+    "en": "Hardcore Sanctuary",
+    "es": "Santuario hardcore",
+    "ru": "Хардкорное святилище",
+    "pt": "Santuário hardcore",
+    "zh": "硬核圣所",
+    "ja": "ハードコア聖域"
+  },
+  "Voir la version hardcore": {
+    "en": "View hardcore version",
+    "es": "Ver versión hardcore",
+    "ru": "Хардкорная версия",
+    "pt": "Ver versão hardcore",
+    "zh": "查看硬核版本",
+    "ja": "ハードコア版を見る"
+  },
+  "TEST DÉCOUVERTE": {
+    "en": "TEST DISCOVERY",
+    "es": "PROBAR DESCUBRIMIENTO",
+    "ru": "ТЕСТ ОТКРЫТИЯ",
+    "pt": "TESTAR DESCOBERTA",
+    "zh": "测试发现通知",
+    "ja": "発見通知テスト"
+  },
+  "APERÇU · NOUVELLE DÉCOUVERTE": {
+    "en": "PREVIEW · NEW DISCOVERY",
+    "es": "VISTA PREVIA · NUEVO DESCUBRIMIENTO",
+    "ru": "ПРОСМОТР · НОВОЕ ОТКРЫТИЕ",
+    "pt": "PRÉVIA · NOVA DESCOBERTA",
+    "zh": "预览 · 新发现",
+    "ja": "プレビュー · 新たな発見"
+  },
+  "NOUVELLE DÉCOUVERTE": {
+    "en": "NEW DISCOVERY",
+    "es": "NUEVO DESCUBRIMIENTO",
+    "ru": "НОВОЕ ОТКРЫТИЕ",
+    "pt": "NOVA DESCOBERTA",
+    "zh": "新发现",
+    "ja": "新たな発見"
+  },
+  "Ajoutée au bestiaire": {
+    "en": "Added to the bestiary",
+    "es": "Añadida al bestiario",
+    "ru": "Добавлено в бестиарий",
+    "pt": "Adicionada ao bestiário",
+    "zh": "已加入生物图鉴",
+    "ja": "生物図鑑に追加"
+  },
+  "Aperçu sans déblocage": {
+    "en": "Preview without unlocking",
+    "es": "Vista previa sin desbloquear",
+    "ru": "Просмотр без разблокировки",
+    "pt": "Prévia sem desbloquear",
+    "zh": "仅预览，不会解锁",
+    "ja": "解放せずにプレビュー"
+  },
+  "Étoiles : votes des joueurs": {
+    "en": "Stars: player votes",
+    "es": "Estrellas: votos de jugadores",
+    "ru": "Звёзды: голоса игроков",
+    "pt": "Estrelas: votos dos jogadores",
+    "zh": "星星：玩家投票",
+    "ja": "星：プレイヤーの投票"
+  },
+  "Les plus aimées": {
+    "en": "Most liked",
+    "es": "Más populares",
+    "ru": "Самые популярные",
+    "pt": "Mais curtidas",
+    "zh": "最受喜爱",
+    "ja": "人気順"
+  },
+  "Préparer pour Steam": {
+    "en": "Prepare for Steam",
+    "es": "Preparar para Steam",
+    "ru": "Подготовить для Steam",
+    "pt": "Preparar para Steam",
+    "zh": "为 Steam 准备",
+    "ja": "Steam 用に準備"
+  },
+  "Export impossible.": {
+    "en": "Export failed.",
+    "es": "No se pudo exportar.",
+    "ru": "Ошибка экспорта.",
+    "pt": "Falha ao exportar.",
+    "zh": "导出失败。",
+    "ja": "エクスポートできませんでした。"
+  },
+  "Export prêt. La connexion Steamworks reste à configurer.": {
+    "en": "Export ready. Steamworks connection still needs setup.",
+    "es": "Exportación lista. Falta configurar Steamworks.",
+    "ru": "Экспорт готов. Подключение Steamworks ещё не настроено.",
+    "pt": "Exportação pronta. Falta configurar o Steamworks.",
+    "zh": "导出完成。仍需配置 Steamworks 连接。",
+    "ja": "エクスポート完了。Steamworks の接続設定が必要です。"
+  },
+  "Une étoile = un vote positif.": {
+    "en": "One star = one positive vote.",
+    "es": "Una estrella = un voto positivo.",
+    "ru": "Одна звезда = один голос за.",
+    "pt": "Uma estrela = um voto positivo.",
+    "zh": "一颗星 = 一票赞。",
+    "ja": "星1つ = 高評価1票。"
+  },
+  "GO !": {
+    "en": "GO!",
+    "es": "¡YA!",
+    "ru": "ВПЕРЁД!",
+    "pt": "VAI!",
+    "zh": "出发！",
+    "ja": "スタート！"
+  },
+  "TEST SUCCÈS": {
+    "en": "TEST ACHIEVEMENT",
+    "es": "PROBAR LOGRO",
+    "ru": "ТЕСТ ДОСТИЖЕНИЯ",
+    "pt": "TESTAR CONQUISTA",
+    "zh": "测试成就",
+    "ja": "実績をテスト"
+  },
+  "APERÇU · SUCCÈS DÉBLOQUÉ": {
+    "en": "PREVIEW · ACHIEVEMENT UNLOCKED",
+    "es": "VISTA PREVIA · LOGRO DESBLOQUEADO",
+    "ru": "ПРОСМОТР · ДОСТИЖЕНИЕ ПОЛУЧЕНО",
+    "pt": "PRÉVIA · CONQUISTA DESBLOQUEADA",
+    "zh": "预览 · 成就已解锁",
+    "ja": "プレビュー · 実績解除"
+  },
+  "SUCCÈS DÉBLOQUÉ": {
+    "en": "ACHIEVEMENT UNLOCKED",
+    "es": "LOGRO DESBLOQUEADO",
+    "ru": "ДОСТИЖЕНИЕ ПОЛУЧЕНО",
+    "pt": "CONQUISTA DESBLOQUEADA",
+    "zh": "成就已解锁",
+    "ja": "実績解除"
+  },
+  "Ajouté à vos succès": {
+    "en": "Added to your achievements",
+    "es": "Añadido a tus logros",
+    "ru": "Добавлено в достижения",
+    "pt": "Adicionado às suas conquistas",
+    "zh": "已添加至成就",
+    "ja": "実績に追加されました"
+  },
+  "Appuie pour démarrer": {
+    "en": "Press to start",
+    "es": "Pulsa para empezar",
+    "ru": "Нажми, чтобы начать",
+    "pt": "Pressione para começar",
+    "zh": "按下开始",
+    "ja": "押してスタート"
+  },
+  "ESPACE": {
+    "en": "SPACE",
+    "es": "ESPACIO",
+    "ru": "ПРОБЕЛ",
+    "pt": "ESPAÇO",
+    "zh": "空格",
+    "ja": "スペース"
+  },
+  "SOURIS %s": {
+    "en": "MOUSE %s",
+    "es": "RATÓN %s",
+    "ru": "МЫШЬ %s",
+    "pt": "MOUSE %s",
+    "zh": "鼠标 %s",
+    "ja": "マウス %s"
+  },
+  "Même la mort n’a pas libéré cet ancien gardien des fils de la Soie. Seule une charge dans sa bouche ouverte peut le blesser, hors aspiration. Son corps reste dangereux.": {
+    "en": "Even death could not free this ancient guardian from the Silk’s threads. Only a dash into its open mouth can hurt it, outside its suction phase. Its body remains dangerous.",
+    "es": "Ni la muerte liberó a este antiguo guardián de los hilos de la Seda. Solo una embestida en su boca abierta puede herirlo, fuera de la fase de succión. Su cuerpo sigue siendo peligroso.",
+    "ru": "Даже смерть не освободила древнего стража от нитей Шёлка. Ранить его можно только рывком в открытую пасть, когда он не втягивает воздух. Его тело остаётся опасным.",
+    "pt": "Nem a morte libertou este antigo guardião dos fios da Seda. Só uma investida na boca aberta pode feri-lo, fora da fase de sucção. O corpo continua perigoso.",
+    "zh": "即使死亡也未能让这位古老守卫摆脱丝线。只有在它不吸气时冲入张开的嘴里才能造成伤害。它的身体依然危险。",
+    "ja": "死さえも、この古き守護者を糸から解放できなかった。吸い込み中以外に、開いた口へダッシュすることでのみ傷つけられる。体への接触は危険なままだ。"
+  },
+  "Une longue histoire": {
+    "en": "A long story",
+    "es": "Una larga historia",
+    "ru": "Долгая история",
+    "pt": "Uma longa história",
+    "zh": "一个漫长的故事",
+    "ja": "長い物語"
+  },
+  "Tous ses mots": {
+    "en": "All her words",
+    "es": "Todas sus palabras",
+    "ru": "Все её слова",
+    "pt": "Todas as palavras dela",
+    "zh": "她留下的每句话",
+    "ja": "彼女の言葉をすべて"
+  },
+  "Trouve un texte qu’elle t’a laissé.": {
+    "en": "Find a message she left for you.",
+    "es": "Encuentra un mensaje que te dejó.",
+    "ru": "Найди послание, которое она тебе оставила.",
+    "pt": "Encontra uma mensagem que ela te deixou.",
+    "zh": "找到她留给你的一段文字。",
+    "ja": "彼女が残したメッセージを見つける。"
+  },
+  "Retrouve tous les textes qu’elle t’a laissés. %d/%d": {
+    "en": "Find every message she left for you. %d/%d",
+    "es": "Encuentra todos los mensajes que te dejó. %d/%d",
+    "ru": "Найди все послания, которые она тебе оставила. %d/%d",
+    "pt": "Encontra todas as mensagens que ela te deixou. %d/%d",
+    "zh": "找到她留给你的所有文字。%d/%d",
+    "ja": "彼女が残したメッセージをすべて見つける。%d/%d"
+  },
+  "Clavier": {
+    "en": "Keyboard",
+    "es": "Teclado",
+    "ru": "Клавиатура",
+    "pt": "Teclado",
+    "zh": "键盘",
+    "ja": "キーボード"
+  },
+  "Manette": {
+    "en": "Gamepad",
+    "es": "Mando",
+    "ru": "Геймпад",
+    "pt": "Controle",
+    "zh": "手柄",
+    "ja": "コントローラー"
+  },
+  "Stick gauche": {
+    "en": "Left stick",
+    "es": "Stick izquierdo",
+    "ru": "Левый стик",
+    "pt": "Analógico esquerdo",
+    "zh": "左摇杆",
+    "ja": "左スティック"
+  },
+  "Stick droit": {
+    "en": "Right stick",
+    "es": "Stick derecho",
+    "ru": "Правый стик",
+    "pt": "Analógico direito",
+    "zh": "右摇杆",
+    "ja": "右スティック"
+  },
+  "Plein écran : activé": {
+    "en": "Fullscreen: on",
+    "es": "Pantalla completa: activada",
+    "ru": "Полный экран: вкл.",
+    "pt": "Tela cheia: ativada",
+    "zh": "全屏：开启",
+    "ja": "全画面：オン"
+  },
+  "Plein écran : désactivé": {
+    "en": "Fullscreen: off",
+    "es": "Pantalla completa: desactivada",
+    "ru": "Полный экран: выкл.",
+    "pt": "Tela cheia: desativada",
+    "zh": "全屏：关闭",
+    "ja": "全画面：オフ"
+  },
+  "Croix ↑": {
+    "en": "D-pad ↑",
+    "es": "Cruceta ↑",
+    "ru": "Крестовина ↑",
+    "pt": "Direcional ↑",
+    "zh": "十字键 ↑",
+    "ja": "十字キー ↑"
+  },
+  "Croix ↓": {
+    "en": "D-pad ↓",
+    "es": "Cruceta ↓",
+    "ru": "Крестовина ↓",
+    "pt": "Direcional ↓",
+    "zh": "十字键 ↓",
+    "ja": "十字キー ↓"
+  },
+  "Croix ←": {
+    "en": "D-pad ←",
+    "es": "Cruceta ←",
+    "ru": "Крестовина ←",
+    "pt": "Direcional ←",
+    "zh": "十字键 ←",
+    "ja": "十字キー ←"
+  },
+  "Croix →": {
+    "en": "D-pad →",
+    "es": "Cruceta →",
+    "ru": "Крестовина →",
+    "pt": "Direcional →",
+    "zh": "十字键 →",
+    "ja": "十字キー →"
+  },
+  "Aucune créature dans ce niveau.": {
+    "en": "No creatures in this level.",
+    "es": "No hay criaturas en este nivel.",
+    "ru": "На этом уровне нет существ.",
+    "pt": "Nenhuma criatura neste nível.",
+    "zh": "本关没有生物。",
+    "ja": "このレベルに生き物はいません。"
+  },
+  "Êtes-vous sûr de vouloir affronter %s ?": {
+    "en": "Are you sure you want to face %s?",
+    "es": "¿Seguro que quieres enfrentarte a %s?",
+    "ru": "Вы уверены, что хотите сразиться с %s?",
+    "pt": "Tem certeza de que quer enfrentar %s?",
+    "zh": "确定要挑战%s吗？",
+    "ja": "%sに挑戦しますか？"
+  },
+  "Ses lignes lumineuses annoncent les tirs et ses traversées. Esquive, puis fonce dans sa bouche quand elle brille en bleu pour le blesser. Son corps reste dangereux.": {
+    "en": "Glowing lines announce its shots and sweeping passes. Dodge, then dash into its mouth when it shines blue to hurt it. Its body remains dangerous.",
+    "es": "Las líneas luminosas anuncian sus disparos y pasadas. Esquiva y embiste su boca cuando brille en azul para herirlo. Su cuerpo sigue siendo peligroso.",
+    "ru": "Светящиеся линии предупреждают о выстрелах и проходах. Уклоняйся, затем врывайся в пасть, когда она светится синим. Его тело остаётся опасным.",
+    "pt": "Linhas luminosas anunciam os tiros e as travessias. Desvie e avance contra a boca quando ela brilhar em azul para feri-lo. O corpo continua perigoso.",
+    "zh": "发光的线条会预告射击和横穿攻击。先躲避，再趁嘴部发蓝光时冲进去造成伤害。身体仍然危险。",
+    "ja": "光る線が弾と横断攻撃を予告する。かわして、口が青く光ったら突進して傷つけよう。胴体は危険なままだ。"
+  },
+  "Ramasse ses boules bleues, puis fonce dans sa bouche ouverte. Chaque boule accumulée ajoute un dégât. Esquive ses os et ses traversées ; son corps reste dangereux.": {
+    "en": "Collect its blue orbs, then dash into its open mouth. Each stored orb adds one damage. Dodge its bones and swimming passes; its body remains dangerous.",
+    "es": "Recoge sus esferas azules y embiste su boca abierta. Cada esfera acumulada añade un punto de daño. Esquiva sus huesos y sus pasadas; su cuerpo sigue siendo peligroso.",
+    "ru": "Собирай синие сферы и делай рывок в открытую пасть. Каждая накопленная сфера добавляет единицу урона. Уклоняйся от костей и проплывающего тела: оно опасно.",
+    "pt": "Recolhe as esferas azuis e avança contra a boca aberta. Cada esfera acumulada acrescenta um ponto de dano. Desvia-te dos ossos e das passagens; o corpo continua perigoso.",
+    "zh": "收集蓝色光球，再冲入它张开的嘴。每颗积攒的光球增加一点伤害。躲避骨头和游过的身体；它的身体仍然危险。",
+    "ja": "青い光球を集め、開いた口にダッシュしよう。蓄えた光球1個につきダメージが1増える。骨と泳いでくる体を避けよう。体に触れると危険だ。"
+  },
+  "Elle tient les gardiens, qui tiennent leurs créatures. Toute cette descente était sa toile. Attire sa charge vers ses enfants : chaque bébé écrasé lui coûte une vie, et les œufs touchés se fissurent.": {
+    "en": "She controls the guardians and their creatures. This whole descent was her web. Lure her charge into her young: each crushed baby costs her one health, and eggs she hits crack.",
+    "es": "Controla a los guardianes y sus criaturas. Todo este descenso era su telaraña. Guía su embestida hacia sus crías: cada cría aplastada le resta una vida y los huevos golpeados se agrietan.",
+    "ru": "Она управляет стражами и их созданиями. Весь спуск был её паутиной. Направляй её рывок на потомство: каждый раздавленный паучок отнимает у неё здоровье, а задетые яйца трескаются.",
+    "pt": "Ela controla os guardiões e as suas criaturas. Toda a descida era a sua teia. Atrai a investida para as crias: cada cria esmagada tira-lhe uma vida e os ovos atingidos racham.",
+    "zh": "她操控着守卫及其生物。整段下行之路都是她的蛛网。引诱她冲向幼蛛：每压死一只，她就失去一点生命，撞到的卵也会裂开。",
+    "ja": "彼女は守護者とその配下を操る。この道のりすべてが彼女の巣だった。突進を子供たちへ誘おう。幼グモを1匹踏みつぶすたびに体力が1減り、ぶつかった卵にはひびが入る。"
+  },
+  "La Gardienne noue ses propres enfants avant leur premier pas. Ils te poursuivent. La charge de leur mère peut les écraser, même sans toile, et lui retire alors une vie.": {
+    "en": "The Guardian binds her young before their first steps. They chase you. Their mother can crush them with her charge, even without webs, costing her one health.",
+    "es": "La Guardiana ata a sus crías antes de sus primeros pasos. Te persiguen. Su madre puede aplastarlas al embestir, incluso sin telarañas, y pierde una vida.",
+    "ru": "Хранительница связывает детей ещё до первых шагов. Они преследуют тебя. Рывок матери может раздавить их даже без паутины, отняв у неё единицу здоровья.",
+    "pt": "A Guardiã prende as crias antes dos primeiros passos. Elas perseguem-te. A mãe pode esmagá-las ao investir, mesmo sem teias, perdendo uma vida.",
+    "zh": "守护者在幼蛛迈出第一步前就将它们束缚。它们会追赶你。即使没有蛛网，母亲的冲刺也能压死它们，并使她失去一点生命。",
+    "ja": "守護者は子供が歩き始める前から縛りつける。子供たちは君を追う。糸に捕まっていなくても母親の突進で押しつぶされ、そのたびに母親の体力が1減る。"
+  },
+  "Modifier la carte": {
+    "en": "Edit map",
+    "es": "Editar mapa",
+    "ru": "Изменить карту",
+    "pt": "Editar mapa",
+    "zh": "编辑地图",
+    "ja": "マップを編集"
+  },
+  "Tous les mondes": {
+    "en": "All worlds",
+    "es": "Todos los mundos",
+    "ru": "Все миры",
+    "pt": "Todos os mundos",
+    "zh": "所有世界",
+    "ja": "すべてのワールド"
+  },
+  "Esquive les os et récupère les éclairs : chaque charge le blesse quand il t’aspire. Pendant sa nage, place-toi devant sa bouche pour le faire dévier vers les zones lumineuses.": {
+    "en": "Dodge the bones and collect lightning: each charge hurts him when he sucks you in. As he swims, stand in front of his mouth to steer him toward the glowing zones.",
+    "es": "Esquiva los huesos y recoge rayos: cada carga lo hiere cuando te absorbe. Cuando nade, ponte delante de su boca para desviarlo hacia las zonas luminosas.",
+    "ru": "Уворачивайся от костей и собирай молнии: каждый заряд ранит его, когда он втягивает тебя. Во время его плавания вставай перед пастью, чтобы направлять его к светящимся зонам.",
+    "pt": "Desvie dos ossos e recolha raios: cada carga o fere quando ele suga você. Enquanto ele nada, fique diante da boca para desviá-lo para as zonas luminosas.",
+    "zh": "躲开骨头并收集闪电：当它吸入你时，每层电荷都会伤害它。游动时，站在它嘴前，引导它绕向发光区域。",
+    "ja": "骨を避けて稲妻を集めよう。吸い込まれたとき、蓄えた電荷の数だけダメージを与える。泳いでいる間は口の前に立ち、光るエリアへ誘導しよう。"
+  },
+  "Esquive les os et récupère les éclairs : chaque charge le blesse quand il t’aspire. Pendant sa nage, il te suit : attire-le vers les zones lumineuses.": {
+    "en": "Dodge the bones and collect lightning: each charge hurts him when he sucks you in. He follows you while swimming: lure him into the glowing zones.",
+    "es": "Esquiva los huesos y recoge rayos: cada carga lo hiere cuando te absorbe. Te sigue al nadar: atráelo hacia las zonas luminosas.",
+    "ru": "Уворачивайся от костей и собирай молнии: каждый заряд ранит его, когда он втягивает тебя. Во время плавания он следует за тобой: замани его в светящиеся зоны.",
+    "pt": "Desvie dos ossos e recolha raios: cada carga o fere quando ele suga você. Ele segue você ao nadar: atraia-o para as zonas luminosas.",
+    "zh": "躲开骨头并收集闪电：当它吸入你时，每层电荷都会伤害它。游动时它会追随你：把它引入发光区域。",
+    "ja": "骨を避けて稲妻を集めよう。吸い込まれたとき、電荷の数だけダメージを与える。泳いでいる間は追いかけてくるので、光るエリアへ誘い込もう。"
+  },
+  "Esquive les os et récupère les éclairs : chaque charge le blesse quand il t’aspire. Pendant sa nage, attire-le vers les bombes pour les lui faire avaler. Leur contact est mortel pour toi.": {
+    "en": "Dodge the bones and collect lightning: each charge hurts him when he sucks you in. While he swims, lure him into swallowing bombs. Touching them is lethal to you.",
+    "es": "Esquiva los huesos y recoge rayos: cada carga lo hiere cuando te absorbe. Cuando nade, atráelo hacia las bombas para que las trague. Tocarlas es mortal para ti.",
+    "ru": "Уворачивайся от костей и собирай молнии: каждый заряд ранит его, когда он втягивает тебя. Во время плавания заманивай его к бомбам, чтобы он их проглотил. Прикосновение к ним смертельно для тебя.",
+    "pt": "Desvie dos ossos e recolha raios: cada carga o fere quando ele suga você. Ao nadar, atraia-o para engolir as bombas. Tocá-las é fatal para você.",
+    "zh": "躲开骨头并收集闪电：当它吸入你时，每层电荷都会伤害它。游动时，引诱它吞下炸弹。你碰到炸弹就会死亡。",
+    "ja": "骨を避けて稲妻を集めよう。吸い込まれたとき、電荷の数だけダメージを与える。泳いでいる間に爆弾へ誘導し、飲み込ませよう。自分が爆弾に触れると即死する。"
+  },
+  "Esquive les os et récupère au moins un éclair pour survivre à son aspiration. Sans lumière, elle est mortelle ; les charges ne le blessent pas. Pendant sa nage, attire-le vers les bombes pour les lui faire avaler. Leur contact est mortel pour toi.": {
+    "en": "Dodge the bones and collect at least one lightning charge to survive his suction. Without light, it is fatal; charges do not hurt him. While he swims, lure him into swallowing bombs. Touching them is lethal to you.",
+    "es": "Esquiva los huesos y recoge al menos un rayo para sobrevivir a su succión. Sin luz es mortal; las cargas no lo hieren. Al nadar, atráelo hacia las bombas para que las trague. Tocarlas es mortal para ti.",
+    "pt": "Desvie dos ossos e recolha pelo menos um raio para sobreviver à sucção. Sem luz, ela é fatal; as cargas não o ferem. Ao nadar, atraia-o para engolir bombas. Tocá-las é fatal para você.",
+    "ru": "Уворачивайся от костей и собери хотя бы один заряд молнии, чтобы пережить всасывание. Без света оно смертельно; заряды не ранят босса. Пока он плывёт, заманивай его к бомбам, чтобы он их проглотил. Касание бомб смертельно для тебя.",
+    "zh": "躲开骨头，收集至少一层闪电电荷才能在吸入时存活。没有光就会死亡；电荷不会伤害它。游动时，引诱它吞下炸弹。你碰到炸弹就会死亡。",
+    "ja": "骨を避け、稲妻を最低1つ集めると吸い込まれても生き残れる。光がなければ即死し、電荷ではボスを傷つけられない。泳いでいる間に爆弾へ誘導して飲み込ませよう。自分が触れると即死する。"
+  },
+  "Esquive ses paires d’os rapides. Son aspiration te recrache sans te blesser. Pendant sa nage, attire-le vers les bombes pour les lui faire avaler. Leur contact est mortel pour toi.": {
+    "en": "Dodge his fast pairs of bones. His suction spits you back out unharmed. While he swims, lure him into swallowing bombs. Touching them is lethal to you.",
+    "es": "Esquiva sus rápidos pares de huesos. Su succión te expulsa sin dañarte. Cuando nade, atráelo hacia las bombas para que las trague. Tocarlas es mortal para ti.",
+    "pt": "Desvie dos pares de ossos rápidos. A sucção cospe você de volta sem ferir. Ao nadar, atraia-o para engolir bombas. Tocá-las é fatal para você.",
+    "ru": "Уворачивайся от быстрых пар костей. После всасывания он выплюнет тебя невредимым. Пока он плывёт, заманивай его к бомбам, чтобы он их проглотил. Касание бомб смертельно для тебя.",
+    "zh": "躲开成对射来的快速骨头。被吸入后，你会被安全地吐出。游动时，引诱它吞下炸弹。你碰到炸弹就会死亡。",
+    "ja": "素早く飛んでくる2本の骨を避けよう。吸い込まれても無傷で吐き出される。泳いでいる間に爆弾へ誘導して飲み込ませよう。自分が触れると即死する。"
   }
 }

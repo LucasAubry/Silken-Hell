@@ -15,6 +15,6 @@ Les anciens dessins sont conservés comme sources dans les dossiers suivants :
 
 Les teintes, noms, identifiants et conditions de déblocage restent dans `src/characters.lua`. Les 22 skins partagent les mêmes PNG et ne nécessitent pas de fichiers dupliqués pour leurs couleurs.
 
-Les variantes de récompense 15–22 se distinguent uniquement par une orbite de particules dorées (`skin_reward_fx.lua`), sans contour ni couronne. Les identifiants historiques `crowned` restent compatibles avec les sauvegardes. Le réglage des effets désactive les particules.
+Les variantes de récompense 15–22 se distinguent par une orbite de grandes particules dorées et des rayons tournants derrière le joueur équipé en jeu et dans le menu principal (`skin_reward_fx.lua`), sans contour ni couronne. Les identifiants historiques `crowned` restent compatibles avec les sauvegardes. Le réglage des effets désactive les particules et les rayons.
 
 Dans le menu, le portrait est préparé à sa résolution d’affichage puis déplacé comme une image unique, pour éviter le scintillement des détails lors de la réduction du PNG.

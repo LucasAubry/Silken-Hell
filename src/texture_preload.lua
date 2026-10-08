@@ -23,6 +23,8 @@ function P.draw()
  g.pop()
 end
 function P.screen()
+ -- Lazy icon textures may load while an offscreen canvas is being composed.
+ if love.graphics.getCanvas() then return end
  love.event.pump();P.draw();love.graphics.present()
 end
 function P.begin()

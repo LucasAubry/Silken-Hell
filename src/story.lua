@@ -50,7 +50,7 @@ function S.localizedText()
  return S.translations[language] or require('localization').render(S.text)
 end
 function S.localizedWorld(world)
- local language=Profile and Profile.language or 'fr';local biome=Worlds.biome(world)
+ local language=Profile and Profile.language or 'fr';local biome=world==8 and Campaign.biome or Worlds.biome(world)
  return (S.worldTranslations[biome] or {})[language] or require('localization').render(S.worlds[biome] or '')
 end
 function S.isBossLevel()
@@ -78,25 +78,66 @@ function S.atWall(x,y,side)
  if side=='right' then return math.abs(player.y+12-y)<=22 and player.x+30>=x-38 and player.x+30<=x end
  return math.abs(player.x+15-x)<=22 and player.y+24>=y-38 and player.y+24<=y
 end
-function S.drawWallMessage()
- if not S.isBossLevel() or require('boss_liberation').busy() or Secret.inArena() or App.sessionLayout or App.preview then return end
- local line=S.inscriptions[Campaign.biome];if not line then return end
- local g=love.graphics;local x,y,side=S.wallSpot()
+function S.progress()
+ local found,total=0,0
+ for biome in pairs(S.inscriptions) do
+  total=total+1
+  if Profile and (Profile.storyTexts or {})[tostring(biome)]==true then found=found+1 end
+ end
+ return found,total
+end
+function S.wallAvailable()
+ return App.state=='playing' and Aftermath.ready() and not require('boss_liberation').busy()
+  and not App.preview and S.inscriptions[Campaign.biome]~=nil
+end
+function S.updateWall(dt)
+ if not S.wallAvailable() or App.sessionLayout or player.reset or (Replay and (Replay.playing or Replay.ghost)) then
+  S.wallKey=nil;S.nearSince=nil;S.readTime=0;return
+ end
  local key=tostring(Campaign.world)..':'..tostring(player.level)
- if S.wallKey~=key then S.wallKey=key;S.nearSince=nil end
+ if S.wallKey~=key then S.wallKey=key;S.nearSince=nil;S.readTime=0 end
+ local x,y,side=S.wallSpot()
+ if not S.atWall(x,y,side) then S.nearSince=nil;S.readTime=0;return end
+ S.nearSince=S.nearSince or UI.clock
+ S.readTime=(S.readTime or 0)+math.min(dt,.1)
+ if S.readTime<.25 then return end
+ local id=tostring(Campaign.biome)
+ Profile.storyTexts=Profile.storyTexts or {}
+ if Profile.storyTexts[id]~=true then Profile.storyTexts[id]=true;Profile.save() end
+end
+function S.drawWallMessage()
+ if not S.wallAvailable() then return end
+ local g=love.graphics;local x,y,side=S.wallSpot()
  local near=S.atWall(x,y,side)
- if not near then S.nearSince=nil else S.nearSince=S.nearSince or UI.clock end
- local alpha=near and math.min(1,(UI.clock-S.nearSince)*4) or 0
+ local alpha=near and S.nearSince and math.min(1,(UI.clock-S.nearSince)*4) or 0
  g.push('all');g.setShader()
- -- Tiny lettering engraved directly into the masonry, without a sign or hint.
- g.push();g.translate(x,y);if side=='left' then g.rotate(-math.pi/2) elseif side=='right' then g.rotate(math.pi/2) end;g.scale(.42)
- g.setFont(UI.fonts.tiny);g.setColor(.03,.035,.04,.75);g.printf(line,-110,1,220,'center')
- g.setColor(.78,.73,.61,.44);g.printf(line,-110,0,220,'center');g.pop()
+ -- The wall mark is deliberately miniature; approaching it reveals readable prose.
+ g.push();g.translate(x,y);if side=='left' then g.rotate(-math.pi/2) elseif side=='right' then g.rotate(math.pi/2) end
+ local line=require('localization').render(S.inscriptions[Campaign.biome])
+ local font=UI.fonts.body;local scale=.19;local tw=font:getWidth(line)*scale;local th=font:getHeight()*scale
+ local pulse=Graphics.effects and (.8+.2*math.sin(UI.clock*2)) or 1
+ local inward=side=='bottom' and -1 or 1
+ g.setBlendMode('add')
+ for i=12,1,-1 do
+  local reach=i*3
+  g.setColor(1,.72,.12,.02*pulse);g.polygon('fill',-2,0,2,0,8+reach*.16,inward*reach,-8-reach*.16,inward*reach)
+ end
+ for i=4,1,-1 do
+  g.setColor(1,.68,.08,.04*pulse);g.ellipse('fill',0,0,tw*.5+i*1.5,th*.5+i*1.2)
+ end
+ g.setFont(font)
+ for _,offset in ipairs({{-.5,0},{.5,0},{0,-.5},{0,.5}}) do
+  g.setColor(1,.77,.15,.25*pulse);g.print(line,-tw/2+offset[1],-th/2+offset[2],0,scale,scale)
+ end
+ g.setBlendMode('alpha');g.setColor(1,.87,.16,1);g.print(line,-tw/2,-th/2,0,scale,scale);g.pop()
  if alpha>0 then
   local width=math.min(460,Arena.width-100);local left=math.max(35,math.min(Arena.width-width-35,x-width/2))
-  local top=side=='top' and 62 or side=='bottom' and 440 or math.max(80,math.min(450,y-45))
-  g.setColor(.025,.032,.045,.94*alpha);g.rectangle('fill',left,top,width,91,6)
-  UI.text(S.localizedWorld(Campaign.world),left+20,top+15,'body',{.94,.91,.82,alpha},width-40,'center')
+  local text=S.localizedWorld(Campaign.world);local _,lines=UI.fonts.body:getWrap(text,width-40)
+  local height=math.max(91,#lines*UI.fonts.body:getHeight()*UI.fonts.body:getLineHeight()+30)
+  local top=side=='top' and 62 or side=='bottom' and 600-height-69 or math.max(80,math.min(600-height-59,y-45))
+  g.setColor(.025,.032,.045,.96*alpha);g.rectangle('fill',left,top,width,height,6)
+  g.setColor(1,.76,.18,.8*alpha);g.setLineWidth(1.5);g.rectangle('line',left,top,width,height,6)
+  UI.text(text,left+20,top+15,'body',{1,.87,.44,alpha},width-40,'center')
  end
  g.pop()
 end

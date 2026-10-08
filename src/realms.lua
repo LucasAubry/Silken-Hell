@@ -53,7 +53,7 @@ function R.spawn(w,n)
     end
 end
 function R.reset(w,n)
-    R.custom=false; R.world=w; R.level=n; R.clock=0; R.tunnels={}; R.tornadoes={}; player.whirl=nil; player.throw=nil; player.skyWhirl=nil; player.skyThrow=nil; player.tunnelLock=false; player.tunnelTravel=nil; R.fireflies={}; R.wind={x=0,y=0,time=0,stage=0,tx=0,ty=0}; R.clouds={}; R.rain={}; R.rainClock=.25; R.current={}
+    R.custom=false; R.world=w; R.level=n; R.clock=0; R.tunnels={}; R.tornadoes={}; player.whirl=nil; player.throw=nil; player.skyWhirl=nil; player.skyThrow=nil; player.tunnelLock=false; player.tunnelTravel=nil; R.fireflies={};R.starPrevious=nil; R.wind={x=0,y=0,time=0,stage=0,tx=0,ty=0}; R.clouds={}; R.rain={}; R.rainClock=.25; R.current={}
     R.electricTrails={}; R.bolts={}; R.eggs={}; R.larvae={}; R.holes={}; R.rainSites={}; R.rainWave=0; R.vents={}; R.lightning={}; R.lightningClock=.35; player.illuminated=0
     if w<4 then return end
     -- Reuse the ocean floor across deaths instead of releasing a GPU canvas
@@ -73,7 +73,7 @@ function R.reset(w,n)
         end
         for i=1,2 do R.current[i]={x=Arena.width*(i==1 and .28 or .72),y=300,rx=50,ry=200,dx=i==1 and 1 or -1} end
         if w==7 then
-            for i=1,150 do R.fireflies[i]={x=32+love.math.random()*(Arena.width-64),y=32+love.math.random()*536,
+            for i=1,190 do R.fireflies[i]={x=32+love.math.random()*(Arena.width-64),y=32+love.math.random()*536,
                 angle=love.math.random()*math.pi*2,turn=love.math.random()*2,radius=.7+love.math.random()*.6,phase=love.math.random()*6} end
         end
     elseif w==5 then
@@ -205,13 +205,13 @@ function R.update(dt)
         R.updateLightning(dt)
         if Campaign.biome==6 then R.updateWind(dt) end
         R.rainClock=R.rainClock-dt
-        if not R.skyBossPresent() and (R.level>=5 or R.custom) and R.rainClock<=0 then
+        if Campaign.biome~=6 and not R.skyBossPresent() and (R.level>=5 or R.custom) and R.rainClock<=0 then
             R.rainClock=math.max(.55,.95-R.level*.035); R.rainWave=R.rainWave+1
             for _,p in ipairs(R.rainSites) do if p.phase==R.rainWave%3 then
                 R.rain[#R.rain+1]={x=p.x,y=p.y,age=0}
             end end
         end
-        require('sky_rain').update(R.rain,dt)
+        if Campaign.biome==6 then R.rain={} else require('sky_rain').update(R.rain,dt) end
     end
     if Campaign.biome==4 or Campaign.biome==7 or R.custom then
         for _,school in ipairs(R.schools) do
@@ -247,12 +247,8 @@ function R.updateLightning(dt)
     R.lightningClock=R.lightningClock-dt
     if R.lightningClock<=0 then
         R.lightningClock=math.max(1.25,2.5-R.level*.085)+love.math.random()*.35
-        local gulls={}; for _,m in ipairs(mobs) do if m.type=='gull' then gulls[#gulls+1]=m end end
+        local gulls={}; for _,m in ipairs(mobs) do if m.type=='gull' and not m.dead then gulls[#gulls+1]=m end end
         if #gulls>0 then local m=gulls[love.math.random(#gulls)]; R.lightning[#R.lightning+1]={x=m.x,y=m.y,age=0,target=m} end
-        if not (Storm.active and Storm.phase=='rest') then
-            R.lightning[#R.lightning+1]={x=player.x+15,y=player.y+12,age=0}
-            if R.level>=6 then R.lightning[#R.lightning+1]={x=math.max(65,math.min(Arena.width-65,player.x+115)),y=math.max(75,math.min(525,player.y-70)),age=0} end
-        end
     end
     for i=#R.lightning,1,-1 do local p=R.lightning[i]; p.age=p.age+dt
         if p.age<.8 and p.target then p.x,p.y=p.target.x,p.target.y end
@@ -321,6 +317,7 @@ function R.moveGull(m,dt)
     else m.orbit=nil end
     if d>.1 then m.vx,m.vy=dx/d,dy/d; Arena.move(m,m.vx*math.min(d,m.speed*dt),m.vy*math.min(d,m.speed*dt)) end
     R.containGull(m); m.dir=Art.direction(m.vx,m.vy,m.dir)
+    R.capture(m);if m.is_frozen then return end
     if m.electric then
         R.electricTrails[#R.electricTrails+1]={x=previousX,y=previousY,tx=m.x,ty=m.y,life=2.2,seed=m.age*11}
         if require('collision_shapes').touchCircle('electric_gull',m.x,m.y,30) then Hazards.kill() end
@@ -402,8 +399,7 @@ end
 function R.contact()
     if not player.skyThrow and R.fallAt(player.x+15,player.y+12) then Hazards.kill(); if player.reset then player.falling=true end end
     if Campaign.biome==7 or R.custom then for _,p in ipairs(R.vents) do
-        local t=(R.clock+p.phase)%6
-        if t>=3 and t<4.2 and Hazards.inEllipse(player.x+15,player.y+12,p,4) then Hazards.kill() end
+        if Hazards.inEllipse(player.x+15,player.y+12,p,4) then Hazards.kill() end
     end end
 end
 function R.zap(m)
@@ -447,6 +443,7 @@ function R.updateProjectiles(dt)
         local a=math.atan2(player.y+12-m.y,player.x+15-m.x)
         if not m.tunnelTravel and not m.is_frozen then
             m.dir=Art.direction(math.cos(a),math.sin(a)); Arena.navigate(m,player.x+15,player.y+12,72,dt)
+            R.capture(m)
             if isTouching(player,m) then Hazards.kill() end
         end
         if m.life<=0 then table.remove(R.larvae,i) end
@@ -475,6 +472,7 @@ function R.drawCreatures()
 end
 function R.updateFireflies(dt)
     if Abyss.encounterActive() then return end
+    local fx=require('abyss_light_fx');local actors=fx.actors(R,false)
     for i=#R.fireflies,1,-1 do
         local p=R.fireflies[i]; if not p.abyssHeld and not Abyss.inSuctionShelter(p.x,p.y) then
         p.turn=p.turn-dt
@@ -482,18 +480,24 @@ function R.updateFireflies(dt)
         p.x=p.x+math.cos(p.angle)*12*dt; p.y=p.y+math.sin(p.angle)*12*dt
         if p.x<28 or p.x>Arena.width-28 then p.angle=math.pi-p.angle; p.x=math.max(28,math.min(Arena.width-28,p.x)) end
         if p.y<28 or p.y>572 then p.angle=-p.angle; p.y=math.max(28,math.min(572,p.y)) end
-        if not Abyss.encounterActive() and not player.abyssHeld and not player.abyssSpit and (p.x-player.x-15)^2+(p.y-player.y-12)^2<18^2 then table.remove(R.fireflies,i) end
+        if not player.abyssHeld and not player.abyssSpit then fx.stir(p,dt,actors) end
     end end
+end
+function R.drawAnemoneElectric()
+    if Campaign.biome~=7 and not R.custom then return end
+    for _,p in ipairs(R.vents) do
+        require('anemone_art').electric(p.x,p.y,p.rx*2+14,p.ry*2+24,R.clock)
+    end
 end
 function R.drawFireflies()
     if Abyss.encounterActive() then return end
     if Campaign.biome~=7 or Campaign.world==3 then return end
     local g=love.graphics; g.push('all'); g.setBlendMode('add')
     for _,p in ipairs(R.fireflies) do if not p.abyssHeld then
-        local alpha=.65+.25*math.sin(R.clock*2+p.phase)
-        g.setColor(.08,.35,1,alpha*.10); g.circle('fill',p.x,p.y,4)
-        g.setColor(.18,.62,1,alpha); g.circle('fill',p.x,p.y,p.radius)
-        g.setColor(.65,.92,1,alpha); g.circle('fill',p.x,p.y,p.radius*.4)
+        local alpha=(.65+.25*math.sin(R.clock*2+p.phase))*(p.starVisibility or 1)
+        g.setColor(.08,.35,1,alpha*.16); g.circle('fill',p.x,p.y,6)
+        g.setColor(.22,.7,1,math.min(1,alpha*1.15)); g.circle('fill',p.x,p.y,p.radius*1.3)
+        g.setColor(.65,.92,1,alpha); g.circle('fill',p.x,p.y,p.radius*.52)
     end end
     g.pop()
 end
@@ -502,14 +506,18 @@ function R.drawDarkness()
     local g=love.graphics
     R.darkShader=R.darkShader or g.newShader('assets/shaders/abyss-darkness.glsl')
     local exposed=(player.illuminated or 0)>0
-    local lights={{player.x+15,player.y+12,exposed and Abyss.playerLightRadius() or 52,exposed and (player.circleLight and .8 or .90+.04*math.max(0,(player.charges or 0)-1)) or .23}}
+    local bx,by=Ocean.lightPosition()
+    local lights={{exposed and player.x+15 or bx or player.x+15,exposed and player.y+12 or by or player.y+12,exposed and Abyss.playerLightRadius() or 52,exposed and (player.circleLight and .8 or .90+.04*math.max(0,(player.charges or 0)-1)) or (bx and .28 or 0)}}
+    if not exposed then lights[#lights+1]={player.x+15,player.y+12,75,.32} end
     if Abyss.encounterActive() then
-        lights[1]={player.x+15,player.y+12,exposed and math.max(180,Abyss.playerLightRadius()) or 100,exposed and .96 or .72}
         lights[#lights+1]={Arena.width/2,300,Arena.width*2,Abyss.isPulling() and .025 or .08}
     end
     for _,m in ipairs(mobs) do if m.type=='lanternfish' and not m.abyssHeld then lights[#lights+1]={m.x,m.y-15,145,1} end end
     Abyss.addLights(lights); Bosses.addLights(lights); AbyssTerrain.addLights(lights)
     while #lights>24 do table.remove(lights) end
+    for _,p in ipairs(R.vents) do
+        if #lights<24 then lights[#lights+1]={p.x,p.y-p.ry*.6,55,.65} end
+    end
     for _,m in ipairs(mobs) do if m.type=='light_jelly' and not m.abyssHeld and #lights<24 then lights[#lights+1]={m.x,m.y,60,.5} end end
     for _,b in ipairs(Ocean.bubbles) do
         if #lights<24 then lights[#lights+1]={b.x,b.y,26,b.cooldown==0 and .42 or .1} end
@@ -577,9 +585,7 @@ function R.drawGround()
             g.setColor(.55,.9,1,.22); g.circle('line',x,y,2+i%3)
         end
         for _,p in ipairs(R.vents) do
-            local t=(R.clock+p.phase)%6
-            local phase=t<2 and 'idle' or t<3 and 'charge' or t<4.2 and 'active' or 'spent'
-            g.setColor(1,1,1); Art.draw('electric_vent_'..phase,p.x,p.y,p.rx*2+14,0,p.ry*2+24)
+            g.setColor(1,1,1); Art.drawAnemone(p.x,p.y,p.rx*2+14,p.ry*2+24,R.clock)
         end
     end
     if Campaign.biome==6 or R.custom then
@@ -672,11 +678,16 @@ function R.underground(m)
     return false
 end
 function R.capture(m)
-    if m.is_frozen or m.tunnelTravel or R.underground(m) then return end
-    for _,t in ipairs(mobs) do if (t.type=='piege' or t.capture) and not t.active and isTouching(m,t) then
-        freeze(m,2); t.active=true
-        if m.has_larme and not objet.larme_dropped then objet.larme_dropped=true; objet.larme.x=m.x-15; objet.larme.y=m.y+35 end
-    end end
+    if m.tunnelTravel or R.underground(m) then return end
+    if not m.is_frozen then
+        for _,t in ipairs(mobs) do if (t.type=='piege' or t.capture) and not t.active and isTouching(m,t) then
+            freeze(m,2); t.active=true
+            if m.has_larme and not objet.larme_dropped then objet.larme_dropped=true; objet.larme.x=m.x-15; objet.larme.y=m.y+35 end
+        end end
+    end
+    -- Captured creatures stop moving, but their bodies remain lethal even when
+    -- their individual behavior returns early while frozen.
+    if m.is_frozen and not m.dead and not m.spent and isTouching(player,m) then Hazards.kill(m.type) end
 end
 MobBehaviors.fish=require('mobs.fish')(R)
 MobBehaviors.jelly=require('mobs.jelly')(R)

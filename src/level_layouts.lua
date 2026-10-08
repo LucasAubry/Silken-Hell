@@ -17,7 +17,7 @@ function L.snapshot()
         if m.school then if not schools[m.school] then nextSchool=nextSchool+1; schools[m.school]=nextSchool end; e.schoolId=schools[m.school] end
     end
     if Raven.active then for _,n in ipairs(Raven.nests) do put('nest',n) end end
-    for _,r in ipairs(Arena.interior) do put('wall',{x=r.x+r.w/2,y=r.y+r.h/2,w=r.w,h=r.h}) end
+    for _,r in ipairs(Arena.interior) do put('wall',{x=r.x+r.w/2,y=r.y+r.h/2,w=r.w,h=r.h,rotation=r.rotation}) end
     for kind,list in pairs({magma_spawner=Magma.spawners,lava=Hazards.lava,vent=Realms.vents,hole=Realms.holes,tunnel=Realms.tunnels,tornado=Realms.tornadoes,current=Realms.current,rain=Realms.rainSites}) do
         for _,p in ipairs(list) do put(kind,p) end
     end
@@ -91,7 +91,7 @@ function L.apply(layout)
         if e.kind=='spawn' then player.x=e.x-15; player.y=e.y-12
         elseif e.kind=='tear' then tears[#tears+1]={x=e.x-15,y=e.y-39}
         elseif e.kind=='wall' then
-            local r={x=e.x-e.w*scale/2,y=e.y-e.h/2,w=e.w*scale,h=e.h}; Arena.interior[#Arena.interior+1]=r; Arena.walls[#Arena.walls+1]=r
+            local r={x=e.x-e.w*scale/2,y=e.y-e.h/2,w=e.w*scale,h=e.h,rotation=e.rotation}; Arena.interior[#Arena.interior+1]=r; Arena.walls[#Arena.walls+1]=r
         elseif e.kind=='magma_spawner' then Magma.addSpawner(e.x,e.y,e.spawnDelay,e.spawnInterval)
         elseif e.kind=='mob' then L.spawn(e)
         elseif e.kind=='abyss_part' then AbyssTerrain.add(e)

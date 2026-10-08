@@ -5,7 +5,7 @@ function R.row()
 end
 function R.tick(dt) local r=R.row();r.time=r.time+dt end
 function R.death() local n=player.death or 0;local delta=math.max(0,n-(R.lastDeaths or 0));local r=R.row();r.deaths=r.deaths+delta;R.lastDeaths=n end
-function R.key(s) return table.concat({s.world or 0,s.name or '',string.format('%.3f',s.time or 0),s.deaths or 0,s.skin or 1},'|') end
+function R.key(s) return (s.hardcore and 'hardcore|' or '')..table.concat({s.world or 0,s.name or '',string.format('%.3f',s.time or 0),s.deaths or 0,s.skin or 1},'|') end
 function R.snapshot() local out={};local levels={};for n in pairs(R.rows) do levels[#levels+1]=n end;table.sort(levels);for _,n in ipairs(levels) do local r=R.rows[n];out[#out+1]={level=n,time=r.time,deaths=r.deaths} end;return out end
 function R.openScore(score,world)
  local view={world=world,rows={},status='Détail indisponible pour cette ancienne partie.'};R.view=view

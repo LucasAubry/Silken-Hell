@@ -17,7 +17,7 @@ function T.run()
   local d=c:newImageData();local f=assert(io.open('/tmp/silken-'..name..'.png','wb'));f:write(d:encode('png'):getString());f:close();d:release();c:release()
  end
  Profile.stats={tears=1234,deaths=5678,attempts=6789};App.state='achievements';capture('counters')
- App.state='statistics';capture('statistics');love.keypressed('escape');assert(App.state=='menu')
+ App.state='statistics';capture('statistics');love.keypressed('escape');assert(App.state=='achievements')
  for _,world in ipairs(Worlds.order) do
   App.practice=world==3 and 1 or 10;App.singleLevel=true;App.start(world)
   objet.larme.taken=false;Campaign.carrier=nil;Ending.active=false;Renaissance.active=false;Campaign.drawTear()

@@ -11,7 +11,7 @@ function M.select(n,i)
         local x,y=point(M.target or 1)
         M.route[#M.route+1]={x=x,y=y,holdCamera=true}
     end
-    M.hardcore=false
+    M.hardcore=false;UI.boardHardcore=false
     local x,y=point(i);M.route[#M.route+1]={x=x,y=y}
     App.selectedWorld=n;UI.boardWorld=n;M.target=i;M.viewIndex=i;M.scrollTarget=camera(i)
     return true
@@ -20,14 +20,14 @@ function M.branch(hardcore,silent)
     hardcore=hardcore==true
     if hardcore and not (App.selectedWorld==8 and Worlds.canEnter(8)) and not Hardcore.available(App.selectedWorld) then return false end
     if (M.hardcore==true)==hardcore then return true end
-    M.hardcore=hardcore;if not silent then Audio.play('go') end
+    M.hardcore=hardcore;UI.boardHardcore=hardcore;if not silent then Audio.play('go') end
     local x,y=point(M.target or 1);M.route=M.route or {}
     M.route[#M.route+1]={x=x+(hardcore and 165 or 0),y=y}
     return true
 end
 function M.open()
     local i=1;for index,n in ipairs(Worlds.selection) do if n==App.selectedWorld then i=index end end
-    M.hardcore=M.hardcore and (App.selectedWorld==8 or Hardcore.available(App.selectedWorld)) or false;M.route={}
+    M.hardcore=M.hardcore and (App.selectedWorld==8 or Hardcore.available(App.selectedWorld)) or false;M.route={};M.arrival=nil
     M.scroll=camera(i);M.scrollTarget=M.scroll;M.target=i;M.viewIndex=i;M.x,M.y=point(i);M.x=M.x+(M.hardcore and 165 or 0)
     App.state='worlds'
 end
@@ -47,14 +47,16 @@ function M.update(dt)
     local distance=650*math.max(0,dt)
     while M.route and #M.route>0 do
         local p=M.route[1];local dx,dy=p.x-M.x,p.y-M.y;local length=math.sqrt(dx*dx+dy*dy)
-        if length<=distance then M.x,M.y=p.x,p.y;distance=distance-length;table.remove(M.route,1)
+        if length<=distance then
+            M.x,M.y=p.x,p.y;distance=distance-length;table.remove(M.route,1)
+            if #M.route==0 then M.arrival={x=p.x,y=p.y,at=UI.clock} end
         else M.x=M.x+dx/length*distance;M.y=M.y+dy/length*distance;break end
     end
 end
 function M.drawBackground(w,h)
     local scale=math.min(w/1200,h/750);local edge=w
     g.push('all');g.setColor(.008,.011,.015);g.rectangle('fill',0,0,w,h);g.setScissor()
-    M.backgroundShader=M.backgroundShader or g.newShader('assets/shaders/world_map.glsl');M.backgroundShader:send('clock',UI.clock);M.backgroundShader:send('mapHeight',h/scale);M.backgroundShader:send('viewTop',(h/scale-750)/2);M.backgroundShader:send('scroll',M.scroll);local stops={};for _,n in ipairs(Worlds.selection) do stops[#stops+1]=(n==8 and M.hardcore and App.selectedWorld==8) and {.32,.025,.04} or Worlds.color(n).floor end;M.backgroundShader:send('stops',unpack(stops));g.setShader(M.backgroundShader);g.setColor(1,1,1);g.draw(UI.pixel,0,0,0,edge,h);g.setShader()
+    M.backgroundShader=M.backgroundShader or g.newShader('assets/shaders/world_map.glsl');M.backgroundShader:send('clock',UI.clock);M.backgroundShader:send('mapHeight',h/scale);M.backgroundShader:send('viewTop',(h/scale-750)/2);M.backgroundShader:send('scroll',M.scroll);local stops={};for _,n in ipairs(Worlds.selection) do stops[#stops+1]=Worlds.color(n).floor end;M.backgroundShader:send('stops',unpack(stops));g.setShader(M.backgroundShader);g.setColor(1,1,1);g.draw(UI.pixel,0,0,0,edge,h);g.setShader()
     local tint=Worlds.color(App.selectedWorld or 1).tear
     for layer=1,7 do
         local vertices={0,0}
@@ -123,8 +125,11 @@ local function node(n,i,x,y)
     local labelX=math.max(48,x-245)
     g.setColor(.015,.025,.035,.96);g.rectangle('fill',labelX-6,y-20,187,40,8,8)
     UI.text(Worlds.names[n],labelX,y-10,'medium',{.97,.90,.72},175,'right')
-    for j=1,2 do local a=UI.clock*.25+j*math.pi
-        markerMob(monsters[n],Art.direction(-math.sin(a),math.cos(a)),x+math.cos(a)*76,y+math.sin(a)*29)
+    for j=1,(n==3 and 1 or 2) do local a=UI.clock*.25+j*math.pi
+        local xx,yy=x+math.cos(a)*76,y+math.sin(a)*29
+        if n==3 then
+            g.setColor(1,1,1);require('final_art').spider('queen',xx,yy,44,a)
+        else markerMob(monsters[n],Art.direction(-math.sin(a),math.cos(a)),xx,yy) end
     end
     UI.buttons[#UI.buttons+1]={x=labelX-6,y=math.max(125,y-35),w=x+40-labelX+6,h=math.max(0,math.min(680,y+35)-math.max(125,y-35)),run=function() M.select(n,i);M.branch(false,true) end,sound='go'}
 end
@@ -158,6 +163,12 @@ function M.draw()
             end
         end
     end
+    local arrival=M.arrival;local age=arrival and UI.clock-arrival.at or 1
+    if Graphics.effects and age>=0 and age<.4 then
+        local t=age/.4;local c=M.hardcore and {1,.24,.12} or Worlds.color(App.selectedWorld).tear
+        g.setColor(c[1],c[2],c[3],(1-t)*.65);g.setLineWidth(2*(1-t)+.5)
+        g.circle('line',arrival.x,arrival.y-M.scroll,27+21*(1-(1-t)^3));g.setLineWidth(1)
+    end
     g.setColor(1,1,1);Characters.draw(M.x or 365,(M.y or 210)-M.scroll,64,'down')
     g.setCanvas(previousCanvas);g.pop()
     M.edgeShader=M.edgeShader or g.newShader([[
@@ -170,7 +181,7 @@ function M.draw()
     g.push('all');g.setShader(M.edgeShader);g.setColor(1,1,1)
     g.setBlendMode('alpha','premultiplied');g.draw(M.routeCanvas);g.pop()
     -- Floating controls leave the painted terrain visible across the entire screen.
-    if App.selectedWorld==8 and M.hardcore then g.setColor(.16,.018,.028,.94) else g.setColor(.015,.025,.035,.88) end;g.rectangle('fill',756,136,388,510,16,16)
+    g.setColor(.015,.025,.035,.88);g.rectangle('fill',756,136,388,510,16,16)
     g.setColor(.86,.74,.49,.45);g.rectangle('line',756,136,388,510,16,16)
     UI.button('↑',55,151,62,40,function() M.step(-1,true) end,false,false,'go')
     UI.button('↓',55,620,62,40,function() M.step(1,true) end,false,false,'go')
@@ -178,20 +189,20 @@ function M.draw()
     g.setColor(.95,.84,.59,.9);g.rectangle('fill',730,195+M.scroll/1270*356,8,34,4,4)
     local n=App.selectedWorld;local unlocked=Worlds.canEnter(n)
     UI.text(Worlds.displayName(n),784,169,'heading',{.95,.85,.65},330,'center')
-    if M.hardcore then UI.text(n==8 and 'MODE DÉMON' or 'HARDCORE',784,207,'small',{1,.72,.42},330,'center') end
-    local best=Profile.ranking(n)[1]
-    UI.text(M.hardcore and (n==8 and 'Les gardiens dans leur forme démoniaque.' or 'Chaque mort te fait reculer d’un niveau.\nMinimum : niveau 1.') or best and ('Record : '..UI.time(best.time)..'\n'..best.deaths..' morts') or 'Aucun parcours terminé',785,M.hardcore and 242 or 227,'body',{.75,.78,.81},330,'center')
+    if M.hardcore then UI.text('MODE HARDCORE',784,207,'small',{1,.72,.42},330,'center') end
+    local best=Profile.ranking(n,nil,M.hardcore)[1]
+    UI.text(M.hardcore and (n==8 and 'Sept boss à la suite.\nChaque mort te ramène au boss précédent.' or 'Chaque mort te fait reculer d’un niveau.\nMinimum : niveau 1.') or best and ('Record : '..UI.time(best.time)..'\n'..best.deaths..' morts') or 'Aucun parcours terminé',785,M.hardcore and 242 or 227,'body',{.75,.78,.81},330,'center')
     if n~=8 then
         local index=M.hardcore and Characters.crownedByWorld[n] or Worlds.rank(n)+5;g.setColor(1,1,1);Characters.portrait(index,950,331,74*(1+.025*math.sin(UI.clock*2)),'down',not Characters.unlocked(index))
-        UI.text(Characters.unlocked(index) and ('Skin obtenu : '..Characters.names[index]) or (M.hardcore and 'Termine en hardcore ou bats le boss Démon' or 'Termine le monde pour gagner ce skin'),780,377,'small',{.73,.74,.78},340,'center')
+        UI.text(Characters.unlocked(index) and ('Skin obtenu : '..Characters.names[index]) or (M.hardcore and 'Termine en hardcore pour gagner ce skin' or 'Termine le monde pour gagner ce skin'),780,377,'small',{.73,.74,.78},340,'center')
         UI.text(M.hardcore and 'Parcours complet · départ au niveau 1' or 'ENTRAÎNEMENT · sans classement',780,427,'small',{.89,.78,.52},340,'center')
         for level=1,(M.hardcore and 0 or Worlds.levelCount(n)) do
             local available=unlocked and level<=((Profile.levels or {})[n] or 1)
             UI.button(available and tostring(level) or '—',790+(level-1)%5*64,461+math.floor((level-1)/5)*42,55,34,function() App.practiceLevel(n,level) end,not available,false,'selection')
         end
-    else UI.text('Toutes les rencontres, dans l’ordre.\nChoisis Normal ou Démon sur la carte.',790,320,'body',{.75,.78,.81},320,'center') end
+    else UI.text(M.hardcore and 'Parcours classé · boss uniquement\nDépart au premier boss.' or 'Exploration libre.\nChoisis tes créatures et tes boss.',790,320,'body',{.75,.78,.81},320,'center') end
     if n~=8 and not M.hardcore and not Hardcore.available(n) then UI.text(Hardcore.unlocked() and 'Hardcore : termine ce monde.' or 'Hardcore : termine Terre (monde 3).',785,548,'small',{.82,.71,.51},330,'center') end
-    UI.button(n==8 and (M.hardcore and 'Sanctuaire Démon' or 'Entrer au Sanctuaire') or M.hardcore and 'Commencer en hardcore' or 'Commencer le monde',790,578,320,45,function() App.openEntry(n,M.hardcore) end,not unlocked,true,'selection')
-    UI.button('Retour',850,685,260,38,function() App.state='menu' end)
+    UI.button(n==8 and (M.hardcore and 'Sanctuaire hardcore' or 'Entrer au Sanctuaire') or M.hardcore and 'Commencer en hardcore' or 'Commencer le monde',790,578,320,45,function() App.openEntry(n,M.hardcore) end,not unlocked,true,'selection')
+    UI.button('Retour',850,685,260,38,function() UI.boardHardcore=M.hardcore;App.state='menu' end)
 end
 return M

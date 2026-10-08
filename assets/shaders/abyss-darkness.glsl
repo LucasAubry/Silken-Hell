@@ -10,5 +10,5 @@ vec4 effect(vec4 color, Image texture, vec2 uv, vec2 pixel) {
         light = max(light,(1.0-smoothstep(0.05,1.0,distanceToLight))*lights[i].w);
     }
     float reveal=useTrailMask ? clamp(Texel(trailMask,pixel/arenaSize).r,0.0,1.0) : 0.0;
-    return vec4(0.0,0.002,0.008,(0.992-0.86*clamp(light,0.0,1.0))*(1.0-reveal));
+    return vec4(0.0,0.002,0.008,(0.92-0.86*clamp(light,0.0,1.0))*(1.0-reveal));
 }

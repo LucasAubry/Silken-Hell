@@ -4,6 +4,11 @@ local T=require('localization').text
 function A.maxanceTime() return Scoring.total(552.732,95) end
 function A.gillouTime() return Scoring.total(2264.85,513) end
 A.list={
+    {id='story_first',category='story',name='Une longue histoire',story=1,
+        description=function() return 'Trouve un texte qu’elle t’a laissé.' end},
+    {id='story_all',category='story',name='Tous ses mots',story='all',
+        visible=function() return require('story').progress()>0 end,
+        description=function() local found,total=require('story').progress();return T('Retrouve tous les textes qu’elle t’a laissés. %d/%d',found,total) end},
     {id='gillou',category='secrets',name='Plus rapide que Gillou',description=function()
         return 'En Enfer, fais charger les trois sœurs contre un mur, puis touche-les toutes avant le réveil de la première.'
     end},
@@ -21,6 +26,10 @@ for _,world in ipairs(Worlds.order) do
 end
 A.list[#A.list+1]={id='bossflawless1',category='mastery',name='Coquille parfaite',description=function() return 'Au Paradis, termine le niveau 10 sans mourir : percute l’Œuf du Merle à pleine vitesse pour le briser.' end}
 function A.unlocked(a)
+    if a.story then
+        local found,total=require('story').progress()
+        return found>=(a.story=='all' and total or a.story)
+    end
     return a.world and Profile.hasCompleted(a.world) or Profile.achievements[a.id]==true
 end
 function A.enterLevel()

@@ -5,7 +5,14 @@ end
 function A.mapX(x) return 28+(x-50)/700*(A.width-56) end
 function A.blocked(x,y,w,h,walls)
     for _,r in ipairs(walls or A.walls) do
-        if x<r.x+r.w and r.x<x+w and y<r.y+r.h and r.y<y+h then return true end
+        local a=(r.rotation or 0)*math.pi/180
+        local c,s=math.cos(a),math.sin(a)
+        local dx,dy=x+w/2-r.x-r.w/2,y+h/2-r.y-r.h/2
+        -- Separating axes of the player rectangle and the rotated wall.
+        if math.abs(dx)<w/2+math.abs(c)*r.w/2+math.abs(s)*r.h/2
+            and math.abs(dy)<h/2+math.abs(s)*r.w/2+math.abs(c)*r.h/2
+            and math.abs(dx*c+dy*s)<r.w/2+math.abs(c)*w/2+math.abs(s)*h/2
+            and math.abs(-dx*s+dy*c)<r.h/2+math.abs(s)*w/2+math.abs(c)*h/2 then return true end
     end
     return false
 end
@@ -129,7 +136,13 @@ function A.navGraph(m)
     local graph={nodes={},edges={},rects={}}; A.graphs[key]=graph
     local blocks={}; for _,r in ipairs(A.walls) do blocks[#blocks+1]=r end
     -- Lava is traversable by creatures; only solid walls shape their routes.
-    for _,r in ipairs(blocks) do graph.rects[#graph.rects+1]={x=r.x-ox-w,y=r.y-oy-h,xx=r.x+r.w-ox,yy=r.y+r.h-oy} end
+    for _,r in ipairs(blocks) do
+        local a=(r.rotation or 0)*math.pi/180
+        local rw=math.abs(math.cos(a))*r.w+math.abs(math.sin(a))*r.h
+        local rh=math.abs(math.sin(a))*r.w+math.abs(math.cos(a))*r.h
+        local cx,cy=r.x+r.w/2,r.y+r.h/2
+        graph.rects[#graph.rects+1]={x=cx-rw/2-ox-w,y=cy-rh/2-oy-h,xx=cx+rw/2-ox,yy=cy+rh/2-oy}
+    end
     function graph.clear(x,y)
         if x+ox<22 or y+oy<22 or x+ox+w>A.width-22 or y+oy+h>578 then return false end
         for _,r in ipairs(graph.rects) do if x>r.x and x<r.xx and y>r.y and y<r.yy then return false end end
@@ -153,11 +166,11 @@ function A.navGraph(m)
         end
         return true
     end
-    for i,r in ipairs(graph.rects) do if i>4 then
+    for _,r in ipairs(graph.rects) do
         for _,x in ipairs({r.x-5,r.xx+5}) do for _,y in ipairs({r.y-5,r.yy+5}) do
             if graph.clear(x,y) then graph.nodes[#graph.nodes+1]={x=x,y=y} end
         end end
-    end end
+    end
     for i=1,#graph.nodes do graph.edges[i]={} end
     for i,a in ipairs(graph.nodes) do for j=i+1,#graph.nodes do local b=graph.nodes[j]
         if graph.line(a.x,a.y,b.x,b.y) then
@@ -230,6 +243,12 @@ function A.drawFloor(hell)
     else BiomeFloor.draw(Campaign.biome,A.width,600,UI.clock) end
 end
 function A.drawWall(r,hell)
+    if r.rotation and r.rotation%360~=0 then
+        local g=love.graphics;g.push('all');g.translate(r.x+r.w/2,r.y+r.h/2);g.rotate(r.rotation*math.pi/180)
+        local localWall={};for k,v in pairs(r) do localWall[k]=v end
+        localWall.x=-r.w/2;localWall.y=-r.h/2;localWall.rotation=0
+        A.drawWall(localWall,hell);g.pop();return
+    end
     if r.renaissanceSoil then Renaissance.drawSoil(r);return end
     if Campaign.world==3 then Meadow.wall(r);return end
     local g=love.graphics

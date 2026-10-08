@@ -19,18 +19,18 @@ function R.fog(front,demon)
 end
 function R.dimensions(p)
  if p.kind~='boss' and not p.hardcore then return 64 end
- if p.type=='storm' then return 270 end
+ if p.type=='storm' then return 150 end
  if p.type=='merle' then return 220 end
- if p.type=='wasp' then return 190 end
- if p.type=='hedgehog' then return 250 end
+ if p.type=='wasp' then return 96 end
+ if p.type=='hedgehog' then return 104 end
  if p.type=='octopus' then return 360 end
- if p.type=='skeleton_head' then return 190,230 end
+ if p.type=='skeleton_head' then return 180,219 end
  return 100
 end
 local function sprite(p,x,y)
  local g=love.graphics;local size,height=R.dimensions(p)
- if p.type=='final_spider' then g.setColor(1,1,1);require('final_art').spider('queen',x,y,110,0);require('final_art').clutch(x,y,110,24);return end
- if p.type=='merle' then require('mobs.bosses.raven.egg').draw(x,y,100,0);return end
+ if p.type=='final_spider' then g.setColor(1,1,1);require('final_art').spider('queen',x,y,62,0);require('final_art').clutch(x,y,62,24);return end
+ if p.type=='merle' then require('mobs.bosses.raven.egg').draw(x,y,60,0);return end
  local a=Art.images[p.art]
  local w,h=size,size*a.h/a.w
  if height then h=height else local s=size/math.max(a.w,a.h);w,h=a.w*s,a.h*s end
@@ -47,12 +47,12 @@ function R.boss(p,x,y)
   -- One shared transform keeps the head, ribs, spine and tail attached.
   g.push();g.translate(x,y+math.sin(UI.clock*.8)*10);g.scale(1,1+math.sin(UI.clock*1.5)*.012)
   local x,y=0,0
-  for i=8,1,-1 do local xx=x+150-i*48;local yy=y
-   g.setColor(.66,.72,.77);Art.draw('skeleton_spine',xx,yy,58,0,35)
-   Art.draw('skeleton_rib',xx,yy-43,24,0,86);Art.draw('skeleton_rib',xx,yy+43,24,math.pi,86)
+  for i=9,1,-1 do local xx=x+350-(65+i*62);local yy=y
+   g.setColor(.66,.72,.77);Art.draw('skeleton_spine',xx,yy,68,0,34)
+   Art.draw('skeleton_rib',xx,yy-45,24,0,80);Art.draw('skeleton_rib',xx,yy+45,24,math.pi,80)
   end
-  g.setColor(.66,.72,.77);Art.draw('skeleton_tail',x-300,y,110,0,145)
-  sprite(p,x+200,y);g.pop()
+  g.setColor(.66,.72,.77);Art.draw('skeleton_tail',x-365,y,110,0,120)
+  sprite(p,x+350,y);g.pop()
  else sprite(p,x,y) end
 end
 function R.arena(demon)
@@ -70,48 +70,69 @@ function R.arena(demon)
  for i=1,7 do local y=350+(i/7)^1.8*250;g.line(0,y,w,y) end
  R.fog(false,demon)
 end
+local function throne(x,c,selected)
+ local g=love.graphics
+ g.setBlendMode('add')
+ for i=7,1,-1 do
+  g.setColor(c[1],c[2],c[3],selected and .023 or .01)
+  g.ellipse('fill',x,280,55+i*12,100+i*12)
+ end
+ g.setBlendMode('alpha')
+ -- A pointed stone back, carved ribs, raised arms and three broad steps.
+ g.setColor(.055,.085,.12);g.polygon('fill',x-72,405,x-78,215,x-36,155,x,106,x+36,155,x+78,215,x+72,405)
+ g.setColor(.23,.32,.40);g.setLineWidth(4);g.line(x-72,405,x-78,215,x-36,155,x,106,x+36,155,x+78,215,x+72,405)
+ g.setColor(.016,.025,.045);g.polygon('fill',x-55,364,x-56,228,x,152,x+56,228,x+55,364)
+ g.setColor(c[1],c[2],c[3],selected and .8 or .3);g.setLineWidth(1.5)
+ g.line(x-45,334,x-45,233,x,171,x+45,233,x+45,334)
+ for side=-1,1,2 do
+  local sx=x+side*78
+  g.setColor(.09,.13,.17);g.rectangle('fill',sx-11,288,22,115,4)
+  g.setColor(.28,.37,.43);g.polygon('fill',sx-15,288,sx,267,sx+15,288,sx,301)
+  g.setColor(.13,.18,.23);g.rectangle('fill',sx-18,342,36,13,3)
+  g.setColor(.22,.3,.36);g.line(sx-7,309,sx-7,397)
+ end
+ g.setColor(.14,.19,.24);g.polygon('fill',x-65,363,x+65,363,x+77,382,x-77,382)
+ for i=1,3 do
+  local width=162+i*14;local y=389+i*12
+  g.setColor(.055+i*.015,.078+i*.018,.11+i*.02);g.rectangle('fill',x-width/2,y,width,12,2)
+  g.setColor(.25,.33,.39,.6);g.line(x-width/2+2,y,x+width/2-2,y)
+ end
+ g.setColor(.53,.66,.76,.27);g.setLineWidth(.7)
+ for side=-1,1,2 do
+  g.line(x+side*77,217,x+side*108,159,x+side*118,236)
+  g.line(x+side*77,217,x+side*100,185,x+side*116,212)
+ end
+end
 function R.draw(S)
- local g=love.graphics;local w=Arena.width;local hero=S.perPage==1;local p=S.portals[1];local tint=S.hardcore and {1,.18,.12} or colors[p and Worlds.biome(p.world) or 7] or colors[7]
- g.push('all');g.setShader();g.setColor(.009,.014,.022);g.rectangle('fill',0,0,w,600)
- R.arena(S.hardcore)
- local count=hero and 1 or #S.portals
- for i=1,count do
-  local entry=S.portals[i];local x,y=S.position(i);local by=hero and 245 or y-62
-  local c=S.hardcore and tint or colors[Worlds.biome(entry.world)] or tint
-  g.setBlendMode('add')
-  for layer=12,1,-1 do
-   g.setColor(c[1],c[2],c[3],.007);g.ellipse('fill',x,by,50+layer*(hero and 16 or 6),45+layer*(hero and 13 or 5))
-   if hero then g.setColor(c[1],c[2],c[3],.007);g.polygon('fill',x-18-layer*2,0,x+18+layer*2,0,x+100+layer*9,410,x-100-layer*9,410) end
-  end
-  g.setBlendMode('alpha')
-  if hero then
-   g.setColor(.035,.045,.055);g.ellipse('fill',x,400,220,47)
-   g.setColor(c[1],c[2],c[3],.32);g.ellipse('line',x,400,215,44)
-  else
-   g.setColor(0,0,0,.45);g.ellipse('fill',x,by+27,29,9)
-   g.setColor(c[1],c[2],c[3],.08);g.ellipse('fill',x,y,44,21)
-  end
-  if hero then
-   g.push();g.translate(x,by);g.scale(.75,.75);R.boss(entry,0,0);g.pop()
-  else sprite(entry,x,by) end
-  UI.text(entry.type=='skeleton_head' and 'Le Monstre d’os' or entry.name,x-(hero and 260 or 125),hero and 435 or y+30,hero and 'medium' or 'small',{c[1],c[2],c[3]},hero and 520 or 250,'center')
-  local near=(S.x-x)^2+(S.y+22-y)^2<90^2
-  g.setColor(c[1],c[2],c[3],near and .85 or .4);g.setLineWidth(2)
-  g.ellipse('line',x,y,38,17);g.ellipse('line',x,y,44,21)
-  for j=1,8 do local a=j*math.pi/4+UI.clock*.12;g.circle('fill',x+math.cos(a)*41,y+math.sin(a)*19,1.5) end
-  if S.charging==i then g.push();g.translate(x,y);g.scale(1,17/38);g.setColor(1,.94,.65);g.setLineWidth(4);g.arc('line','open',0,0,38,-math.pi/2,-math.pi/2+math.max(.001,(S.charge or 0)/1.4)*math.pi*2);g.pop() end
+ local g=love.graphics;local w=Arena.width;local camera=S.cameraX or 0
+ g.push('all');g.setShader();R.arena(false)
+ g.setColor(.025,.038,.054);g.rectangle('fill',0,443,w,157)
+ g.setColor(.13,.18,.23);g.setLineWidth(2);g.line(0,548,w,548)
+ for i=math.floor(camera/95)-1,math.ceil((camera+w)/95)+1 do
+  local x=i*95-camera
+  g.setColor(.06,.09,.12);g.polygon('fill',x,552,x+87,552,x+106,584,x-14,584)
+  g.setColor(.19,.25,.30,.5);g.line(x,552,x+87,552)
  end
- -- Floating dust catches the light; the foreground mist stays below faces.
- for i=1,55 do local x=(i*139.7+math.sin(UI.clock*.3+i)*15)%w;local y=(i*83-UI.clock*(3+i%5))%570
-  g.setColor(tint[1],tint[2],tint[3],.13+.16*(.5+.5*math.sin(UI.clock+i)));g.circle('fill',x,y,i%5==0 and 1.8 or .8)
+ g.push();g.translate(-camera,0)
+ for i,entry in ipairs(S.portals) do
+  local x=S.position(i)
+  if x>camera-480 and x<camera+w+480 then
+   local c=colors[Worlds.biome(entry.world)] or colors[7];local selected=math.abs(S.x-x)<58
+   throne(x,c,selected)
+   g.push();g.translate(x,315);R.boss(entry,0,0);g.pop()
+   local name=entry.type=='skeleton_head' and 'Le Monstre d’os' or entry.name
+   name=UI.ellipsize(require('localization').render(name),'body',250)
+   UI.rawText(name,x-125,453,'body',selected and {1,.94,.72} or {.68,.77,.83},250,'center')
+   if selected then
+    g.setColor(.86,.94,1,.8);g.setLineWidth(2);g.line(x-8,491,x,483,x+8,491)
+   end
+  end
  end
- R.fog(true,S.hardcore)
- g.setColor(.008,.012,.02,.65);g.rectangle('fill',0,0,24,600);g.rectangle('fill',w-24,0,24,600)
- g.setColor(tint[1],tint[2],tint[3],.7);g.setLineWidth(2)
- if S.page>1 then g.line(43,450,32,462,43,474) end
- if S.page<S.pages then g.line(w-43,450,w-32,462,w-43,474) end
- g.setColor(0,0,0,.6);g.ellipse('fill',S.x,S.y+22,22,9)
- for i=3,1,-1 do g.setColor(.6,.78,1,.023);g.ellipse('fill',S.x,S.y+10,22+i*10,12+i*5) end
- g.setColor(1,1,1);Characters.draw(S.x,S.y,62,S.facing or 'down');g.pop()
+ g.setColor(0,0,0,.6);g.ellipse('fill',S.x,S.y+24,24,8)
+ g.setColor(1,1,1);Characters.draw(S.x,S.y,62,S.facing or 'right')
+ g.pop()
+ R.fog(true,false)
+ g.setColor(.008,.013,.023,.8);g.rectangle('fill',0,584,w,16)
+ g.pop()
 end
 return R

@@ -14,10 +14,10 @@ W.names[8]='Le Sanctuaire';W.palette[8]={floor={.055,.035,.12},ink={.32,.22,.48}
 W.rush={1,6,5,4,7,2}
 W.secretBiomes={[9]=1,[10]=6,[11]=5,[12]=4,[13]=7,[14]=2}
 for id,biome in pairs(W.secretBiomes) do W.palette[id]=W.palette[biome] end
-W.names[9]='L’Œuf du Merle · Démon';W.names[10]='Merle noir · Démon';W.names[11]='Hérisson Brise-Roche · Démon';W.names[12]='Pieuvre des Larmes Noires · Démon';W.names[13]='Le Monstre d’os · Démon';W.names[14]='Les Guêpes brûlées · Démon'
+W.names[9]='L’Œuf du Merle · Hardcore';W.names[10]='Merle noir · Hardcore';W.names[11]='Hérisson Brise-Roche · Hardcore';W.names[12]='Pieuvre des Larmes Noires · Hardcore';W.names[13]='Le Monstre d’os · Hardcore';W.names[14]='Les Guêpes brûlées · Hardcore'
 function W.isSecret(id) return W.secretBiomes[id]~=nil end
-function W.levelCount(id) if W.isSecret(id) then return 1 end;return id==3 and 2 or 10 end
-function W.biome(id,level) if id==8 then return 2 end;if W.secretBiomes[id] then return W.secretBiomes[id] end;return id end
+function W.levelCount(id) if W.isSecret(id) then return 1 end;if id==8 then return #W.order end;return id==3 and 2 or 10 end
+function W.biome(id,level) if id==8 then return W.order[level or 1] or 1 end;if W.secretBiomes[id] then return W.secretBiomes[id] end;return id end
 function W.playable(id) return W.palette[id]~=nil end
 function W.rank(id) for i,w in ipairs(W.order) do if w==id then return i end end; return math.huge end
 function W.sanctuaryUnlocked()
@@ -29,7 +29,10 @@ function W.canEnter(id)
     local previous=W.previous(id)
     return W.playable(id) and (not previous or Profile.hasCompleted(previous))
 end
-function W.canViewScores(id) return Profile.hasCompleted(id) end
+function W.canViewScores(id,hardcore)
+    if hardcore then return Hardcore.available(id) end
+    return Profile.hasCompleted(id)
+end
 function W.displayName(id) return W.canEnter(id) and W.names[id] or '???' end
 function W.next(id) for i=W.rank(id)+1,#W.order do if W.playable(W.order[i]) then return W.order[i] end end end
 function W.previous(id) for i,w in ipairs(W.order) do if w==id then return W.order[i-1] end end end

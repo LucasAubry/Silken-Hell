@@ -96,6 +96,7 @@ MobBehaviors.magma_larva={
             m.angle=math.atan2(dy,dx)-math.pi/2; m.dir=Art.direction(dx,dy,m.dir)
             Arena.navigate(m,player.x+15,player.y+12,m.speed,dt)
         end
+        Realms.capture(m)
         if isTouching(player,m) then M.explode(m) end
     end,
     draw=function(m)

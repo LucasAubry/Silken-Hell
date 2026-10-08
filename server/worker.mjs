@@ -42,14 +42,17 @@ export default {
       if(request.method==='GET' && path==='/v1/location') return reply({country:countryOf(request)});
       if(request.method==='GET' && path==='/v1/leaderboard') {
         const world=Number(url.searchParams.get('world'));
-        if(![1,2,3,4,5,6,7,9,10,11,12,13,14].includes(world)) fail(400,'Monde invalide.');
+        if(![1,2,3,4,5,6,7,8,9,10,11,12,13,14].includes(world)) fail(400,'Monde invalide.');
+        const mode=url.searchParams.get('mode') || 'normal';
+        if(!['normal','hardcore'].includes(mode)) fail(400,'Mode invalide.');
+        const hardcore=mode==='hardcore'?1:0;
         const country=countryOf(request), local=url.searchParams.get('scope')==='country';
         const page=Number(url.searchParams.get('page') || 1);
         if(!Number.isSafeInteger(page) || page<1) fail(400,'Page invalide.');
         if(local && country==='ZZ') return reply({world,country,scores:[],page,total:0,hasMore:false});
         // Every completed run is retained, including repeat runs by the same player.
-        const ranked=`SELECT * FROM scores WHERE world=? ${local?'AND country=?':''}`;
-        const args=local?[world,country]:[world];
+        const ranked=`SELECT * FROM scores WHERE world=? AND hardcore=? ${local?'AND country=?':''}`;
+        const args=local?[world,hardcore,country]:[world,hardcore];
         const [{results},count]=await Promise.all([
           env.DB.prepare(`SELECT name,country,elapsed_ms,deaths,skin,run_id,EXISTS(SELECT 1 FROM run_replays r WHERE r.run_id=s.run_id) AS has_replay FROM (${ranked}) s ORDER BY (elapsed_ms+deaths*${DEATH_PENALTY_MS}),deaths,completed_at,run_id LIMIT 10 OFFSET ?`).bind(...args,(page-1)*10).all(),
           env.DB.prepare(`SELECT COUNT(*) AS total FROM (${ranked})`).bind(...args).first()
@@ -60,7 +63,10 @@ export default {
         const owner=await ownerOf(request), b=await bodyOf(request);
         const name=typeof b.name==='string'?b.name.normalize('NFC').trim():'';
         if(!name || [...name].length>16 || /[\p{C}]/u.test(name)) fail(400,'Pseudo invalide (1 à 16 caractères).');
-        if(![1,2,3,4,5,6,7,9,10,11,12,13,14].includes(b.world)) fail(400,'Monde indisponible.');
+        if(![1,2,3,4,5,6,7,8,9,10,11,12,13,14].includes(b.world)) fail(400,'Monde indisponible.');
+        if(b.hardcore!==undefined && typeof b.hardcore!=='boolean') fail(400,'Mode invalide.');
+        const hardcore=b.hardcore===true?1:0;
+        if(b.world===8 && !hardcore) fail(400,'Le Sanctuaire libre ne possède pas de score classé.');
         const skin=b.skin===undefined?1:b.skin;
         if(!Number.isInteger(skin)||skin<1||skin>22) fail(400,'Apparence invalide.');
         const now=Date.now();
@@ -69,7 +75,7 @@ export default {
         const recent=await env.DB.prepare('SELECT COUNT(*) AS count FROM runs WHERE owner=? AND started_at>?').bind(owner,now-60000).first();
         if(recent.count>=12) fail(429,'Trop de nouvelles parties.');
         const id=crypto.randomUUID();
-        await env.DB.prepare('INSERT INTO runs(id,owner,world,name,country,started_at,skin) VALUES(?,?,?,?,?,?,?)').bind(id,owner,b.world,name,countryOf(request),startedAt,skin).run();
+        await env.DB.prepare('INSERT INTO runs(id,owner,world,name,country,started_at,skin,hardcore) VALUES(?,?,?,?,?,?,?,?)').bind(id,owner,b.world,name,countryOf(request),startedAt,skin,hardcore).run();
         return reply({id,country:countryOf(request)},201);
       }
       const match=path.match(/^\/v1\/runs\/([a-f0-9-]{36})\/checkpoint$/);
@@ -78,7 +84,7 @@ export default {
         const run=await env.DB.prepare('SELECT * FROM runs WHERE id=? AND owner=?').bind(match[1],owner).first();
         if(!run) fail(404,'Partie introuvable.');
         const {level,elapsedMs,deaths}=b;
-        const lastLevel=run.world>=9?1:run.world===3?2:10;
+        const lastLevel=run.world===8?7:run.world>=9?1:run.world===3?2:10;
         if(!Number.isInteger(level)||level<1||level>lastLevel||!Number.isInteger(elapsedMs)||!Number.isInteger(deaths)||deaths<0||deaths>100000) fail(400,'Score invalide.');
         if(level===run.level && elapsedMs===run.elapsed_ms && deaths===run.deaths) return reply({ok:true,completed:level===lastLevel});
         if(run.level===lastLevel) fail(409,'Partie déjà terminée.');
@@ -87,8 +93,8 @@ export default {
         if(now-run.started_at>86400000) fail(410,'Partie expirée.');
         if(elapsedMs<run.elapsed_ms+100||elapsedMs>now-run.started_at+2500||elapsedMs>86400000||deaths<run.deaths) fail(400,'Chronomètre ou compteur incohérent.');
         const writes=[env.DB.prepare('UPDATE runs SET level=?,elapsed_ms=?,deaths=? WHERE id=? AND owner=? AND level=?').bind(level,elapsedMs,deaths,run.id,owner,run.level)];
-        if(level===lastLevel) writes.push(env.DB.prepare(`INSERT OR IGNORE INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin)
-          SELECT id,owner,world,name,country,elapsed_ms,deaths,?,skin FROM runs WHERE id=? AND owner=? AND level=?`).bind(now,run.id,owner,lastLevel));
+        if(level===lastLevel) writes.push(env.DB.prepare(`INSERT OR IGNORE INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin,hardcore)
+          SELECT id,owner,world,name,country,elapsed_ms,deaths,?,skin,hardcore FROM runs WHERE id=? AND owner=? AND level=?`).bind(now,run.id,owner,lastLevel));
         await env.DB.batch(writes);
         return reply({ok:true,completed:level===lastLevel});
       }

@@ -13,6 +13,7 @@ MobBehaviors.spinner={
         local hitX,hitY=Arena.move(m,m.vx*m.speed*dt,m.vy*m.speed*dt)
         if hitX then m.vx=-m.vx end; if hitY then m.vy=-m.vy end
         m.dir=Art.direction(math.cos(m.rotation),math.sin(m.rotation))
+        Realms.capture(m)
         if isTouching(player,m) then die() end
     end,
     draw=function(m)

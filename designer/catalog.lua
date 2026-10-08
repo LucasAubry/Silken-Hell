@@ -5,7 +5,7 @@ local function add(kind,type,name,art,world,defaults)
 end
 add('spawn',nil,'Départ du joueur','original',0)
 add('tear',nil,'Cercle de larme','tear_ring',0)
-add('wall',nil,'Mur',nil,0,{w=100,h=24})
+add('wall',nil,'Mur',nil,0,{w=100,h=24,rotation=0})
 for _,v in ipairs({
  {'waspling','Petite guêpe','waspling_down',2,95},{'larva','Petit ver','worm_down',5,72},{'blackbird_chick','Petit merle','merle_down',1,77},
  {'ange','Ange gardien','catalog_ange',1,2},{'snake','Serpent céleste','catalog_snake',1,2},
@@ -20,7 +20,7 @@ add('mob','scie','Roue enchaînée','wheel',1,{speed=2,rota=1,radius=60})
 add('mob','magma_larva','Larve de magma','magma_larva',2,{speed=245})
 add('magma_spawner',nil,'Nid de larves','magma_nest',2,{rx=31,ry=23,spawnDelay=1,spawnInterval=3})
 add('lava',nil,'Flaque de lave','lava',2,{rx=42,ry=27})
-add('vent',nil,'Anémone électrique','electric_vent_idle',7,{rx=30,ry=23,phase=0})
+add('vent',nil,'Anémone électrique','electric_anemone',7,{rx=30,ry=23})
 add('tunnel',nil,'Tunnel (par paire)','earth_tunnel',5)
 add('hole',nil,'Trou dans les nuages',nil,6,{rx=45,ry=30,seed=1})
 add('tornado',nil,'Tornade','cloud_snare',6)

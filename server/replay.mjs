@@ -6,7 +6,8 @@ export function canonical(v) {
 }
 export async function fingerprint(v) {return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical(v))))].map(b=>b.toString(16).padStart(2,'0')).join('');}
 export function validateReplay(r) {
- if(!r||r.version!==1||!r.completed||typeof r.build!=='string'||!/^[a-f0-9]{64}$/.test(r.build)||![1,2,3,4,5,6,7,9,10,11,12,13,14].includes(r.world)||!Number.isInteger(r.seed)||r.seed<1||r.seed>2147483646||!Number.isInteger(r.skin)||r.skin<1||r.skin>22||!Number.isFinite(r.width)||r.width<400||r.width>4000||r.height!==600||!Number.isInteger(r.startLevel)||r.startLevel<1||r.startLevel>10||typeof r.single!=='boolean') return false;
+ if(!r||r.version!==1||!r.completed||typeof r.build!=='string'||!/^[a-f0-9]{64}$/.test(r.build)||![1,2,3,4,5,6,7,8,9,10,11,12,13,14].includes(r.world)||!Number.isInteger(r.seed)||r.seed<1||r.seed>2147483646||!Number.isInteger(r.skin)||r.skin<1||r.skin>22||!Number.isFinite(r.width)||r.width<400||r.width>4000||r.height!==600||!Number.isInteger(r.startLevel)||r.startLevel<1||r.startLevel>10||typeof r.single!=='boolean') return false;
+ if(r.hardcore!==undefined && typeof r.hardcore!=='boolean' || r.world===8 && r.hardcore!==true) return false;
  if(!Number.isFinite(r.time)||r.time<0||r.time>86400||!Number.isInteger(r.deaths)||r.deaths<0||r.deaths>100000||!Number.isInteger(r.frames)||r.frames<1||r.frames>5184000||r.time>r.frames/60+.1) return false;
  if(!Array.isArray(r.inputs)||r.inputs.length>100000||!Array.isArray(r.checks)||!r.checks.length||r.checks.length>25000||!r.layouts||typeof r.layouts!=='object'||Object.keys(r.layouts).length>100) return false;
  let frames=0;
@@ -27,7 +28,7 @@ export async function replays(request,env,{reply,fail,ownerOf,bodyOf}) {
   const owner=await ownerOf(request),b=await bodyOf(request,1500000),r=b.replay;
   const score=await env.DB.prepare('SELECT * FROM scores WHERE run_id=? AND owner=?').bind(upload[1],owner).first();
   if(!score) fail(404,'Partie terminée introuvable.');
-  if(!validateReplay(r)||r.single||r.startLevel!==1||r.checks.at(-1)[1]!==(r.world>=9?1:r.world===3?2:10)||r.world!==score.world||r.skin!==score.skin||r.deaths!==score.deaths||Math.abs(r.time*1000-score.elapsed_ms)>2) fail(400,'Replay incohérent avec le score.');
+  if(!validateReplay(r)||r.single||r.startLevel!==1||r.checks.at(-1)[1]!==(r.world===8?7:r.world>=9?1:r.world===3?2:10)||r.world!==score.world||Number(r.hardcore===true)!==score.hardcore||r.skin!==score.skin||r.deaths!==score.deaths||Math.abs(r.time*1000-score.elapsed_ms)>2) fail(400,'Replay incohérent avec le score.');
   await env.DB.prepare('INSERT INTO run_replays(run_id,owner,payload,created_at) VALUES(?,?,?,?) ON CONFLICT(run_id) DO NOTHING').bind(upload[1],owner,JSON.stringify(r),Date.now()).run();return reply({ok:true},201);
  }
  return null;

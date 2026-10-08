@@ -88,13 +88,13 @@ function C.contact(a)
   if collecting and distance(px-p.x,py-p.y)<p.r+12 then
    table.remove(a.plankton,i)
    if p.red or p.lethal or (a.lightOnlySuction and a.phase=='suction') then Hazards.kill('abyss_projectile');return end
-   player.charges=math.min(3,(player.charges or 0)+1);player.electrified=60;a.refreshLight()
+   player.charges=a.unlimitedCharge and ((player.charges or 0)+1) or math.min(3,(player.charges or 0)+1);player.electrified=60;a.refreshLight()
    BossFX.burst(p.x,p.y,{.2,.7,1},.35)
   end
  end
  if a.healsFromEnergy and a.phase=='suction' then return end
  for _,p in ipairs(a.debris) do
-  if math.abs(px-p.x)<p.w*.5+12 and math.abs(py-p.y)<p.h*.5+10 then Hazards.kill('abyss_projectile');return end
+  if (not p.armTime or p.armTime<=0) and math.abs(px-p.x)<p.w*.5+12 and math.abs(py-p.y)<p.h*.5+10 then Hazards.kill('abyss_projectile');return end
  end
  if a.healsFromEnergy and a.phase=='suction' then return end -- The current carries the player safely between the jaws.
  local inMouth=a.mouthPassage and a.mouthPassage(px,py)
@@ -202,11 +202,15 @@ function C.draw(a)
   if a.phase=='suction' then g.setColor(.3,.75,1,.35);g.setLineWidth(1);g.line(p.x,p.y,p.x-p.vx*.045,p.y-p.vy*.045) end
  end end
  for _,p in ipairs(a.plankton) do
+  if a.unlimitedCharge and not p.red and not p.lethal then require('abyss_light_fx').bolt(p,a.clock) else
   local r,green,b=p.red and 1 or .15,p.red and .12 or .65,p.red and .15 or 1
-  g.setColor(r,green,b,.12);g.circle('fill',p.x,p.y,24)
-  g.setColor(r,green,b,.35);g.circle('fill',p.x,p.y,14)
+  if not a.unlimitedCharge or p.red then
+   g.setColor(r,green,b,.12);g.circle('fill',p.x,p.y,24)
+   g.setColor(r,green,b,.35);g.circle('fill',p.x,p.y,14)
+  end
   g.setColor(r,green,b,1);g.circle('fill',p.x,p.y,p.r)
   g.setColor(1,p.red and .65 or 1,1,.9);g.circle('fill',p.x-2,p.y-2,3)
+  end
  end
  for _,p in ipairs(a.debris) do
   local visibility=1
@@ -216,7 +220,13 @@ function C.draw(a)
   end
   local speed=math.max(1,math.sqrt(p.vx*p.vx+(p.vy or 0)^2));local dx,dy=p.vx/speed,(p.vy or 0)/speed
   g.setColor(.3,.7,1,.18*visibility);g.setLineWidth(3);g.line(p.x-dx*65,p.y-dy*65,p.x-dx*25,p.y-dy*25)
-  g.setColor(.82*visibility,.94*visibility,visibility);Art.draw('skeleton_spine',p.x,p.y,p.w,0,p.h)
+  g.push('all');g.setBlendMode('alpha');g.setColor(.82*visibility,.94*visibility,visibility)
+  if p.tooth then
+   g.translate(p.x,p.y);g.rotate(p.angle)
+   g.polygon('fill',-p.w*.5,-p.h*.5,p.w*.5,0,-p.w*.35,p.h*.5,-p.w*.2,0)
+   g.setColor(.48*visibility,.65*visibility,.72*visibility);g.line(-p.w*.35,p.h*.5,p.w*.5,0)
+  else Art.draw(p.key or 'skeleton_spine',p.x,p.y,p.w,p.key and p.angle or 0,p.h) end
+  g.pop()
  end
  if a.phase=='inhaleTell' or a.phase=='suction' then
   for i=1,5 do local t=(i/5-a.clock*.8)%1;g.setColor(.3,.8,1,(1-t)*.5);g.setLineWidth(2);g.ellipse('line',mx,my,20+t*110,12+t*75) end
@@ -225,8 +235,8 @@ function C.draw(a)
   g.setColor(.3,.8,1,.65);g.setLineWidth(2);g.line(20,550,75,550,65,535)
  end
  -- Three visible slots make the energy limit immediately legible.
- if (player.charges or 0)>0 and not (Abyss and Abyss.playerHidden()) then for i=1,3 do
-  g.setColor(.2,.75,1,i<=player.charges and .95 or .2);g.circle(i<=player.charges and 'fill' or 'line',player.x+15+(i-2)*11,player.y-12,3.5)
+ if not a.noLightCharges and (player.charges or 0)>0 and not (Abyss and Abyss.playerHidden()) then for i=1,math.max(3,player.charges) do
+  g.setColor(.2,.75,1,i<=player.charges and .95 or .2);g.circle(i<=player.charges and 'fill' or 'line',player.x+15+(i-(math.max(3,player.charges)+1)/2)*math.min(11,100/math.max(3,player.charges)),player.y-12,3.5)
  end end
  g.pop()
 end

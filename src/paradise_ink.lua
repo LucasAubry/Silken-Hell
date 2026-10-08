@@ -25,7 +25,7 @@ end
 function P.draw(key,x,y,width,angle,height,flip)
  local a=P.frame(key);local sx=width/a.w;local sy=height and height/a.h or sx
  if flip then sx=-sx end
- Art.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
+ if key~='egg' and key~='tear' then Art.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2) end
  g.draw(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
  require('servant_art').web(a,a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
 end

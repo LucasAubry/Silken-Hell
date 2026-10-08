@@ -52,7 +52,7 @@ function C.variantHint(reward)
     if C.unlocked(reward) then return 'Variante dorée débloquée' end
     if reward==22 then return 'Termine Renaissance en histoire ou en hardcore.' end
     local world=Worlds.order[reward-14]
-    return 'Termine '..Worlds.names[world]..(world==3 and ' en hardcore.' or ' en hardcore ou son boss démon.')
+    return 'Termine '..Worlds.names[world]..(world==3 and ' en hardcore.' or ' en hardcore ou son boss du Sanctuaire.')
 end
 C.playerWidth=59
 -- Authored PNGs: Perle's front/back silhouette, Soie's profile silhouette.
@@ -115,14 +115,19 @@ function C.selectionPortrait(x,y,size)
         g.pop();C.menuCacheKey=key
     end
     local fx=require('skin_reward_fx');local reward=C.crowned[selected]~=nil
-    if reward then fx.orbit(x,y,size,false,false) end
+    if reward then
+        if App.state=='menu' then fx.rays(x,y,size) end
+        fx.orbit(x,y,size,false,false)
+    end
     g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied')
     local r,green,b,a=g.getColor();g.setColor(r*a,green*a,b*a,a)
     g.draw(C.menuCache,x,y,0,size/pixels,size/pixels,(pixels+8)/2,(pixels+8)/2);g.pop()
     if reward then fx.orbit(x,y,size,true,false) end
 end
 function C.draw(x,y,width,dir,walk)
-    C.portrait(C.selected(),x,y,width,dir,nil,walk)
+    local selected=C.selected()
+    if App.state=='playing' and C.crowned[selected] then require('skin_reward_fx').rays(x,y,width) end
+    C.portrait(selected,x,y,width,dir,nil,walk)
 end
 -- Crown variants retain the body color of their base skin.
 C.bodyColors={original={.57,.29,.10},spider={.94,.90,.79},hell_spider={1,.20,.055},ocean_spider={.15,.68,.91},crown_spider={.94,.90,.79}}

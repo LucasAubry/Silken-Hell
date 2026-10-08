@@ -156,7 +156,7 @@ function B.draw()
     local g=love.graphics
     if (not B.broken and not B.defeated) or B.liberating then
         require('monster_fx').halo(B.x,B.y,80)
-        g.setColor(0,0,0,.25);g.ellipse('fill',B.x,B.y+47,47,15)
+        Art.contactShadow(B.x,B.y+48,38,10,.11)
         egg(B.x+math.sin(B.elapsed*65)*B.flash*7,B.y-5,60,B.maxHp-B.hp)
     end
     for _,m in ipairs(B.liberating and B.freedChicks or B.chicks) do

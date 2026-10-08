@@ -30,13 +30,15 @@ end
 function R.update(c,dt)
  if c.dead or c.is_frozen or c.tunnelTravel then return end
  c.runnerTurn=c.runnerTurn-dt
- if c.runnerTurn<=0 then R.turn(c) end
+ if c.runnerTurn<=0 and not c.crabGoal then R.turn(c) end
+ require('mobs.crab.navigation').steer(c,dt)
  local speed=c.speed;local steps=math.max(1,math.ceil(speed*dt/4))
  for _=1,steps do
   local hitX,hitY=Arena.move(c,c.vx*speed*dt/steps,c.vy*speed*dt/steps)
   if hitX then c.vx=-c.vx end
   if hitY then c.vy=-c.vy end
   if hitX or hitY then c.runnerTurn=math.min(c.runnerTurn,.14) end
+  Realms.capture(c);if c.is_frozen then return end
   if (player.x+15-c.x)^2+(player.y+12-c.y)^2<27^2 then Hazards.kill('crab');return end
  end
  c.angle=math.atan2(c.vy,c.vx);c.dir=Art.direction(c.vx,c.vy,c.dir)

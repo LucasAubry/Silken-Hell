@@ -24,10 +24,12 @@ end
 
 MobBehaviors.snake = {
     update = function(m, dt)
+        Realms.capture(m);if m.is_frozen then return end
         update_mob_float(m, dt)
 		move_when_player_moves(m, player, dt)
 
 
+        Realms.capture(m)
         if isTouching(player, m) and not player.reset then
 			player.reset = true
 			player.death = player.death +1

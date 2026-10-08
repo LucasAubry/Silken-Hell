@@ -15,15 +15,7 @@ function willCollide(newX, newY)
 	local offsetY = player.hitBox_offset_y or 0
 
     local px,py,pw,ph=require('collision_shapes').bounds(player,newX,newY)
-	for _, wall in ipairs(Walls) do
-		if checkCollision(
-			px, py, pw, ph,
-			wall.x, wall.y, wall.w, wall.h
-		) then
-			return true
-		end
-	end
-	return false
+    return Arena.blocked(px,py,pw,ph,Walls)
 end
 
 
@@ -37,7 +29,7 @@ end
 
 
 function isTouching(a, b)
-    if (a==player and b~=objet.larme and (b.is_frozen or b.tunnelTravel)) or (b==player and a~=objet.larme and (a.is_frozen or a.tunnelTravel)) then return false end
+    if (a==player and b~=objet.larme and b.tunnelTravel) or (b==player and a~=objet.larme and a.tunnelTravel) then return false end
     if Abyss and Abyss.isPulling() and ((a==player and b~=objet.larme) or (b==player and a~=objet.larme)) then return false end
     if a.abyssHeld or b.abyssHeld or (player.abyssSpit and (a==player or b==player)) then return false end
     if (player.abyssGrace or 0)>0 and ((a==player and b~=objet.larme) or (b==player and a~=objet.larme)) then return false end

@@ -14,15 +14,15 @@ E.credits={
 }
 E.aiNotice='Certaines images ont été générées par intelligence artificielle.'
 function E.reset()
- E.active=Campaign.world==3 and not App.sessionLayout and not App.workshopMap and not App.preview
+ E.active=(Campaign.world==3 or Campaign.world==8 and Campaign.biome==3) and not App.sessionLayout and not App.workshopMap and not App.preview
  E.pending=false;E.creditsStarted=false;E.clock=0;E.phase='approach';E.fade=0;E.family=false;E.completed=false
  E.partner={x=Arena.width-110,y=280,angle=0}
  if E.active then
   mobs={};Arena.interior={};while #Arena.walls>4 do table.remove(Arena.walls) end
-  player.x=player.level==1 and Arena.width*.5-15 or 75;player.y=player.level==1 and 500 or 300
+  player.x=(player.level==1 or Campaign.world==8) and Arena.width*.5-15 or 75;player.y=(player.level==1 or Campaign.world==8) and 500 or 300
   objet.larme.taken=true;Campaign.carrier=nil;ghosts={};Renaissance.active=false;Aftermath.reset()
  end
- require('final_spider').reset(E.active and player.level==1)
+ require('final_spider').reset(E.active and (player.level==1 or Campaign.world==8))
 end
 function E.locked() return E.active and (require('final_spider').snare>0 or E.phase~='approach') end
 function E.complete()
@@ -31,7 +31,7 @@ function E.complete()
  if not Replay.playing then
   if App.singleLevel then Replay.finish()
   else
-   if not App.hardcore then Online.checkpoint(2,timer,player.death) end
+   Online.checkpoint(2,timer,player.death)
    if App.hardcore then Hardcore.complete(3) else Profile.complete(3,timer,player.death) end
   end
  end
@@ -41,7 +41,7 @@ end
 function E.update(dt)
  if not E.active then return end
  E.clock=E.clock+dt
- if player.level==1 then require('final_spider').update(dt);return end
+ if (player.level==1 or Campaign.world==8) then require('final_spider').update(dt);return end
  if E.completed then return end
  local p=E.partner;local dx,dy=p.x-player.x-15,p.y-player.y-12;local d=math.sqrt(dx*dx+dy*dy)
  if d<43 then E.complete();return end
@@ -105,22 +105,31 @@ function E.spider(x,y,size,white,spots,variant,angle)
 end
 function E.drawFamily()
  if not E.active then return end
- if player.level==1 then require('final_spider').draw();return end
+ if (player.level==1 or Campaign.world==8) then require('final_spider').draw();return end
  love.graphics.setColor(1,1,1);require('final_art').spider('partner',E.partner.x,E.partner.y,62,E.partner.angle)
 end
 function E.openReunion()
+ if Campaign.world==8 then
+  if not Replay.playing then Online.checkpoint(player.level,timer,player.death);Hardcore.complete(8) end
+  E.active=false;require('victory_screen').enter();return
+ end
  if Secret.duel then App.state='customVictory';if not Replay.playing then Replay.finish() end;return end
- if not Replay.playing and not App.hardcore and not App.singleLevel then Online.checkpoint(1,timer,player.death);Profile.levelReached(3,2) end
+ if not Replay.playing and not App.singleLevel then
+  Online.checkpoint(1,timer,player.death);if not App.hardcore then Profile.levelReached(3,2) end
+ end
  App.practice=nil;player.level=2;reset_level();App.state='playing'
 end
 function E.drawHud()
  local F=require('final_spider')
+ Hardcore.draw()
  UI.outlined(UI.time(Scoring.total(timer,player.death)),40,20,'medium',{1,.95,.85},200)
- UI.text('Niveau '..player.level,520,18,'small',{1,.94,.86},160,'center')
+ UI.deathCounter()
+ UI.text((Campaign.world==8 and 'Boss ' or 'Niveau ')..player.level,520,18,'small',{1,.94,.86},160,'center')
  if F.active then
   require('boss_hud').draw(F)
  else UI.text('Rejoins l’araignée blanche.',300,66,'body',{1,.97,.9},600,'center') end
  if not Replay.playing then
+  UI.button('i',1008,13,36,36,Bestiary.openLevel,false,true)
   UI.iconButton(1090,31,'pause',function() App.state='pause' end)
   UI.iconButton(1150,31,'restart',App.restartCurrent)
  end

@@ -1,16 +1,25 @@
 local g=love.graphics
-local M,C,json,Worlds,Art,Biome
+local M,C,json,Worlds,Art,Biome,Projects
 local state={all=true,world=1,level=1,category='Mobs',tool=nil,grid=true,snap=true,scroll=0,buttons={},status='Choisis un objet à gauche, puis clique sur le terrain.',clock=0}
 local color={bg={.018,.027,.045},panel={.035,.065,.10},line={.20,.39,.55},text={.87,.94,1},muted={.53,.66,.77},accent={.40,.74,1}}
 local function q(s) return "'"..s:gsub("'","'\\''").."'" end
 local function text(s,x,y,size,c,w)
+    size=M and (M.workshop or M.devMode) and math.max(16,size or 16) or size
     g.setFont(state.fonts[size or 14]); g.setColor(c or color.text)
-    if w then g.printf(tostring(s),x,y,w) else g.print(tostring(s),x,y) end
+    if w and M and (M.workshop or M.devMode) then
+        s=tostring(s);local f=state.fonts[size];local utf8=require('utf8')
+        if f:getWidth(s)>w then repeat local at=utf8.offset(s,-1);s=at and s:sub(1,at-1) or '' until s=='' or f:getWidth(s..'…')<=w;s=s..'…' end
+        g.print(s,x,y)
+    elseif w then g.printf(tostring(s),x,y,w) else g.print(tostring(s),x,y) end
 end
 local function button(label,x,y,w,h,fn,active)
     local mx,my=love.mouse.getPosition(); local hover=mx>=x and mx<=x+w and my>=y and my<=y+h
     g.setColor(active and {.13,.32,.29} or hover and {.13,.17,.21} or {.085,.11,.14}); g.rectangle('fill',x,y,w,h,6)
     g.setColor(active and color.accent or color.line); g.rectangle('line',x,y,w,h,6)
+    if M and (M.workshop or M.devMode) then
+        local f=state.fonts[16];local utf8=require('utf8')
+        if f:getWidth(label)>w-24 then repeat local at=utf8.offset(label,-1);label=at and label:sub(1,at-1) or '' until label=='' or f:getWidth(label..'…')<=w-24;label=label..'…' end
+    end
     text(label,x+12,y+(h-18)/2,14,active and color.accent or color.text)
     state.buttons[#state.buttons+1]={x=x,y=y,w=w,h=h,fn=fn}
 end
@@ -47,7 +56,7 @@ local function snapped(v) return state.snap and math.floor(v/10+.5)*10 or math.f
 local function entity(e,ghost)
     local c=catalog(e); g.setColor(1,1,1,ghost and .45 or 1)
     if e.type=='larva' then Art.drawLarva(e.x,e.y,22,0,state.clock);return end
-    if e.kind=='wall' then g.setColor(.29,.31,.33,ghost and .5 or 1); g.rectangle('fill',e.x-e.w/2,e.y-e.h/2,e.w,e.h); g.setColor(.65,.64,.56); g.rectangle('line',e.x-e.w/2,e.y-e.h/2,e.w,e.h)
+    if e.kind=='wall' then g.push();g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180);g.translate(-e.x,-e.y);g.setColor(.29,.31,.33,ghost and .5 or 1); g.rectangle('fill',e.x-e.w/2,e.y-e.h/2,e.w,e.h); g.setColor(.65,.64,.56); g.rectangle('line',e.x-e.w/2,e.y-e.h/2,e.w,e.h);g.pop()
     elseif e.kind=='hole' then g.setColor(.025,.04,.08); g.ellipse('fill',e.x,e.y,e.rx,e.ry); g.setColor(.5,.65,.8); g.ellipse('line',e.x,e.y,e.rx,e.ry)
     elseif e.kind=='rain' then g.setColor(.25,.6,1,.8); for i=-1,1 do g.line(e.x+i*8,e.y-18,e.x+i*8-5,e.y+7) end
     elseif e.kind=='current' then g.setColor(.2,.85,1,.2); g.ellipse('fill',e.x,e.y,e.rx,e.ry); text(e.dx==1 and '>' or '<',e.x-6,e.y-9,18)
@@ -75,25 +84,28 @@ local function entity(e,ghost)
     if e==M.selected then
         g.setColor(color.accent); g.setLineWidth(2)
         local w,h=e.w and e.w+8 or e.type=='skeleton_head' and 178 or 70,e.h and e.h+8 or e.type=='skeleton_head' and 158 or 70
-        g.rectangle('line',e.x-w/2,e.y-h/2,w,h,4); g.setLineWidth(1)
+        g.push();g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180)
+        g.rectangle('line',-w/2,-h/2,w,h,4);g.pop(); g.setLineWidth(1)
     end
 end
 local function apply()
     local ok,msg=M.apply(); state.status=msg; state.error=not ok; return ok
 end
 local function preview()
+    local valid,why=M.validate(M.layout);if not valid then state.status=why;state.error=true;return end
     if not apply() then return end
-    local request=json.encode({ticket=tostring(os.time())..'-'..tostring(love.timer.getTime()),layout=M.layout})
+    state.previewTicket=tostring(os.time())..'-'..tostring(love.timer.getTime())
+    local request=json.encode({ticket=state.previewTicket,layout=M.layout,workshop=M.workshop==true})
     local f=assert(io.open(M.save..'/preview-request.json.new','wb')); f:write(request); f:close()
     os.rename(M.save..'/preview-request.json.new',M.save..'/preview-request.json')
     local h=io.open(M.save..'/preview-heartbeat.txt','rb'); local heartbeat=h and tonumber(h:read('*a')) or 0; if h then h:close() end
-    if heartbeat and os.time()-heartbeat<5 then state.status='Niveau rechargé dans la fenêtre de test.'; return end
-    if state.launching and love.timer.getTime()-state.launching<25 then state.status='Le jeu démarre ; le dernier niveau sélectionné sera chargé.'; return end
+    if heartbeat and os.time()-heartbeat<5 then state.status=M.workshop and 'Carte rechargée.' or 'Niveau rechargé dans la fenêtre de test.'; return end
+    if state.launching and love.timer.getTime()-state.launching<25 then state.status=M.workshop and 'Démarrage du test…' or 'Le jeu démarre ; le dernier niveau sélectionné sera chargé.'; return end
     state.launching=love.timer.getTime()
     local runtime=os.getenv('HOME')..'/Library/Application Support/Silken Hell/runtime/love.app/Contents/MacOS/love'
     local archive=os.getenv('HOME')..'/Library/Application Support/Silken Hell/Silken Hell.love'
     local cmd='SILKEN_PREVIEW_WORLD='..M.world..' SILKEN_PREVIEW_LEVEL='..M.level..' '..q(runtime)..' '..q(archive)..' > '..q(os.getenv('HOME')..'/Library/Application Support/Silken Hell/preview.log')..' 2>&1 &'
-    os.execute(cmd); state.status='Test lancé — cette fenêtre sera réutilisée au prochain test.'
+    os.execute(cmd); state.status=M.workshop and 'Test lancé.' or 'Test lancé — cette fenêtre sera réutilisée au prochain test.'
 end
 local function loadArt()
     local paths={original='assets/skins/soie/down.png',tear_ring='assets/textures/aureole.png',catalog_ange='assets/monstres/paradis/ange/ange_down.png',catalog_snake='assets/monstres/paradis/serpent/snake_down.png',catalog_trap='assets/monstres/paradis/pieges/piege.png'}
@@ -119,22 +131,33 @@ function love.load()
     for _,size in ipairs({12,14,16,18,22,28}) do state.fonts[size]=g.newFont(size) end
     loadArt()
     local save=os.getenv('HOME')..'/Library/Application Support/LOVE/'..(os.getenv('SILKEN_DESIGNER_TEST')=='1' and 'silken-hell-tests' or 'silken-hell')
-    M.init(project,save); backdrop()
+    M.init(project,save,tonumber(os.getenv('SILKEN_WORKSHOP_BIOME')));if M.workshop then state.status='' end
+    if os.getenv('SILKEN_DESIGNER_TEST')~='1' or os.getenv('SILKEN_CREATOR_PROJECT_TEST')=='1' then
+        require('project_model').install(M);Projects=require('project_ui');Projects.init(M,state,text,button,backdrop);state.status=''
+    end
+    backdrop()
     local ok,templates=pcall(json.decode,love.filesystem.read('creature-templates.json') or '[]')
     if ok and type(templates)=='table' then for _,t in ipairs(templates) do if t.kind=='mob' or t.kind=='boss' then C[#C+1]=t end end end
     state.templates=ok and type(templates)=='table' and templates or {}
     state.editorSound=love.audio.newSource('assets/audio/effects/editeur start.mp3','static');state.editorSound:setVolume(.65);state.editorSound:play()
-    if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require('selftest').run(M,state,select,apply,preview) end
+    if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require(M.projects and 'project_selftest' or M.workshop and 'workshop_selftest' or 'selftest').run(M,state,select,apply,preview) end
 end
 function love.draw()
     if not M then return end
     state.buttons={}; local w,h=g.getDimensions(); g.clear(color.bg)
+    if Projects and Projects.homeDraw() then return end
+    if M.projects and not M.devMode and M.world~=(M.layout.biome or M.layout.world) then M.world=M.layout.biome or M.layout.world;backdrop() end
     g.setColor(color.panel); g.rectangle('fill',0,0,w,66); g.rectangle('fill',0,158,250,h-158); g.rectangle('fill',w-245,158,245,h-158)
-    text('SILKEN HELL',24,17,22); text('CONCEPTEUR DE NIVEAUX',204,24,12,color.muted)
-    button('Appliquer',w-266,14,124,38,apply,true); button('Tester',w-128,14,108,38,preview)
+    if Projects then Projects.header() else
+    text('SILKEN HELL',24,17,22); if M.workshop then text('WORKSHOP',204,20,22) else text('CONCEPTEUR DE NIVEAUX',204,24,12,color.muted) end
+    button(M.workshop and 'Enregistrer' or 'Appliquer',w-266,14,124,38,apply,true)
+    end
+    button('Tester',w-128,14,108,38,preview)
     for i,id in ipairs(Worlds.order) do button(Worlds.names[id],22+(i-1)*140,80,130,34,function() select(id,math.min(M.level,Worlds.levelCount(id))) end,M.world==id) end
+    if not M.workshop then
     text('NIVEAU',24,129,12,color.muted)
     for n=1,Worlds.levelCount(M.world) do button(string.format('%02d',n),95+(n-1)*51,120,44,30,function() select(M.world,n) end,M.level==n) end
+    end
     button('Annuler',w-494,120,94,30,function() M.undo(false) end)
     button('Rétablir',w-390,120,94,30,function() M.undo(true) end)
     button(state.grid and 'Grille : oui' or 'Grille : non',w-286,120,124,30,function() state.grid=not state.grid end)
@@ -152,12 +175,13 @@ function love.draw()
         local y=324+(i-1)*68
         button('',14,y,220,60,function() state.tool=c; M.selected=nil; state.input=nil end,state.tool==c)
         if c.type=='larva' then Art.drawLarva(45,y+29,22,0,state.clock) elseif c.art then g.setColor(1,1,1); local a=Art.images[c.art]; local width=math.min(42,44*a.w/a.h); Art.draw(c.art,45,y+29,width) end
-        text(c.name,77,y+8,12,nil,145); text(c.kind=='boss' and 'Rencontre' or c.kind=='mob' and 'Créature' or 'Placement',77,y+36,12,color.muted)
+        text(c.name,77,y+((M.workshop or M.devMode) and 20 or 8),12,nil,145); if not M.workshop and not M.devMode then text(c.kind=='boss' and 'Rencontre' or c.kind=='mob' and 'Créature' or 'Placement',77,y+36,12,color.muted) end
     end end
-    text('Molette : parcourir la liste',20,h-54,12,color.muted)
+    if not M.workshop and not M.devMode then text('Molette : parcourir la liste',20,h-54,12,color.muted) end
     local x,y,scale=bounds(); state.canvas={x=x,y=y,s=scale}
-    text(Worlds.names[M.world]..' / '..string.format('%02d',M.level),270,174,18)
-    text(#M.layout.entities..' objets  ·  '..(M.dirty[M.key()] and 'Brouillon' or 'Version enregistrée'),w-575,178,12,color.muted)
+    if M.workshop then text(require('workshop_access').biomeNotice,270,148,16,color.muted,w-520) end
+    text(Worlds.names[M.world]..(M.workshop and '' or ' / '..string.format('%02d',M.level)),270,174,18)
+    if not M.workshop and not M.devMode then text(#M.layout.entities..' objets  ·  '..(M.dirty[M.key()] and 'Brouillon' or 'Version enregistrée'),w-575,178,12,color.muted) end
     g.push('all'); g.setScissor(x,y,M.layout.width*scale,600*scale); g.translate(x,y); g.scale(scale)
     g.setColor(1,1,1); g.draw(state.background)
     if state.grid then g.setColor(1,1,1,.09); for xx=0,M.layout.width,40 do g.line(xx,0,xx,600) end; for yy=0,600,40 do g.line(0,yy,M.layout.width,yy) end end
@@ -177,14 +201,15 @@ function love.draw()
         end
         local defaults=e.kind=='boss' and {movementRate=1,attackRate=1} or e.kind=='magma_spawner' and {spawnDelay=1,spawnInterval=3} or {}
         local row=0
-        for _,f in ipairs({'x','y','w','h','rx','ry','speed','phase','dx','rota','radius','spawnDelay','spawnInterval','movementRate','attackRate','rotation'}) do if e[f]~=nil or defaults[f]~=nil then
+        for _,f in ipairs({'x','y','w','h','rx','ry','speed','phase','dx','rota','radius','spawnDelay','spawnInterval','movementRate','attackRate','rotation'}) do if (e[f]~=nil or defaults[f]~=nil) and not (e.kind=='wall' and f=='rotation') then
             local value=e[f] or defaults[f]
-            local yy=272+row*39; text(({rotation='Angle (°)',movementRate='Dépl. ×',attackRate='Attaques ×',spawnDelay='Début (s)',spawnInterval='Intervalle (s)',speed='Vitesse',radius='Rayon',phase='Phase',w='Largeur',h='Hauteur'})[f] or f:upper(),right,yy+8,12,color.muted)
+            local yy=272+row*39; text(({rotation='Angle (°)',movementRate='Dépl. ×',attackRate='Attaques ×',spawnDelay='Début (s)',spawnInterval='Intervalle (s)',speed='Vitesse',radius='Rayon',phase='Phase',w='Largeur',h='Hauteur'})[f] or f:upper(),right,yy+8,12,color.muted,M.projects and 103 or nil)
             local label=state.input==f and state.inputText..'|' or tostring(math.floor(value*100+.5)/100)
-            button(label,right+88,yy,117,34,function() state.input=f; state.inputText=tostring(value); love.keyboard.setTextInput(true) end,state.input==f)
+            button(label,right+(M.projects and 110 or 88),yy,M.projects and 95 or 117,34,function() state.input=f; state.inputText=tostring(value); love.keyboard.setTextInput(true) end,state.input==f)
             row=row+1
         end end
         local yy=280+row*39
+        if e.kind=='wall' then button('Tourner de 90°',right,yy,207,34,M.rotate);yy=yy+42 end
         if e.kind=='mob' and e.type~='piege' and e.type~='scie' then
             button(e.has_larme and 'Porte une larme : oui' or 'Porte une larme : non',right,yy,207,32,function() M.checkpoint(); e.has_larme=not e.has_larme; M.persist() end,e.has_larme); yy=yy+42
         end
@@ -194,34 +219,36 @@ function love.draw()
         button('Supprimer',right+108,yy,99,34,M.delete)
     else
         text(state.tool and state.tool.name or 'Aucun objet sélectionné',right,212,18,nil,208)
-        text('Clique sur le terrain pour placer.\n\nÉchap : sélectionner et déplacer.\n\nGlisse un objet pour le déplacer.\n\nSuppr : effacer.\nCmd+Z / Cmd+Maj+Z : annuler / rétablir.',right,270,14,color.muted,205)
+        if not M.workshop and not M.devMode then text('Clique sur le terrain pour placer.\n\nÉchap : sélectionner et déplacer.\n\nGlisse un objet pour le déplacer.\n\nSuppr : effacer.\nCmd+Z / Cmd+Maj+Z : annuler / rétablir.',right,270,14,color.muted,205) end
     end
-    button('Restaurer l’original',right,h-110,207,34,function() M.restore(); state.status='Original restauré en brouillon. Appliquer pour le garder.' end)
-    text('Les niveaux personnalisés ne sont pas classés.',right,h-66,12,color.muted,210)
+    button(M.workshop and 'Vider la carte' or 'Restaurer l’original',right,h-110,207,34,function() M.restore(); state.status=M.workshop and 'Carte réinitialisée.' or 'Original restauré en brouillon. Appliquer pour le garder.' end)
+    if not M.workshop and not M.devMode then text('Les niveaux personnalisés ne sont pas classés.',right,h-66,12,color.muted,210) end
     g.setColor(.025,.034,.047); g.rectangle('fill',0,h-30,w,30)
-    text(state.status,18,h-23,12,state.error and {1,.46,.4} or color.muted,w-30)
+    text(state.status~='' and state.status or (M.workshop and require('workshop_access').biomeNotice or ''),18,h-23,16,state.error and {1,.46,.4} or color.muted,w-30)
     if state.input=='templateName' then
         g.setColor(0,0,0,.7);g.rectangle('fill',0,0,w,h)
         g.setColor(color.panel);g.rectangle('fill',w/2-260,h/2-110,520,220,8)
         g.setColor(color.accent);g.rectangle('line',w/2-260,h/2-110,520,220,8)
         text('NOM DE LA CRÉATION',w/2-230,h/2-80,22,color.accent)
         text(state.inputText..'|',w/2-230,h/2-20,18,color.text,460)
-        text('Entrée : enregistrer · Échap : annuler',w/2-230,h/2+65,14,color.muted,460)
+        if not M.workshop and not M.devMode then text('Entrée : enregistrer · Échap : annuler',w/2-230,h/2+65,14,color.muted,460) end
     end
+    if Projects then Projects.drawPublication() end
 end
 function love.mousepressed(mx,my,button)
     for _,b in ipairs(state.buttons) do if mx>=b.x and mx<=b.x+b.w and my>=b.y and my<=b.y+b.h then if button==1 then b.fn() end; return end end
+    if Projects and ((not M.currentProject and not M.devMode) or Projects.publication) then return end
     if not inside(mx,my) then return end
     state.input=nil; love.keyboard.setTextInput(false)
     local x,y=point(mx,my)
     if button==2 then state.tool=nil end
-    if state.tool and button==1 then M.add(state.tool,snapped(x),snapped(y)); return end
+    if state.tool and button==1 then M.add(state.tool,snapped(x),snapped(y));state.status=require('workshop_access').warning(state.tool,M.world) or ''; return end
     M.selected=nil
     for i=#M.layout.entities,1,-1 do local e=M.layout.entities[i]
         local rx,ry=e.kind=='wall' and e.w/2 or 26,e.kind=='wall' and e.h/2 or 26
         local ex=e.type=='skeleton_fish' and e.x+M.layout.width*.32 or e.x
         local dx,dy=x-ex,y-e.y
-        if e.kind=='abyss_part' then
+        if e.kind=='abyss_part' or e.kind=='wall' then
             local a=(e.rotation or 0)*math.pi/180
             dx,dy=math.cos(a)*dx+math.sin(a)*dy,-math.sin(a)*dx+math.cos(a)*dy
             rx,ry=math.max(12,e.w/2),math.max(12,e.h/2)
@@ -230,6 +257,7 @@ function love.mousepressed(mx,my,button)
     end
 end
 function love.mousemoved(mx,my)
+    if Projects and ((not M.currentProject and not M.devMode) or Projects.publication) then return end
     if state.drag and M.selected then local x,y=point(mx,my)
         M.selected.x=math.max(25,math.min(M.layout.width-25,snapped(x-state.drag.dx)))
         M.selected.y=math.max(25,math.min(575,snapped(y-state.drag.dy)))
@@ -237,8 +265,9 @@ function love.mousemoved(mx,my)
 end
 function love.mousereleased() if state.drag then M.persist(); state.drag=nil end end
 function love.wheelmoved(x,y) if love.mouse.getX()<250 then state.scroll=math.max(0,state.scroll-y) end end
-function love.textinput(s) if state.input then if state.input=='templateName' then state.inputText=(state.inputText..s:gsub('[%c]','')):sub(1,60) else state.inputText=state.inputText..s:gsub('[^%d%.%-]','') end end end
+function love.textinput(s) if Projects and Projects.text(s) then return end;if state.input then if state.input=='templateName' then state.inputText=(state.inputText..s:gsub('[%c]','')):sub(1,60) else state.inputText=state.inputText..s:gsub('[^%d%.%-]','') end end end
 function love.keypressed(key)
+    if Projects and Projects.key(key) then return end
     if state.input then
         if key=='backspace' then state.inputText=state.inputText:sub(1,-2)
         elseif key=='return' or key=='kpenter' then
@@ -262,6 +291,7 @@ function love.keypressed(key)
     elseif key=='delete' or key=='backspace' then M.delete()
     elseif key=='z' and cmd then M.undo(love.keyboard.isDown('lshift','rshift'))
     elseif key=='s' and cmd then apply()
+    elseif key=='r' and M.selected and M.selected.kind=='wall' then M.rotate()
     elseif M.selected then
         local step=state.snap and 10 or 1
         local dx=key=='left' and -step or key=='right' and step or 0
@@ -269,5 +299,8 @@ function love.keypressed(key)
         if dx~=0 or dy~=0 then M.checkpoint(); M.selected.x=M.selected.x+dx; M.selected.y=M.selected.y+dy; M.persist() end
     end
 end
-function love.update(dt) state.clock=state.clock+dt; if state.testUpdate then state.testUpdate() end end
+function love.update(dt) state.clock=state.clock+dt;if Projects then Projects.update(dt) end; if state.testUpdate then state.testUpdate() end end
+function love.quit()
+    if Projects and (M.currentProject or M.devMode) then local ok,err=M.persist();if not ok and not M.devMode then state.status='Sauvegarde impossible : '..tostring(err);return true end end
+end
 function love.errorhandler(message) io.stderr:write(tostring(message)..'\n'..debug.traceback()..'\n'); return function() return 1 end end

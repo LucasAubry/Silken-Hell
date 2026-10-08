@@ -1,16 +1,18 @@
 -- Boss-only overlay: one small reusable canvas lets the name, frame and life
 -- segments fade together without changing the rest of the interface.
 local H={opacity=1,left=298,top=40,width=604,height=78}
+H.damageTrails=setmetatable({},{__mode='k'})
 local g=love.graphics
+local health={fill={.82,.07,.10},light={1,.43,.46}}
 H.themes={
- merle={edge={.83,.86,.64},fill={.42,.66,.52},light={.92,.95,.76}},
- wasp={edge={.94,.65,.22},fill={.83,.36,.10},light={1,.81,.35}},
- storm={edge={.53,.78,.94},fill={.24,.53,.81},light={.82,.95,1}},
- hedgehog={edge={.72,.53,.32},fill={.42,.51,.30},light={.84,.75,.46}},
- octopus={edge={.31,.65,.69},fill={.13,.45,.52},light={.58,.85,.79}},
- skeleton_fish={edge={.74,.79,.69},fill={.29,.32,.65},light={.58,.75,.95}},
- final_spider={edge={.92,.61,.64},fill={.65,.10,.16},light={1,.86,.89}},
- mixed={edge={.68,.65,.73},fill={.45,.29,.48},light={.87,.76,.84}}
+ merle={edge={.83,.86,.64},light={.92,.95,.76}},
+ wasp={edge={.94,.65,.22},light={1,.81,.35}},
+ storm={edge={.53,.78,.94},light={.82,.95,1}},
+ hedgehog={edge={.72,.53,.32},light={.84,.75,.46}},
+ octopus={edge={.31,.65,.69},light={.58,.85,.79}},
+ skeleton_fish={edge={.74,.79,.69},light={.58,.75,.95}},
+ final_spider={edge={.92,.61,.64},light={1,.86,.89}},
+ mixed={edge={.68,.65,.73},light={.87,.76,.84}}
 }
 function H.kind(boss)
  if boss==require('final_spider') then return 'final_spider' end
@@ -68,9 +70,19 @@ local function emblem(kind,x,y,t)
  else g.polygon('line',x,y-12,x+10,y,x,y+12,x-10,y);g.line(x-4,y,x+4,y) end
  g.setLineWidth(1)
 end
+function H.trailingHealth(owner,hp,maxHp)
+ local s=H.damageTrails[owner]
+ if not s or s.maxHp~=maxHp or hp>s.hp or not Graphics.effects then
+  s={hp=hp,from=hp,maxHp=maxHp,at=UI.clock};H.damageTrails[owner]=s
+ end
+ local t=math.max(0,math.min(1,(UI.clock-s.at-.07)/.3))
+ local shown=s.hp+(s.from-s.hp)*(1-t)^2
+ if hp<s.hp then s.from=shown;s.hp=hp;s.at=UI.clock end
+ return math.max(hp,shown)
+end
 function H.paint(boss,kind)
  local t=H.themes[kind] or H.themes.mixed
- if kind=='wasp' and boss.hardcore then t={edge={1,.37,.12},fill={.70,.12,.055},light={1,.69,.17}} end
+ if kind=='wasp' and boss.hardcore then t={edge={1,.37,.12},light={1,.69,.17}} end
  UI.outlined(boss.name,335,45,'medium',t.light,530)
  local x,y,w,h=335,77,530,18
  g.setColor(.025,.04,.055,.96)
@@ -78,19 +90,24 @@ function H.paint(boss,kind)
  tint(t.edge);g.setLineWidth(2)
  if kind=='octopus' then g.rectangle('line',x-5,y-5,w+10,h+10,12,12) else frame('line',x-5,y-5,w+10,h+10,kind=='storm' and 10 or 5) end
  g.setLineWidth(1)
- local function segment(left,width,hp,maxHp)
-  tint(t.fill,.23);g.rectangle('fill',left,y,width,h)
+ local function segment(left,width,hp,maxHp,owner)
+  tint(health.fill,.23);g.rectangle('fill',left,y,width,h)
   local fill=width*math.max(0,math.min(1,hp/math.max(1,maxHp)))
-  tint(t.fill);g.rectangle('fill',left,y,fill,h)
-  tint(t.light,.8);g.rectangle('fill',left,y,fill,3)
+  local trailing=width*math.max(0,math.min(1,H.trailingHealth(owner,hp,maxHp)/math.max(1,maxHp)))
+  if trailing>fill then
+   g.setColor(1,.32,.28,.85);g.rectangle('fill',left+fill,y,trailing-fill,h)
+   g.setColor(1,.65,.65,.85);g.rectangle('fill',left+fill,y,trailing-fill,3)
+  end
+  tint(health.fill);g.rectangle('fill',left,y,fill,h)
+  tint(health.light,.8);g.rectangle('fill',left,y,fill,3)
   g.setColor(0,0,0,.25);g.rectangle('fill',left,y+h-4,fill,4)
   if (boss.flash or 0)>0 then g.setColor(1,1,1,math.min(.5,boss.flash*2));g.rectangle('fill',left,y,fill,h) end
   for i=1,math.min(20,maxHp)-1 do local xx=left+width*i/math.min(20,maxHp);g.setColor(.02,.04,.05,.65);g.line(xx,y+3,xx,y+h-2) end
  end
  if boss.bees then
   local width=(w-24)/3
-  for i,bee in ipairs(boss.bees) do segment(x+(i-1)*(width+12),width,bee.hp,3) end
- else segment(x,w,boss.hp,boss.maxHp) end
+  for i,bee in ipairs(boss.bees) do segment(x+(i-1)*(width+12),width,bee.hp,3,bee) end
+ else segment(x,w,boss.hp,boss.maxHp,boss) end
  tint(t.edge)
  if kind=='hedgehog' then
   for i=0,12 do local xx=x+10+i*(w-20)/12;g.polygon('fill',xx-4,y-5,xx,y-11,xx+4,y-5);g.line(xx-3,y+h+5,xx,y+h+9,xx+3,y+h+5) end

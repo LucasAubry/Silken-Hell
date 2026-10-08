@@ -30,6 +30,7 @@ function A.spider(name,x,y,width,angle,walk)
   local a=Art.images[key]
   if not (walk and require('brown_walk').draw(a.image,dir,0,0,width,walk,a.quad)) then A.draw(sprite,0,0,width,0) end
  end
+ Art.contactShadow(x,y+width*.18,width*.31,width*.095,.065)
  graphics.push('all');graphics.translate(x,y);graphics.rotate(turn)
  x,y=0,0
  if dir~='down' then

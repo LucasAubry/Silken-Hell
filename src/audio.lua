@@ -1,40 +1,14 @@
 local A={}
-local function tone(seconds, frequencies, volume)
-    local rate=22050
-    local data=love.sound.newSoundData(math.floor(seconds*rate),rate,16,1)
-    for i=0,data:getSampleCount()-1 do
-        local t=i/rate
-        local envelope=math.min(1,t/.008)*math.min(1,(seconds-t)/.045)
-        local v=0
-        for _,f in ipairs(frequencies) do v=v+math.sin(t*f*math.pi*2)+0.2*math.sin(t*f*math.pi*4) end
-        data:setSample(i,v/#frequencies*volume*envelope)
-    end
-    return love.audio.newSource(data,'static')
-end
-local function levelCue(descending)
- local rate,duration=22050,.30
- local notes=descending and {784,587.33,392} or {392,587.33,784}
- local data=love.sound.newSoundData(math.floor(rate*duration),rate,16,1)
- for i=0,data:getSampleCount()-1 do
-  local t=i/rate;local step=math.min(3,math.floor(t/.1)+1);local localTime=t-(step-1)*.1
-  local envelope=math.min(1,localTime/.006)*math.max(0,1-localTime/.1)^2
-  data:setSample(i,math.sin(localTime*notes[step]*math.pi*2)*envelope*.28)
- end
- return love.audio.newSource(data,'static')
-end
 function A.load()
     love.audio.setVolume(1)
     local ok,source=pcall(love.audio.newSource,'assets/audio/music/menu paradi.mp3','stream')
     if ok then A.paradise=source;source:setLooping(true) end
-    A.levelUp=levelCue(false);A.levelDown=levelCue(true)
-    A.pick=tone(0.35,{659.25,987.77},0.3)
-    A.death=tone(0.18,{82.41,87.31},0.35)
-    A.click=tone(0.09,{440,660},0.45)
     local files={selection='assets/audio/effects/menu/selection niveau.mp3',go='assets/audio/effects/menu/go.mp3',back='assets/audio/effects/menu/back.mp3',editor='assets/audio/effects/editeur start.mp3'}
     for name,path in pairs(files) do
         local ok,source=pcall(love.audio.newSource,path,'static')
-        A[name]=ok and source or A.click:clone()
+        A[name]=ok and source or nil
     end
+    A.click=A.selection
 end
 function A.focus(focused)
     A.focused=focused
@@ -51,7 +25,7 @@ function A.update(p,hell)
             if not A.paradise:isPlaying() then A.paradise:play() end
         else A.paradise:stop() end
     end
-    for _,k in ipairs({'pick','death','click','selection','go','back','editor'}) do A[k]:setVolume(p.sound) end
+    for _,k in ipairs({'pick','death','click','selection','go','back','editor'}) do if A[k] then A[k]:setVolume(p.sound) end end
 end
-function A.play(name) local source=A[name] or A.click;if source then source:setVolume(Profile and Profile.sound or .65);source:stop();source:play() end end
+function A.play(name) local source=A[name];if source then source:setVolume(Profile and Profile.sound or .65);source:stop();source:play() end end
 return A

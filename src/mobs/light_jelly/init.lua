@@ -5,6 +5,7 @@ return function(A)
    local before=m.age;m.age=m.age+dt
    local vx,vy=math.cos(m.age*.6),math.sin(m.age*.7)
    Arena.move(m,vx*m.speed*dt,vy*m.speed*dt);m.angle=math.atan2(vy,vx)-math.pi/2
+   Realms.capture(m);if m.is_frozen then return end
    if math.floor((before+(m.shotOffset or 0))/3)<math.floor((m.age+(m.shotOffset or 0))/3) then A.emit(m) end
    local touching=not player.abyssHeld and require('collision_shapes').touchRect('light_jelly',m.x-22,m.y-22,44,44)
    if touching and not m.touchingPlayer then A.charge(6) end

@@ -53,7 +53,7 @@ function A.draw()
             g.setColor(c[1],c[2],c[3],.045)
             g.circle('fill',Arena.width/2,Arena.height/2,18+i*10)
         end
-        g.setBlendMode('alpha');Campaign.drawTear(true)
+        g.setBlendMode('alpha')
 
     end
     g.pop()

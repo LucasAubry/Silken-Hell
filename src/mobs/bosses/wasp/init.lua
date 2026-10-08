@@ -154,7 +154,7 @@ function W.positionAttack(b)
     local x,y=Arena.clearSpot(b.tx-24,b.ty-24,48,48);b.tx,b.ty=x+24,y+24
     b.phase='position'
 end
--- Track the player along the chosen wall until launch; the airborne dash stays straight.
+-- Align only while approaching the wall; freeze the lane on arrival.
 function W.trackPlayer(b)
     if b.attack==1 then b.ty=math.max(65,math.min(535,player.y+12))
     elseif b.attack==2 then b.tx=math.max(65,math.min(Arena.width-65,player.x+15)) end
@@ -221,10 +221,10 @@ function W.updateBees(dt)
             end
         elseif b.phase=='aim' then
             if b.attack~=3 then
-                W.trackPlayer(b);W.approach(b,b.tx,b.ty,1250*tempo*move,dt)
+                -- Once the wall is reached, the launch point stays fixed.
                 b.dir=Art.direction(b.vx,b.vy,b.dir)
             end
-            b.time=b.time-dt*(b.attack==3 and cadence or 1)
+            b.time=b.time-dt*cadence
             if b.time<=0 then
                 if b.attack==3 then
                     W.releaseLarvae()

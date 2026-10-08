@@ -53,16 +53,16 @@ test('new worlds store the run skin and reject invalid skins',async()=>{
 });
 test('first page includes every run and its associated skin',async()=>{
  const env={DB:database()};
- for(let i=0;i<14;i++) await env.DB.prepare('INSERT INTO scores VALUES(?,?,?,?,?,?,?,?,?)').bind('r'+i,'owner'+i,4,'Player'+i,'FR',10000+i*100,i,1,(i%5)+1).run();
- await env.DB.prepare('INSERT INTO scores VALUES(?,?,?,?,?,?,?,?,?)').bind('old','owner0',4,'Player0','FR',99000,0,0,5).run();
- await env.DB.prepare('INSERT INTO scores VALUES(?,?,?,?,?,?,?,?,?)').bind('tie','owner1',4,'Player1','FR',10100,0,2,4).run();
+ for(let i=0;i<14;i++) await env.DB.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES(?,?,?,?,?,?,?,?,?)').bind('r'+i,'owner'+i,4,'Player'+i,'FR',10000+i*100,i,1,(i%5)+1).run();
+ await env.DB.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES(?,?,?,?,?,?,?,?,?)').bind('old','owner0',4,'Player0','FR',99000,0,0,5).run();
+ await env.DB.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES(?,?,?,?,?,?,?,?,?)').bind('tie','owner1',4,'Player1','FR',10100,0,2,4).run();
  const {scores}=await (await call(env,'/v1/leaderboard?world=4')).json();
  assert.equal(scores.length,10);assert.equal(scores[0].skin,1);assert.equal(scores[1].name,'Player1');assert.equal(scores[1].skin,4);assert.equal(scores[9].name,'Player8');
 });
 test('all nicknames on one computer remain visible across stable pages',async()=>{
  const env={DB:database()};
- for(let i=0;i<23;i++) await env.DB.prepare('INSERT INTO scores VALUES(?,?,?,?,?,?,?,?,?)').bind('r'+i,'shared-PC',5,'Player'+i,i%2?'FR':'BE',10000+i*100,i,1,i%5+1).run();
- await env.DB.prepare('INSERT INTO scores VALUES(?,?,?,?,?,?,?,?,?)').bind('old','shared-PC',5,'Player0','BE',99000,0,0,5).run();
+ for(let i=0;i<23;i++) await env.DB.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES(?,?,?,?,?,?,?,?,?)').bind('r'+i,'shared-PC',5,'Player'+i,i%2?'FR':'BE',10000+i*100,i,1,i%5+1).run();
+ await env.DB.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES(?,?,?,?,?,?,?,?,?)').bind('old','shared-PC',5,'Player0','BE',99000,0,0,5).run();
  const rows=[];
  for(let page=1;page<=3;page++) {
   const data=await (await call(env,'/v1/leaderboard?world=5&page='+page)).json();
@@ -92,7 +92,7 @@ test('a nickname keeps its best time across computers, with the matching skin an
  const env={DB:database()};
  for(const [id,owner,ms,skin,deaths,country] of [
   ['first','pc-a',20000,1,8,'FR'],['better','pc-b',15000,4,3,'BE'],['slower','pc-c',25000,2,0,'FR']]) {
-  await env.DB.prepare('INSERT INTO scores VALUES(?,?,?,?,?,?,?,?,?)').bind(id,owner,1,'Même pseudo',country,ms,deaths,1,skin).run();
+  await env.DB.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES(?,?,?,?,?,?,?,?,?)').bind(id,owner,1,'Même pseudo',country,ms,deaths,1,skin).run();
  }
  const data=await (await call(env,'/v1/leaderboard?world=1')).json();
  assert.equal(data.total,3); assert.deepEqual(data.scores.slice(0,1),[{runId:'better',hasReplay:false,name:'Même pseudo',country:'BE',time:16,rawTime:15,penalty:1,deaths:3,skin:4}]);
@@ -156,7 +156,7 @@ test('Renaissance completes after boss and reunion and publishes its own leaderb
 test('Renaissance migration retains historical runs and scores',()=>{
  const db=new DatabaseSync(':memory:');
  for(const file of readdirSync(new URL('migrations/',import.meta.url)).filter(n=>/^\d{4}_[a-z0-9_]+\.sql$/.test(n)).sort().filter(n=>n<'0005')) db.exec(readFileSync(new URL('migrations/'+file,import.meta.url),'utf8'));
- db.exec("INSERT INTO runs VALUES('old-run','old-owner',2,'Existing','FR',100,4,7000,2,3); INSERT INTO scores VALUES('old-score','old-owner',7,'Existing','FR',30000,4,200,5)");
+ db.exec("INSERT INTO runs VALUES('old-run','old-owner',2,'Existing','FR',100,4,7000,2,3); INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES('old-score','old-owner',7,'Existing','FR',30000,4,200,5)");
  db.exec(readFileSync(new URL('migrations/0005_renaissance.sql',import.meta.url),'utf8'));
  assert.equal(db.prepare('SELECT level FROM runs').get().level,4);
  assert.equal(db.prepare('SELECT skin FROM scores').get().skin,5);
@@ -166,7 +166,7 @@ test('Renaissance migration retains historical runs and scores',()=>{
 test('death penalties rerank all historical raw times without double counting',async()=>{
  const env={DB:database()};
  for(const [id,name,raw,deaths] of [['a','Rapide',10000,40],['b','Prudent',11000,0],['c','Rapide',10500,10]])
-  await env.DB.prepare('INSERT INTO scores VALUES(?,?,?,?,?,?,?,?,?)').bind(id,'o',2,name,'FR',raw,deaths,1,1).run();
+  await env.DB.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES(?,?,?,?,?,?,?,?,?)').bind(id,'o',2,name,'FR',raw,deaths,1,1).run();
  const {scores}=await (await call(env,'/v1/leaderboard?world=2')).json();
  assert.equal(scores.length,3); assert.equal(scores[0].name,'Prudent');
  assert.equal(scores[1].name,'Rapide');assert.equal(scores[1].rawTime,10.5);assert.ok(Math.abs(scores[1].time-(10.5+10/3))<1e-9);assert.ok(Math.abs(scores[1].penalty-10/3)<1e-9);
@@ -221,10 +221,10 @@ test('delayed connection preserves the original clock and migration preserves al
  assert.equal((await call(env,'/v1/runs',{body:{name:'Future',world:14,startedAtMs:Date.now()+100000}})).status,400);
  const db=new DatabaseSync(':memory:');
  for(const file of readdirSync(new URL('migrations/',import.meta.url)).filter(n=>/^\d{4}_[a-z0-9_]+\.sql$/.test(n)&&n<'0006').sort()) db.exec(readFileSync(new URL('migrations/'+file,import.meta.url),'utf8'));
- db.exec("INSERT INTO scores VALUES('old','owner',2,'Saved','FR',1000,2,123,1)");
+ db.exec("INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES('old','owner',2,'Saved','FR',1000,2,123,1)");
  db.exec(readFileSync(new URL('migrations/0006_hardcore.sql',import.meta.url),'utf8'));
  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM scores').get().n,1);
- db.exec("INSERT INTO scores VALUES('hardcore','owner',14,'gillou','ZZ',2264850,513,124,2)");
+ db.exec("INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES('hardcore','owner',14,'gillou','ZZ',2264850,513,124,2)");
  assert.equal(db.prepare('SELECT elapsed_ms+deaths*1000/3 AS total FROM scores WHERE world=14').get().total,2435850);
 });
 test('Workshop filters biomes and difficulty across pages, sorts red overflow, and validates limits',async()=>{
@@ -278,3 +278,47 @@ test('completed run replay upload, ownership, leaderboard discovery and download
   }
   const board=await (await call(env,'/v1/leaderboard?world=9')).json();assert.deepEqual(board.scores.map(s=>s.skin).sort((a,b)=>a-b),[15,16,17,18,19,20,21,22]);
  });
+
+test('hardcore scores are isolated by mode, world, country and pagination',async()=>{
+ const env={DB:database()};
+ for(const hardcore of [false,true]) {
+  const response=await call(env,'/v1/runs',{body:{world:1,name:'Modes',skin:22,hardcore}});assert.equal(response.status,201);
+  const {id}=await response.json();
+  for(let level=1;level<=10;level++) assert.equal((await call(env,'/v1/runs/'+id+'/checkpoint',{body:{level,elapsedMs:level*100,deaths:hardcore?4:0}})).status,200);
+ }
+ const normal=await (await call(env,'/v1/leaderboard?world=1')).json();
+ const hardcore=await (await call(env,'/v1/leaderboard?world=1&mode=hardcore')).json();
+ assert.equal(normal.total,1);assert.equal(normal.scores[0].deaths,0);
+ assert.equal(hardcore.total,1);assert.equal(hardcore.scores[0].deaths,4);assert.equal(hardcore.scores[0].skin,22);
+ assert.notEqual(normal.scores[0].runId,hardcore.scores[0].runId);
+ for(const query of ['world=1&mode=hardcore&scope=country','world=2&mode=hardcore','world=1&mode=hardcore&page=2']) {
+  assert.equal((await (await call(env,'/v1/leaderboard?'+query,{country:'BE'})).json()).scores.length,0);
+ }
+ for(const value of [1,'true',null]) assert.equal((await call(env,'/v1/runs',{body:{world:1,name:'Bad',hardcore:value}})).status,400);
+ assert.equal((await call(env,'/v1/leaderboard?world=1&mode=demon')).status,400);
+});
+test('Sanctuary hardcore finishes at boss seven and validates replay mode',async()=>{
+ const env={DB:database()};
+ const response=await call(env,'/v1/runs',{body:{world:8,name:'BossRush',hardcore:true}});assert.equal(response.status,201);
+ const {id}=await response.json();const path='/v1/runs/'+id+'/checkpoint';
+ assert.equal((await call(env,path,{body:{level:7,elapsedMs:700,deaths:0}})).status,409);
+ for(let level=1;level<=7;level++) {
+  const r=await call(env,path,{body:{level,elapsedMs:level*100,deaths:level>3?2:0}});assert.equal(r.status,200);
+  assert.equal((await r.json()).completed,level===7);
+ }
+ assert.equal((await call(env,path,{body:{level:7,elapsedMs:700,deaths:2}})).status,200);
+ assert.equal((await (await call(env,'/v1/leaderboard?world=8&mode=hardcore')).json()).total,1);
+ assert.equal((await (await call(env,'/v1/leaderboard?world=8')).json()).total,0);
+ const replay={...fixtureReplay(map),world:8,hardcore:true,single:false,layouts:{},time:.7,deaths:2,checks:[[20,4,100,100,0,false],[40,2,100,100,2,false],[60,7,100,100,2,true]]};
+ assert.equal((await call(env,'/v1/runs/'+id+'/replay',{body:{replay}})).status,201);
+ assert.equal((await call(env,'/v1/runs/'+id+'/replay',{body:{replay:{...replay,hardcore:false}}})).status,400);
+});
+test('hardcore migration preserves all legacy scores, runs and replays',()=>{
+ const db=new DatabaseSync(':memory:');
+ for(const file of readdirSync(new URL('migrations/',import.meta.url)).filter(n=>/^000\d_.*\.sql$/.test(n)).sort()) db.exec(readFileSync(new URL('migrations/'+file,import.meta.url),'utf8'));
+ db.exec("INSERT INTO runs VALUES('run','owner',14,'Legacy','FR',100,0,0,0,22); INSERT INTO scores VALUES('score','owner',9,'Legacy','FR',30000,4,200,22); INSERT INTO run_replays VALUES('score','owner','{}',200)");
+ db.exec(readFileSync(new URL('migrations/0010_hardcore_rankings.sql',import.meta.url),'utf8'));
+ assert.equal(db.prepare('SELECT * FROM runs').get().hardcore,0);
+ const score=db.prepare('SELECT * FROM scores').get();assert.equal(score.world,9);assert.equal(score.skin,22);assert.equal(score.elapsed_ms,30000);assert.equal(score.hardcore,0);
+ assert.equal(db.prepare('SELECT COUNT(*) AS n FROM run_replays').get().n,1);
+});

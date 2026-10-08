@@ -9,6 +9,26 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv("SILKEN_WORKSHOP_ACCESS_TEST")=="1" then require("tests.workshop_access").run();return end
+    if os.getenv("SILKEN_RICOCHET_TEST")=="1" then require("tests.abyss_ricochet").run();return end
+    if os.getenv('SILKEN_WEB_CHARGE_TEST')=='1' then require('tests.web_charge').run();return end
+    if os.getenv('SILKEN_SILK_BOMBS_TEST')=='1' then require('tests.silk_bombs').run();return end
+    if os.getenv('SILKEN_OCTOBER8_TEST')=='1' then require('tests.october8').run();return end
+    if os.getenv('SILKEN_CREATOR_PROJECT_TEST')=='1' then require('tests.creator_projects').run();return end
+    if os.getenv('SILKEN_WORKSHOP_BIOME_TEST')=='1' then require('tests.workshop_biome').run();return end
+    if os.getenv('SILKEN_SANCTUARY_REVISION_TEST')=='1' then require('tests.sanctuary_revision').run();return end
+    if os.getenv('SILKEN_QUEEN_GRIEF_TEST')=='1' then require('tests.queen_grief').run();return end
+    if os.getenv('SILKEN_CONTROLS_LEVEL_TEST')=='1' then require('tests.controls_level_info').run();return end
+    if os.getenv('SILKEN_STORY_DISCOVERY_TEST')=='1' then require('tests.story_discovery').run();return end
+    if os.getenv('SILKEN_BOSS_SPIDER_MOTION_TEST')=='1' then require('tests.boss_spider_motion').run();return end
+    if os.getenv('SILKEN_MENU_ABYSS_TEST')=='1' then require('tests.menu_abyss_revision').run();return end
+    if os.getenv('SILKEN_SKY_CENTER_TEST')=='1' then require('tests.sky_center').run();return end
+    if os.getenv('SILKEN_VISUAL_NOTICE_TEST')=='1' then require('tests.visual_notice').run();return end
+    if os.getenv('SILKEN_GAME_FEEDBACK_TEST')=='1' then require('tests.game_feedback').run();return end
+    if os.getenv('SILKEN_UI_FEEDBACK_TEST')=='1' then require('tests.ui_feedback').run();return end
+    if os.getenv('SILKEN_MENU_WORKSHOP_TEST')=='1' then require('tests.menu_workshop_revision').run();return end
+    if os.getenv('SILKEN_HARDCORE_MODES_TEST')=='1' then require('tests.hardcore_modes').run();return end
+    if os.getenv('SILKEN_TRAP_CONTACT_TEST')=='1' then require('tests.trap_contact').run();return end
     if os.getenv('SILKEN_PODIUM_TEST')=='1' then require('tests.podium').run();return end
     if os.getenv('SILKEN_VISIBILITY_STATS_TEST')=='1' then require('tests.visibility_stats').run();return end
     if os.getenv('SILKEN_SKIN_CLEANUP_TEST')=='1' then require('tests.skin_cleanup').run();return end

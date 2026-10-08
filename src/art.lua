@@ -70,10 +70,22 @@ function A.shadow(...)
     local g=love.graphics;local r,green,b,alpha=g.getColor()
     if math.max(r,green,b)<.25 then return end -- Do not shadow existing dark silhouettes.
     A.shadowShader=A.shadowShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
-        return vec4(.025,.018,.025,Texel(tex,uv).a*color.a*.13);
+        return vec4(.025,.018,.025,((Texel(tex,uv).a*2.+Texel(tex,uv+vec2(.002,0.)).a+Texel(tex,uv-vec2(.002,0.)).a+Texel(tex,uv+vec2(0.,.002)).a+Texel(tex,uv-vec2(0.,.002)).a)/6.)*color.a*.075);
     }]])
     g.push('all');g.setShader(A.shadowShader);g.setBlendMode('alpha');g.setColor(1,1,1,alpha)
-    g.translate(2,4);g.draw(...);g.pop()
+    g.translate(1.5,2.5);g.draw(...);g.pop()
+end
+-- A single feathered contact ellipse; no stacked solid oval outlines.
+function A.contactShadow(x,y,rx,ry,opacity)
+    if not App or App.state~='playing' then return end
+    local g=love.graphics;g.push('all');g.setShader();g.setBlendMode('alpha')
+    local _,_,_,alpha=g.getColor()
+    for i=12,1,-1 do
+        local scale=i/12
+        g.setColor(.025,.018,.025,(opacity or .10)*alpha*2/12*(1-scale*.7))
+        g.ellipse('fill',x,y,rx*scale,ry*scale)
+    end
+    g.pop()
 end
 local function creature(key)
     return key=='abyss_fish' or key=='magma_larva' or key=='abyss_octopus' or key=='wheel'
@@ -114,7 +126,7 @@ function A.drawLarva(x,y,size,angle,time)
     end
     -- The shadow follows the same articulated body, rather than a generic oval.
     for _,p in ipairs(rings) do
-        g.setColor(.035,.018,.012,.12*alpha);g.ellipse('fill',p[1]+1.5,p[2]+2,size*.035,p[3])
+        g.setColor(.035,.018,.012,.065*alpha);g.ellipse('fill',p[1]+1.5,p[2]+2,size*.035,p[3])
     end
     for _,p in ipairs(rings) do
         local band=p[4]>=4 and p[4]<=6
@@ -154,10 +166,19 @@ function A.load()
     A.add('earth_tunnel','assets/monstres/terre/taupe/earth_tunnel.png')
     for _,key in ipairs({'skeleton_head','skeleton_open','skeleton_rib','skeleton_spine','skeleton_tail','abyss_fish'}) do A.add(key,'assets/sprites/'..key..'.png') end
     for _,pose in ipairs({'open','closed','dead'}) do A.add('crab_'..pose,'assets/sprites/crab_'..pose..'.png') end
-    for _,key in ipairs({'electric_vent_idle','electric_vent_charge','electric_vent_active','electric_vent_spent'}) do A.add(key,'assets/sprites/'..key..'.png') end
+    A.add('electric_anemone','assets/sprites/electric_anemone.png')
     A.add('tear_ring','assets/textures/aureole.png')
 end
+function A.drawAnemone(x,y,width,height,time)
+    require('anemone_art').draw(A.images.electric_anemone,x,y,width,height,time)
+end
 function A.draw(key,x,y,width,angle,height)
+    if key=='electric_anemone' then
+        local a=A.images[key]
+        local h=height or width*a.h/a.w;local time=(UI and UI.clock) or love.timer.getTime()
+        A.drawAnemone(x,y,width,h,time)
+        return require('anemone_art').electric(x,y,width,h,time)
+    end
     local servants=require('servant_art')
     if not servants.variant(key) and require('paradise_ink').art(key,x,y,width,angle,height) then return end
     local a=assert(servants.image(key),key)

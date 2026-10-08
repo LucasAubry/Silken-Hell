@@ -102,6 +102,7 @@ function R.update(dt,tick)
     end
 end
 function R.validate(data)
+    if type(data)=='table' and ((data.hardcore~=nil and type(data.hardcore)~='boolean') or data.world==8 and data.hardcore~=true) then return false,'Mode de replay invalide.' end
     if type(data)~='table' or type(data.version)~='number' or data.version%1~=0 or data.version<1 then return false,'Replay invalide.' end
     if not Worlds.playable(data.world) or type(data.inputs)~='table' or type(data.checks)~='table' or type(data.layouts)~='table' or type(data.seed)~='number' or data.seed%1~=0 or type(data.width)~='number' or data.width~=data.width or data.width<400 or data.width>4000 or type(data.frames)~='number' or data.frames<1 then return false,'Replay invalide.' end
     local function integer(n,lo,hi) return type(n)=='number' and n%1==0 and n>=lo and n<=hi end

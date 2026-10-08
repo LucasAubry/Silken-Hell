@@ -4,7 +4,7 @@ local config=require 'online_config'
 local function saveOutbox()
     local rows={}
     for _,r in ipairs(N.runs) do
-        if not r.failed and (#r.pending>0 or r.replay and not r.replayUploaded) then rows[#rows+1]={id=r.id,name=r.name,skin=r.skin,startedAtMs=r.startedAtMs,world=r.world,pending=r.pending,replay=r.replay,replayUploaded=r.replayUploaded} end
+        if not r.failed and (#r.pending>0 or r.replay and not r.replayUploaded) then rows[#rows+1]={id=r.id,name=r.name,skin=r.skin,startedAtMs=r.startedAtMs,world=r.world,hardcore=r.hardcore,pending=r.pending,replay=r.replay,replayUploaded=r.replayUploaded} end
     end
     love.filesystem.write('online-outbox.json',json.encode(rows))
 end
@@ -14,14 +14,17 @@ local function request(path,body,callback)
     love.thread.getChannel('silken.requests'):push({id=N.sequence,url=config.url..path,method=body and 'POST' or 'GET',body=body,token=N.token})
 end
 N.request=request
-function N.refresh(world)
-    if not Worlds.canViewScores(world) then return end
+local function mode(hardcore) return hardcore and 'hardcore' or 'normal' end
+local function boardKey(world,hardcore) return world..':'..mode(hardcore) end
+function N.refresh(world,hardcore)
+    if not Worlds.canViewScores(world,hardcore) then return end
     if not N.enabled then return end
-    local b=N.boards[world] or {}; N.boards[world]=b
+    local key=boardKey(world,hardcore)
+    local b=N.boards[key] or {}; N.boards[key]=b
     if b.loading then return end
     b.loading=true; b.requested=N.clock; b.remaining=2
     for _,scope in ipairs({'global','country'}) do local key=scope
-        request('/v1/leaderboard?world='..world..'&scope='..scope,nil,function(data,code)
+        request('/v1/leaderboard?world='..world..'&mode='..mode(hardcore)..'&scope='..scope,nil,function(data,code)
             b.remaining=b.remaining-1; b.loading=b.remaining>0
             if code==200 and type(data.scores)=='table' then b[key]=data.scores; b.error=false; b.updated=N.clock
             else b.error=true end
@@ -29,35 +32,35 @@ function N.refresh(world)
     end
 end
 N.pages={}
-function N.page(world,country,page)
-    if not Worlds.canViewScores(world) then return {scores={},total=0,hasMore=false},'locked' end
+function N.page(world,country,page,hardcore)
+    if not Worlds.canViewScores(world,hardcore) then return {scores={},total=0,hasMore=false},'locked' end
     page=page or 1
     if not N.enabled then
-        local all=Profile.ranking(world,country and Profile.country or nil); local rows={}
+        local all=Profile.ranking(world,country and Profile.country or nil,hardcore); local rows={}
         for i=(page-1)*10+1,math.min(page*10,#all) do rows[#rows+1]=all[i] end
         return {scores=rows,total=#all,hasMore=page*10<#all},'local'
     end
-    local key=world..':'..(country and N.country or 'global')..':'..page
+    local key=boardKey(world,hardcore)..':'..(country and N.country or 'global')..':'..page
     local entry=N.pages[key]
     if not entry or (not entry.loading and N.clock-entry.requested>30) then
         entry=entry or {}; N.pages[key]=entry; entry.loading=true; entry.requested=N.clock
-        request('/v1/leaderboard?world='..world..'&scope='..(country and 'country' or 'global')..'&page='..page,nil,function(data,code)
+        request('/v1/leaderboard?world='..world..'&mode='..mode(hardcore)..'&scope='..(country and 'country' or 'global')..'&page='..page,nil,function(data,code)
             entry.loading=false; entry.error=code~=200
             if code==200 and type(data.scores)=='table' then entry.data=data else entry.error=true end
         end)
     end
     if entry.error and not entry.data then
-        local all=Profile.ranking(world,country and Profile.country or nil);local rows={}
+        local all=Profile.ranking(world,country and Profile.country or nil,hardcore);local rows={}
         for i=(page-1)*10+1,math.min(page*10,#all) do rows[#rows+1]=all[i] end
         return {scores=rows,total=#all,hasMore=page*10<#all},'local'
     end
     return entry.data or {scores={},total=0,hasMore=false},entry.error and 'offline' or entry.loading and 'loading' or 'online'
 end
-function N.scores(world,country)
-    if not Worlds.canViewScores(world) then return {},'locked' end
-    if not N.enabled then return Profile.ranking(world,country and Profile.country or nil),'local' end
-    local b=N.boards[world]
-    if not b or (not b.loading and N.clock-(b.requested or -60)>30) then N.refresh(world); b=N.boards[world] end
+function N.scores(world,country,hardcore)
+    if not Worlds.canViewScores(world,hardcore) then return {},'locked' end
+    if not N.enabled then return Profile.ranking(world,country and Profile.country or nil,hardcore),'local' end
+    local b=N.boards[boardKey(world,hardcore)]
+    if not b or (not b.loading and N.clock-(b.requested or -60)>30) then N.refresh(world,hardcore); b=N.boards[boardKey(world,hardcore)] end
     local data=b[country and 'country' or 'global']
     if data then return data,b.error and 'cached' or 'online' end
     return {},b.error and 'offline' or 'loading'
@@ -90,7 +93,7 @@ end
 function N.begin(run)
     if run.starting or run.id or run.failed or (run.retryAt and N.clock<run.retryAt) then return end
     run.starting=true
-    request('/v1/runs',{world=run.world,name=run.name,skin=run.skin or 1,startedAtMs=run.startedAtMs},function(data,code)
+    request('/v1/runs',{world=run.world,name=run.name,skin=run.skin or 1,hardcore=run.hardcore==true,startedAtMs=run.startedAtMs},function(data,code)
         run.starting=false
         if code==201 and type(data.id)=='string' then
             run.id=data.id;run.retryAt=nil;saveOutbox()
@@ -105,17 +108,20 @@ function N.begin(run)
         end
     end)
 end
-function N.start(world,name,skin)
+function N.start(world,name,skin,hardcore)
     if Replay and Replay.playing then return end
     N.current=nil; N.scoreStatus='Partie hors ligne'
     if not N.enabled then return end
-    local run={world=world,name=name,skin=skin or 1,startedAtMs=os.time()*1000,pending={}};N.runs[#N.runs+1]=run;N.current=run
+    local run={world=world,name=name,skin=skin or 1,hardcore=hardcore==true,highest=0,startedAtMs=os.time()*1000,pending={}};N.runs[#N.runs+1]=run;N.current=run
     N.scoreStatus='Connexion au classement…';N.begin(run)
 end
 function N.checkpoint(level,time,deaths)
     if Replay and Replay.playing then return end
     local r=N.current
     if not N.enabled or not r or r.failed then return end
+    -- Revisited levels remain part of the same clock; submit each milestone once.
+    if r.hardcore and level<=(r.highest or 0) then return end
+    r.highest=math.max(r.highest or 0,level)
     r.pending[#r.pending+1]={level=level,elapsedMs=math.floor(time*1000+0.5),deaths=deaths}
     if level==Worlds.levelCount(r.world) then N.scoreStatus='Envoi du score…' end
     saveOutbox(); N.flush(r)
@@ -133,7 +139,7 @@ function N.flush(r)
             if checkpoint.level==Worlds.levelCount(r.world) then
                 N.pages={}
                 if N.current==r then N.scoreStatus='Score publié dans les classements' end
-                N.refresh(r.world)
+                N.refresh(r.world,r.hardcore)
             end
             N.flush(r)
         elseif code==0 or code>=500 or code==429 then

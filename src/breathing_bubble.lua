@@ -11,12 +11,15 @@ function O.relayout()
     O.bubbles={}; player.oxygen=nil
 end
 function O.drawGround() end
-function O.drawBubble(outline)
-    if Abyss and Abyss.playerHidden() then return end
-    if not O.active or player.abyssHeld or player.falling or player.tunnelTravel then return end
+function O.lightPosition()
+    if not O.active or player.abyssHeld or player.falling or player.tunnelTravel or (Abyss and Abyss.playerHidden()) then return end
     local offsets={up={0,-9},down={0,10},left={-11,0},right={11,0}}
     local offset=offsets[direction] or offsets.down
-    local x,y=player.x+15+offset[1],player.y+8+offset[2]
+    return player.x+15+offset[1],player.y+8+offset[2]
+end
+function O.drawBubble(outline)
+    local x,y=O.lightPosition()
+    if not x then return end
     local r=15+math.sin(O.clock*2.5)*.5
     local g=love.graphics
     g.push('all')

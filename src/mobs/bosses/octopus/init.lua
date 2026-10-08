@@ -239,6 +239,7 @@ function O.releaseCrabs()
     if Bestiary.discover('crab') then Bestiary.save() end
 end
 function O.crabContact(c)
+    if not c.dead then Realms.capture(c) end
     if c.dead or c.emerge or c.is_frozen or c.tunnelTravel or O.defeated or player.reset then return end
     if require('collision_shapes').touchCircle('crab',c.x,c.y,27) then
         if c.inked and player.dashing then
@@ -264,7 +265,7 @@ function O.moveFlungCrab(c,dt,contact)
     local steps=math.max(1,math.ceil(speed*dt/4))
     for _=1,steps do
         local hx,hy=Arena.move(c,vx*dt/steps,vy*dt/steps)
-        if hx or hy then O.explodeCrab(c);break end
+        if hx or hy then c.crabNavTime=0;break end
         contact();if c.dead or player.reset then break end
     end
     f.time=f.time-dt;if f.time<=0 then c.fling=nil end
@@ -310,7 +311,7 @@ function O.walkCrab(c,dt,contact)
     end
     if c.inked then
         c.frenzyTurn=(c.frenzyTurn or 0)-dt
-        if c.frenzyTurn<=0 then
+        if c.frenzyTurn<=0 and not c.crabGoal then
             c.frenzySeed=c.frenzySeed or c.x*.017+c.y*.031+(c.wave or 0)*.71+(c.age or 0)*2
             c.frenzyStep=(c.frenzyStep or 0)+1
             -- Irregular but reproducible turns, independent of the player's position.
@@ -326,6 +327,9 @@ function O.walkCrab(c,dt,contact)
         if length>0 then c.vx,c.vy=dx/length,dy/length end
     end
     c.vx,c.vy=c.vx or 0,c.vy or 1
+    local navigation=require('mobs.crab.navigation')
+    if c.inked then navigation.steer(c,dt)
+    else navigation.steer(c,dt,player.x+15,player.y+12) end
     -- Only ordinary crabs orbit toward the player. Inked crabs just avoid obstacles.
     if O.active and not O.defeated and not c.inked then
         local dx,dy=c.x-O.x,c.y-O.y;local d=math.sqrt(dx*dx+dy*dy)
@@ -356,7 +360,7 @@ function O.walkCrab(c,dt,contact)
         local nx,ny=c.x+c.vx*speed*dt/steps,c.y+c.vy*speed*dt/steps
         if not O.crabPathClear(nx,ny) then break end
         local hx,hy=Arena.move(c,c.vx*speed*dt/steps,c.vy*speed*dt/steps)
-        if hx or hy then O.explodeCrab(c);break end
+        if hx or hy then c.crabNavTime=0;break end
         if O.active and not O.defeated and not c.inked then
             local dx,dy=c.x-O.x,c.y-O.y;local d=math.sqrt(dx*dx+dy*dy)
             if d>0 and d<185 then

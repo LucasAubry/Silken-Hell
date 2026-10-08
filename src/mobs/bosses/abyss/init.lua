@@ -18,6 +18,7 @@ function A.spawn(n,withoutOctopuses)
     for i=1,2+math.floor(n/4) do add('abyss_fish',Arena.width*(.15+(i-1)*.2),i%2==0 and 420 or 140,70) end
 end
 function A.reset(w,n)
+    A.returnMode=false;A.chargedFish={};A.fishCharge=0
     A.swimHead=nil;A.chain=nil;A.waves={};A.lightTrail={};A.lumenParticles={};A.debris={};A.vacuumCargo={}
     A.active=w==7; A.clock=0; A.threads={}; A.bones={}; A.open=false; A.head=nil; A.swallowed=nil; A.cargo={}; A.ejected={}; A.spitFlash=0; A.breathAt=5.5; A.motionTime=0; A.spinTime=0; A.spinAngle=0
     A.tailTouch=false; A.tailSafe=false; A.headOnly=false; A.skeletonStage=n; A.giant=A.active and n>=8; A.boss=A.active and n==10; A.origin={x=Arena.width/2,y=280}; player.illuminated=0; player.electrified=0; player.charges=0; player.abyssHeld=nil; player.abyssKnock=nil; player.abyssSpit=nil; player.abyssGrace=0
@@ -142,7 +143,7 @@ local function onSites(boss)
     return false
 end
 function A.playerHidden()
- local function hidden(b) return b.active and b.boss and not b.defeated and b.lightOnlySuction and b.phase=='suction' end
+ local function hidden(b) return b.active and b.boss and not b.defeated and (b.carryPlayer or (b.lightOnlySuction and b.phase=='suction')) end
  if hidden(A) then return true end
  if Bosses then for _,item in ipairs(Bosses.items) do if item.kind=='skeleton_fish' and hidden(item.boss) then return true end end end
  return false
@@ -345,12 +346,14 @@ function A.resize(ratio)
         A.swimHead.x=A.swimHead.x*ratio
         for _,p in ipairs(A.chain or {}) do p.x=p.x*ratio end
     end
-    for _,list in ipairs({A.threads,A.plankton,A.lightSites,A.lightMotes,A.ejected,A.waves or {},A.lightTrail or {},A.lumenParticles or {},A.debris or {},A.octopuses or {}}) do
+    for _,list in ipairs({A.threads,A.plankton,A.lightSites,A.lightMotes,A.ejected,A.waves or {},A.lightTrail or {},A.lumenParticles or {},A.debris or {},A.octopuses or {},A.orbMist or {},A.swimPath or {},A.damageZones or {},A.bombs or {},A.bombBursts or {}}) do
         for _,p in ipairs(list or {}) do
             p.x=p.x*ratio;if p.tx then p.tx=p.tx*ratio end;if p.homeX then p.homeX=p.homeX*ratio end;if p.vx then p.vx=p.vx*ratio end
         end
     end
     if A.aim then A.aim.x=A.aim.x*ratio end
+    if A.motionFrom then A.motionFrom.x=A.motionFrom.x*ratio end
+    if A.aimAngle then A.aimAngle=math.atan2(math.sin(A.aimAngle),math.cos(A.aimAngle)*ratio) end
     if A.lastLightX then A.lastLightX=A.lastLightX*ratio end
     for _,c in ipairs(A.vacuumCargo or {}) do if c.kind=='trail' or c.kind=='mote' or c.kind=='bolt' then c.item.x=c.item.x*ratio end end
     if A.giant then A.buildBones() end
@@ -362,7 +365,8 @@ function A.updatePlayer(dt)
     local knock=player.abyssKnock
     if knock then
         local step=math.min(dt,knock.time);knock.time=knock.time-dt
-        Arena.move(player,knock.vx*step,knock.vy*step)
+        if knock.safeRecoil then require('mobs.bosses.abyss.player_recoil').move(knock,step)
+        else Arena.move(player,knock.vx*step,knock.vy*step) end
         if knock.time<=0 then player.abyssKnock=nil end
     end
     player.abyssGrace=math.max(0,(player.abyssGrace or 0)-dt)
@@ -438,7 +442,7 @@ function A.drawBossEye(b,overlay)
     local aimed=A.phase=='open' or A.phase=='tell'
     local glow=overlay and (aimed and .45 or .18+.12*(A.energy or 0)) or 1
     local c=A.eyeColor()
-    local px,py=ex+dx*14,ey+dy*14
+    local px,py=ex+dx*2,ey+dy*2
     g.push('all');g.setBlendMode('alpha')
     -- Preserve the painted eye; only its iris/pupil follows the exact beam angle.
     g.setColor(.005,.025,.04,.3);g.circle('fill',ex,ey,16)
@@ -469,15 +473,10 @@ function A.drawBones(overlay)
             A.eyeShader:send('eyeCenter',{(qx+spot.u*qw)/iw,(qy+spot.v*qh)/ih})
             A.eyeShader:send('eyeTint',A.eyeColor())
             A.eyeShader:send('eyeSize',{qw/iw,qh/ih});g.setShader(A.eyeShader)
-            local visibility=.22
-            if overlay then
-                local d=math.sqrt((player.x+15-b.x)^2+(player.y+12-b.y)^2)
-                local charge=A.playerBrightness()
-                visibility=.18+(A.open and .025 or 0)+.025*(A.energy or 0)+A.flash*.3
-            end
-            g.setColor(visibility,visibility,visibility)
-        elseif A.boss and A.phase=='traverse' then g.setColor(.16,.19,.22)
+            g.setColor(.82,.94,1)
+        elseif A.boss then g.setColor(.82,.94,1)
         else g.setColor(1,1-A.flash,1-A.flash) end
+        if A.returnMode then require('mobs.bosses.abyss.body_light').apply(A,b) end
         Art.draw(b.key,b.x,b.y,(b.flip and -b.w or b.w),b.angle,b.h);g.setShader(previous)
         if A.boss and (b.key=='skeleton_head' or b.key=='skeleton_open') then A.drawBossEye(b,overlay)
         elseif b.key=='skeleton_head' or b.key=='skeleton_open' then
@@ -491,7 +490,9 @@ function A.drawBones(overlay)
     end
 end
 function A.addLights(lights)
+    if A.returnMode and A.boss and not A.defeated then require('mobs.bosses.abyss.body_light').lights(A,lights);return end
     if A.boss and not A.defeated then
+        local h=A.head;if h and #lights<24 then lights[#lights+1]={h.x,h.y,170,.4} end
         for _,p in ipairs(A.plankton or {}) do if p.lethal and #lights<24 then lights[#lights+1]={p.x,p.y,135,.95} end end
     end
     if A.playerHidden() then return end
@@ -500,7 +501,7 @@ function A.addLights(lights)
     for i,p in ipairs(A.lightSites or {}) do if #lights<24 then lights[#lights+1]={p.x,p.y,110,A.boss and (i%2==A.lightParity and .7 or .12) or .55} end end
     for _,p in ipairs(A.octopuses or {}) do if not p.abyssHeld and #lights<24 then lights[#lights+1]={p.x,p.y,90,.6} end end
     for i=#A.bones,#A.bones-1,-1 do local b=A.bones[i]; if b then lights[#lights+1]={b.gx,b.gy,A.boss and (45+65*(A.energy or 0)) or 120,A.boss and (.04+.18*(A.energy or 0)) or .85} end end
-    for i=1,#A.bones-2 do local b=A.bones[i]; if #lights<24 then lights[#lights+1]={b.gx,b.gy,80,A.boss and A.phase=='traverse' and .06 or .65} end end
+    for i=1,#A.bones-2 do local b=A.bones[i]; if #lights<24 then lights[#lights+1]={b.gx,b.gy,80,A.boss and A.phase=='traverse' and .22 or .65} end end
 end
 function A.eyePosition(m)
     local a=Art.images.abyss_fish; local x,y=85*.3,-85*(a.h/a.w)*.09
@@ -535,9 +536,7 @@ function A.drawLights()
             g.setColor(.92,.78,.88);g.polygon('fill',-14,-3,12,0,-14,3,-8,0)
             g.setColor(1,.94,1);g.setLineWidth(1);g.line(-10,0,10,0);g.setBlendMode('add')
         else
-        g.setColor(.2,.65,1,.3); g.setLineWidth(7)
-        g.line(-32,math.sin(p.age*12+p.seed)*4,-20,-4,-10,3,0,0)
-        g.setColor(.65,.95,1,1); g.setLineWidth(2); g.line(-32,math.sin(p.age*12+p.seed)*4,-20,-4,-10,3,0,0)
+        require('abyss_light_fx').boltShape(p.age,p.seed)
         end;g.pop()
     end end
     if (player.illuminated or 0)>0 and not player.abyssHeld then

@@ -31,7 +31,7 @@ local function build(img,dir,bounds)
  return {mesh=mesh,rig=rig,vertices=vertices,w=w,h=h}
 end
 function W.draw(img,dir,x,y,width,p,bounds)
- if not p.walkMoving or p.reset or p.falling or p.abyssHeld or p.abyssSpit or p.abyssKnock or p.whirl or p.skyWhirl or p.throw or p.skyThrow or p.tunnelTravel then return false end
+ if not p.walkMoving or p.reset==true or p.falling or p.abyssHeld or p.abyssSpit or p.abyssKnock or p.whirl or p.skyWhirl or p.throw or p.skyThrow or p.tunnelTravel then return false end
  local poses=W.meshes[img]
  if not poses then poses={};W.meshes[img]=poses end
  local cached=poses[dir]

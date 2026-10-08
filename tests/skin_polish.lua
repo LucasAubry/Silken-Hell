@@ -23,12 +23,18 @@ function T.run()
  local r,gg,b,a=g.getColor();assert(math.abs(r-.3)<.001 and math.abs(a-.7)<.001,'Portrait restores tint and alpha')
  g.setColor(1,1,1)
  local random=love.math.getRandomState();local fx=require('skin_reward_fx')
- local circle=g.circle;local particles=0
- g.circle=function(...)particles=particles+1;return circle(...)end
+ local polygon=g.polygon;local particles=0
+ g.polygon=function(...)particles=particles+1;return polygon(...)end
  Graphics.effects=true;fx.orbit(100,100,59,false,false);fx.orbit(100,100,59,true,false)
  assert(particles>0,'Orbit exists at gameplay size');particles=0
+ for _,size in ipairs({25,26}) do
+  particles=0;C.portrait(15,100,100,size)
+  assert(particles>0,'Reward particles visible in leaderboard at size '..size)
+  particles=0;C.portrait(6,100,100,size);assert(particles==0,'Classic leaderboard skin has no reward particles')
+ end
+ particles=0
  Graphics.effects=false;fx.orbit(100,100,59,false,false);assert(particles==0,'Effects toggle disables particles')
- Graphics.effects=true;fx.orbit(100,100,59,false,true);assert(particles==0,'Locked preview has no particles');g.circle=circle
+ Graphics.effects=true;fx.orbit(100,100,59,false,true);assert(particles==0,'Locked preview has no particles');g.polygon=polygon
  local canvas=g.newCanvas(160,160)
  local function rendered(time)
   UI.clock=time;g.push('all');g.setCanvas(canvas);g.origin();g.clear(0,0,0,0);g.setColor(1,1,1)
@@ -53,10 +59,36 @@ function T.run()
  UI.clock=12;C.selectionPortrait(100.4,120.6,216);assert(C.menuCache==cached,'Menu motion does not resample source details')
  first:release();second:release();canvas:release()
  assert(random==love.math.getRandomState(),'Gold effects never consume gameplay RNG')
+ -- Rays belong only to the equipped reward, in play and the main menu.
+ local rays=fx.rays;local rayCalls=0
+ fx.rays=function(...)rayCalls=rayCalls+1;return rays(...)end
+ g.setColor(1,1,1);Profile.character=1;App.state='playing';C.draw(100,100,59,'down');assert(rayCalls==0)
+ Profile.character=22;C.draw(100,100,59,'down');assert(rayCalls==1)
+ App.state='menu';C.selectionPortrait(600,247,216);assert(rayCalls==2)
+ Profile.character=1;C.selectionPortrait(600,247,216);assert(rayCalls==2)
+ Profile.character=22;App.state='worlds';C.draw(100,100,59,'down');assert(rayCalls==2)
+ fx.rays=rays
+ local normalDraw=love.draw
+ love.draw=function()
+  normalDraw()
+  if App.captureReward then
+   local name=App.captureReward;App.captureReward=nil
+   g.captureScreenshot(function(data)local f=assert(io.open('/tmp/silken-reward-'..name..'.png','wb'));f:write(data:encode('png'):getString());f:close()end)
+  end
+ end
  local tick=0
  love.update=function()
   tick=tick+1
-  if tick==1 then App.state='menu';Profile.character=22;App.capture='polished-brown-menu.png'
+  if tick==1 then
+   local rows={}
+   for i=1,10 do rows[i]={name='Test '..i,skin=14+(i-1)%8+1,time=80+i,deaths=i} end
+   Online.scores=function()return rows,'online'end
+   Online.page=function()return {scores=rows,total=10,hasMore=false},'online'end
+   UI.boardWorld=1;App.state='menu';Profile.character=22;App.captureReward='menu'
+  elseif tick==2 then
+   App.singleLevel=true;App.practice=2;App.start(1);Profile.character=22;player.reset=false;player.death=8;timer=22;App.captureReward='game'
+  elseif tick==3 then
+   App.state='rankings';UI.boardLocal=false;UI.boardPage=1;App.captureReward='rankings'
   elseif tick==4 then
    love.draw=function()
     g.clear(.03,.04,.06);local sw,sh=g.getDimensions();g.push();g.scale(sw/1200,sh/720)

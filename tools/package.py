@@ -13,6 +13,7 @@ for pattern in ('main.lua', 'conf.lua', 'src/**/*.lua', 'assets/**/*',
         if (path.is_file() and not any(part.startswith('.') or part == '__pycache__' for part in path.relative_to(root).parts)
                 and (path.suffix in ('.lua', '.glsl', '.ttf', '.otf', '.png', '.json', '.svg', '.mp3')
                      or path.relative_to(root).as_posix() == 'assets/fonts/OFL.txt')
+                and 'branding' not in path.relative_to(root).parts
                 and 'prompt' not in path.name.lower()
                 and not re.search(r' \d+\.[^.]+$', path.name) and path.suffix not in ('.tmp', '.updated', '.pyc', '.log')):
             paths.add(path)

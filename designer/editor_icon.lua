@@ -1,8 +1,8 @@
 local I={}
 function I.install()
- local path='assets/icons/silken-editor.png'
- local raw=assert(love.filesystem.read(path))
- local image=love.image.newImageData(path);love.window.setIcon(image);image:release()
+ local image=require('icon_composer').make(1,true)
+ local encoded=image:encode('png');local raw=encoded:getString()
+ love.window.setIcon(image);image:release();encoded:release()
  I.applied=true
  if love.system.getOS()~='OS X' then return true end
  -- SDL's window icon does not update the macOS Dock. Set this process's

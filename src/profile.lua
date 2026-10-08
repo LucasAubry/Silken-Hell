@@ -1,11 +1,13 @@
 local P = {name='', country='', language='fr', speedMode='accelerate', character=1, unlocked=1, music=0.35, sound=0.65,
     stats={tears=0,eggs=0,deaths=0,attempts=0}, achievements={}, keys={up='up',down='down',left='left',right='right',dash='space',restartLevel='r',restartWorld='f5',nextWorld='pagedown',previousWorld='pageup',replayFaster='=',replaySlower='-',pause='p',ghost='g'}, scores={}}
 local json=require 'json'
+local PadControls=require('pad_controls')
+P.padBindings=PadControls.load()
 local actions={'up','down','left','right','dash','restartLevel','restartWorld','nextWorld','previousWorld','replayFaster','replaySlower','pause','ghost'}
 function P.load()
-    P.language='fr';P.speedMode='accelerate';P.iconBiome=nil
+    P.language='fr';P.speedMode='accelerate';P.iconBiome=nil;P.padBindings=PadControls.load()
     P.levels={};P.completed={};P.scores={}; P.achievements={};P.stats={tears=0,eggs=0,deaths=0,attempts=0}
-    P.biomeStats={};P.bossKills={}
+    P.biomeStats={};P.bossKills={};P.storyTexts={}
     local data=love.filesystem.read('profile.txt') or ''
     local version=tonumber(data:match('progressVersion=(%d+)')) or 1
     for line in data:gmatch('[^\n]+') do
@@ -13,8 +15,10 @@ function P.load()
         if k and k:match('^level%d+$') then P.levels[tonumber(k:match('%d+'))]=math.max(1,math.min(10,tonumber(v) or 1))
         elseif k and k:match('^completed%d+$') then P.completed[tonumber(k:match('%d+'))]=v=='1'
         elseif k=='iconBiome' then local n=tonumber(v);if n and n%1==0 and n>=1 and n<=7 then P.iconBiome=n end
-        elseif k=='biomeStats' or k=='bossKills' then
+        elseif k=='biomeStats' or k=='bossKills' or k=='storyTexts' then
             local ok,value=pcall(json.decode,v);if ok and type(value)=='table' then P[k]=value end
+        elseif k=='padBindings' then
+            local ok,value=pcall(json.decode,v);if ok then P.padBindings=PadControls.load(value) end
         elseif k=='totalEggs' then P.stats.eggs=math.max(0,math.floor(tonumber(v) or 0))
         elseif k=='totalTears' then P.stats.tears=math.max(0,math.floor(tonumber(v) or 0))
         elseif k=='totalDeaths' then P.stats.deaths=math.max(0,math.floor(tonumber(v) or 0))
@@ -41,13 +45,21 @@ function P.load()
         local w,n,c,t,d,skin,replay=line:match('^(%d+)\t([^\t]+)\t(%u%u)\t([%d%.]+)\t(%d+)\t?(%d*)\t?([a-f0-9]*)$')
         if w and tonumber(t)>0 then table.insert(P.scores,{world=tonumber(w),name=n,country=c,time=tonumber(t),deaths=tonumber(d),skin=tonumber(skin) or 1,replay=replay and #replay==64 and replay or nil}) end
     end
+    local loaded,hardcoreScores=pcall(json.decode,love.filesystem.read('hardcore-scores.json') or '[]')
+    if loaded and type(hardcoreScores)=='table' then
+        for _,score in ipairs(hardcoreScores) do
+            if type(score)=='table' and type(score.world)=='number' and Worlds.playable(score.world) and type(score.name)=='string' and type(score.time)=='number' and score.time>=0 and type(score.deaths)=='number' and score.deaths>=0 then
+                score.hardcore=true;P.scores[#P.scores+1]=score
+            end
+        end
+    end
     local valid,details=pcall(json.decode,love.filesystem.read('score_details.json') or '')
     if valid and type(details)=='table' then for _,s in ipairs(P.scores) do s.splits=details[RunDetails.key(s)] end end
-    for _,score in ipairs(P.scores) do
+    for _,score in ipairs(P.scores) do if not score.hardcore then
         P.completed[score.world]=true;P.levels[score.world]=Worlds.levelCount(score.world)
         if score.world==2 then P.unlocked=math.max(P.unlocked,7) end
         Achievements.check(score,P.achievements)
-    end
+    end end
     if not data:match('statsVersion=1') then
         for _,score in ipairs(P.scores) do
             P.stats.deaths=P.stats.deaths+score.deaths
@@ -62,17 +74,20 @@ function P.save()
     local rows={'iconBiome='..(P.iconBiome or 0),'speedMode='..P.speedMode,'statsVersion=1','totalTears='..P.stats.tears,'totalEggs='..(P.stats.eggs or 0),'totalDeaths='..P.stats.deaths,'totalAttempts='..P.stats.attempts,'achievementGillou='..(P.achievements.gillou and '2' or '0'),'achievementMaxance='..(P.achievements.maxance and '2' or '0'),'progressVersion=2','name='..P.name,'country='..P.country,'language='..P.language,'character='..(P.character or 1),'unlocked='..P.unlocked,'music='..P.music,'sound='..P.sound}
     rows[#rows+1]='biomeStats='..json.encode(P.biomeStats or {})
     rows[#rows+1]='bossKills='..json.encode(P.bossKills or {})
+    rows[#rows+1]='padBindings='..json.encode(P.padBindings)
+    rows[#rows+1]='storyTexts='..json.encode(P.storyTexts or {})
     for id,done in pairs(P.achievements) do if (id:match('^flawless%d+$') or id:match('^bossflawless%d+$')) and done then rows[#rows+1]=id..'=1' end end
     for world,n in pairs(P.levels or {}) do rows[#rows+1]='level'..world..'='..n end
     for world,done in pairs(P.completed or {}) do if done then rows[#rows+1]='completed'..world..'=1' end end
     for _,a in ipairs(actions) do table.insert(rows,a..'='..P.keys[a]) end
     local ok=love.filesystem.write('profile.txt',table.concat(rows,'\n'))
-    local scores={}
-    for _,s in ipairs(P.scores) do scores[#scores+1]=string.format('%d\t%s\t%s\t%.3f\t%d\t%d\t%s',s.world,s.name,s.country,s.time,s.deaths,s.skin or 1,s.replay or '') end
+    local scores,hardcoreScores={},{}
+    for _,s in ipairs(P.scores) do if s.hardcore then hardcoreScores[#hardcoreScores+1]=s else scores[#scores+1]=string.format('%d\t%s\t%s\t%.3f\t%d\t%d\t%s',s.world,s.name,s.country,s.time,s.deaths,s.skin or 1,s.replay or '') end end
     local ok2=love.filesystem.write('scores.tsv',table.concat(scores,'\n'))
     local details={};for _,s in ipairs(P.scores) do if s.splits then details[RunDetails.key(s)]=s.splits end end
     local ok3=love.filesystem.write('score_details.json',json.encode(details))
-    P.error=not (ok and ok2 and ok3) and 'Sauvegarde impossible : vérifie les droits du dossier.' or nil
+    local ok4=love.filesystem.write('hardcore-scores.json',json.encode(hardcoreScores))
+    P.error=not (ok and ok2 and ok3 and ok4) and 'Sauvegarde impossible : vérifie les droits du dossier.' or nil
 end
 function P.record(kind,world)
     if Replay and Replay.playing then return end
@@ -84,18 +99,29 @@ function P.record(kind,world)
     P.save()
 end
 function P.biomeCounters(world)
-    P.biomeStats=P.biomeStats or {};local key=tostring(Worlds.biome(world))
+    P.biomeStats=P.biomeStats or {};local key=tostring(world==8 and Campaign and Campaign.world==8 and Campaign.biome or Worlds.biome(world))
     P.biomeStats[key]=P.biomeStats[key] or {tears=0,deaths=0,attempts=0,bosses=0}
     return P.biomeStats[key]
 end
+local bossKinds={[1]='merle',[6]='storm',[5]='hedgehog',[4]='octopus',[7]='skeleton_fish',[2]='wasp',[3]='final_spider'}
+function P.bossVictories(world)
+ local kind=bossKinds[world];local known=(P.bossKills or {})[kind] or 0
+ local row=(P.biomeStats or {})[tostring(world)] or {};known=math.max(known,row.bosses or 0)
+ local completed=0
+ for _,score in ipairs(P.scores or {}) do if score.world~=8 and Worlds.biome(score.world)==world then completed=completed+1 end end
+ if P.hasCompleted(world) or (P.achievements or {})['bossflawless'..world] then completed=math.max(1,completed) end
+ return math.max(known,completed)
+end
 function P.recordBoss(kind)
     if Replay and (Replay.playing or Replay.ghost) or App.preview or App.sessionLayout then return end
-    P.bossKills=P.bossKills or {};P.bossKills[kind]=(P.bossKills[kind] or 0)+1
+    P.bossKills=P.bossKills or {};local previous=P.bossKills[kind] or 0
+    for world,id in pairs(bossKinds)do if kind==id then previous=P.bossVictories(world);break end end
+    P.bossKills[kind]=previous+1
     local row=P.biomeCounters(Campaign.world);row.bosses=(row.bosses or 0)+1;P.save()
 end
-function P.ranking(world,country)
+function P.ranking(world,country,hardcore)
     local result={}
-    for _,s in ipairs(P.scores) do if s.world==world then
+    for _,s in ipairs(P.scores) do if s.world==world and (s.hardcore==true)==(hardcore==true) then
         local row={}; for k,v in pairs(s) do row[k]=v end
         row.rawTime=s.time; row.penalty=Scoring.penalty(s.deaths); row.time=Scoring.total(s.time,s.deaths)
         result[#result+1]=row
@@ -112,17 +138,19 @@ function P.levelReached(world,n)
 end
 function P.hasCompleted(world)
     if (P.completed or {})[world] then return true end
-    for _,s in ipairs(P.scores) do if s.world==world then return true end end
+    for _,s in ipairs(P.scores) do if s.world==world and not s.hardcore then return true end end
     return false
 end
-function P.complete(world,time,deaths)
+function P.complete(world,time,deaths,hardcore)
     if Replay and Replay.playing then return end
-    P.completed=P.completed or {};P.completed[world]=true
-    P.levels=P.levels or {};P.levels[world]=Worlds.levelCount(world)
-    P.scores[#P.scores+1]={world=world,name=P.name,country=P.country,time=time,deaths=deaths,splits=RunDetails.snapshot(),skin=App.runSkin or P.character}
+    if not hardcore then
+        P.completed=P.completed or {};P.completed[world]=true
+        P.levels=P.levels or {};P.levels[world]=Worlds.levelCount(world)
+    end
+    P.scores[#P.scores+1]={world=world,hardcore=hardcore==true,name=P.name,country=P.country,time=time,deaths=deaths,splits=RunDetails.snapshot(),skin=App.runSkin or P.character}
     if Replay and Replay.recording then Replay.finish(P.scores[#P.scores]) end
     Achievements.check(P.scores[#P.scores],P.achievements)
-    if not Worlds.isSecret(world) then P.unlocked=math.max(P.unlocked,Worlds.rank(Worlds.next(world) or world)) end
+    if not hardcore and not Worlds.isSecret(world) then P.unlocked=math.max(P.unlocked,Worlds.rank(Worlds.next(world) or world)) end
     P.save()
     require('app_icon').complete(world)
 end

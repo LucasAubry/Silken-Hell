@@ -14,6 +14,7 @@ return function(A)
         local hx,hy=Arena.move(m,vx*speed*dt,vy*speed*dt)
         if hx or hy then m.heading=m.heading+math.pi/2 end
         m.angle=math.atan2(vy,vx); m.dir=Art.direction(vx,vy,m.dir)
+   Realms.capture(m)
    if isTouching(player,m) then Hazards.kill() end
   end,
   draw=function(m)
