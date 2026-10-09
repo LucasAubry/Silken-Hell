@@ -4,7 +4,7 @@ function T.run()
  local R=require('mobs.bosses.abyss.ricochet');local F=require('mobs.bosses.abyss.charged_fish')
  local function reset()
   Replay.recording=false;Replay.input=nil;Replay.playing=false;App.sessionLayout=nil;App.state='playing';App.preview=false
-  Campaign.select(7);player.level=10;reset_level();player.reset=false;require('run_start').active=false
+  Campaign.select(7);player.level=10;reset_level();if Abyss.arrival then require('mobs.bosses.abyss.arrival').finish(Abyss);require('mobs.bosses.abyss.ricochet').setup(Abyss) end;player.reset=false;require('run_start').active=false
   player.x=850;player.y=500;Abyss.returnPX=865;Abyss.returnPY=512
  end
  local function strike(id)
@@ -92,7 +92,7 @@ function T.run()
  end
  for i=1,4 do
   local p,q=Abyss.chargedFish[i],Abyss.chargedFish[i+4]
-  assert((p.x-q.x)^2+(p.y-q.y)^2>=230^2,'Each wall has a wide opening between its two fish')
+  assert((p.x-q.x)^2+(p.y-q.y)^2>=224^2,'Fish openings remain wide after the slight spacing reduction')
   assert(q.delay-p.delay>.8,'Second row is delayed for breathing room')
  end
  player.x=400;player.y=300;Abyss.chargedFish={};F.trigger(Abyss)
@@ -129,18 +129,19 @@ function T.run()
   return Abyss.swimHead.x,Abyss.swimHead.y,Abyss.swimAngle
  end
  local ax,ay,aa=swim(60,500);local bx,by,ba=swim(850,500)
- assert(math.abs(ax-bx)<.001 and math.abs(ay-by)<.001 and math.abs(aa-ba)<.001,'Swimming route is independent of player position')
+ assert(math.abs(ax-bx)+math.abs(ay-by)>20,'Swimming reacts to player position')
  reset();assert(Abyss.swimAngle==0,'Boss starts straight and upright')
  Abyss.returnShotTimer=100;Abyss.rearCooldown=100;Abyss.overlapsBone=function()return false end
- local visited={};local outside=false;local away,maxAway=0,0
+ local excursion=false;local outside=false;local away,maxAway=0,0
  for i=1,2400 do
-  R.update(Abyss,1/60);visited[Abyss.swimRouteIndex]=true
+  R.update(Abyss,1/60);excursion=excursion or Abyss.excursion~=nil
   local off=Abyss.swimHead.x<0 or Abyss.swimHead.x>Arena.width or Abyss.swimHead.y<0 or Abyss.swimHead.y>600
   outside=outside or off;away=off and away+1/60 or 0;maxAway=math.max(maxAway,away)
  end
- for i=1,#Abyss.swimRoute do assert(visited[i],'Boss completes horizontal, vertical and offscreen route leg '..i)end
+
+ assert(excursion and outside,'Boss deliberately takes short trips outside the arena')
  assert(maxAway<5,'Offscreen excursions stay brief: '..maxAway);print('Longest offscreen excursion: '..string.format('%.2f',maxAway)..'s')
- assert(outside,'Boss leaves the screen during its route');Abyss.overlapsBone=overlaps
+ Abyss.overlapsBone=overlaps
  reset();Abyss.physicsTest=true;local x=Abyss.swimHead.x;R.update(Abyss,1);assert(Abyss.swimHead.x==x)
  Hazards.kill=kill
  local Wake=require('mobs.bosses.abyss.tooth_wake')

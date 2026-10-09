@@ -37,7 +37,7 @@ function S.refresh()
     S.portals={};for i,p in ipairs(list) do S.portals[i]=p end
     S.perPage=#list;S.pages=#list;S.page=math.max(1,math.min(S.page or 1,S.pages))
     S.positions={};local edge=0
-    for i,p in ipairs(list) do local width=p.type=='skeleton_head' and 960 or p.type=='octopus' and 420 or 360;S.positions[i]=edge+width/2;edge=edge+width end
+    for i,p in ipairs(list) do local width=p.type=='skeleton_head' and 620 or p.type=='wasp' and 500 or 360;S.positions[i]=edge+width/2;edge=edge+width end
     S.hallWidth=math.max(Arena.width,edge)
     S.pending=nil;S.upReady=false
 end

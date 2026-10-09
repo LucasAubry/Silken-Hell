@@ -106,13 +106,13 @@ test('Workshop supports mixed maps, ownership, independent stars, ranking, and p
  const {id}=await response.json();
  assert.deepEqual((await (await call(env,'/v1/workshop/'+id)).json()).layout,map);
  assert.equal((await call(env,'/v1/workshop',{auth:'b'.repeat(64),body:{id,title:'Vol',author:'Autre',layout:map}})).status,403);
- for(let i=0;i<3;i++) assert.equal((await call(env,'/v1/workshop/'+id+'/star',{body:{starred:true}})).status,200);
- let list=await (await call(env,'/v1/workshop')).json(); assert.equal(list.maps[0].stars,1); assert.equal(list.maps[0].starred,true);
+ for(let i=0;i<3;i++) assert.equal((await call(env,'/v1/workshop/'+id+'/star',{auth:'c'.repeat(64),body:{starred:true}})).status,200);
+ let list=await (await call(env,'/v1/workshop')).json(); assert.equal(list.maps[0].stars,1); assert.equal(list.maps[0].starred,false);assert.equal(list.maps[0].owned,true);
  await call(env,'/v1/workshop/'+id+'/star',{auth:'b'.repeat(64),body:{starred:true}});
  for(let i=0;i<9;i++) await call(env,'/v1/workshop',{body:{title:'Carte '+i,author:'Créateur',layout:map}});
  list=await (await call(env,'/v1/workshop')).json(); assert.equal(list.maps.length,8);assert.equal(list.maps[0].id,id);assert.equal(list.maps[0].stars,2);assert.equal(list.hasMore,true);
  assert.equal((await (await call(env,'/v1/workshop?page=2')).json()).maps.length,2);
- await call(env,'/v1/workshop/'+id+'/star',{body:{starred:false}});
+ await call(env,'/v1/workshop/'+id+'/star',{auth:'c'.repeat(64),body:{starred:false}});
  list=await (await call(env,'/v1/workshop')).json();assert.equal(list.maps[0].stars,1);assert.equal(list.maps[0].starred,false);
  assert.equal((await call(env,'/v1/workshop',{body:{id,title:'Mise à jour',author:'Lucas',layout:map}})).status,200);
  assert.equal((await (await call(env,'/v1/workshop')).json()).maps[0].stars,1);
@@ -321,4 +321,21 @@ test('hardcore migration preserves all legacy scores, runs and replays',()=>{
  assert.equal(db.prepare('SELECT * FROM runs').get().hardcore,0);
  const score=db.prepare('SELECT * FROM scores').get();assert.equal(score.world,9);assert.equal(score.skin,22);assert.equal(score.elapsed_ms,30000);assert.equal(score.hardcore,0);
  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM run_replays').get().n,1);
+});
+
+test('Workshop creator tools protect ownership and aggregate idempotent play sessions',async()=>{
+ const env={DB:database()};const {id}=await (await call(env,'/v1/workshop',{body:{title:'Stats',author:'Lucas',layout:map}})).json();
+ const path='/v1/workshop/'+id;const auth='b'.repeat(64);
+ assert.equal((await call(env,path+'/star',{body:{starred:true}})).status,403);
+ assert.equal((await call(env,path+'/stats',{auth})).status,403);
+ assert.equal((await call(env,path+'/remove',{auth,body:{}})).status,403);
+ const body={id:'session-1234567890',deaths:2,completed:true,elapsed:35,hotspots:{'1:2:1':2}};
+ for(let i=0;i<2;i++) assert.equal((await call(env,path+'/session',{auth,body})).status,200);
+ await call(env,path+'/session',{body:{...body,id:'creator-1234567890'}});
+ const stats=await (await call(env,path+'/stats')).json();
+ assert.equal(stats.sessions,1);assert.equal(stats.players,1);assert.equal(stats.deaths,2);assert.equal(stats.averageAttempts,3);assert.equal(stats.bestTime,35);assert.equal(stats.hotspots[0].zone,'1:2:1');
+ assert.equal((await call(env,path+'/session',{auth,body:{...body,hotspots:{'1:2:1':9}}})).status,400);
+ assert.equal((await call(env,path+'/remove',{body:{}})).status,200);
+ assert.equal((await call(env,path)).status,404);
+ assert.equal((await call(env,path+'/session',{auth,body})).status,404);
 });

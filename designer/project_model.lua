@@ -35,8 +35,14 @@ function X.install(M)
  function M.openDev()
   if M.currentProject then local ok,err=M.persist();if not ok then return nil,err end end
   M.currentProject=nil;M.devMode=true;M.workshop=false;M.filename='custom_levels.json';M.draftFilename='dev-drafts.json'
-  M.applied=P.read(M.save,'custom_levels.json') or {version=1,levels={}}
+  M.applied=require('abyss_sequence').migrate(P.read(M.save,'custom_levels.json') or {version=1,levels={}})
   local raw=love.filesystem.read(M.draftFilename);local ok,data=pcall(require('json').decode,raw or '{}');M.drafts=ok and data or {}
+  if M.drafts._abyssSequence~=2 then
+   if raw then love.filesystem.write('dev-drafts.before-abyss-sequence.json',raw) end
+   require('abyss_sequence').migrate({levels=M.drafts})
+   M.drafts['7:9']=nil;M.drafts._abyssSequence=2
+   love.filesystem.write(M.draftFilename,require('json').encode(M.drafts))
+  end
   oldSelect(1,1);return true
  end
  function M.home()

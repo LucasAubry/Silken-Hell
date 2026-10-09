@@ -34,6 +34,7 @@ function A.reset(w,n)
 end
 function A.setupEncounter() Cycle.setup(A) end
 function A.eyeColor()
+    if A.returnMode and A.bite then return {1,.035,.015} end
     if A.boss and A.phase=='fire' then return {1,1,1} end
     local colors={fire={.3,.85,1},recover={1,.8,.25},gap={.2,.5,.7},head={.3,.65,1},inhaleTell={1,.45,.2},spit={.7,.35,1},lightning={.8,.3,.65},circle={.65,.25,.8},zigzag={1,.35,.45},suction={1,.35,.15},rest={.6,.85,1},closed={.2,.55,.75},tell={1,.75,.25},open={.45,1,.8},recoil={1,1,1}}
     local source=A.boss and (colors[A.phase] or colors.closed) or {.2,.8,1}
@@ -440,7 +441,7 @@ function A.drawBossEye(b,overlay)
     local g=love.graphics;local ex,ey=b.gx,b.gy
     local dx,dy=A.gazeDirection(b)
     local aimed=A.phase=='open' or A.phase=='tell'
-    local glow=overlay and (aimed and .45 or .18+.12*(A.energy or 0)) or 1
+    local glow=A.bite and 1 or overlay and (aimed and .45 or .18+.12*(A.energy or 0)) or 1
     local c=A.eyeColor()
     local px,py=ex+dx*2,ey+dy*2
     g.push('all');g.setBlendMode('alpha')

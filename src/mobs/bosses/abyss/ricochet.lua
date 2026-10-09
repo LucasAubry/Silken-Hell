@@ -1,4 +1,5 @@
 local R={}
+local Hunt=require('mobs.bosses.abyss.hunt')
 local Escape=require('mobs.bosses.abyss.rear_escape')
 local BoltMotion=require('mobs.bosses.abyss.bolt_motion')
 local Fish=require('mobs.bosses.abyss.charged_fish')
@@ -6,7 +7,7 @@ local Wake=require('mobs.bosses.abyss.tooth_wake')
 local function unit(x,y) local d=math.max(.001,math.sqrt(x*x+y*y));return x/d,y/d,d end
 local function burst(x,y,power) if BossFX then BossFX.burst(x,y,{.65,.9,1},power or 2) end end
 function R.setup(a)
- Wake.setup(a);Fish.setup(a);Escape.setup(a)
+ Wake.setup(a);Fish.setup(a);Escape.setup(a);Hunt.setup(a)
  a.returnSafeUntil=0;a.returnContactLatched=false;a.returnMode=true;a.webAnchors={};a.webLinks={};a.webHeld=nil
  a.hp=8;a.maxHp=8;a.returnHealth={head=1,tail=1};a.webPartIds={1,2,3,4,5,6}
  for i=1,6 do a.returnHealth[i]=1 end
@@ -15,11 +16,6 @@ function R.setup(a)
  a.returnPause=0;a.returnImpact=0;a.returnTurn=0;a.returnSpeed=190;a.returnPoseAngles={};a.returnPosePositions={};a.returnFlee=0;a.returnMouth=0;a.returnPX=player.x+15;a.returnPY=player.y+12
  a.swimHead={x=Arena.width*.64,y=210};a.swimAngle=0;a.swimPath={}
  for d=600,0,-6 do a.swimPath[#a.swimPath+1]={x=a.swimHead.x-d,y=210} end
- a.swimRoute={{x=Arena.width+160,y=210,speed=260},{x=Arena.width+160,y=650,speed=300},
-  {x=Arena.width*.72,y=650,speed=240},{x=Arena.width*.72,y=-80,speed=310},
-  {x=Arena.width*.3,y=-80,speed=230},{x=Arena.width*.3,y=420,speed=240},
-  {x=-160,y=420,speed=320},{x=-160,y=210,speed=220},{x=Arena.width*.64,y=210,speed=210}}
- a.swimRouteIndex=1
  a.buildBones()
 end
 function R.pace(a)
@@ -71,7 +67,7 @@ function R.hit(a,b,p)
  if a.hp<=0 then R.clearCombat(a) end
 end
 function R.clearCombat(a)
- Escape.setup(a)
+ Escape.setup(a);Hunt.setup(a)
  a.returnShots={};a.returnShards={};a.returnStuck={};a.chargedFish={}
  a.debris={};a.threads={};a.bombs={};a.bombBursts={};a.orbMist={};a.lightMotes={}
  a.returnKnockTime=0;a.returnKnockX=0;a.returnKnockY=0;a.returnMouth=0;a.returnImpact=0;a.returnFlee=0
@@ -79,7 +75,7 @@ function R.clearCombat(a)
  player.abyssKnock=nil;player.abyssSpit=nil
 end
 function R.fire(a)
- if a.defeated or a.hp<=0 then return end
+ if a.defeated or a.hp<=0 or a.bite then return end
  a.returnVolley=a.returnVolley+1
  local pattern=a.returnVolley%4
  local volley=pattern==1 and {true} or pattern==2 and {false,true} or pattern==3 and {false,true,false} or {true,false}
@@ -151,23 +147,20 @@ function R.update(a,dt)
   if a.returnPause<=0 then
    local h=a.swimHead
    local pace=R.pace(a)
-   local waypoint=a.swimRoute[a.swimRouteIndex]
-   if (waypoint.x-h.x)^2+(waypoint.y-h.y)^2<210^2 then
-    a.swimRouteIndex=a.swimRouteIndex%#a.swimRoute+1;waypoint=a.swimRoute[a.swimRouteIndex]
-   end
-   local dx,dy=unit(waypoint.x-h.x,waypoint.y-h.y)
-   local aim=math.atan2(dy,dx)
-   local escapeAim,escapeSpeed,escapeRate=Escape.update(a,step,x,y)
+   local aim,moveSpeed,moveRate,biting=Hunt.update(a,step,x,y)
+   a.open=biting or a.returnMouth>0
+   local escapeAim,escapeSpeed,escapeRate
+   if not biting and not a.excursion then escapeAim,escapeSpeed,escapeRate=Escape.update(a,step,x,y) end
    if escapeAim then aim=escapeAim end
    local turn=(aim-a.swimAngle+math.pi)%(2*math.pi)-math.pi
    if a.rearEscape and a.rearEscape.age>=.5 and a.rearEscape.age<1.1 and turn*a.rearEscape.side<0 then turn=turn+a.rearEscape.side*math.pi*2 end
    local recovering=1-a.returnKnockTime/.4
    local offscreen=h.x<0 or h.x>Arena.width or h.y<0 or h.y>600
-   local rate=(escapeRate or (offscreen and 2.6 or 1.85))*recovering*pace
+   local rate=(escapeRate or moveRate)*recovering*pace
    local desired=math.max(-rate,math.min(rate,turn*2.5))
    a.returnTurn=a.returnTurn+(desired-a.returnTurn)*(1-math.exp(-7*step))
    a.swimAngle=a.swimAngle+a.returnTurn*step
-   local desiredSpeed=((escapeSpeed or waypoint.speed)+math.sin(a.clock*.8)*12)*pace*(a.returnImpact>0 and .85 or 1)
+   local desiredSpeed=((escapeSpeed or moveSpeed)+math.sin(a.clock*.8)*12)*pace*(a.returnImpact>0 and .85 or 1)
    a.returnSpeed=a.returnSpeed+(desiredSpeed-a.returnSpeed)*(1-math.exp(-6*step))
    local speed=a.returnSpeed*recovering
    if a.returnKnockTime>0 then
@@ -190,7 +183,7 @@ function R.update(a,dt)
    a.returnBuildDt=step;a.buildBones();a.returnBuildDt=nil
   end
   a.returnShotTimer=a.returnShotTimer-step
-  if a.returnShotTimer<=0 and #a.returnShots<16 then local _,interval=R.pace(a);R.fire(a);a.returnShotTimer=interval end
+  if not a.bite and a.returnShotTimer<=0 and #a.returnShots<16 then local _,interval=R.pace(a);R.fire(a);a.returnShotTimer=interval end
   for i=#a.returnShots,1,-1 do
    local p=a.returnShots[i];p.life=p.life-step;p.age=p.age+step
    local dx,dy,d=unit(p.x-x,p.y-y)

@@ -556,7 +556,7 @@ function R.drawGround()
         g.setColor(1,.94,.35,.95*alpha); g.setLineWidth(1.5); g.line(p.x,p.y,mx+j,my-j,p.tx,p.ty)
     end
     g.setLineWidth(1)
-    if Campaign.biome==6 and R.level>=5 then g.setColor(.19,.24,.31,.28); g.rectangle('fill',28,28,Arena.width-56,544) end
+    if Campaign.biome==6 and R.level>=5 and not Secret.inArena() then g.setColor(.19,.24,.31,.28); g.rectangle('fill',28,28,Arena.width-56,544) end
     for _,p in ipairs(R.lightning or {}) do
         if p.age<.8 then g.setColor(.25,.48,.8,.3); g.ellipse('line',p.x,p.y,30,15)
         elseif p.age<1.05 then

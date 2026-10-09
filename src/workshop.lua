@@ -19,7 +19,7 @@ function W.filter(key,value)
     W[key]=value;W.page=1;W.refresh()
 end
 function W.open()
-    App.state='workshop';W.editorProject=nil; W.publishing=false; W.focus=nil; W.dropdown=nil;love.keyboard.setTextInput(false); W.refresh()
+    App.state='workshop';W.stats=nil;W.removing=nil;W.editorProject=nil; W.publishing=false; W.focus=nil; W.dropdown=nil;love.keyboard.setTextInput(false); W.refresh()
 end
 function W.playLayout(layout,row)
     local valid,why=LayoutSchema.validate(layout)
@@ -39,7 +39,7 @@ function W.play(row)
     end)
 end
 function W.star(row)
-    if row.voting then return end
+    if row.voting or row.owned then return end
     row.voting=true;W.voteFeedback=nil
     Online.request('/v1/workshop/'..encodePath(row.id)..'/star',{starred=not row.starred},function(data,code)
         row.voting=false
@@ -47,6 +47,25 @@ function W.star(row)
             row.starred=data.starred;row.stars=data.stars
             W.voteFeedback={id=row.id,at=UI.clock,added=data.starred==true};W.refresh()
         else W.status=data.error or 'Étoile non enregistrée. Réessaie.' end
+    end)
+end
+function W.statistics(row)
+    if W.busy or not row.owned then return end
+    W.busy=true;W.status='Chargement…'
+    Online.request('/v1/workshop/'..encodePath(row.id)..'/stats',nil,function(data,code)
+        W.busy=false
+        if code==200 then W.stats={row=row,data=data};W.status='' else W.status=data.error or 'Statistiques indisponibles.' end
+    end)
+end
+function W.remove(row)
+    if W.busy or not row.owned then return end
+    W.busy=true
+    Online.request('/v1/workshop/'..encodePath(row.id)..'/remove',{},function(data,code)
+        W.busy=false
+        if code==200 then
+            local ids=savedIds();for k,v in pairs(ids) do if v==row.id then ids[k]=nil end end
+            love.filesystem.write('workshop-publications.json',json.encode(ids));W.removing=nil;W.stats=nil;W.refresh()
+        else W.status=data.error or 'Retrait impossible.' end
     end)
 end
 function W.chooseLocal()

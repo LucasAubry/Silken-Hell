@@ -12,10 +12,10 @@ function F.trigger(a)
  for row=1,2 do for side=1,4 do
   local offset=row==1 and -1 or 1
   local x,y
-  if side==1 then x,y=-45,centerY+offset*115
-  elseif side==2 then x,y=Arena.width+45,centerY+offset*115
-  elseif side==3 then x,y=centerX+offset*155,-45
-  else x,y=centerX+offset*155,645 end
+  if side==1 then x,y=-45,centerY+offset*112
+  elseif side==2 then x,y=Arena.width+45,centerY+offset*112
+  elseif side==3 then x,y=centerX+offset*151,-45
+  else x,y=centerX+offset*151,645 end
   a.chargedFish[#a.chargedFish+1]={x=x,y=y,side=side,delay=.3+(row-1)*.85+(side-1)*.12,age=0,life=5,angle=math.atan2(py-y,px-x)}
  end end
  -- A delayed central pair increases pressure without closing the initial gaps.

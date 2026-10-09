@@ -21,7 +21,7 @@ function R.build()
         end
         actorSources('src/mobs')
         for i=1,10 do sources[#sources+1]=assert(love.filesystem.read('src/levels/level_'..i..'.lua')) end
-        for _,name in ipairs({'worlds','scoring','layout_schema','hardcore','bone_cage','earth_mound'}) do sources[#sources+1]=assert(love.filesystem.read('src/'..name..'.lua')) end
+        for _,name in ipairs({'worlds','scoring','layout_schema','hardcore','bone_cage','earth_mound','abyss_gate','abyss_sequence','queen_escape'}) do sources[#sources+1]=assert(love.filesystem.read('src/'..name..'.lua')) end
         R.buildId=R.hash(table.concat(sources))
     end
     return R.buildId

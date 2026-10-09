@@ -110,6 +110,7 @@ function App.start(world)
     if Worlds.isSecret(world) then App.custom=false end
     if not App.singleLevel then Online.start(world,Profile.name,App.runSkin,App.hardcore) else Online.current=nil end
     GameFeedback.reset();RunStart.begin()
+    require("workshop_stats").begin()
 end
 function love.load()
     love.graphics.setDefaultFilter('linear','linear')
@@ -150,6 +151,7 @@ function App.move(dt)
     player.walkMoving=false
     player.has_moved=false
     local walkStartX,walkStartY=player.x,player.y
+    if require('abyss_gate').closing and require('abyss_gate').active then player.dashing=false;player.has_moved=false;return end
     if Ending.locked() then player.dashing=false;player.has_moved=false;return end
     if Abyss.cagePlayer() then return end
     if player.abyssKnock or player.abyssHeld or player.abyssSpit or player.whirl or player.throw or player.skyWhirl or player.skyThrow or player.tunnelTravel then player.has_moved=false; player.dashing=false; return end
@@ -198,6 +200,7 @@ function App.resolveDeath()
     if not player.reset then return false end
     if Replay.ghost then Replay.ghostRetry=true;return true end
     if player.falling and (player.fallTimer or 0)>0 then return true end
+    require("workshop_stats").death()
     RunDetails.death()
     if player.falling then player.fallTimer=.32 else App.respawn() end
     return true
@@ -212,6 +215,7 @@ function love.update(dt)
     require('discovery_notice').update(dt)
     require('skin_unlock').update(dt)
     Online.update(dt)
+    require("workshop_stats").update(dt)
     Input.update(dt)
     if App.state=='worlds' then WorldMap.update(dt) end
     if App.state=='story' and Story.text~='' then
@@ -237,6 +241,9 @@ function App.simulate(dt)
     local liberation=require('boss_liberation')
     if liberation.busy() then liberation.update(dt);return end
 
+    local arrival=require('mobs.bosses.abyss.arrival')
+    if arrival.current and arrival.update(arrival.current,dt) then timer=timer+dt;RunDetails.tick(dt);return end
+    require('abyss_gate').update(dt)
     Psyche.update(dt)
     Secret.updateDuel(dt);if App.state~='playing' then return end
     if Ending.active then
@@ -291,7 +298,7 @@ function App.simulate(dt)
     shader_effect_timer=math.max(0,shader_effect_timer-dt)
     if liberation.busy() or App.resolveDeath() then return end
     if Ending.checkHellVictory() then return end
-    local collected=Renaissance.active and Renaissance.collect()
+    local collected=require('abyss_gate').ready or (Renaissance.active and Renaissance.collect())
     if not player.tunnelTravel and (collected or (not Renaissance.active and Campaign.canCollect() and isTouching(player,objet.larme))) then
         Psyche.collect(Renaissance.active and player.x+15 or objet.larme.x+15,
             Renaissance.active and player.y+12 or objet.larme.y+20,player.x+15,player.y+12)
@@ -346,12 +353,12 @@ function love.draw()
         Ocean.drawBubble(); Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies(); Realms.drawAnemoneElectric() end
-        Abyss.drawLights(); Bosses.drawLights(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage()
+        Abyss.drawLights(); Bosses.drawLights();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage()
         -- Boss rewards remain readable above the arena effects.
         if not Campaign.tearCarried() and not droppedCarrier and not Renaissance.active then Campaign.drawTear(true) end
         love.graphics.setColor(1,1,1)
-        if Ending.active then Ending.drawPlayer();Ending.drawFamily() else draw_player(direction) end
-        draw_player_beacon();if not Abyss.playerHidden() then Replay.drawGhost() end
+        if Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
+        if not (require('abyss_gate').active and require('abyss_gate').closing) then draw_player_beacon() end;if not Abyss.playerHidden() then Replay.drawGhost() end
         Prism.endScene();love.graphics.setCanvas()
     elseif App.state=='bossWorld' then
         refreshSceneResolution()
@@ -360,7 +367,7 @@ function love.draw()
     local w,h=love.graphics.getDimensions()
     if App.state=='playing' or App.state=='bossWorld' then
         local scale,x,y=App.viewport(w,h)
-        local shakeX,shakeY=BossFX.offset();if App.state=='bossWorld' then shakeX,shakeY=0,0 end
+        local shakeX,shakeY=BossFX.offset();if App.state=='playing' then local gx,gy=require('abyss_gate').shake();shakeX,shakeY=shakeX+gx,shakeY+gy end;if App.state=='bossWorld' then shakeX,shakeY=0,0 end
         -- The arena normally covers the desktop. Render its backdrop only
         -- when letterboxing or camera shake actually exposes it.
         if x>.5 or y>.5 or shakeX~=0 or shakeY~=0 then
@@ -410,6 +417,7 @@ function love.draw()
         if Graphics.showFPS then love.graphics.setColor(.7,1,.8,.8);love.graphics.print(tostring(love.timer.getFPS())..' FPS',12,h-(cleanScreen and 26 or 33)) end
         love.graphics.pop()
     end
+    if App.state=='playing' then require('abyss_gate').blackout() end
     if App.capture then
         local path=App.capture; App.capture=nil
         love.graphics.captureScreenshot(function(data) data:encode('png',path) end)
@@ -563,6 +571,7 @@ function love.resize(w,h)
     local ratio=Arena.width/oldW
     player.x=player.x*ratio
     Ending.resize(ratio)
+    require("abyss_gate").resize()
     local level=levels[player.level]
     level.player_position.x=level.player_position.x*ratio
     for _,p in ipairs(level.larme_position) do p.x=p.x*ratio end

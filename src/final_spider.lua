@@ -1,5 +1,6 @@
 -- Renaissance guardian. Eggs are independent actors, including the carried clutch.
 local ArtSet=require 'final_art'
+local Escape=require 'queen_escape'
 local F={active=false,name='La Gardienne de la Soie',maxHp=13}
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 local function length(x,y) return math.sqrt(x*x+y*y) end
@@ -81,6 +82,7 @@ function F.updateCharge(dt)
  end
 end
 function F.reset(active)
+ Escape.reset(F)
  F.active=active;F.hp=13;F.maxHp=13;F.defeated=false;F.x=Arena.width*.5;F.y=165;F.angle=0;F.clock=0;F.flash=0
  F.chargeDeaths={};F.chargeEggs={};F.grief=nil
  F.afterimages={};F.ghostClock=0;F.walkPhase=0;F.walkMoving=false;F.surge=1;F.dashing=false
@@ -104,7 +106,7 @@ function F.damage()
  F.hp=math.max(0,F.hp-1);F.flash=.25
  if F.hp==0 then
   require('boss_liberation').start(F,'final_spider',function()
-   F.defeated=true;F.phase='retreat';F.phaseTime=0;F.snare=0;F.webs={};F.stuck={};F.target=nil;F.grief=nil;F.chargeDeaths={};F.jump=nil;F.jumpHeight=0
+   F.defeated=true;F.enraged=false;F.silkBits={};F.phase='retreat';F.phaseTime=0;F.snare=0;F.webs={};F.stuck={};F.target=nil;F.grief=nil;F.chargeDeaths={};F.jump=nil;F.jumpHeight=0
    for _,b in ipairs(F.babies) do b.webbed=false end
    for _,e in ipairs(F.eggs) do F.shells[#F.shells+1]={x=e.x,y=e.y,seed=e.seed} end;F.eggs={}
    objet.larme.taken=false;objet.larme.x=Arena.width/2-15;objet.larme.y=280
@@ -126,15 +128,17 @@ function F.chooseNest()
  F.nest=best
 end
 function F.layEgg()
- if F.carried<=0 or #F.babies+#F.eggs>=36 then return end
+ if F.carried<=0 or (not F.cornerLay and #F.babies+#F.eggs>=36) then return end
  if not F.nest then F.chooseNest() end
  local point
+ if F.cornerLay then point=Escape.point(F) else
  for i=1,80 do
   local angle=love.math.random()*math.pi*2;local radius=math.sqrt(love.math.random())*110
   local c={x=clamp(F.nest.x+math.cos(angle)*radius,65,Arena.width-65),y=clamp(F.nest.y+math.sin(angle)*radius,105,525)}
   local free=not near(c,playerPoint(),65)
   for _,e in ipairs(F.eggs) do if near(c,e,44) then free=false;break end end
   if free then point=c;break end
+ end
  end
  if not point then return end
  F.carried=F.carried-1;F.batch=F.batch+1
@@ -143,10 +147,10 @@ function F.layEgg()
  F.eggs[#F.eggs+1]={x=point.x,y=point.y,fromX=rearX,fromY=rearY,age=0,hatch=7.5,seed=F.wave*8+F.batch}
 end
 function F.trap(target)
- if F.defeated or grieving() or F.phase=='charge' or F.phase=='aim' or F.phase=='intro_jump' then return end
+ if F.defeated or F.cornerLay or grieving() or F.phase=='charge' or F.phase=='aim' or F.phase=='intro_jump' then return end
  F.chargeDeaths={};F.chargeEggs={};F.grief=nil
  F.resume=F.phase;F.target=target;F.phase='aim';F.phaseTime=0
- if target==player then F.snare=2.1 else target.webbed=true end
+ if target==player then F.snare=2.1;F.escapeTaps={} else target.webbed=true end
  local p=target==player and playerPoint() or target;F.chargeX=p.x;F.chargeY=p.y
 end
 function F.shoot()
@@ -170,9 +174,9 @@ function F.updateWebs(dt)
  for i=#F.webs,1,-1 do local w=F.webs[i];local xx,yy=w.x+w.vx*dt,w.y+w.vy*dt
   local victim,first=nil,2
   for _,b in ipairs(F.babies) do if not b.dead and not b.webbed then local hit,t=segment(w.x,w.y,xx,yy,b,19);if hit and t<first then victim=b;first=t end end end
-  local hit,t=segment(w.x,w.y,xx,yy,p,21);if hit and t<first then victim=player end
+  local hit,t=segment(w.x,w.y,xx,yy,p,21);if hit and t<first and F.webGrace<=0 then victim=player end
   if victim then
-   if victim==player then F.snare=2.1;F.snareSource='shot' else victim.webbed=true end
+   if victim==player then if F.snare<=0 then F.escapeTaps={} end;F.snare=2.1;F.snareSource='shot' else victim.webbed=true end
    F.trap(victim);table.remove(F.webs,i)
   elseif xx<34 or xx>Arena.width-34 or yy<34 or yy>566 then
    F.wallWeb(clamp(xx,34,Arena.width-34),clamp(yy,34,566));table.remove(F.webs,i)
@@ -186,6 +190,7 @@ local function updateBehavior(dt)
  F.layPulse=math.max(0,(F.layPulse or 0)-dt)
  F.jumpCooldown=math.max(0,(F.jumpCooldown or 0)-dt)
  F.clock=F.clock+dt;F.phaseTime=F.phaseTime+dt;F.flash=math.max(0,F.flash-dt);F.snare=math.max(0,F.snare-dt);F.webGrace=math.max(0,(F.webGrace or 0)-dt)
+ Escape.struggle(F,dt)
  if F.defeated then
   towards(F,Arena.width*.5,95,110,dt)
   for i,b in ipairs(F.babies) do towards(b,Arena.width*.5+((i-1)%9-4)*36,55+math.floor((i-1)/9)*25,140,dt) end
@@ -211,7 +216,7 @@ local function updateBehavior(dt)
   F.jumpHeight=math.sin(t*math.pi)*115
   if t>=1 then F.phase=F.jumpResume or 'webs';F.phaseTime=F.phase=='lay' and F.jumpResumeTime or 0;F.shot=.45;F.contactGrace=.35;F.jump=nil;F.jumpHeight=0 end
  end
- if not jumping and F.jumpCooldown<=0 and (F.phase=='webs' or F.phase=='lay') and near(F,p,115) then
+ if not F.cornerLay and not jumping and F.jumpCooldown<=0 and (F.phase=='webs' or F.phase=='lay') and near(F,p,115) then
   F.leap(F.phase);jumping=true
  end
  F.contactGrace=math.max(0,(F.contactGrace or 0)-dt)
@@ -259,6 +264,8 @@ local function updateBehavior(dt)
   end
  elseif F.phase=='recover' then
   if F.phaseTime>1 then F.phase='webs';F.phaseTime=0;F.shot=.5 end
+ elseif F.phase=='lay' and F.cornerLay then
+  Escape.lay(F,dt,towards)
  elseif F.phase=='lay' then
   -- Keep running away, turning along the arena edge instead of getting stuck.
   local away=math.atan2(F.y-p.y,F.x-p.x);local best,score
@@ -275,8 +282,9 @@ local function updateBehavior(dt)
   if F.batch>=8 or F.phaseTime>4.5 then F.phase='webs';F.phaseTime=0;F.shot=.5 end
  else
   if F.phaseTime>6 and #F.babies+#F.eggs<29 then
-   F.phase='lay';F.phaseTime=0;F.wave=F.wave+1;F.batch=0;F.chooseNest()
+   F.phase='lay';F.phaseTime=0;F.wave=F.wave+1;F.batch=0
    if F.carried<8 then F.carried=24 end
+   Escape.beginLay(F)
   else
    F.shot=F.shot-dt
    if F.shot<=0 then F.shoot();F.shot=.5 end
@@ -304,7 +312,7 @@ function F.update(dt)
  F.surge=1+math.sin(u*math.pi)^2*.65
  updateBehavior(dt)
  local distance=length(F.x-x,F.y-y)
- require('brown_walk').advance(F,distance,dt)
+ require('brown_walk').advance(F,distance*1.35,dt)
  if F.jumpHeight>0 or F.phase=='intro_jump' or grieving() then F.walkMoving=false end
  F.dashing=not F.defeated and F.walkMoving and (F.phase=='charge' or F.surge>1.2)
  if F.dashing then
@@ -381,7 +389,7 @@ function F.draw()
  F.spider(0,0,62,'queen',facing,F)
  ArtSet.clutch(0,0,62,F.carried,facing);F.drawGriefTear(facing);g.pop()
  for _,w in ipairs(F.webs) do g.setColor(1,1,1);ArtSet.draw('web_shot',w.x,w.y,32,math.atan2(w.vy,w.vx)) end
- if F.snare>0 and F.snareSource~='floor' then web(player.x+15,player.y+12,32) end
+ Escape.draw(F)
  if F.gate then
   local x=Arena.width*.5;g.setColor(1,1,1);ArtSet.draw('web_gate',x,50,104,0,125)
   UI.text('Retrouvailles',x-90,83,'small',{.85,1,.9},180,'center')
@@ -392,6 +400,7 @@ function F.resize(r)
  if F.grief then F.grief.x=F.grief.x*r end
  if F.jump then F.jump.x=F.jump.x*r;F.jump.tx=F.jump.tx*r end
  if F.nest then F.nest.x=F.nest.x*r end
+ for _,p in ipairs(F.cornerSlots or {}) do p.x=p.x*r end
  F.x=F.x*r;if F.chargeX then F.chargeX=F.chargeX*r end
  for _,list in ipairs({F.eggs,F.babies,F.shells,F.webs,F.stuck,F.afterimages}) do for _,o in ipairs(list or {}) do o.x=o.x*r;if o.vx then o.vx=o.vx*r end end end
 end

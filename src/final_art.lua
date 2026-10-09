@@ -28,6 +28,15 @@ function A.spider(name,x,y,width,angle,walk)
   local key='final_'..sprite
   if not Art.images[key] then Art.add(key,'assets/sprites/final/'..sprite..'.png') end
   local a=Art.images[key]
+  if name=='queen' and walk and walk.enraged then
+   A.rageShader=A.rageShader or graphics.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
+    vec4 p=Texel(tex,uv);
+    float iris=smoothstep(.25,.45,p.g)*smoothstep(.15,.35,p.r-p.b)*(1.-smoothstep(.22,.4,p.b));
+    p.rgb=mix(p.rgb,vec3(max(p.r,p.g),.015,.025),iris);
+    return p*color;
+   }]])
+   graphics.setShader(A.rageShader)
+  end
   if not (walk and require('brown_walk').draw(a.image,dir,0,0,width,walk,a.quad)) then A.draw(sprite,0,0,width,0) end
  end
  Art.contactShadow(x,y+width*.18,width*.31,width*.095,.065)

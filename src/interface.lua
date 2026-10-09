@@ -267,13 +267,13 @@ function U.playGlow(x,y,w,h)
     g.push('all');g.setBlendMode('add')
     local pulse=.65+.35*math.sin(U.clock*2.4)
     for i=10,1,-1 do
-        g.setColor(gold[1],gold[2],gold[3],(.009+.008*pulse)*(1-i/12))
+        g.setColor(gold[1],gold[2],gold[3],(.022+.019*pulse)*(1-i/12))
         bevel('fill',x-i*2,y-i*1.6,w+i*4,h+i*3.2,10+i)
     end
     for side=0,1 do
         local t=(U.clock*.35+side*.5)%1;local xx=x+12+t*(w-24);local yy=y+side*h
         for r=8,1,-1 do g.setColor(1,.87,.48,.04*(1-r/10));g.ellipse('fill',xx,yy,r*3,r) end
-        g.setColor(1,.97,.75,.9);g.line(xx-14,yy,xx+14,yy)
+        g.setColor(1,.97,.75,.9);g.line(math.max(x+11,xx-14),yy,math.min(x+w-11,xx+14),yy)
     end
     g.pop()
 end
@@ -513,7 +513,7 @@ function U.gameHud()
     if Ending and Ending.active then Ending.drawHud();U.sanctuaryReturns();return end
     Hardcore.draw()
     if App.practice and not Replay.playing then U.fitText('Entraînement · non classé',640,22,'small',{.8,.85,.9},140) end
-    if Campaign.biome==7 and not Abyss.encounterActive() then U.text('Charges : '..(player.charges or 0),790,22,'small',{.4,.9,1}) end
+    if Campaign.biome==7 and not require('abyss_gate').active and not Abyss.encounterActive() then U.text('Charges : '..(player.charges or 0),790,22,'small',{.4,.9,1}) end
     g.setColor(1,1,1); Art.draw('clock',49,31,25)
     U.outlined(U.time(Replay.playing and Replay.frame*Replay.step or Scoring.total(timer,player.death)),70,17,'medium',nil,144)
     U.deathCounter()
@@ -624,7 +624,30 @@ end
 function U.workshop()
     U.panel(90,82,1020,610)
     U.text('WORKSHOP',125,101,'heading',white,950,'center')
-    if Workshop.publishing then
+    if Workshop.removing then
+        local row=Workshop.removing
+        U.text('Retirer cette carte du Workshop ?',160,220,'heading',white,880,'center')
+        U.rawText(U.ellipsize(row.title,'body',800),200,295,'body',gold,800,'center')
+        U.button('Retirer',260,410,320,48,function() Workshop.remove(row) end,Workshop.busy)
+        U.button('Annuler',620,410,320,48,function() Workshop.removing=nil end,Workshop.busy)
+    elseif Workshop.stats then
+        local stats=Workshop.stats;local d=stats.data
+        U.rawText(U.ellipsize(stats.row.title,'heading',880),160,165,'heading',gold,880,'center')
+        local function number(n) return n and string.format('%.1f',n) or '—' end
+        local rows={{'Joueurs',d.players},{'Parties lancées',d.sessions},{'Cartes terminées',d.completions},{'Morts totales',d.deaths},
+            {'Essais moyens avant réussite',number(d.averageAttempts)},{'Taux de réussite',d.sessions>0 and string.format('%.0f %%',100*d.completions/d.sessions) or '—'},
+            {'Temps moyen',d.averageTime and U.time(d.averageTime) or '—'},{'Meilleur temps',d.bestTime and U.time(d.bestTime) or '—'}}
+        for i,r in ipairs(rows) do local col=(i-1)%2;local y=230+math.floor((i-1)/2)*55
+            U.text(r[1],150+col*470,y,'body',muted);U.rawText(tostring(r[2]),510+col*470,y,'body',white)
+        end
+        U.text('Zones les plus meurtrières',150,460,'medium',gold)
+        for i,spot in ipairs(d.hotspots or {}) do
+            local level,x,y=spot.zone:match('(%d+):(%d+):(%d+)')
+            local area=({'Haut','Centre','Bas'})[tonumber(y)+1]..' · '..({'Gauche','Centre gauche','Centre droit','Droite'})[tonumber(x)+1]
+            U.text(area..' : '..spot.deaths..' morts',150,495+(i-1)*29,'body',white)
+        end
+        U.button('Retour',440,630,320,40,function() Workshop.stats=nil end)
+    elseif Workshop.publishing then
         if Workshop.editorProject then
             U.text(Worlds.names[Workshop.biome],125,190,'heading',white,400,'center')
             U.button('Retour à l’éditeur',125,270,400,48,function() Creator.open() end)
@@ -652,8 +675,13 @@ function U.workshop()
             local y=244+(i-1)*39
             U.rawText(U.ellipsize(row.title,'body',310),130,y+8,'body',white)
             U.difficulty(row.difficulty,row.difficultyExtra,455,y+14)
-            U.rawText(U.ellipsize(row.author..' · '..T(Worlds.names[row.biome or row.world] or ''),'body',240),610,y+8,'body',muted)
-            U.button('   '..row.stars,865,y,85,36,function() Workshop.star(row) end,row.voting)
+            if row.owned then
+                U.button('Statistiques',610,y,145,36,function() Workshop.statistics(row) end,Workshop.busy)
+                U.button('Retirer',765,y,90,36,function() Workshop.removing=row end,Workshop.busy)
+            else
+                U.rawText(U.ellipsize(row.author..' · '..T(Worlds.names[row.biome or row.world] or ''),'body',240),610,y+8,'body',muted)
+            end
+            U.button('   '..row.stars,865,y,85,36,function() Workshop.star(row) end,row.voting or row.owned)
             U.voteStar(row,883,y+18)
             U.button('Jouer',965,y,105,36,function() Workshop.play(row) end,Workshop.busy)
         end

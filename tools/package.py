@@ -9,7 +9,7 @@ import sys
 
 root = Path(__file__).resolve().parents[1]
 paths = set()
-for pattern in ('main.lua', 'conf.lua', 'src/**/*.lua', 'assets/**/*',
+for pattern in ('main.lua', 'conf.lua', 'custom_levels.json', 'src/**/*.lua', 'assets/**/*',
                 'tests/*.lua', 'tests/*.json', 'designer/*.lua', 'designer/*.json', 'designer/*.png'):
     for path in root.glob(pattern):
         if (path.is_file() and not any(part.startswith('.') or part == '__pycache__' for part in path.relative_to(root).parts)

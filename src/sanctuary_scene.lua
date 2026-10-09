@@ -23,8 +23,8 @@ function R.dimensions(p)
  if p.type=='merle' then return 220 end
  if p.type=='wasp' then return 96 end
  if p.type=='hedgehog' then return 104 end
- if p.type=='octopus' then return 360 end
- if p.type=='skeleton_head' then return 180,219 end
+ if p.type=='octopus' then return 230 end
+ if p.type=='skeleton_head' then return 126,153 end
  return 100
 end
 local function sprite(p,x,y)
@@ -47,15 +47,15 @@ function R.boss(p,x,y)
   -- One shared transform keeps the head, ribs, spine and tail attached.
   g.push();g.translate(x,y+math.sin(UI.clock*.8)*10);g.scale(1,1+math.sin(UI.clock*1.5)*.012)
   local x,y=0,0
-  for i=9,1,-1 do local xx=x+350-(65+i*62);local yy=y
-   g.setColor(.66,.72,.77);Art.draw('skeleton_spine',xx,yy,68,0,34)
-   Art.draw('skeleton_rib',xx,yy-45,24,0,80);Art.draw('skeleton_rib',xx,yy+45,24,math.pi,80)
+  for i=9,1,-1 do local xx=x+210-(45+i*37);local yy=y
+   g.setColor(.66,.72,.77);Art.draw('skeleton_spine',xx,yy,42,0,25)
+   Art.draw('skeleton_rib',xx,yy-32,18,0,58);Art.draw('skeleton_rib',xx,yy+32,18,math.pi,58)
   end
-  g.setColor(.66,.72,.77);Art.draw('skeleton_tail',x-365,y,110,0,120)
-  sprite(p,x+350,y);g.pop()
+  g.setColor(.66,.72,.77);Art.draw('skeleton_tail',x-215,y,78,0,85)
+  sprite(p,x+210,y);g.pop()
  else sprite(p,x,y) end
 end
-function R.arena(demon)
+function R.hall(demon)
  local g=love.graphics;local w=Arena.width
  g.setColor(.009,.014,.022);g.rectangle('fill',0,0,w,600)
  -- Tall stone arches, recessed alcoves and a perspective processional floor.
@@ -70,8 +70,35 @@ function R.arena(demon)
  for i=1,7 do local y=350+(i/7)^1.8*250;g.line(0,y,w,y) end
  R.fog(false,demon)
 end
+-- Static veins: stable between encounters and independent of gameplay RNG.
+function R.arena()
+ local g=love.graphics;local w=Arena.width
+ if R.marbleWidth~=w then
+  if R.marble then R.marble:release() end
+  R.marble=g.newCanvas(w,600);R.marbleWidth=w
+  g.push('all');g.setCanvas(R.marble);g.origin();g.setScissor();g.setShader();g.clear(.012,.013,.017,1)
+  for i=1,16 do
+   local x=(i*173.7)%w;local y=-90+(i%4)*27;local points={x,y}
+   for j=1,12 do
+    x=x+math.sin(i*19.7+j*7.13)*38+math.cos(i*4.3)*24;y=y+48+math.sin(i*5.9+j*3.7)*18
+    points[#points+1]=x;points[#points+1]=y
+   end
+   for layer=3,1,-1 do
+    g.setLineWidth(layer==3 and 7 or layer==2 and 2.4 or .65)
+    g.setColor(.88,.90,.94,layer==3 and .025 or layer==2 and .075 or .34);g.line(points)
+   end
+   g.setLineWidth(.5);g.setColor(.86,.88,.92,.2)
+   for j=3,9,3 do local bx,by=points[j*2-1],points[j*2]
+    g.line(bx,by,bx-24,by+13,bx-39,by+42,bx-70,by+49)
+   end
+  end
+  g.pop()
+ end
+ g.push('all');g.setShader();g.setColor(1,1,1);g.draw(R.marble);g.pop()
+end
 local function throne(x,c,selected)
  local g=love.graphics
+ local function stone(light,alpha) g.setColor(c[1]*light,c[2]*light,c[3]*light,alpha or 1) end
  g.setBlendMode('add')
  for i=7,1,-1 do
   g.setColor(c[1],c[2],c[3],selected and .023 or .01)
@@ -79,23 +106,23 @@ local function throne(x,c,selected)
  end
  g.setBlendMode('alpha')
  -- A pointed stone back, carved ribs, raised arms and three broad steps.
- g.setColor(.055,.085,.12);g.polygon('fill',x-72,405,x-78,215,x-36,155,x,106,x+36,155,x+78,215,x+72,405)
- g.setColor(.23,.32,.40);g.setLineWidth(4);g.line(x-72,405,x-78,215,x-36,155,x,106,x+36,155,x+78,215,x+72,405)
- g.setColor(.016,.025,.045);g.polygon('fill',x-55,364,x-56,228,x,152,x+56,228,x+55,364)
+ stone(.13);g.polygon('fill',x-72,405,x-78,215,x-36,155,x,106,x+36,155,x+78,215,x+72,405)
+ stone(.48);g.setLineWidth(4);g.line(x-72,405,x-78,215,x-36,155,x,106,x+36,155,x+78,215,x+72,405)
+ stone(.045);g.polygon('fill',x-55,364,x-56,228,x,152,x+56,228,x+55,364)
  g.setColor(c[1],c[2],c[3],selected and .8 or .3);g.setLineWidth(1.5)
  g.line(x-45,334,x-45,233,x,171,x+45,233,x+45,334)
  for side=-1,1,2 do
   local sx=x+side*78
-  g.setColor(.09,.13,.17);g.rectangle('fill',sx-11,288,22,115,4)
-  g.setColor(.28,.37,.43);g.polygon('fill',sx-15,288,sx,267,sx+15,288,sx,301)
-  g.setColor(.13,.18,.23);g.rectangle('fill',sx-18,342,36,13,3)
-  g.setColor(.22,.3,.36);g.line(sx-7,309,sx-7,397)
+  stone(.20);g.rectangle('fill',sx-11,288,22,115,4)
+  stone(.55);g.polygon('fill',sx-15,288,sx,267,sx+15,288,sx,301)
+  stone(.28);g.rectangle('fill',sx-18,342,36,13,3)
+  stone(.44);g.line(sx-7,309,sx-7,397)
  end
- g.setColor(.14,.19,.24);g.polygon('fill',x-65,363,x+65,363,x+77,382,x-77,382)
+ stone(.3);g.polygon('fill',x-65,363,x+65,363,x+77,382,x-77,382)
  for i=1,3 do
   local width=162+i*14;local y=389+i*12
-  g.setColor(.055+i*.015,.078+i*.018,.11+i*.02);g.rectangle('fill',x-width/2,y,width,12,2)
-  g.setColor(.25,.33,.39,.6);g.line(x-width/2+2,y,x+width/2-2,y)
+  stone(.10+i*.025);g.rectangle('fill',x-width/2,y,width,12,2)
+  stone(.48,.6);g.line(x-width/2+2,y,x+width/2-2,y)
  end
  g.setColor(.53,.66,.76,.27);g.setLineWidth(.7)
  for side=-1,1,2 do
@@ -105,7 +132,7 @@ local function throne(x,c,selected)
 end
 function R.draw(S)
  local g=love.graphics;local w=Arena.width;local camera=S.cameraX or 0
- g.push('all');g.setShader();R.arena(false)
+ g.push('all');g.setShader();R.hall(false)
  g.setColor(.025,.038,.054);g.rectangle('fill',0,443,w,157)
  g.setColor(.13,.18,.23);g.setLineWidth(2);g.line(0,548,w,548)
  for i=math.floor(camera/95)-1,math.ceil((camera+w)/95)+1 do
@@ -118,7 +145,12 @@ function R.draw(S)
   local x=S.position(i)
   if x>camera-480 and x<camera+w+480 then
    local c=colors[Worlds.biome(entry.world)] or colors[7];local selected=math.abs(S.x-x)<58
-   throne(x,c,selected)
+   if entry.type=='wasp' then
+    for sister=1,3 do
+     g.push();g.translate(x+(sister-2)*145,437);g.scale(.68,1);g.translate(0,-437)
+     throne(0,c,selected);g.pop()
+    end
+   else throne(x,c,selected) end
    g.push();g.translate(x,315);R.boss(entry,0,0);g.pop()
    local name=entry.type=='skeleton_head' and 'Le Monstre d’os' or entry.name
    name=UI.ellipsize(require('localization').render(name),'body',250)

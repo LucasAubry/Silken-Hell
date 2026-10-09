@@ -68,3 +68,13 @@ Appliquer `0010_hardcore_rankings.sql` puis déployer le Worker. La migration co
 - Le monde 8 est réservé au parcours hardcore du Sanctuaire et se termine après sept boss. Le mode libre ne publie pas de score de parcours.
 - Après un recul, le client conserve le même chrono et envoie seulement les jalons encore jamais atteints. Les compteurs restent croissants. Le replay conserve tous les retours en arrière et son mode doit correspondre au score.
 - Les tests couvrent l’isolation des modes, pays et pages, les sept boss, la cohérence des replays et la conservation des données après migration.
+
+### Créateurs et statistiques Workshop
+
+Migration `0011_workshop_stats.sql`. La liste expose `owned`, calculé depuis le jeton de l'installation. Les étoiles du propriétaire sont refusées côté serveur et les anciennes auto-étoiles sont retirées par la migration.
+
+- `POST /v1/workshop/:id/remove` retire la carte, ses étoiles et ses statistiques ; propriétaire uniquement.
+- `GET /v1/workshop/:id/stats` : joueurs distincts (installations), sessions lancées/terminées, morts totales, essais moyens des sessions terminées, temps moyen/meilleur et trois zones les plus meurtrières. Propriétaire uniquement, version actuelle de la carte.
+- `POST /v1/workshop/:id/session` : instantané cumulatif identifié, sauvegardé et réessayé côté client. Les doublons n'ajoutent pas de morts. Les parties du créateur sont exclues. Une republication ouvre une nouvelle version statistique ; les instantanés retardés de l'ancienne version sont ignorés.
+
+Les statistiques sont déclarées par le client, sans vérification par simulation. Aucune statistique historique n'est inventée ; les anciennes versions du jeu n'envoient pas ces mesures. Une carte Workshop représente un niveau : les zones de mort divisent le terrain en quatre colonnes et trois lignes. Les essais moyens correspondent aux morts + 1 des sessions terminées, pas à une estimation pour les sessions abandonnées.

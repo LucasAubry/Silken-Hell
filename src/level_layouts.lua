@@ -46,7 +46,7 @@ function L.read()
     local data=love.filesystem.read('custom_levels.json')
     if not data then return {} end
     local ok,obj=pcall(json.decode,data)
-    if ok and type(obj)=='table' and obj.version==1 and type(obj.levels)=='table' then return obj.levels end
+    if ok and type(obj)=='table' and obj.version==1 and type(obj.levels)=='table' then return require("abyss_sequence").migrate(obj).levels end
     return {}
 end
 function L.spawn(e)

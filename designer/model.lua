@@ -21,6 +21,7 @@ function M.init(project,save,workshopBiome)
     if raw then local ok,t=pcall(json.decode,raw); if ok and t.version==1 then M.applied=t end end
     local draft=love.filesystem.read('drafts.json')
     if draft then local ok,t=pcall(json.decode,draft); if ok then M.drafts=t end end
+    if not M.workshop then require("abyss_sequence").migrate(M.applied) end
     M.select(workshopBiome or 1,1)
 end
 function M.select(world,level)
@@ -64,6 +65,7 @@ function M.apply()
     local old=read(M.save..'/'..M.filename)
     local applied={version=1,levels={}}
     if old then local valid,data=pcall(json.decode,old); if not valid or type(data.levels)~='table' then return false,'Le fichier de niveaux existant est invalide.' end; applied=data end
+    if not M.workshop then require("abyss_sequence").migrate(applied) end
     applied.levels[M.key()]=M.clone(M.layout)
     if old then
         local backup=M.save..'/'..M.filename..'.backup-'..os.date('%Y%m%d-%H%M%S')..'-'..math.floor(love.timer.getTime()*1000)..'.json'

@@ -42,12 +42,12 @@ export async function workshop(request,env,{reply,fail,ownerOf,bodyOf}) {
   if(difficulty){clauses.push(`${rating}=?`);args.push(difficulty);}
   const where=clauses.length?' WHERE '+clauses.join(' AND '):'';
   const order=sort==='easy'?`${rating} ASC,${extra} ASC,`:sort==='hard'?`${rating} DESC,${extra} DESC,`:'';
-  const {results}=await env.DB.prepare(`SELECT m.id,m.title,m.author,m.world,m.updated_at,${biome} AS biome,${rating} AS difficulty,${extra} AS difficultyExtra,
+  const {results}=await env.DB.prepare(`SELECT m.id,m.title,m.author,m.world,m.updated_at,m.owner=? AS owned,${biome} AS biome,${rating} AS difficulty,${extra} AS difficultyExtra,
    (SELECT COUNT(*) FROM workshop_stars s WHERE s.map_id=m.id) AS stars,
    EXISTS(SELECT 1 FROM workshop_stars s WHERE s.map_id=m.id AND s.owner=?) AS starred
-   FROM workshop_maps m${where} ORDER BY ${order}stars DESC,m.updated_at DESC,m.id LIMIT 8 OFFSET ?`).bind(owner,...args,(page-1)*8).all();
+   FROM workshop_maps m${where} ORDER BY ${order}stars DESC,m.updated_at DESC,m.id LIMIT 8 OFFSET ?`).bind(owner,owner,...args,(page-1)*8).all();
   const count=await env.DB.prepare('SELECT COUNT(*) AS total FROM workshop_maps m'+where).bind(...args).first();
-  return reply({maps:results.map(r=>({...r,starred:!!r.starred})),page,total:count.total,hasMore:page*8<count.total});
+  return reply({maps:results.map(r=>({...r,starred:!!r.starred,owned:!!r.owned})),page,total:count.total,hasMore:page*8<count.total});
  }
  if(request.method==='POST'&&path==='/v1/workshop/validate') {
   const owner=await ownerOf(request),b=await bodyOf(request,1500000),r=b.replay;
@@ -76,17 +76,59 @@ export async function workshop(request,env,{reply,fail,ownerOf,bodyOf}) {
     .bind(id,owner,title,author,b.layout.world,JSON.stringify(b.layout),now,now).run();
   return reply({id,ok:true},previous?200:201);
  }
- const match=path.match(/^\/v1\/workshop\/([a-f0-9-]{36})(\/star)?$/);
+ const match=path.match(/^\/v1\/workshop\/([a-f0-9-]{36})(\/(?:star|remove|stats|session))?$/);
  if(match) {
+  if(['/remove','/stats','/session'].includes(match[2])) {
+   const owner=await ownerOf(request);
+   const map=await env.DB.prepare('SELECT owner,updated_at FROM workshop_maps WHERE id=?').bind(match[1]).first();
+   if(!map) fail(404,'Carte introuvable.');
+   if(match[2]!=='/session'&&map.owner!==owner) fail(403,'Cette carte appartient à un autre créateur.');
+   if(match[2]==='/remove'&&request.method==='POST') {
+    await env.DB.batch([
+     env.DB.prepare('DELETE FROM workshop_sessions WHERE map_id=?').bind(match[1]),
+     env.DB.prepare('DELETE FROM workshop_stars WHERE map_id=?').bind(match[1]),
+     env.DB.prepare('DELETE FROM workshop_maps WHERE id=? AND owner=?').bind(match[1],owner)]);
+    return reply({ok:true});
+   }
+   if(match[2]==='/stats'&&request.method==='GET') {
+    const stats=await env.DB.prepare(`SELECT COUNT(*) AS sessions,COUNT(DISTINCT owner) AS players,
+     COALESCE(SUM(deaths),0) AS deaths,COALESCE(SUM(completed),0) AS completions,
+     AVG(CASE WHEN completed=1 THEN deaths+1 END) AS averageAttempts,
+     AVG(CASE WHEN completed=1 THEN elapsed END) AS averageTime,
+     MIN(CASE WHEN completed=1 THEN elapsed END) AS bestTime
+     FROM workshop_sessions WHERE map_id=? AND version=?`).bind(match[1],map.updated_at).first();
+    const {results}=await env.DB.prepare('SELECT hotspots FROM workshop_sessions WHERE map_id=? AND version=?').bind(match[1],map.updated_at).all();
+    const zones={};for(const row of results) for(const [key,n] of Object.entries(JSON.parse(row.hotspots))) zones[key]=(zones[key]||0)+n;
+    return reply({...stats,hotspots:Object.entries(zones).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([zone,deaths])=>({zone,deaths}))});
+   }
+   if(match[2]==='/session'&&request.method==='POST') {
+    if(map.owner===owner) return reply({ok:true});
+    const b=await bodyOf(request,16384);
+    if(b.version!==undefined&&b.version!==map.updated_at) return reply({ok:true});
+    if(typeof b.id!=='string'||!/^[-a-zA-Z0-9]{16,80}$/.test(b.id)||!Number.isInteger(b.deaths)||b.deaths<0||b.deaths>100000||typeof b.completed!=='boolean'||!Number.isFinite(b.elapsed)||b.elapsed<0||b.elapsed>604800||!b.hotspots||Array.isArray(b.hotspots)||typeof b.hotspots!=='object') fail(400,'Statistiques invalides.');
+    let sum=0;for(const [k,n] of Object.entries(b.hotspots)) {if(!/^[1-9][0-9]?:[0-3]:[0-2]$/.test(k)||!Number.isInteger(n)||n<0) fail(400,'Zone invalide.');sum+=n;}
+    if(sum!==b.deaths) fail(400,'Nombre de morts incohérent.');
+    const prev=await env.DB.prepare('SELECT owner,map_id,version,deaths,completed,elapsed FROM workshop_sessions WHERE id=?').bind(b.id).first();
+    if(prev&&(prev.owner!==owner||prev.map_id!==match[1])) fail(403,'Session invalide.');
+    if(prev&&(prev.version!==map.updated_at||prev.completed||prev.deaths>b.deaths||prev.elapsed>b.elapsed)) return reply({ok:true});
+    await env.DB.prepare(`INSERT INTO workshop_sessions(id,map_id,owner,version,deaths,completed,elapsed,hotspots,updated_at) VALUES(?,?,?,?,?,?,?,?,?)
+     ON CONFLICT(id) DO UPDATE SET deaths=excluded.deaths,completed=excluded.completed,elapsed=excluded.elapsed,hotspots=excluded.hotspots,updated_at=excluded.updated_at
+     WHERE workshop_sessions.owner=excluded.owner AND workshop_sessions.completed=0 AND workshop_sessions.deaths<=excluded.deaths AND workshop_sessions.elapsed<=excluded.elapsed`)
+     .bind(b.id,match[1],owner,map.updated_at,b.deaths,b.completed?1:0,b.elapsed,JSON.stringify(b.hotspots),Date.now()).run();
+    return reply({ok:true});
+   }
+  }
   if(request.method==='GET'&&!match[2]) {
    const row=await env.DB.prepare('SELECT id,title,author,world,layout FROM workshop_maps WHERE id=?').bind(match[1]).first();
    if(!row) fail(404,'Carte introuvable.');
    return reply({...row,layout:JSON.parse(row.layout)});
   }
-  if(request.method==='POST'&&match[2]) {
+  if(request.method==='POST'&&match[2]==='/star') {
    const owner=await ownerOf(request),b=await bodyOf(request);
    if(typeof b.starred!=='boolean') fail(400,'Vote invalide.');
-   if(!await env.DB.prepare('SELECT id FROM workshop_maps WHERE id=?').bind(match[1]).first()) fail(404,'Carte introuvable.');
+   const map=await env.DB.prepare('SELECT owner FROM workshop_maps WHERE id=?').bind(match[1]).first();
+   if(!map) fail(404,'Carte introuvable.');
+   if(map.owner===owner) fail(403,'Tu ne peux pas étoiler ta propre carte.');
    if(b.starred) await env.DB.prepare('INSERT OR IGNORE INTO workshop_stars(map_id,owner,created_at) VALUES(?,?,?)').bind(match[1],owner,Date.now()).run();
    else await env.DB.prepare('DELETE FROM workshop_stars WHERE map_id=? AND owner=?').bind(match[1],owner).run();
    const row=await env.DB.prepare('SELECT COUNT(*) AS stars FROM workshop_stars WHERE map_id=?').bind(match[1]).first();

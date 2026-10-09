@@ -76,6 +76,38 @@ function C.portrait(index,x,y,size,dir,locked,walk)
         g.setBlendMode('alpha','premultiplied');g.draw(C.fadeCanvas,x,y,0,size/100,size/100,80,80);g.pop()
         return
     end
+    -- Resolve tiny leaderboard portraits from the complete eye artwork, rather
+    -- than letting nearest-neighbour sampling select only their dark pupils.
+    if size<=32 and not walk then
+        C.smallPortraits=C.smallPortraits or {}
+        local cacheKey=index..':'..dir..':'..tostring(locked)
+        local canvas=C.smallPortraits[cacheKey]
+        if not canvas then
+            canvas=g.newCanvas(256,256,{mipmaps='auto',dpiscale=1})
+            canvas:setFilter('linear','linear');canvas:setMipmapFilter('linear')
+            g.push('all');g.setCanvas(canvas);g.origin();g.setScissor();g.setShader()
+            g.clear(0,0,0,0);g.setColor(1,1,1);g.setBlendMode('alpha')
+            C.portrait(index,128,128,224,dir,locked)
+            g.pop();C.smallPortraits[cacheKey]=canvas
+        end
+        g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied')
+        g.setColor(red*alpha,green*alpha,blue*alpha,alpha)
+        g.draw(canvas,x,y,0,size/224,size/224,128,128)
+        if dir=='down' and not locked then
+            -- Keep the iris and catchlight legible below one source eye pixel.
+            local a=Art.images[C.model(dir)];local qx,qy=a.quad:getViewport()
+            local iw,ih=a.image:getDimensions();local scale=size/math.max(a.w,a.h)
+            local base=C.crowned[index] or index
+            g.setBlendMode('alpha')
+            for _,u in ipairs({.40,.60}) do
+                local ex=x+(u*iw-qx-a.w/2)*scale;local ey=y+(.595*ih-qy-a.h/2)*scale
+                g.setColor(base==1 and 1 or .35,base==1 and .65 or .8,base==1 and .12 or 1,alpha)
+                g.ellipse('fill',ex,ey,size*.022,size*.03)
+                g.setColor(1,.98,.9,alpha);g.circle('fill',ex-.18,ey-.35,.3)
+            end
+        end
+        g.pop();return
+    end
     local reward=C.crowned[index]~=nil
     if reward then index=C.crowned[index] end
     local fx=require('skin_reward_fx')

@@ -46,6 +46,8 @@ function C.reset()
     AbyssTerrain.reset()
     C.biome=Worlds.biome(C.world,player.level)
     local world=C.biome; local n=(Worlds.isSecret(C.world) or C.world==8) and (world==3 and 1 or 10) or player.level
+    if world==7 and n>=6 and n<=8 and not App.sessionLayout then n=n+1 end
+    require("mobs.bosses.abyss.arrival").current=nil
     BossFX.reset()
     if Bosses then Bosses.reset() end
     local previousSide=C.lastSide
@@ -134,6 +136,12 @@ function C.reset()
     Ending.reset()
     C.updateTear(0)
 
+    require('abyss_gate').reset()
+    if world==7 and n==10 and not App.sessionLayout then
+        local encounter=Abyss.boss and Abyss or nil
+        for _,item in ipairs(Bosses.items) do if item.boss.returnMode then encounter=item.boss;break end end
+        if encounter then require('mobs.bosses.abyss.arrival').start(encounter) end
+    end
     if App.state=='playing' then Bestiary.encounter() end
 end
 function C.spawnHell(n)
