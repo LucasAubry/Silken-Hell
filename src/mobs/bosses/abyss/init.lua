@@ -144,6 +144,8 @@ local function onSites(boss)
     return false
 end
 function A.playerHidden()
+ local arrival=require('mobs.bosses.abyss.arrival').current
+ if arrival and arrival.arrival and not arrival.arrival.spit then return true end
  local function hidden(b) return b.active and b.boss and not b.defeated and (b.carryPlayer or (b.lightOnlySuction and b.phase=='suction')) end
  if hidden(A) then return true end
  if Bosses then for _,item in ipairs(Bosses.items) do if item.kind=='skeleton_fish' and hidden(item.boss) then return true end end end

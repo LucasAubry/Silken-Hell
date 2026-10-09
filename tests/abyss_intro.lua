@@ -1,4 +1,5 @@
 local T={}
+local Psyche=require('psychedelic_fx')
 function T.run()
  io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Replay.disabled=true;Replay.playing=false;Replay.recording=false
  Profile.save=function()end;Bestiary.save=function()end;Profile.name='QA';App.sessionLayout=nil;App.singleLevel=false;App.hardcore=false;Secret.duel=nil;App.state='playing';LevelLayouts.disabled=false
@@ -20,12 +21,16 @@ function T.run()
   elseif frame==7 then
    G.update(.5);App.simulate(.01);assert(player.level==10 and not G.active,'Swallow advances through standard level progression')
    assert(I.current and #I.current.lumenParticles==0 and I.current.swimHead.x<0,'Boss and particles begin offscreen/absent')
-   assert(math.abs(player.x+15-Arena.width/2)<1 and player.y+12==300,'Player starts in the middle')
+   assert(Abyss.playerHidden(),'Swallowed player stays hidden before the spit')
+   Psyche.death(100,100);App.simulate(.4);assert(not Psyche.deathPulse,'Death effect expires even during the intro')
    App.capture='abyss-arrival-empty.png'
-  elseif frame==9 then I.update(I.current,1.5);App.capture='abyss-arrival-left.png'
-  elseif frame==11 then I.update(I.current,.9);assert(I.current.open and #I.current.lumenParticles==300 and #I.current.returnShots==0);App.capture='abyss-arrival-spit.png'
+  elseif frame==9 then I.update(I.current,1.1);App.capture='abyss-arrival-left.png'
+  elseif frame==11 then I.update(I.current,2.15-I.current.arrival.age);local mx,my=I.current.mouth();assert(I.current.head.x>0 and I.current.head.x-I.current.head.w/3<0,'Only the head emerges from the wall during the spit');assert(math.abs(player.x+15-mx)<1 and math.abs(player.y+12-my)<1,'Player emerges at the particle source');assert(not Abyss.playerHidden());I.update(I.current,.25);assert(player.x+15>mx and player.x+15<Arena.width/2,'Player travels out of the mouth');assert(I.current.open and #I.current.lumenParticles==300 and #I.current.returnShots==0);App.capture='abyss-arrival-spit.png'
   elseif frame==13 then local a=I.current;I.update(a,1);assert(not I.current and #a.lumenParticles==300 and a.returnShotTimer>1,'Fight starts after particles settle');App.capture='abyss-arrival-ready.png'
-  elseif frame==15 then print('PASS level migration, giant gate, mouth closure, blackout, level ten arrival, central spawn and blue-particle spit');love.event.quit()end
+  elseif frame==15 then
+   Psyche.death(player.x,player.y);App.respawn();assert(not I.current and not Psyche.deathPulse and not Abyss.playerHidden(),'Death restarts combat immediately without cinematic or stuck shader')
+   reset_level();assert(I.current,'A fresh encounter still plays its introduction')
+   print('PASS level migration, giant gate, mouth closure, blackout, level ten arrival, central spawn and blue-particle spit');love.event.quit()end
  end
 end
 return T

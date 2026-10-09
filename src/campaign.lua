@@ -39,7 +39,7 @@ function C.positions(n)
     for _,i in ipairs(indexes) do local p=ring[((i-1+(C.biome==2 and 2 or 0))%8)+1]; points[#points+1]={x=math.max(60,math.min(Arena.width-90,p[1]*Arena.width-15)),y=p[2]-20} end
     return points
 end
-function C.reset()
+function C.reset(options)
     require('boss_liberation').reset()
     shader_effect_timer=0;shake_timer=0;cameraShakeX=0;cameraShakeY=0;ghost_timer=0
     Aftermath.reset()
@@ -140,7 +140,10 @@ function C.reset()
     if world==7 and n==10 and not App.sessionLayout then
         local encounter=Abyss.boss and Abyss or nil
         for _,item in ipairs(Bosses.items) do if item.boss.returnMode then encounter=item.boss;break end end
-        if encounter then require('mobs.bosses.abyss.arrival').start(encounter) end
+        if encounter then
+            local arrival=require('mobs.bosses.abyss.arrival')
+            if options and options.retry then arrival.retry(encounter);require('psychedelic_fx').reset() else arrival.start(encounter) end
+        end
     end
     if App.state=='playing' then Bestiary.encounter() end
 end

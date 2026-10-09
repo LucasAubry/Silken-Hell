@@ -128,7 +128,7 @@ function love.load()
     Arena.configure(love.graphics.getDimensions())
     Campaign.install()
     local resetReplayLevel=reset_level
-    reset_level=function() Replay.beforeLevelReset();Achievements.enterLevel();return resetReplayLevel() end
+    reset_level=function(options) Replay.beforeLevelReset();Achievements.enterLevel();return resetReplayLevel(options) end
     Campaign.select(1);reset_level()
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
     polishShader=love.graphics.newShader('assets/shaders/polish.glsl')
@@ -189,9 +189,10 @@ function App.respawn()
     local queen=require('final_spider')
     local resumeQueen=queen.active and queen.engaged and not queen.defeated
     -- Keep the dying level intact until its fall animation has finished.
+    local retryWorld,retryLevel=Campaign.world,player.level
     Hardcore.death()
     Audio.play('death')
-    reset_level()
+    reset_level({retry=Campaign.world==retryWorld and player.level==retryLevel})
     if resumeQueen and queen.active then
         queen.engaged=true;queen.phase='webs';queen.phaseTime=0;queen.shot=.65;queen.contactGrace=.35
     end
@@ -238,13 +239,13 @@ function love.update(dt)
     if Replay.playing and not Replay.ghost and Replay.compatibility and (App.state=='victory' or App.state=='customVictory') then App.state='playing' end
 end
 function App.simulate(dt)
+    Psyche.update(dt)
     local liberation=require('boss_liberation')
     if liberation.busy() then liberation.update(dt);return end
 
     local arrival=require('mobs.bosses.abyss.arrival')
     if arrival.current and arrival.update(arrival.current,dt) then timer=timer+dt;RunDetails.tick(dt);return end
     require('abyss_gate').update(dt)
-    Psyche.update(dt)
     Secret.updateDuel(dt);if App.state~='playing' then return end
     if Ending.active then
         update_shadow_dash(dt)
