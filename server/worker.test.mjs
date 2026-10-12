@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
 import {readFileSync,readdirSync} from 'node:fs';
 import worker,{countryOf} from './worker.mjs';
+import {validateReplay} from './replay.mjs';
 function database() {
   const db=new DatabaseSync(':memory:'); for(const file of readdirSync(new URL('migrations/',import.meta.url)).filter(n=>/^\d{4}_[a-z0-9_]+\.sql$/.test(n)).sort()) db.exec(readFileSync(new URL('migrations/'+file,import.meta.url),'utf8'));
   return {prepare(sql) {return {bind(...args){return {async first(){return db.prepare(sql).get(...args)},async all(){return {results:db.prepare(sql).all(...args)}},async run(){return db.prepare(sql).run(...args)}}}}},async batch(writes){db.exec('BEGIN');try {const results=await Promise.all(writes.map(w=>w.run()));db.exec('COMMIT');return results;}catch(e){db.exec('ROLLBACK');throw e;}}};
@@ -37,7 +38,7 @@ test('worldwide first places persist per identity, mode and run after being beat
 });
 test('top-one migration rebuilds chronological record improvements, not country winners or slower runs',()=>{
  const db=new DatabaseSync(':memory:');
- for(const file of readdirSync(new URL('migrations/',import.meta.url)).filter(n=>/^\d{4}_/.test(n)&&!n.startsWith('0012_')).sort()) db.exec(readFileSync(new URL('migrations/'+file,import.meta.url),'utf8'));
+ for(const file of readdirSync(new URL('migrations/',import.meta.url)).filter(n=>/^\d{4}_/.test(n)&&n<'0012_').sort()) db.exec(readFileSync(new URL('migrations/'+file,import.meta.url),'utf8'));
  const insert=db.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin,hardcore) VALUES(?,?,?,?,?,?,?,?,?,?)');
  insert.run('last','b',1,'B','BE',5000,0,400,1,0);
  insert.run('first','a',1,'A','FR',10000,0,100,1,0);
@@ -83,7 +84,7 @@ test('payload and rate limit are bounded',async()=>{
 });
 test('new worlds store the run skin and reject invalid skins',async()=>{
  const env={DB:database()};
- for(const skin of [0,23,1.5,'2',null]) assert.equal((await call(env,'/v1/runs',{body:{name:'Test',world:4,skin}})).status,400);
+ for(const skin of [0,24,99,1.5,'2',null]) assert.equal((await call(env,'/v1/runs',{body:{name:'Test',world:4,skin}})).status,400);
  for(const world of [4,5,6,7]) {
   const skin=world%5+1; const start=await call(env,'/v1/runs',{body:{name:'Abysses',world,skin}}); assert.equal(start.status,201);
   const run=await start.json();
@@ -288,6 +289,38 @@ test('biome and achievement skin IDs survive score publication',async()=>{
 });
 
 function fixtureReplay(layout) {return {version:1,build:'a'.repeat(64),completed:true,world:layout.world,seed:123,width:960,height:600,skin:1,startLevel:layout.level,single:true,layouts:{[layout.world+':'+layout.level]:layout},inputs:[[60,0,0,0]],checks:[[60,layout.level,100,100,0,true]],frames:60,time:1,deaths:0};}
+test('Cocon skin persists through score publication, top-one proof and replay download',async()=>{
+ const env={DB:database()},skin=23;
+ const started=await call(env,'/v1/runs',{body:{world:1,name:'Cocon',skin}});assert.equal(started.status,201);
+ const run=await started.json();
+ for(let level=1;level<=10;level++) assert.equal((await call(env,'/v1/runs/'+run.id+'/checkpoint',{body:{level,elapsedMs:level*100,deaths:0}})).status,200);
+ const replay={...fixtureReplay(map),skin,single:false,layouts:{},checks:[[60,10,100,100,0,true]]};
+ assert.equal(validateReplay(replay),true);
+ for(const invalid of [0,24,99,23.5,'23',null]) assert.equal(validateReplay({...replay,skin:invalid}),false);
+ assert.equal((await call(env,'/v1/runs/'+run.id+'/replay',{body:{replay}})).status,201);
+ const board=await (await call(env,'/v1/leaderboard?world=1')).json();
+ assert.equal(board.scores[0].skin,23);assert.equal(board.scores[0].hasReplay,true);
+ const history=await (await call(env,'/v1/achievements/top-one')).json();assert.equal(history.records[0].skin,23);
+ assert.deepEqual((await (await call(env,'/v1/replays/'+run.id)).json()).replay,replay);
+});
+test('Cocon migration preserves scores, effects, replays and top-one history',()=>{
+ const db=new DatabaseSync(':memory:');
+ for(const file of readdirSync(new URL('migrations/',import.meta.url)).filter(n=>/^\d{4}_/.test(n)&&n<'0014_').sort()) db.exec(readFileSync(new URL('migrations/'+file,import.meta.url),'utf8'));
+ db.exec(`INSERT INTO runs VALUES('run','owner',14,'Legacy','FR',100,0,0,0,22,1,'{"hardcore":true}');
+  INSERT INTO scores VALUES('score','owner',1,'Legacy','FR',30000,4,200,22,1,'{"heartbreak":true}');
+  INSERT INTO run_replays VALUES('score','owner','{"skin":22}',200)`);
+ const tables=['runs','scores','top_one_history','run_replays'];
+ const before=tables.map(table=>db.prepare('SELECT * FROM '+table).all());
+ db.exec(readFileSync(new URL('migrations/0014_cocoon_skin.sql',import.meta.url),'utf8'));
+ tables.forEach((table,i)=>assert.deepEqual(db.prepare('SELECT * FROM '+table).all(),before[i],table));
+ const indices=db.prepare("SELECT name FROM sqlite_master WHERE type='index'").all().map(row=>row.name);
+ for(const index of ['runs_owner_started','scores_world_time','scores_country_time','scores_owner_world','scores_top_one_order']) assert.ok(indices.includes(index),index);
+ const insert=db.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin,hardcore) VALUES(?,?,?,?,?,?,?,?,?,?)');
+ insert.run('new','owner',1,'Cocon','FR',10000,0,300,23,1);
+ assert.equal(db.prepare("SELECT skin FROM top_one_history WHERE run_id='new'").get().skin,23,'The record trigger survives the migration');
+ assert.throws(()=>insert.run('bad','owner',1,'Invalid','FR',1000,0,400,24,1),/CHECK/);
+ assert.throws(()=>db.prepare('UPDATE runs SET skin=24').run(),/CHECK/);
+});
 test('publishing requires an owner-bound completion of the exact map',async()=>{
  const env={DB:database()},body={title:'Test',author:'Test',layout:map};
  assert.equal((await call(env,'/v1/workshop',{body,raw:true})).status,403);

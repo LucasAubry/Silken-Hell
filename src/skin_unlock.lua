@@ -5,7 +5,7 @@ local function ease(t)t=clamp(t);return 1-(1-t)^3 end
 function R.init()
  R.seen={};R.queue={};R.active=nil;R.toast=nil;R.scanTime=0
  R.seenEffects={};for _,kind in ipairs({'heartbreak','hardcore','gold'}) do R.seenEffects[kind]=require('skin_effects').unlocked(kind) end
- for i=1,Characters.baseCount do R.seen[i]=Characters.unlocked(i)==true end
+ for _,i in ipairs(Characters.baseIndices) do R.seen[i]=Characters.unlocked(i)==true end
  R.random=R.random or love.math.newRandomGenerator(os.time())
 end
 function R.observe()
@@ -16,7 +16,7 @@ function R.observe()
   if unlocked and not R.seenEffects[kind] then R.queue[#R.queue+1]=kind end
   R.seenEffects[kind]=unlocked
  end
- for i=1,Characters.baseCount do
+ for _,i in ipairs(Characters.baseIndices) do
   local unlocked=Characters.unlocked(i)==true
   if unlocked and not R.seen[i] then R.queue[#R.queue+1]=i end
   R.seen[i]=unlocked
@@ -31,7 +31,7 @@ end
 function R.test()
  if not R.seen then R.init() end
  -- Private generator: previewing never advances the game's random sequence.
- return R.open(R.random:random(6,Characters.baseCount),true)
+ return R.open(Characters.baseIndices[R.random:random(6,Characters.baseCount)],true)
 end
 function R.close(equip)
  local a=R.active;if not a or a.time<3.25 then return false end

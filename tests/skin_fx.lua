@@ -6,7 +6,7 @@ function T.run()
  local quality=Graphics.quality;local replayData=Replay.data;local ghost=Replay.ghost
  local uploads=0
  g.newImage=function(...) uploads=uploads+1;return image(...) end
- for i=1,22 do
+ for i=1,#Characters.keys do
   Profile.character=i;Characters.selected=function()return i end
   local c=Characters.effectColor();local palette=P.player()
   for k=1,3 do assert(palette[1][k]==c[k]) end
@@ -39,14 +39,14 @@ function T.run()
  assert(love.math.getRandomState()==state,'Monster FX must not consume gameplay RNG')
  M.halo=halo;Profile.character=skin;Characters.selected=selected;F.reset();Campaign.select(1)
  g.newImage=image;assert(uploads==0,'Skins must be preloaded')
- for _,name in ipairs({'soie','perle','braise','ecume','royale'}) do
+ for _,name in ipairs({'soie','perle','braise','ecume','royale','maxance','cocon'}) do
   assert(require('art_filter').image('assets/skins/'..name..'/down.png'):getFilter()=='nearest')
  end
  assert(not require('paradise_ink').sprite('original_down') and not require('paradise_ink').sprite('spider_down'),'Pixel spiders cannot use illustrated overrides')
  local dir=os.getenv('SILKEN_STYLE_CAPTURE_DIR')
  if dir then
   local c=g.newCanvas(1000,650);g.push('all');g.setCanvas(c);g.origin();g.clear(.04,.045,.06)
-  for i=1,22 do
+  for i=1,#Characters.keys do
    local x=80+(i-1)%6*164;local y=65+math.floor((i-1)/6)*160
    local color=Characters.effectColor(i);g.setColor(color[1],color[2],color[3]);g.circle('line',x,y,49)
    g.setColor(1,1,1);Characters.portrait(i,x,y,82,'down');g.printf(Characters.names[i],x-78,y+56,156,'center')
@@ -54,6 +54,6 @@ function T.run()
   g.pop();local data=c:newImageData();local bytes=data:encode('png');local file=assert(io.open(dir..'/skins.png','wb'))
   file:write(bytes:getString());file:close();bytes:release();data:release();c:release()
  end
- print('PASS skin FX: 22 skins / four directions, crown colors, biome independence, event snapshots, replay skin, hidden enemies, render state and RNG isolation, zero uploads')
+ print('PASS skin FX: 23 skins / four directions, crown colors, biome independence, event snapshots, replay skin, hidden enemies, render state and RNG isolation, zero uploads')
 end
 return T

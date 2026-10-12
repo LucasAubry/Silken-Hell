@@ -9,6 +9,8 @@ for rank,world in ipairs(Worlds.order) do
  C.crowned[index]=base;C.crownedByWorld[world]=index
 end
 C.names[22]='Soie dorée';C.keys[22]='original';C.crowned[22]=1
+C.names[23]='Cocon';C.keys[23]='cocon'
+C.customSprites={[14]='maxance',[23]='cocon'}
 C.variants={}
 for reward,base in pairs(C.crowned) do C.variants[base]=reward end
 function C.demonCompleted(world)
@@ -18,8 +20,11 @@ function C.demonCompleted(world)
 end
 -- All spider skins are crown-free; reward IDs remain stable.
 C.nativeCrown={}
-C.baseCount=14
+C.baseIndices={1,2,3,4,5,6,7,8,9,10,11,12,13,14,23}
+C.baseCount=#C.baseIndices
 function C.unlocked(index)
+    if not C.names[index] then return false end
+    if index==23 then return require('achievements').unlocked({id='flawless_all'}) end
     if (Profile.skinGrants or {})[tostring(index)]==true then return true end
     if index==22 then return Profile.hasCompleted(3) or (Hardcore and Hardcore.completed['3']==true) end
     if C.crowned[index] then return C.demonCompleted(Worlds.order[index-14]) end
@@ -35,8 +40,9 @@ end
 function C.cycle(step)
     local selected=C.menuIndex()
     local base=C.crowned[selected] or selected
-    base=(base-1+step)%14+1
-    C.select(base)
+    local position=1
+    for i,index in ipairs(C.baseIndices) do if index==base then position=i;break end end
+    C.select(C.baseIndices[(position-1+step)%C.baseCount+1])
 end
 function C.menuIndex() return C.browsed or C.selected() end
 function C.select(index)
@@ -55,9 +61,10 @@ end
 C.playerWidth=59
 -- Authored PNGs: Perle's front/back silhouette, Soie's profile silhouette.
 C.skinColors={original={.61,.33,.14},spider={1,1,1},hell_spider={1,.25,.08},ocean_spider={.2,.75,1},crown_spider={.67,.42,.9}}
-function C.model(dir)
+function C.model(dir,index)
     dir=dir or 'down'
-    return 'player_skin_'..((dir=='left' or dir=='right') and 'profil' or dir)
+    local custom=C.customSprites[C.crowned[index] or index]
+    return 'player_skin_'..(custom and custom..'_' or '')..((dir=='left' or dir=='right') and 'profil' or dir)
 end
 function C.portrait(index,x,y,size,dir,locked,walk)
     index=math.max(1,math.min(#C.keys,tonumber(index) or 1));dir=dir or 'down'
@@ -91,7 +98,7 @@ function C.portrait(index,x,y,size,dir,locked,walk)
         g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied')
         g.setColor(red*alpha,green*alpha,blue*alpha,alpha)
         g.draw(canvas,x,y,0,size/224,size/224,128,128)
-        if dir=='down' and not locked then
+        if dir=='down' and not locked and not C.customSprites[C.crowned[index] or index] then
             -- Keep the iris and catchlight legible below one source eye pixel.
             local a=Art.images[C.model(dir)];local qx,qy=a.quad:getViewport()
             local iw,ih=a.image:getDimensions();local scale=size/math.max(a.w,a.h)
@@ -111,16 +118,29 @@ function C.portrait(index,x,y,size,dir,locked,walk)
     local fx=require('skin_reward_fx')
     if reward and not locked then fx.orbit(x,y,size,false,false) end
     local g=love.graphics;g.push('all')
-    local key=C.model(dir)
+    local key=C.model(dir,index)
     local a=Art.images[key];local pose=dir=='right' and 'left' or dir
-    local body=C.skinColors[C.keys[index]];local tint=C.tints[index] or {1,1,1}
-    C.skinShader=C.skinShader or g.newShader('assets/shaders/player_skin.glsl')
-    C.skinShader:send('bodyColor',{body[1]*tint[1],body[2]*tint[2],body[3]*tint[3]})
-    C.skinShader:send('sideView',pose=='left')
-    C.skinShader:send('frontView',pose=='down')
-    C.skinShader:send('brownSkin',index==1)
-    C.skinShader:send('locked',locked==true)
-    g.setShader(C.skinShader)
+    if C.customSprites[index] then
+        -- These PNGs already contain their final silk, glasses and iris colors.
+        g.setShader()
+        if locked then
+            C.silhouetteShader=C.silhouetteShader or g.newShader([[
+                vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel) {
+                    return vec4(.48,.50,.53,Texel(image,uv).a)*color;
+                }
+            ]])
+            g.setShader(C.silhouetteShader)
+        end
+    else
+        local body=C.skinColors[C.keys[index]];local tint=C.tints[index] or {1,1,1}
+        C.skinShader=C.skinShader or g.newShader('assets/shaders/player_skin.glsl')
+        C.skinShader:send('bodyColor',{body[1]*tint[1],body[2]*tint[2],body[3]*tint[3]})
+        C.skinShader:send('sideView',pose=='left')
+        C.skinShader:send('frontView',pose=='down')
+        C.skinShader:send('brownSkin',index==1)
+        C.skinShader:send('locked',locked==true)
+        g.setShader(C.skinShader)
+    end
     g.translate(x,y);if dir=='right' then g.scale(-1,1) end
     local width=size*a.w/math.max(a.w,a.h)
     if not (walk and require('brown_walk').draw(a.image,pose,0,0,width,walk,a.quad)) then Art.draw(key,0,0,width,0) end
@@ -178,6 +198,7 @@ function C.scorePortrait(score,x,y,size)
 end
 -- Crown variants retain the body color of their base skin.
 C.bodyColors={original={.57,.29,.10},spider={.94,.90,.79},hell_spider={1,.20,.055},ocean_spider={.15,.68,.91},crown_spider={.94,.90,.79}}
+C.bodyColors.cocon={.94,.94,.90}
 function C.effectColor(index)
     index=index or C.selected();index=C.crowned[index] or index
     local body=C.bodyColors[C.keys[index]] or C.bodyColors.original

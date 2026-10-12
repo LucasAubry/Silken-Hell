@@ -1,6 +1,9 @@
 -- Preserve pixel skins and trophies; illustrated world textures use mipmaps.
 -- Mipmaps stabilize high-resolution art at gameplay size without a screen blur.
 local F={images={}}
+function F.binaryAlpha(path)
+ return path and (path:match('^assets/skins/commun/') or path:match('^assets/skins/maxance/') or path:match('^assets/skins/cocon/'))~=nil
+end
 function F.mode(path)
  return path and (path:match('^assets/skins/') or path:match('^assets/ui/achievements/')) and 'nearest' or 'linear'
 end
@@ -11,7 +14,7 @@ function F.image(path,data)
  end
  local mode=F.mode(path)
  local cleaned
- if path and path:match('^assets/skins/commun/') then
+ if F.binaryAlpha(path) then
   -- Generated PNGs contain near-transparent residue along their pixel outlines.
   -- Normalize once at upload, keeping the original RGB and empty leg gaps.
   cleaned=data and data:clone() or love.image.newImageData(path)

@@ -37,16 +37,20 @@ function T.run()
  end
  local before=snapshot()
  local random=love.math.getRandomState();App.state='menu';R.test()
- assert(R.active.preview and R.active.index>=6 and R.active.index<=14)
+ assert(R.active.preview and (R.active.index>=6 and R.active.index<=14 or R.active.index==23))
  R.update(3.4);R.close(true)
  assert(before==snapshot(),'Preview never unlocks or equips a skin')
  assert(random==love.math.getRandomState(),'Preview leaves gameplay RNG intact')
  Profile.completed={};Profile.scores={};Profile.achievements={};Hardcore.completed={};Profile.topRecords={};R.init()
  for _,world in ipairs(Worlds.order)do Profile.completed[world]=true;Hardcore.completed[tostring(world)]=true end
- Profile.achievements={gillou=true,maxance=true,heartbreak=true};R.observe()
- assert(#R.queue==11,'Nine reward skins plus two earned effects are queued')
+ Profile.achievements={gillou=true,maxance=true,heartbreak=true,flawless_all=true};R.observe()
+ assert(#R.queue==12,'Ten reward skins plus two earned effects are queued')
  local earned={};for _,index in ipairs(R.queue)do assert(not earned[index]);earned[index]=true end
  for index=6,14 do assert(earned[index],'Unlock animation covers skin '..index) end
+ assert(earned[23],'Cocon joins the reward queue without any legacy variants')
+ R.observe();assert(#R.queue==12,'Cocon is announced only once')
+ R.queue={};App.state='victory';R.open(23,false);R.update(3.3)
+ assert(R.close(true) and Profile.character==23,'The Cocon reward can be equipped')
  R.init()
  App.state='menu';Characters.select(6);Profile.skinEffects={hardcore=true}
  local tick=0;local draw=love.draw

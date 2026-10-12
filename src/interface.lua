@@ -323,8 +323,8 @@ end
 function U.skins()
     U.text('SKINS',100,54,'heading',white,1000,'center')
     local mx,my=U.mouse()
-    for i=1,Characters.baseCount do
-        local x=78+((i-1)%6)*176;local y=120+math.floor((i-1)/6)*130
+    for position,i in ipairs(Characters.baseIndices) do
+        local x=78+((position-1)%6)*176;local y=120+math.floor((position-1)/6)*130
         local unlocked=Characters.unlocked(i)
         local hover=Input.active and Input.index==#U.buttons+1 or not Input.active and mx>=x and mx<=x+164 and my>=y and my<=y+118
         g.setColor(.025,.045,.065,.95);g.rectangle('fill',x,y,164,118,7)

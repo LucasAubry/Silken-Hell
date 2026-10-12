@@ -31,7 +31,7 @@ function T.run()
   assert(nextGroup>=group,'The gallery groups effects, skins, then trophies')
   group=nextGroup;groups[group]=groups[group]+1
  end
- assert(groups[1]==3 and groups[2]==9 and groups[3]==3,'Every reward appears in its group')
+ assert(groups[1]==3 and groups[2]==10 and groups[3]==2,'The flawless skin appears once in the skin reward group')
  local earned,total=S.count();assert(earned==0 and total==15)
  local selected=Characters.selected();local equipped=json.encode(E.snapshot());local before=progress()
  local fonts={};local rawText=UI.rawText;local background=UI.background;local backgrounds=0
@@ -97,10 +97,14 @@ function T.run()
   end
  end
  Characters.portrait=portrait;E.icon=icon;Graphics.effects=effects;assert(iconCalls==12)
+ local coconCalls=0
+ Characters.portrait=function(index,...)assert(index==23);coconCalls=coconCalls+1;return portrait(index,...)end
+ S.reward(Achievements.list[byId.flawless_all],true,600,350,328)
+ Characters.portrait=portrait;assert(coconCalls==1,'The flawless achievement displays its Cocon reward')
 
  -- Opaque pixels in every locked reward share one grey, hiding all inner color and texture.
  local canvas=g.newCanvas(500,500,{dpiscale=1})
- for _,id in ipairs({'gillou','flawless_all','heartbreak'})do
+ for _,id in ipairs({'gillou','flawless_all','story_all','heartbreak'})do
   g.push('all');g.setCanvas(canvas);g.origin();g.setScissor();g.clear(0,0,0,0)
   S.reward(Achievements.list[byId[id]],false,250,250,328);g.pop()
   local pixels=canvas:newImageData();local first;local opaque=0
@@ -167,7 +171,8 @@ function T.run()
  local shots={
   {id='heartbreak',name='locked',profile='empty'},
   {id='gillou',name='locked-skin',profile='empty'},
-  {id='flawless_all',name='locked-trophy',profile='empty'},
+  {id='flawless_all',name='locked-cocon',profile='empty'},
+  {id='story_all',name='locked-trophy',profile='empty'},
   {id='hardcore',name='locked-logo',profile='empty'},
   {id='story_first',name='partial-count',profile='partial'},
   {id='story_first',name='story-first'},
@@ -211,11 +216,14 @@ function T.run()
    if shot.name=='locked-trophy' then
     -- Returning from the silhouette canvas must keep the window clip right-way up.
     local w,h=data:getDimensions();local scale=math.min(w/1200,h/750)
-    local x=math.floor((w-1200*scale)/2+600*scale)
-    local y=math.floor((h-750*scale)/2+175*scale)
-    local r,green,b=data:getPixel(x,y)
-    assert(math.abs(r-.48)<.015 and math.abs(green-.50)<.015 and math.abs(b-.53)<.015,
-     'The top gem of a locked trophy remains visible inside the window clip')
+    local opaque=0
+    for yy=160,330,3 do for xx=480,720,3 do
+     local x=math.floor((w-1200*scale)/2+xx*scale)
+     local y=math.floor((h-750*scale)/2+yy*scale)
+     local r,green,b=data:getPixel(x,y)
+     if math.abs(r-.48)<.015 and math.abs(green-.50)<.015 and math.abs(b-.53)<.015 then opaque=opaque+1 end
+    end end
+    assert(opaque>20,'The upper half of a locked trophy remains visible inside the window clip')
    end
    local path='/tmp/silken-achievement-gallery-'..shot.name..'.png'
    local f=assert(io.open(path,'wb'));f:write(data:encode('png'):getString());f:close()

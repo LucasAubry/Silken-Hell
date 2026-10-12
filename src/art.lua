@@ -39,9 +39,10 @@ function A.add(key,path)
     end
     local data=A.imageData(path)
     local w,h=data:getDimensions(); local x0,y0,x1,y1=w,h,0,0
+    local alphaThreshold=require('art_filter').binaryAlpha(path) and .5 or .12
     for y=0,h-1 do for x=0,w-1 do
         local _,_,_,alpha=data:getPixel(x,y)
-        if alpha>0.12 then x0=math.min(x0,x); y0=math.min(y0,y); x1=math.max(x1,x); y1=math.max(y1,y) end
+        if alpha>alphaThreshold then x0=math.min(x0,x); y0=math.min(y0,y); x1=math.max(x1,x); y1=math.max(y1,y) end
     end end
     if x1<x0 then x0,y0,x1,y1=0,0,w-1,h-1 end
     local image=require('art_filter').image(path,data)
@@ -141,6 +142,9 @@ function A.load()
     A.add('ocean_coral_wall','assets/environments/ocean/coral-wall.png')
     for _,pose in ipairs({'down','up','profil'}) do
         A.add('player_skin_'..pose,'assets/skins/commun/'..pose..'.png')
+        for _,skin in ipairs({'maxance','cocon'}) do
+            A.add('player_skin_'..skin..'_'..pose,'assets/skins/'..skin..'/'..pose..'.png')
+        end
     end
     for _,key in ipairs({'bush','mini_bush','walking_tree','white_spider','white_egg','brown_egg','soil'}) do
         A.add('rebirth_'..key,'assets/sprites/renaissance/'..key..'.png')

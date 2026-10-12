@@ -1,0 +1,39 @@
+Maxance directional sprite edits — 2026-10-12
+Mode: built-in image_gen, true transparent PNG; no CLI/API fallback.
+Inputs: assets/skins/commun/down.png, assets/skins/commun/up.png, assets/skins/commun/profil.png; current Maxance palette from /tmp/silken-achievement-gallery-maxance.png.
+Outputs: assets/skins/maxance/down.png, assets/skins/maxance/up.png, assets/skins/maxance/profil.png.
+Palette is baked into these PNGs. Render without the generic body/eye recoloring shader.
+Front and profile: brown eyes, dark round spectacles, dark brown moustache.
+Single anatomical rear-left leg has a shortened bent segment and small wooden splint.
+Back intentionally has no face.
+The profile is left-facing; the existing runtime may mirror it for right-facing movement.
+
+FRONT / DOWN
+Use case: precise-object-edit.
+Asset type: a SINGLE front/down facing pixel-art spider skin for the game Silken Hell.
+Input image 1 is the edit target and exact required pose, geometry, proportions and sprite framing. Input image 2 is ONLY the current in-game Maxance COLOR reference: muted grey mauve body with gold markings. Do not reproduce the UI.
+Primary request: edit the reference spider into Maxance: body muted grey mauve, two clear BROWN eyes, a pair of unmistakable dark round spectacles with visible thin bridge and transparent lenses in front of the brown eyes, and a short chunky dark brown moustache below the eyes above the mandibles. Preserve the gold abdomen emblem, gold forehead emblem and gold leg cuffs of the reference. ONE injured leg: anatomical REAR LEFT, which appears UPPER RIGHT in this front-facing image, has a shortened outer segment with a visible odd bend and tiny tan wooden splint. The other seven legs remain normal and unchanged. No gore. Keep this asymmetric leg understandable but still a full game sprite.
+Keep the exact established pixel-art style: big clean square pixel clusters, solid flat limited palette, thick dark stepped outlines, readable at tiny game sizes. Preserve reference silhouette and layout, large abdomen centered above round head, eight legs evenly spread, character fills 90 percent of image width and height. Brown eyes with one small ivory square catchlight, never blue. Glasses and moustache must remain readable at 60 pixel sprite display size.
+TRUE transparent background, opaque sprite interior. ONE sprite only, same wide image proportions as first image. No floor, UI, writing, border, shadow, glow, realistic texture, painterly smoothing, antialiasing, extra detail or props.
+
+
+BACK / UP
+Use case: precise-object-edit.
+Asset type: a SINGLE back/up-facing pixel-art spider game sprite for Silken Hell.
+Input image 1 is the EDIT TARGET: the white/gold BACK view. Its exact silhouette, body placement, pose, proportions and margins MUST be preserved. Input image 2 is identity and palette reference: the new Maxance FRONT view with muted grey mauve body, gold markings, spectacles, brown eyes, moustache and one injured anatomical rear-left leg.
+Primary request: recolor the back-view target to EXACTLY the muted grey mauve, gold and dark outline palette of Maxance in image 2, preserving the two gold body motifs and leg cuffs. Render the SAME character from BEHIND, so there are NO EYES, NO MOUSTACHE and NO FRONT LENSES drawn on the back. At most tiny dark spectacle arms at the outer edge of the small upper/head segment, if visible; avoid a false face on the back.
+ONE broken leg only: anatomical rear-left, now the lower-left-most leg in this UP facing view, has the same shortened outer section, odd kink and little tan wooden splint secured with two ivory cloth bands as image 2. Other seven legs remain intact. No gore.
+Preserve exact image 1 pose and relative placement for compatibility with procedural walking animation. A clean 2D game sprite, chunky square-pixel clusters and bold stepped outlines identical to the references, sharp flat color groups, no smoothing, no realistic texture. Character occupies 90 percent of image width and height, same wide proportions as input 1. Opaque spider interior, TRUE fully transparent background. One sprite only, no text, no UI, no floor, no cast shadow, no glow, no extra objects.
+
+
+LEFT PROFILE
+Use case: precise-object-edit.
+Asset type: a SINGLE LEFT-facing profile pixel-art spider game sprite for Silken Hell.
+Input image 1 is EDIT TARGET: pearl-white spider left profile. Preserve its exact silhouette, body location, pose, leg positions, angle, dimensions and margins for procedural walking animation. Input image 2 is identity reference, the new front Maxance; input image 3 the same character's back. Render the identical character from the LEFT side by modifying image 1.
+Primary request: muted grey mauve body with the exact gold emblems and leg cuffs from Maxance front/back, with existing diagonal profile emblems retained and recolored consistently. The large visible eye is BROWN (warm brown iris with dark pupil and ONE ivory square catchlight), surrounded by one clear round dark-brown spectacle lens frame, plus its arm extending backward along the head. The eye remains readable through the transparent lens. Add the same chunky dark brown moustache seen from this side just below the eye near the mouth and mandibles, correctly foreshortened. NO face on the large rear abdomen.
+ONE injured leg only: anatomical REAR LEFT, visible in this left-facing profile as the farthest right leg on the NEAR side, has a shortened outer segment with an odd bend and the same small tan wooden splint wrapped with two ivory bands as the front/back references. Other legs intact. No gore.
+Game style identical to target: clean large square pixel clusters, bold stepped dark outlines, limited flat muted-grey-mauve/gold palette, no smooth vector edges, no noisy texture, no realism. The glasses and moustache use the SAME chunky pixel size as the spider; the splint also simple chunky blocks. Sprite fills 90 percent of image width/height, preserving image 1 layout. TRUE transparent exterior and solid opaque interior. ONE sprite only, no text, UI, labels, floor, cast shadow, glow or scene.
+
+
+LEFT PROFILE — GOLD EMBLEM ORIENTATION REPAIR
+Use case: precise-object-edit. Input 1 is the EDIT TARGET new Maxance LEFT profile sprite. Input 2 is a supporting old profile showing correct orientation of the gold motif. Make ONE surgical change only: rotate the gold emblem on the LARGE REAR ABDOMEN to match the oblique diagonal orientation and foreshortening in input 2. Its long pointed stem must point DOWN-LEFT toward the head, its branches UP-RIGHT toward the rear, rotated about 55 degrees clockwise from current vertical shape. Paint this diagonal gold motif onto the mauve body. Restore mauve pixels where the old vertical motif was. Keep ALL other pixels/features of input1 unchanged: gold forehead mark, muted mauve body, brown eye, glasses, moustache, every leg, wooden splint, black stepped outline, framing and pose. Keep chunky square pixels, no smooth realistic details. Fully transparent exterior and opaque body interior. ONE sprite only.

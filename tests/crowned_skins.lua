@@ -4,7 +4,8 @@ function T.run()
  local finish=Replay.finish;Replay.finish=function() end
  require('app_icon').complete=function() end
  Profile.completed={};Profile.scores={};Profile.achievements={};Hardcore.completed={}
- assert(#Characters.keys==22)
+ assert(#Characters.keys==23 and Characters.baseCount==15)
+ assert(not Characters.crowned[23],'Cocon is independent from the eight legacy gold variants')
  for i=15,22 do assert(not Characters.unlocked(i),'New reward begins locked '..i) end
  for _,w in ipairs(Worlds.order) do
   if w~=3 then Profile.completed[w]=true end

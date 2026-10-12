@@ -1,0 +1,44 @@
+Silken Hell — Cocon skin and trophy menu-palette revision
+Generator: built-in image_gen tool
+Transparent background: true
+Menu colors: src/interface.lua U.theme tint table (2026-10-12)
+
+Asset: assets/skins/cocon/down.png
+Use case: compositing.
+Asset type: transparent player-character sprite for Silken Hell, Cocon skin, DOWN/front pose.
+Image 1 is the edit target and exact pose/layout template (standard playable spider). Image 2 is the DESIGN REFERENCE: use ONLY the white silk-wrapped spider inside that trophy, not the trophy ring, pedestal or tears.
+Replace Image 1's spider surfaces with the trophy spider's dense creamy-white silk wrapping. The abdomen, head and all eight legs must be covered with clearly visible criss-crossing broad silk bands, nearly all body covered, with two large AMBER eyes visible through the wrapping. No gold motifs. Preserve Image 1's exact player silhouette, limb directions, face framing and locations: rounded abdomen centered upper quarter, smaller head at about 63% sprite height, eight bent legs spread on left/right, two small fangs below the eyes. Exactly one sprite, front facing viewer, symmetrical neutral standing pose.
+The spider is the Cocon character from Image 2, but enlarged to fill the whole image as a gameplay sprite. Preserve separate transparent gaps between all legs. Friendly expression and large amber irises with black pupils and square white catchlights.
+Genuine low-resolution 16-bit PIXEL ART matching the existing sprite: chunky square clusters, hard staircase outlines, thick one-logical-pixel near-black outline, simple ivory/off-white/light-gray silk shading with only 3 flat bands. No smooth gradients, no fine hair, no photorealism, no blur or antialiasing.
+Composition: match Image 1's proportions and camera exactly, full spider visible with consistent small transparent margin, sprite centered, 85–90% of canvas width. No ring, pedestal, tears, trophy, gold accessories, lettering, UI or background. Real transparent alpha.
+
+Asset: assets/skins/cocon/up.png
+Use case: precise-object-edit.
+Asset type: transparent gameplay sprite, Silken Hell Cocon skin, UP/back view.
+Image 1 is the EDIT TARGET and exact back-view pose/template. Image 2 is the finished Cocon FRONT character reference, whose silk-wrapped appearance must match.
+Retexture the spider in Image 1 with the exact same ivory white spider-silk wrapping as Image 2. Densely cover abdomen, head and all eight bent legs with broad crisscrossing ivory silk bands with simple light-gray shadows. Remove all gold patterns and gold toe tips. Match the shapes, eight-leg spacing, proportions, centers and neutral pose of Image 1 exactly. This is a back/up pose: NO eyes, NO face, NO mouth, NO frontal fangs; show the back of the silk-covered head, as in the pose reference. Same cute low-res spider body and chunky limbs.
+Genuine 16-bit PIXEL ART with a consistent low-res grid and very clearly visible large square pixel clusters. Hard staircase outlines, one-logical-pixel dark outline, only 3 flat shade bands per material. Match Image 2's white silk rendering exactly, without thin filaments, smooth gradients, glow, texture or antialiasing.
+Single isolated centered complete spider, whole sprite visible, margins and camera as Image 1, roughly 85–90 percent image width. Fully transparent background, all leg gaps transparent. No lettering, no trophy, no ring, no gem, no UI.
+
+Asset: assets/skins/cocon/profil.png
+Use case: precise-object-edit.
+Asset type: transparent gameplay sprite, Silken Hell Cocon skin, LEFT side/profile view.
+Image 1 is the EDIT TARGET and exact LEFT profile pose/template. Image 2 is the finished Cocon FRONT character reference, whose silk-wrapped appearance must match.
+Retexture Image 1's spider with the exact same ivory white spider-silk wrapping as Image 2. Densely cover abdomen, head and all eight bent legs with broad crisscrossing ivory silk bands with simple light-gray shadows. Remove all gold markings and gold toe tips. Preserve Image 1's left-facing view, silhouette, limb positions, full-spider proportions and neutral stance exactly: head on LEFT at about 31 percent width/64 percent height, larger raised abdomen on RIGHT around 63 percent width/23 percent height. One visible large AMBER eye with black pupil and square white catchlight, matching Image 2. The far eye is hidden by the head.
+Genuine 16-bit PIXEL ART on the same coarse logical grid as Image 2: large square clusters, hard stair-step contours, one-logical-pixel dark outline, only 3 flat shade bands per material. No smooth gradients, no fine fibers, no realistic texture or antialiasing.
+Single isolated centered complete spider, no cropped limbs, margins and composition as Image 1, roughly 85–90 percent image width. Actual transparent background and transparent leg gaps. No text, no trophy, no ring, no gems, no UI.
+
+Asset: assets/ui/achievements/flawless_all.png
+Use case: precise-object-edit.
+Asset type: transparent pixel-art trophy for Silken Hell.
+Input image is the EDIT TARGET. Change ONLY the colored interiors of the seven tears; preserve the EXACT existing positions and shapes of the tears, golden outlines, cream silk ring, entire silk-covered spider, eyes and bronze pedestal. Do not change or move any other pixel-art structure.
+Reassign the tear colors in this exact progression from lower left, upward around the ring clockwise, to lower right. Use the real menu palette below rather than the previous shades:
+1 BOTTOM LEFT (about 7 o'clock), formerly dark blue: PARADIS, warm ivory #FFF7E3.
+2 LEFT MIDDLE (about 9 o'clock), formerly red: CIEL, light sky blue #A6DEFF.
+3 UPPER LEFT (about 10:30), formerly lime: TERRE, EARTHY BROWN #BF7538, not yellow gold.
+4 TOP CENTER (12 o'clock), formerly white: OCEAN, bright CYAN #26E6FF.
+5 UPPER RIGHT (about 1:30), formerly light blue: ABYSSE, luminous PERIWINKLE BLUE-VIOLET #737AFF, not dark navy.
+6 RIGHT MIDDLE (about 3 o'clock), formerly ochre: ENFER, warm orange-red #FF3814.
+7 BOTTOM RIGHT (about 5 o'clock), formerly cyan: RENAISSANCE, medium bright grass GREEN #7AE861, not yellow lime.
+Each tear interior has its exact named base hue covering most of it, with only a small lighter square highlight and one darker band. Keep gold rims separate and unchanged. Exactly SEVEN tears.
+Keep the exact chunky 16-bit pixel-art grid and crisp hard-edged shapes. No smooth texture, no realistic detail. Full trophy visible. No added text, no labels or numbers. Preserve real transparent alpha background.

@@ -1,0 +1,15 @@
+Silken Hell — Un fil sans faute, eight visible walking legs
+Generator: built-in image_gen tool
+Mode: compositing
+Transparent background: true
+Destination: assets/ui/achievements/flawless_all.png
+Inputs: previous trophy and assets/skins/cocon/down.png
+
+Use case: compositing.
+Image 1: trophy EDIT TARGET, preserve all its ring, tears, and pedestal.
+Image 2: exact eight-legged spider CUTOUT TO INSERT.
+CRITICAL: remove the entire old six-legged spider from the center of Image 1 and replace it with a uniformly downscaled copy of the WHOLE spider in Image 2. Preserve Image 2's spider exactly, including ALL FOUR bent walking legs on its LEFT and ALL FOUR bent walking legs on its RIGHT. Do not redraw it using the old trophy spider anatomy. It is a different eight-legged silhouette.
+Place the eight-legged spider from Image 2 centrally inside the ring, at around 47% of the full trophy image width and 40% of its height. Use the available central space and keep all eight feet separate from the ring. Image 2 has FOUR legs in staggered tiers per side: copy them ALL. On each side, visible outer foot tips descend as top foot, second foot, third foot, fourth/bottom foot. Eight distinct bent appendages, not six. The two small fangs under its eyes are additional facial parts and never count as walking legs.
+Image 2's abdomen, silk banding, head, amber eyes and eight legs must keep their original proportions; just resize the complete image into the trophy, with transparent spaces between all limbs.
+Keep seven tears in Image 1 exactly as they are: ivory bottom left, light blue left, brown upper left, cyan top, periwinkle upper right, orange-red right, green bottom right. Preserve ring and pedestal. Full trophy, original canvas and composition.
+Pixel art only. Crisp square pixel clusters at a consistent logical pixel size with the ring. No text or labels. Preserve fully transparent background. Output one complete trophy with the eight-legged spider from Image 2.

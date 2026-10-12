@@ -14,7 +14,7 @@ function T.run()
    assert(not entries[entry.id],'Unique achievement ID');entries[entry.id]=entry
    assert(not entry.id:match('^flawless%d+$') and not entry.id:match('^top1_') and entry.id~='bossflawless1','Retired achievements stay out of the gallery')
    if entry.world then worldCount=worldCount+1;assert(entry.rewardSkin==Worlds.rank(entry.world)+5)end
-   if entry.trophy then trophyCount=trophyCount+1;assert(not entry.rewardSkin and not entry.rewardEffect)
+   if entry.trophy then trophyCount=trophyCount+1;assert(not entry.rewardEffect)
    else assert(entry.rewardSkin or entry.rewardEffect,'Each achievement displays its reward or an authored trophy')end
   end
   assert(worldCount==7 and trophyCount==3)
@@ -23,16 +23,30 @@ function T.run()
   assert(entries.heartbreak.name=='Une triste fin' and entries.heartbreak.rewardEffect=='heartbreak')
   assert(entries.hardcore.rewardEffect=='hardcore' and entries.top1.rewardEffect=='gold')
   assert(entries.story_first.trophy=='story_first' and entries.story_all.trophy=='story_all' and entries.flawless_all.trophy=='flawless_all')
+  assert(entries.flawless_all.rewardSkin==23,'The flawless trophy also awards the Cocon skin')
+  assert(#Characters.keys==23 and Characters.names[14]=='Maxance' and Characters.names[23]=='Cocon')
+  assert(Characters.baseCount==15 and #Characters.baseIndices==15)
+  for position,index in ipairs(Characters.baseIndices)do
+   assert(index==(position==15 and 23 or position),'The selection excludes legacy variants without renumbering them')
+  end
 
   local flags={};Profile.achievements=flags;Profile.scores={};Profile.completed={};Profile.skinGrants={};Profile.topRecords={}
+  assert(not Characters.unlocked(23),'Cocon starts locked')
+  Profile.skinGrants['23']=true;assert(not Characters.unlocked(23),'Cocon requires the achievement itself');Profile.skinGrants={}
   for i=#Worlds.order,2,-1 do
    Achievements.check({world=Worlds.order[i],deaths=0,hardcore=i%2==0},flags)
    assert(not Achievements.unlocked(entries.flawless_all),'Every one of the seven worlds is required')
+   assert(not Characters.unlocked(23),'Partial flawless progress cannot unlock the skin')
   end
   Achievements.check({world=Worlds.order[1],deaths=1},flags)
   assert(not Achievements.unlocked(entries.flawless_all),'A run with one death does not complete the challenge')
   Achievements.check({world=Worlds.order[1],deaths=0},flags)
   assert(flags.flawless_all and Achievements.unlocked(entries.flawless_all),'Separate flawless runs combine regardless of order or mode')
+  assert(Characters.unlocked(23) and Characters.select(23) and Characters.selected()==23)
+  Characters.cycle(1);assert(Characters.menuIndex()==1 and Profile.character==1)
+  Characters.cycle(-1);assert(Characters.menuIndex()==23 and Profile.character==23)
+  Characters.cycle(-1);assert(Characters.menuIndex()==14 and Profile.character==23,'Browsing a locked skin never equips it')
+  Characters.cycle(1);assert(Characters.menuIndex()==23,'Cycle proceeds directly from Maxance to Cocon')
   assert(not flags.bossflawless1,'Completing Paradise no longer awards Coquille parfaite')
   Achievements.finishLevel();assert(not flags.bossflawless1)
   local excluded={};Achievements.check({world=8,deaths=0},excluded);Achievements.check({world=9,deaths=0},excluded)
@@ -55,6 +69,7 @@ function T.run()
   for _,world in ipairs(Worlds.order)do legacy[#legacy+1]='flawless'..world..'=1'end
   files={['profile.txt']=table.concat(legacy,'\n')};Profile.load()
   assert(Profile.achievements.flawless_all and Achievements.unlocked(entries.flawless_all))
+  assert(Characters.unlocked(23),'Historical per-world progress unlocks Cocon')
   assert(Profile.achievements.gillou and Profile.achievements.maxance and Profile.achievements.heartbreak)
   assert(Profile.achievements.bossflawless1,'Existing boss-stat evidence survives migration')
   Profile.save();Profile.load();assert(Profile.achievements.flawless_all and Profile.achievements.flawless3)
@@ -68,9 +83,12 @@ function T.run()
   files={['profile.txt']='statsVersion=1\nprogressVersion=2',['scores.tsv']=table.concat(normal,'\n'),['hardcore-scores.json']=json.encode(hard)}
   Hardcore.completed={};Profile.load()
   assert(Achievements.unlocked(entries.flawless_all) and Profile.achievements.hardcore)
+  assert(Characters.unlocked(23),'Historical score progress unlocks Cocon')
   assert(Achievements.unlocked(entries.hardcore) and effects.unlocked('hardcore'),'Hardcore score history recovers the halo even without hardcore.json')
   assert(not Achievements.unlocked(entries.world6),'A hardcore record does not change normal-world progression')
   Profile.save();Profile.load();assert(Profile.achievements.flawless_all and effects.unlocked('hardcore'))
+  Profile.achievements={flawless_all=true};Profile.scores={};Profile.completed={};Hardcore.completed={}
+  assert(Characters.unlocked(23),'An existing explicit unlock is enough, including temporary all-unlocked profiles')
 
   files={['profile.txt']='statsVersion=1\nprogressVersion=2\ntop1_6=1\ntop1_5=0'};Profile.load()
   assert(Profile.achievements.top1 and Achievements.unlocked(entries.top1) and effects.unlocked('gold'),'Legacy first-place flags become a single achievement and effect')

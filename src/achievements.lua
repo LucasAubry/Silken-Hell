@@ -17,7 +17,7 @@ A.list={
     {id='maxance',category='secrets',name='C’est dur ?',rewardSkin=14,description=function()
         return 'Termine un parcours complet du Paradis avec au moins 95 morts.'
     end},
-    {id='flawless_all',category='mastery',name='Un fil sans faute',trophy='flawless_all',description=function()
+    {id='flawless_all',category='mastery',name='Un fil sans faute',trophy='flawless_all',rewardSkin=23,description=function()
         return 'Termine chacun des sept mondes sans mourir, en parcours complet (hors entraînement).'
     end},
     {id='hardcore',category='mastery',name='Auréole hardcore',rewardEffect='hardcore',description=function()
@@ -32,9 +32,11 @@ for _,world in ipairs(Worlds.order) do
     A.list[#A.list+1]={id='world'..w,world=w,rewardSkin=Worlds.rank(w)+5,category='worlds',name=Worlds.names[w],description=function() return T('Termine tous les niveaux de %s en parcours complet (hors entraînement).',T(Worlds.names[w])) end}
 end
 -- Group the gallery by its reward while preserving the order within each group.
-local grouped={}
+local grouped,seen={},{}
 for _,field in ipairs({'rewardEffect','rewardSkin','trophy'}) do
-    for _,a in ipairs(A.list) do if a[field] then grouped[#grouped+1]=a end end
+    for _,a in ipairs(A.list) do
+        if a[field] and not seen[a.id] then grouped[#grouped+1]=a;seen[a.id]=true end
+    end
 end
 A.list=grouped
 local function allFlawless(flags,scores)
