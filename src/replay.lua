@@ -76,10 +76,10 @@ function R.update(dt,tick)
         end
         R.frame=R.frame+1;R.data.frames=R.playing and R.data.frames or R.frame
         R.enter();R.input={x,y,slow};local ok,err=xpcall(function() if App.state=='playing' then tick(R.step) end end,debug.traceback);R.leave();if not ok then error(err) end
-        local actual=R.checkpoint()
         if R.playing then
             local expected=R.data.checks[R.checkIndex]
             if expected and expected[1]==R.frame then
+                local actual=R.checkpoint()
                 if expected[2]~=actual[2] or expected[3]~=actual[3] or expected[4]~=actual[4] or expected[5]~=actual[5] or expected[6]~=actual[6] then
                     if R.compatibility then
                         -- Old recordings contain input and sparse checkpoints, not the old engine.
@@ -96,7 +96,7 @@ function R.update(dt,tick)
             if R.afterFrame() then break end
             if R.frame>=R.data.frames then R.endPlayback();break end
         elseif R.frame%240==0 or R.pendingFinish then
-            R.data.checks[#R.data.checks+1]=actual
+            R.data.checks[#R.data.checks+1]=R.checkpoint()
             if R.pendingFinish then R.saveFinished();break end
         end
     end

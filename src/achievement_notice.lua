@@ -1,8 +1,43 @@
 -- Observe newly earned achievements without changing progress or replay state.
 local N={queue={}}
+local empty={}
+local tracked={'achievements','completed','storyTexts','skinGrants'}
+local function mapChanged(snapshot,current)
+ current=current or empty
+ if not snapshot or snapshot.source~=current then return true end
+ for key,value in pairs(current) do if snapshot.values[key]~=value then return true end end
+ for key in pairs(snapshot.values) do if current[key]==nil then return true end end
+ return false
+end
+local function rememberMap(snapshot,current)
+ current=current or empty;snapshot=snapshot or {values={}}
+ snapshot.source=current
+ for key in pairs(snapshot.values) do if current[key]==nil then snapshot.values[key]=nil end end
+ for key,value in pairs(current) do snapshot.values[key]=value end
+ return snapshot
+end
+local function dependenciesChanged()
+ local d=N.dependencies
+ if not d or d.profile~=Profile or d.list~=Achievements.list or d.listCount~=#Achievements.list
+  or d.scores~=Profile.scores or d.scoreCount~=#(Profile.scores or empty)
+  or d.records~=Profile.topRecords or d.recordCount~=#(Profile.topRecords or empty) then return true end
+ for _,key in ipairs(tracked) do if mapChanged(d[key],Profile[key]) then return true end end
+ return mapChanged(d.hardcore,Hardcore and Hardcore.completed)
+end
+local function rememberDependencies()
+ local d=N.dependencies or {};N.dependencies=d
+ d.profile=Profile;d.list=Achievements.list;d.listCount=#Achievements.list
+ d.scores=Profile.scores;d.scoreCount=#(Profile.scores or empty)
+ d.records=Profile.topRecords;d.recordCount=#(Profile.topRecords or empty)
+ for _,key in ipairs(tracked) do d[key]=rememberMap(d[key],Profile[key]) end
+ d.hardcore=rememberMap(d.hardcore,Hardcore and Hardcore.completed)
+ N.scanTime=.2
+end
+function N.invalidate() N.scanTime=0 end
 function N.init()
- N.seen={};N.queue={};N.active=nil
+ N.seen={};N.queue={};N.active=nil;N.dependencies=nil
  for _,entry in ipairs(Achievements.list) do N.seen[entry.id]=Achievements.unlocked(entry)==true end
+ rememberDependencies()
 end
 function N.test()
  N.active={entry=Achievements.list[#Achievements.list],age=0,preview=true}
@@ -15,12 +50,17 @@ function N.visible()
 end
 function N.update(dt)
  if not N.seen then N.init() end
- if not Replay.playing and not App.preview and not App.sessionLayout then
+ N.scanTime=math.max(0,(N.scanTime or 0)-dt)
+ -- Small progress tables are checked immediately. The bounded fallback also
+ -- observes edits inside existing score rows without rescanning history at FPS.
+ if not Replay.playing and not App.preview and not App.sessionLayout
+  and (N.scanTime<=0 or dependenciesChanged()) then
   for _,entry in ipairs(Achievements.list) do
    local done=Achievements.unlocked(entry)==true
    if done and not N.seen[entry.id] then N.queue[#N.queue+1]=entry end
    N.seen[entry.id]=done
   end
+  rememberDependencies()
  end
  if N.visible() then
   N.active.age=N.active.age+dt

@@ -1,4 +1,27 @@
 local B={}
+local function release(surface)
+    if surface.paradise then surface.paradise:release() end
+    surface.canvas:release()
+end
+local function paradiseBase(cache)
+    if B.paradiseSupported==nil then B.paradiseSupported=love.graphics.getCanvasFormats().rgba16f==true end
+    if not B.paradiseSupported then return end
+    local g=love.graphics
+    B.paradiseBaseShader=B.paradiseBaseShader or g.newShader('assets/shaders/paradise_floor_base.glsl')
+    B.paradiseLightShader=B.paradiseLightShader or g.newShader('assets/shaders/paradise_floor_light.glsl')
+    if not cache.paradise then
+        -- Keep static marble at the very same pixel density as the final floor.
+        -- Half floats avoid an extra 8-bit quantization before the animated wash.
+        cache.paradise=g.newCanvas(cache.w,cache.h,{format='rgba16f',dpiscale=1})
+        cache.paradise:setFilter('nearest','nearest')
+        local previous=g.getCanvas();g.push('all');g.setCanvas(cache.paradise);g.origin();g.setScissor()
+        g.setBlendMode('replace','premultiplied');g.setColor(1,1,1)
+        B.paradiseBaseShader:send('dimensions',cache.dimensions)
+        g.setShader(B.paradiseBaseShader);g.rectangle('fill',0,0,cache.w,cache.h)
+        g.setCanvas(previous);g.pop()
+    end
+    return cache.paradise
+end
 function B.draw(world,width,height,time)
     if world==6 then return end
     local g=love.graphics
@@ -16,17 +39,25 @@ function B.draw(world,width,height,time)
         if surface.w==cw and surface.h==ch then cache=table.remove(B.surfaces,i);break end
     end
     if not cache then
-        if #B.surfaces>=2 then table.remove(B.surfaces,1).canvas:release() end
-        cache={canvas=g.newCanvas(cw,ch),w=cw,h=ch}
+        if #B.surfaces>=2 then release(table.remove(B.surfaces,1)) end
+        cache={canvas=g.newCanvas(cw,ch),w=cw,h=ch,dimensions={cw,ch}}
         cache.canvas:setFilter('linear','linear')
         require('prism_material').register(cache.canvas,'generated/floor')
     end
     B.surfaces[#B.surfaces+1]=cache;B.cache=cache
-    local tick=world==5 and 0 or math.floor((time or 0)*(Graphics and Graphics.backgroundHz() or 60))
+    local hz=Graphics and Graphics.backgroundHz() or 60
+    local tick=world==5 and 0 or math.floor((time or 0)*hz)
     if cache.tick~=tick or cache.world~=world then
+        local base=world==1 and paradiseBase(cache)
         local previous=g.getCanvas();g.push('all');g.setCanvas(cache.canvas);g.origin();g.setScissor();g.clear();g.setColor(1,1,1)
-        B.shader:send('biome',world);B.shader:send('clock',tick/(Graphics and Graphics.backgroundHz() or 60));B.shader:send('dimensions',{cw,ch})
-        g.setShader(B.shader);g.rectangle('fill',0,0,cw,ch);g.setCanvas(previous);g.pop()
+        if base then
+            B.paradiseLightShader:send('clock',tick/hz);B.paradiseLightShader:send('dimensions',cache.dimensions)
+            g.setShader(B.paradiseLightShader);g.draw(base)
+        else
+            B.shader:send('biome',world);B.shader:send('clock',tick/hz);B.shader:send('dimensions',cache.dimensions)
+            g.setShader(B.shader);g.rectangle('fill',0,0,cw,ch)
+        end
+        g.setCanvas(previous);g.pop()
         cache.tick=tick;cache.world=world
     end
     g.push('all');g.setShader();g.setColor(1,1,1);g.draw(cache.canvas,0,0,0,width/cw,height/ch);g.pop()

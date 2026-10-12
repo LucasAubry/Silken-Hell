@@ -14,19 +14,27 @@ vec4 effect(vec4 color,Image texture,vec2 uv,vec2 pixel) {
     for(int i=0;i<4;i++) {
         float k=float(i);
         float origin=.04+k*.26+sin(levelSeed+k*2.7)*.055;
-        float center=origin+p.y*.16+sin(clock*.12+k*2.0)*.012;
-        float width=.019+p.y*.055;
-        float ray=exp(-pow((p.x-center)/width,2.0));
-        float ribs=.76+.24*sin(p.x*290.0-p.y*38.0+k+clock*.16);
-        shafts+=ray*ribs*(.85-p.y*.36);
-        vec2 site=vec2(origin+.07,.22+fract(sin(levelSeed+k*13.0)*137.0)*.6);
-        vec2 delta=(p-site)*vec2(dimensions.x/dimensions.y,1.0);
-        patches+=exp(-dot(delta,delta)*(biome==5.0?70.0:24.0));
+        // Hell replaces the shafts with ember patches below.
+        if(biome!=2.0) {
+            float center=origin+p.y*.16+sin(clock*.12+k*2.0)*.012;
+            float width=.019+p.y*.055;
+            float ray=exp(-pow((p.x-center)/width,2.0));
+            float ribs=.76+.24*sin(p.x*290.0-p.y*38.0+k+clock*.16);
+            shafts+=ray*ribs*(.85-p.y*.36);
+        }
+        // Cave patches are replaced with their separate moving haze below.
+        if(biome!=5.0) {
+            vec2 site=vec2(origin+.07,.22+fract(sin(levelSeed+k*13.0)*137.0)*.6);
+            vec2 delta=(p-site)*vec2(dimensions.x/dimensions.y,1.0);
+            patches+=exp(-dot(delta,delta)*24.0);
+        }
     }
     float local=0.0;
     for(int i=0;i<8;i++) {
-        float d=length(pixel-localLights[i].xy)/max(1.0,localLights[i].z);
-        local+=max(0.0,1.0-d)*max(0.0,1.0-d)*localLights[i].w;
+        if(localLights[i].w!=0.0) {
+            float d=length(pixel-localLights[i].xy)/max(1.0,localLights[i].z);
+            local+=max(0.0,1.0-d)*max(0.0,1.0-d)*localLights[i].w;
+        }
     }
     float rays=shafts*transmission;
     float haze=.5+.5*sin(p.x*12.0+sin(p.y*8.0+clock*.13)+clock*.09);

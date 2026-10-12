@@ -1,5 +1,6 @@
 -- Decorative lighting stays separate from combat visibility and all hitboxes.
-local A={}
+local A={lights={},dimensions={0,600},traveler={0,0}}
+for i=1,8 do A.lights[i]={0,0,1,0} end
 local palettes={
     [1]={1,.86,.48},[2]={1,.23,.055},[3]={1,.36,.45},
     [4]={.22,.8,1},[5]={1,.76,.36},[6]={.64,.82,1}
@@ -58,26 +59,37 @@ function A.draw()
     if world==7 then return end -- Abyss light also drives gameplay and keeps its own renderer.
     local g=love.graphics; local t=UI.clock; local c=palettes[world] or palettes[1]
     g.push('all'); g.setShader(); g.setColor(1,1,1)
-    A.shader=A.shader or g.newShader('assets/shaders/atmosphere.glsl')
     local settings=A.settings(world,player.level)
-    A.shader:send('transmission',settings.transmission); A.shader:send('levelSeed',settings.seed); A.shader:send('depth',settings.depth)
-    A.shader:send('clock',t); A.shader:send('biome',world)
-    A.shader:send('dimensions',{Arena.width,600}); A.shader:send('lightTint',c)
-    local lights={}
-    for _,m in ipairs(mobs) do
-        if #lights>=8 then break end
-        local radiant=(m.burnTime or 0)>0 or m.type=='imp' or m.type=='magma_larva' or m.type=='jelly' or (m.type=='gull' and m.electric)
-        if radiant and not m.abyssHeld and not m.spent then lights[#lights+1]={m.x,m.y,72+math.sin(t*3+m.x)*8,.65} end
-    end
-    for _,p in ipairs(Hazards.lava) do if #lights<8 then lights[#lights+1]={p.x,p.y,math.max(p.rx,p.ry)*2,1} end end
-    while #lights<8 do lights[#lights+1]={0,0,1,0} end
-    A.shader:send('localLights',unpack(lights))
     -- Keep Paradise readable: no full-screen rays or translucent veil.
-    if world~=1 then g.setShader(A.shader);g.rectangle('fill',0,0,Arena.width,600);g.setShader() end
+    -- Its motes below need none of the invisible veil's uniforms or light scan.
+    if world~=1 then
+        A.shader=A.shader or g.newShader('assets/shaders/atmosphere.glsl')
+        A.shader:send('transmission',settings.transmission); A.shader:send('levelSeed',settings.seed); A.shader:send('depth',settings.depth)
+        A.shader:send('clock',t); A.shader:send('biome',world)
+        A.dimensions[1]=Arena.width
+        A.shader:send('dimensions',A.dimensions); A.shader:send('lightTint',c)
+        local count=0
+        for _,m in ipairs(mobs) do
+            if count>=8 then break end
+            local radiant=(m.burnTime or 0)>0 or m.type=='imp' or m.type=='magma_larva' or m.type=='jelly' or (m.type=='gull' and m.electric)
+            if radiant and not m.abyssHeld and not m.spent then
+                count=count+1;local light=A.lights[count]
+                light[1],light[2],light[3],light[4]=m.x,m.y,72+math.sin(t*3+m.x)*8,.65
+            end
+        end
+        for _,p in ipairs(Hazards.lava) do
+            if count>=8 then break end
+            count=count+1;local light=A.lights[count]
+            light[1],light[2],light[3],light[4]=p.x,p.y,math.max(p.rx,p.ry)*2,1
+        end
+        for i=count+1,8 do local light=A.lights[i];light[1],light[2],light[3],light[4]=0,0,1,0 end
+        A.shader:send('localLights',unpack(A.lights))
+        g.setShader(A.shader);g.rectangle('fill',0,0,Arena.width,600);g.setShader()
+    end
     if world==5 then
         A.mist=A.mist or g.newShader('assets/shaders/cave_mist.glsl')
-        A.mist:send('clock',t);A.mist:send('dimensions',{Arena.width,600})
-        A.mist:send('traveler',{player.x+15,player.y+12})
+        A.mist:send('clock',t);A.mist:send('dimensions',A.dimensions)
+        A.traveler[1],A.traveler[2]=player.x+15,player.y+12;A.mist:send('traveler',A.traveler)
         g.setShader(A.mist);g.setColor(1,1,1);g.rectangle('fill',0,0,Arena.width,600);g.setShader()
     end
     g.setBlendMode('add')

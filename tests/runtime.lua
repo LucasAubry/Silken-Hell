@@ -9,6 +9,10 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_RENDER_CACHE_TEST')=='1' then require('tests.render_cache').run();return end
+    if os.getenv('SILKEN_MATERIAL_CACHE_TEST')=='1' then require('tests.material_cache').run();return end
+    if os.getenv('SILKEN_CPU_WORK_TEST')=='1' then require('tests.cpu_work').run();love.event.quit();return end
+    if os.getenv('SILKEN_FRAME_PERFORMANCE_TEST')=='1' then require('tests.frame_performance').run();return end
     if os.getenv('SILKEN_CUSTOM_SKINS_TEST')=='1' then require('tests.custom_skins').run();return end
     if os.getenv('SILKEN_ACHIEVEMENT_RULES_TEST')=='1' then require('tests.achievement_rules').run();love.event.quit();return end
     if os.getenv('SILKEN_ACHIEVEMENT_GALLERY_TEST')=='1' then require('tests.achievement_gallery').run();return end
