@@ -7,37 +7,37 @@ function M.draw()
   M.width=Arena.width;M.canvas=g.newCanvas(Arena.width,600);M.canvas:setFilter('linear','linear')
   local old=g.getCanvas();g.push('all');g.setCanvas(M.canvas);g.origin();g.clear(0,0,0,0)
   local function scatter(i,k) local n=math.sin(i*127.1+k*311.7)*43758.5453;return n-math.floor(n) end
-  -- Organic woodland clearing, cached once; restrained contrast keeps hazards readable.
-  g.clear(.075,.14,.095,1)
-  for i=1,230 do
+  -- Transparent painted details over the shared soft meadow floor.
+  g.clear(0,0,0,0)
+  for i=1,90 do
    local x=scatter(i,1)*Arena.width;local y=scatter(i,2)*600;local v=scatter(i,3)
-   g.setColor(.13+v*.025,.23+v*.045,.12,.22)
+   g.setColor(.42+v*.025,.55+v*.045,.30,.045)
    g.ellipse('fill',x,y,25+v*80,12+v*32)
   end
   for i=1,55 do
    local y=45+i*9;local x=Arena.width*.5+math.sin(y*.010)*Arena.width*.14
-   g.setColor(.29,.27,.17,.07);g.ellipse('fill',x,y,75+math.sin(i*.7)*15,19)
+   g.setColor(.58,.53,.33,.022);g.ellipse('fill',x,y,75+math.sin(i*.7)*15,19)
   end
-  for i=1,1300 do
+  for i=1,420 do
    local x=25+scatter(i,4)*(Arena.width-50);local y=28+scatter(i,5)*544;local h=3+scatter(i,6)*6
-   g.setColor(.25,.36,.18,.25);g.setLineWidth(1)
+   g.setColor(.51,.63,.35,.16);g.setLineWidth(1)
    g.line(x-2,y,x,y-h,x+2,y-1);g.line(x,y,x+4,y-h*.7)
   end
-  for i=1,100 do
+  for i=1,65 do
    local x=scatter(i,7)*Arena.width;local y=scatter(i,8)*600
    if x<95 or x>Arena.width-95 or y<70 or y>535 then
     local r=9+scatter(i,9)*22
-    g.setColor(.025,.07,.045,.45);g.ellipse('fill',x+4,y+6,r*1.2,r*.7)
+    g.setColor(.08,.16,.11,.13);g.ellipse('fill',x+4,y+6,r*1.2,r*.7)
     for j=1,5 do
-     local a=j*math.pi*.4;g.setColor(.07+j*.009,.18+j*.009,.095,.85)
+     local a=j*math.pi*.4;g.setColor(.20+j*.009,.36+j*.009,.21,.35)
      g.ellipse('fill',x+math.cos(a)*r*.5,y+math.sin(a)*r*.3,r*.65,r*.42)
     end
    end
   end
-  for i=1,60 do
+  for i=1,35 do
    local x=40+scatter(i,10)*(Arena.width-80);local y=50+scatter(i,11)*500
-   g.setColor(.29,.40,.20,.6);g.line(x,y+3,x,y-2)
-   g.setColor(.8,.78,.56,.7);g.circle('fill',x-1,y-3,1.5);g.circle('fill',x+2,y-2,1.5)
+   g.setColor(.34,.48,.25,.45);g.line(x,y+3,x,y-2)
+   g.setColor(.94,.85,.61,.6);g.circle('fill',x-1,y-3,1.5);g.circle('fill',x+2,y-2,1.5)
   end
   g.setCanvas(old);g.pop()
  end

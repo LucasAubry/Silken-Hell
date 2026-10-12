@@ -63,7 +63,8 @@ function T.run()
  print(string.format('FRAME_PERF renderer=%s version=%s vendor=%s device=%s logical=%dx%d physical=%dx%d windowDPI=%.3f quality=2 effects=true psychedelic=2 material=true samples=36 warmup=12',
   renderer,version,vendor,device,w,h,pw,ph,love.window.getDPIScale()))
  local tasks={{world=1,level=9},{world=6,level=9},{world=5,level=9},{world=4,level=9},
-  {world=2,level=9},{world=4,level=10},{world=7,level=10},{world=1,level=9,pickup=true}}
+  {world=2,level=9},{world=4,level=10},{world=7,level=10},{world=1,level=9,pickup=true},
+  {world=6,level=10,cloudLight=true},{world=6,level=9,walking=true}}
  local fenceMode
  local function fence()
   g.flushBatch()
@@ -89,6 +90,11 @@ function T.run()
    Octopus.enraged=true;Octopus.releaseCrabs();Octopus.releaseCrabs()
    for _,crab in ipairs(Octopus.crabs) do crab.emerge=nil end
   end
+  if task.cloudLight then
+   Storm.rain={};Storm.strikes={};Storm.projectiles={};Storm.holes={}
+   for i=1,4 do Realms.lightningImpact(Arena.width*(.18+i*.14),210+(i%2)*150,i) end
+   require('sky_lightning').update(.6)
+  end
   for _,m in ipairs(mobs) do if m.imgs then m.dir='down';m.img=m.imgs.down or m.imgs.up end end
   local psyche=require('psychedelic_fx')
   psyche.reset()
@@ -97,6 +103,7 @@ function T.run()
   local cpu,total,calls,switches={},{},{},{}
   for frame=1,48 do
    UI.clock=10+frame/60
+   if task.walking then player.walkMoving=true;player.walkPhase=math.floor(frame/4)*.19 end
    drawTime=UI.clock
    local statsBefore=g.getStats()
    local t0=love.timer.getTime()
@@ -118,7 +125,7 @@ function T.run()
     switches[#switches+1]=(statsAfter.shaderswitches or 0)-(statsBefore.shaderswitches or 0)
    end
   end
-  local label=string.format('world%d-level%d%s',task.world,task.level,task.pickup and '-pickup' or '')
+  local label=string.format('world%d-level%d%s',task.world,task.level,task.pickup and '-pickup' or task.cloudLight and '-cloud-light' or task.walking and '-walking' or '')
   print(string.format('FRAME_PERF %s scene=%dx%d density=%.3f mobs=%d crabs=%d CPU_median=%.3fms CPU_p95=%.3fms SYNC_median=%.3fms SYNC_p95=%.3fms drawcalls_median=%.0f shaderswitches_median=%.0f (%s)',
    label,sceneCanvas:getPixelWidth(),sceneCanvas:getPixelHeight(),sceneCanvas:getDPIScale(),#mobs,
    Octopus.active and #Octopus.crabs or 0,percentile(cpu,.5),percentile(cpu,.95),
@@ -136,7 +143,7 @@ function T.run()
   assert(love.timer.getTime()-started<140,'The frame benchmark must remain bounded')
  end
  Material.beginScene=originalBegin
- print('PASS frame performance: eight full-render snapshots; native scene DPI; animated backgrounds; real materials, atmosphere, postprocess and HUD; drawing preserves RNG and physics; sync timings include GPU readback')
+ print('PASS frame performance: ten full-render snapshots including four simultaneous cloud lights and walking between simulation ticks; native scene DPI; animated backgrounds; real materials, atmosphere, postprocess and HUD; drawing preserves RNG and physics; sync timings include GPU readback')
  io.stdout:flush();love.event.quit()
 end
 

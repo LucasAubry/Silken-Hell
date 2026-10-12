@@ -58,8 +58,12 @@ MobBehaviors.ange = {
 	    local centerY = m.y + offsetY + (m.hitBox_height or 0) / 2 + require('mobs.shared.floating').offset(m)
 
 	    -- Glow pulsant
-	    local pulse = math.sin(love.timer.getTime() * 5) * 5 -- oscillation
-	    draw_glow(centerX, centerY, 30 + pulse, 1.0, 0.9, 0.5, 0.15)
+	    local style=require('paradise_style')
+	    if style.active() then style.mobGlow(centerX,centerY,32+math.sin(UI.clock*2)*2)
+	    else
+	        local pulse = math.sin(love.timer.getTime() * 5) * 5
+	        draw_glow(centerX, centerY, 30 + pulse, 1.0, 0.9, 0.5, 0.15)
+	    end
 
 	    -- Dessin du mob normalement
 	    draw_mob(m)

@@ -21,6 +21,30 @@ function load_player()
 end
 
 
+-- One reusable soft ellipse anchors the player without blurring its artwork.
+local playerShadow
+local function draw_player_shadow()
+    local g=love.graphics
+    if not playerShadow then
+        local vertices={}
+        local function vertex(angle,radius,alpha)
+            vertices[#vertices+1]={math.cos(angle)*radius,math.sin(angle)*radius,0,0,1,1,1,alpha}
+        end
+        for i=0,39 do
+            local a,b=i*math.pi/20,(i+1)*math.pi/20
+            vertex(a,0,1);vertex(a,.6,.8);vertex(b,.6,.8)
+            vertex(a,.6,.8);vertex(a,1,0);vertex(b,1,0)
+            vertex(a,.6,.8);vertex(b,1,0);vertex(b,.6,.8)
+        end
+        playerShadow=g.newMesh(vertices,'triangles','static')
+    end
+    local width=Characters.playerWidth
+    g.push('all');g.setShader();g.setBlendMode('alpha')
+    g.setColor(.018,.025,.03,.64)
+    g.draw(playerShadow,player.x+18,player.y+28,0,width*.56,width*.25)
+    g.pop()
+end
+
 function draw_player(direction)
     if Abyss and Abyss.playerHidden() then return end
     if player.abyssHeld then
@@ -43,7 +67,7 @@ function draw_player(direction)
         Characters.draw(player.x+15,player.y+8+(1-scale)*20,Characters.playerWidth*scale,direction)
         love.graphics.setColor(1,1,1); return
     end
-    draw_shadow(22,10,player.x+15,player.y+19)
+    draw_player_shadow()
     if (player.venom or 0)>0 then
         love.graphics.setColor(.24,1,.14,.2+.1*math.sin(larme_float_timer*10))
         love.graphics.ellipse('fill',player.x+15,player.y+14,34,22)

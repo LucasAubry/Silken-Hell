@@ -207,7 +207,9 @@ function C.drawCircles()
         g.setColor(Worlds.color(C.world).tear)
         if C.biome==5 then g.setColor(.72,.51,.30,.72) end
         if C.biome==7 then g.setColor(.3,.7,1,Abyss.siteVisibility(p.x+15,p.y+39)) end
-        Art.drawTinted('tear_ring',p.x+15,p.y+39,44)
+        local style=require('paradise_style')
+        if style.active() then style.ring(p.x+15,p.y+39,44)
+        else Art.drawTinted('tear_ring',p.x+15,p.y+39,44) end
     end
     g.setColor(1,1,1)
 end
@@ -240,6 +242,7 @@ function C.drawTear(overlay)
         local x,y=objet.larme.x,objet.larme.y+math.sin(UI.clock*2)*3
         local fx=require('tear_fx');g.push('all')
         local tint=Worlds.color(C.biome).tear
+        if require('paradise_style').active() then tint=require('paradise_style').tear end
         if C.biome==5 then tint={.86,.65,.39} end
         fx.draw(x+15,y+20,tint,UI.clock);g.setColor(tint)
         local sx,sy=fx.breath(UI.clock)

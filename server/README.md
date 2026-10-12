@@ -1,5 +1,12 @@
 # API Silken Hell
 
+## Skins Champagne, Sauge et Pétrole
+
+Les identifiants 24–26 ajoutent les trois palettes du menu sans renuméroter les
+anciens skins. Appliquer `0015_menu_palette_skins.sql`, puis déployer le Worker
+pour accepter ces apparences dans les parties, scores et replays en ligne.
+La migration conserve les enregistrements, effets et historiques existants.
+
 ## Effets dans les classements
 
 Migration additive `0013_score_effects.sql`, puis déploiement du Worker.
@@ -22,7 +29,7 @@ retourne ses souvenirs par pages de 100 : `runId`, `world`, `hardcore`, `name`,
 Les souvenirs persistent lorsqu'un meilleur score arrive. Les replays restent
 accessibles par `/v1/replays/:id` ; un ancien score sans replay reste consultable.
 
-Le client affiche 14 skins et trois effets indépendants : larme, aura rouge hardcore,
+Le client affiche 18 skins et trois effets indépendants : larme, aura rouge hardcore,
 éclat doré du top 1. Les identifiants historiques 15–22 restent acceptés pour les
 anciens scores/replays. Les nouveaux replays peuvent conserver les trois booléens
 cosmétiques dans `effects` (`heartbreak`, `hardcore`, `gold`).

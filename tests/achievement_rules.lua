@@ -24,10 +24,10 @@ function T.run()
   assert(entries.hardcore.rewardEffect=='hardcore' and entries.top1.rewardEffect=='gold')
   assert(entries.story_first.trophy=='story_first' and entries.story_all.trophy=='story_all' and entries.flawless_all.trophy=='flawless_all')
   assert(entries.flawless_all.rewardSkin==23,'The flawless trophy also awards the Cocon skin')
-  assert(#Characters.keys==23 and Characters.names[14]=='Maxance' and Characters.names[23]=='Cocon')
-  assert(Characters.baseCount==15 and #Characters.baseIndices==15)
+  assert(#Characters.keys==26 and Characters.names[14]=='Maxance' and Characters.names[23]=='Cocon')
+  assert(Characters.baseCount==18 and #Characters.baseIndices==18)
   for position,index in ipairs(Characters.baseIndices)do
-   assert(index==(position==15 and 23 or position),'The selection excludes legacy variants without renumbering them')
+   assert(index==(position>=15 and position+8 or position),'The selection excludes legacy variants without renumbering them')
   end
 
   local flags={};Profile.achievements=flags;Profile.scores={};Profile.completed={};Profile.skinGrants={};Profile.topRecords={}
@@ -43,8 +43,9 @@ function T.run()
   Achievements.check({world=Worlds.order[1],deaths=0},flags)
   assert(flags.flawless_all and Achievements.unlocked(entries.flawless_all),'Separate flawless runs combine regardless of order or mode')
   assert(Characters.unlocked(23) and Characters.select(23) and Characters.selected()==23)
+  for index=24,26 do Characters.cycle(1);assert(Characters.menuIndex()==index and Profile.character==index) end
   Characters.cycle(1);assert(Characters.menuIndex()==1 and Profile.character==1)
-  Characters.cycle(-1);assert(Characters.menuIndex()==23 and Profile.character==23)
+  for index=26,23,-1 do Characters.cycle(-1);assert(Characters.menuIndex()==index and Profile.character==index) end
   Characters.cycle(-1);assert(Characters.menuIndex()==14 and Profile.character==23,'Browsing a locked skin never equips it')
   Characters.cycle(1);assert(Characters.menuIndex()==23,'Cycle proceeds directly from Maxance to Cocon')
   assert(not flags.bossflawless1,'Completing Paradise no longer awards Coquille parfaite')

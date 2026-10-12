@@ -40,7 +40,8 @@ function T.run()
  M.halo=halo;Profile.character=skin;Characters.selected=selected;F.reset();Campaign.select(1)
  g.newImage=image;assert(uploads==0,'Skins must be preloaded')
  for _,name in ipairs({'soie','perle','braise','ecume','royale','maxance','cocon'}) do
-  assert(require('art_filter').image('assets/skins/'..name..'/down.png'):getFilter()=='nearest')
+  local expected=(name=='maxance' or name=='cocon') and 'linear' or 'nearest'
+  assert(require('art_filter').image('assets/skins/'..name..'/down.png'):getFilter()==expected)
  end
  assert(not require('paradise_ink').sprite('original_down') and not require('paradise_ink').sprite('spider_down'),'Pixel spiders cannot use illustrated overrides')
  local dir=os.getenv('SILKEN_STYLE_CAPTURE_DIR')
@@ -54,6 +55,6 @@ function T.run()
   g.pop();local data=c:newImageData();local bytes=data:encode('png');local file=assert(io.open(dir..'/skins.png','wb'))
   file:write(bytes:getString());file:close();bytes:release();data:release();c:release()
  end
- print('PASS skin FX: 23 skins / four directions, crown colors, biome independence, event snapshots, replay skin, hidden enemies, render state and RNG isolation, zero uploads')
+ print('PASS skin FX: '..#Characters.keys..' skins / four directions, crown colors, biome independence, event snapshots, replay skin, hidden enemies, render state and RNG isolation, zero uploads')
 end
 return T

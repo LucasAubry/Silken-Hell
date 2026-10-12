@@ -225,7 +225,8 @@ function S.update(dt)
  if S.dir~=oldDir then S.previousDir=oldDir;S.poseAge=0 end
  for i=#S.strikes,1,-1 do local p=S.strikes[i];p.age=p.age+dt
   if p.age>=.85 and not p.struck then
-   p.struck=true;S.holes[#S.holes+1]={x=p.x,y=p.y,age=0,r=STRIKE_RADIUS,seed=p.seed};BossFX.burst(p.x,p.y,{.65,.8,1},1)
+   p.struck=true;if Campaign.biome==6 then require('sky_lightning').trigger(p.x,p.y,p.seed) end;S.holes[#S.holes+1]={x=p.x,y=p.y,age=0,r=STRIKE_RADIUS,seed=p.seed}
+   if Campaign.biome~=6 then BossFX.burst(p.x,p.y,{.65,.8,1},1) end
   end
   if p.age>=.85 and p.age<1.33 then Rain.electrify(p.x,p.y,STRIKE_RADIUS) end
   if p.age>1.4 then table.remove(S.strikes,i) end
@@ -281,15 +282,12 @@ function S.drawGround()
  if not S.active or S.defeated then return end
  local g=love.graphics;g.push('all')
  Rain.draw(S.rain)
- for _,p in ipairs(S.holes) do
-  local points={}
-  for i=0,31 do local a=i*math.pi/16;local r=p.r*(1+.07*math.sin(i*2.7+p.seed));points[#points+1]=p.x+math.cos(a)*r;points[#points+1]=p.y+math.sin(a)*r*.78 end
-  g.setColor(.02,.04,.09,.98);g.polygon('fill',points)
-  g.setColor(.68,.8,.93,.65);g.setLineWidth(3);g.polygon('line',points)
-  g.setColor(.25,.45,.68,.22);g.ellipse('line',p.x,p.y,p.r*.7,p.r*.48)
- end
  for _,p in ipairs(S.strikes) do if p.age>=0 then
-  if p.age<.85 then
+  if Campaign.biome==6 then
+   local light=require('sky_lightning')
+   if p.age<.85 then light.warning(p.x,p.y,p.age/.85,STRIKE_RADIUS,STRIKE_RADIUS)
+   end
+  elseif p.age<.85 then
    local charge=math.min(1,p.age/.85)
    FX.rune(p.x,p.y,STRIKE_RADIUS,S.clock,{1,.76,.20},.08+charge*.10)
    g.setColor(1,.87,.38,.9);g.setLineWidth(2)
@@ -300,8 +298,17 @@ function S.drawGround()
    for i=0,3 do local a=i*math.pi/2;local x,y=p.x+math.cos(a)*27,p.y+math.sin(a)*27
     g.polygon('fill',x,y-3,x+2,y,x,y+3,x-2,y)
    end
-  else FX.bolt(p.x,p.y,p.seed,p.age-.85,.55) end
+  else
+   FX.bolt(p.x,p.y,p.seed,p.age-.85,.55)
+  end
  end end
+ for _,p in ipairs(S.holes) do
+  local points={}
+  for i=0,31 do local a=i*math.pi/16;local r=p.r*(1+.07*math.sin(i*2.7+p.seed));points[#points+1]=p.x+math.cos(a)*r;points[#points+1]=p.y+math.sin(a)*r*.78 end
+  g.setColor(.02,.04,.09,.98);g.polygon('fill',points)
+  g.setColor(.89,.90,.80,.65);g.setLineWidth(3);g.polygon('line',points)
+  g.setColor(.25,.45,.47,.22);g.ellipse('line',p.x,p.y,p.r*.7,p.r*.48)
+ end
  g.pop()
 end
 function S.previewPose()

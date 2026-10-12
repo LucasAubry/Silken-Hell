@@ -257,6 +257,8 @@ function A.drawWall(r,hell)
         g.setColor(1,1,1)
         if r.w>=r.h then Art.draw('wall',r.x+r.w/2,r.y+r.h/2,r.w,0,r.h+8)
         else Art.draw('wall',r.x+r.w/2,r.y+r.h/2,r.h,math.pi/2,r.w+8) end
+    elseif require('paradise_style').active() then
+        require('paradise_ink').wall(r)
     else
         g.setColor(0.43,0.31,0.17); g.rectangle('fill',r.x,r.y,r.w,r.h)
         g.setColor(0.86,0.76,0.52); g.rectangle('fill',r.x+2,r.y+2,r.w-4,r.h-4)

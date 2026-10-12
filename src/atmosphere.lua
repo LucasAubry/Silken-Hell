@@ -62,7 +62,7 @@ function A.draw()
     local settings=A.settings(world,player.level)
     -- Keep Paradise readable: no full-screen rays or translucent veil.
     -- Its motes below need none of the invisible veil's uniforms or light scan.
-    if world~=1 then
+    if world~=1 and world~=6 then
         A.shader=A.shader or g.newShader('assets/shaders/atmosphere.glsl')
         A.shader:send('transmission',settings.transmission); A.shader:send('levelSeed',settings.seed); A.shader:send('depth',settings.depth)
         A.shader:send('clock',t); A.shader:send('biome',world)

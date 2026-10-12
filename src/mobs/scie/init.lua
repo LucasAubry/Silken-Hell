@@ -70,6 +70,7 @@ MobBehaviors.scie.update=function(m,dt,noCollision)
     if not noCollision and isTouching(player,m) then die() end
 end
 MobBehaviors.scie.draw=function(m)
+    if require('paradise_ink').active() then return require('paradise_ink').mob(m) end
     local g=love.graphics; local x,y=m.tipX or m.x,m.tipY or m.y
     local ink=require('paradise_ink').active()
     g.setColor(ink and {.13,.16,.20} or {.13,.09,.05}); g.setLineWidth(7); g.line(m.x,m.y,x,y)

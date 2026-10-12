@@ -9,7 +9,7 @@ Deux skins disposent de leurs propres dessins dans les trois mêmes poses :
 - `maxance/` : Maxance (ID 14), avec une patte cassée, des lunettes, des yeux marron et une moustache.
 - `cocon/` : Cocon (ID 23), l’araignée couverte de soie du trophée « Un fil sans faute », débloquée avec ce succès.
 
-Ces deux modèles conservent les couleurs finales de leurs PNG sans passer par le shader de recoloration. Comme les modèles communs, ils utilisent le maillage de marche de `brown_walk.lua`. La transparence des trois modèles est normalisée au chargement pour supprimer les résidus des contours sans modifier les PNG sources. Les petites vignettes sont réduites avec des mipmaps et conservent les couleurs de leurs yeux.
+Ces deux modèles conservent les couleurs de leurs PNG avec leur propre matériau de finition, sans passer par les palettes communes. Comme les modèles communs, ils utilisent le maillage de marche de `brown_walk.lua`. La transparence des trois modèles est normalisée au chargement pour supprimer les résidus des contours sans modifier les PNG sources. Les petites vignettes sont réduites avec des mipmaps et conservent les couleurs de leurs yeux.
 
 Les anciens dessins sont conservés comme sources dans les dossiers suivants :
 
@@ -20,8 +20,14 @@ Les anciens dessins sont conservés comme sources dans les dossiers suivants :
 - `royale/` : Royale, Renouveau, Gillou, Maxance, Renouveau couronné.
 - `accessoires/` : couronne commune et icône démon.
 
-Les teintes, noms, identifiants et conditions de déblocage restent dans `src/characters.lua`. Le catalogue propose 15 skins : les IDs 1–14 et 23. La liste explicite `Characters.baseIndices` sert à la sélection et aux notifications de récompense. Les IDs historiques 1–22 restent inchangés pour les profils, classements et replays.
+Les teintes, noms, identifiants et conditions de déblocage restent dans `src/characters.lua`. Le catalogue propose 18 skins : les IDs 1–14 et 23–26. Les trois palettes immédiatement disponibles Champagne (24), Sauge (25) et Pétrole (26) réutilisent les sprites `commun/`, leurs ombres, leurs motifs et leur animation ; le shader adapte la soie, l'or et les iris aux couleurs du menu. Les miniatures et effets reprennent ces couleurs. La liste explicite `Characters.baseIndices` sert à la sélection et aux notifications de récompense. Les IDs historiques 1–23 restent inchangés pour les profils, classements et replays.
 
 Les variantes de récompense 15–22 se distinguent par une orbite de grandes particules dorées et des rayons tournants derrière le joueur équipé en jeu et dans le menu principal (`skin_reward_fx.lua`), sans contour ni couronne. Les identifiants historiques `crowned` restent compatibles avec les sauvegardes. Le réglage des effets désactive les particules et les rayons.
 
 Dans le menu, le portrait est préparé à sa résolution d’affichage puis déplacé comme une image unique, pour éviter le scintillement des détails lors de la réduction du PNG.
+
+Les textures actives sont de nouveau les dessins précédents sous `commun/`, `maxance/` et `cocon/`, dans le menu comme en jeu. Les huit pattes, les poses et les accessoires sont conservés. Les sprites et le portrait du menu utilisent un filtrage au plus proche sans lissage des pixels. Les petites vignettes de classement conservent leur réduction dédiée pour garder les yeux lisibles. L’alpha est nettoyé à l’import.
+
+Les variantes dessinées abandonnées ont été supprimées ; seuls les sprites utilisés par le jeu sont conservés.
+
+Les palettes classiques Perle à Gillou utilisent la même finition ivoire et or que les trois skins du menu, avec leurs couleurs distinctives. `Characters.silkPalettes` est séparé des conditions de déblocage : cette retouche visuelle ne débloque aucune récompense. Soie conserve son brun validé.

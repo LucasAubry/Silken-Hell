@@ -18,6 +18,11 @@ function load_objet()
 end
 
 function draw_shadow(size_w, size_h, hotel_x, hotel_y)
+    if Campaign and Campaign.biome==1 and not (Secret and Secret.inArena()) then
+        love.graphics.setColor(1,1,1,1)
+        Art.contactShadow(hotel_x,hotel_y,size_w,size_h,.12)
+        return
+    end
     love.graphics.setColor(0, 0, 0, 0.4)
     love.graphics.ellipse("fill", hotel_x, hotel_y, size_w, size_h)
     love.graphics.setColor(1, 1, 1, 1)

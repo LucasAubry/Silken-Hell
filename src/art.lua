@@ -70,6 +70,19 @@ function A.shadow(...)
     if not App or App.state~='playing' then return end
     local g=love.graphics;local r,green,b,alpha=g.getColor()
     if math.max(r,green,b)<.25 then return end -- Do not shadow existing dark silhouettes.
+    if Campaign and Campaign.biome==1 and not (Secret and Secret.inArena()) then
+        A.paradiseShadowShader=A.paradiseShadowShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
+            vec2 d=vec2(.007);
+            float a=Texel(tex,uv).a*4.;
+            a+=(Texel(tex,uv+vec2(d.x,0.)).a+Texel(tex,uv-vec2(d.x,0.)).a+Texel(tex,uv+vec2(0.,d.y)).a+Texel(tex,uv-vec2(0.,d.y)).a)*2.;
+            a+=Texel(tex,uv+d).a+Texel(tex,uv-d).a+Texel(tex,uv+vec2(d.x,-d.y)).a+Texel(tex,uv+vec2(-d.x,d.y)).a;
+            return vec4(.24,.18,.105,a/16.*color.a*.30);
+        }]])
+        g.push('all');g.setShader(A.paradiseShadowShader);g.setBlendMode('alpha');g.setColor(1,1,1,alpha)
+        local ox,oy=g.transformPoint(0,0)
+        local dx,dy=g.inverseTransformPoint(ox+7,oy+13)
+        g.translate(dx,dy);g.draw(...);g.pop();return
+    end
     A.shadowShader=A.shadowShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
         return vec4(.025,.018,.025,((Texel(tex,uv).a*2.+Texel(tex,uv+vec2(.002,0.)).a+Texel(tex,uv-vec2(.002,0.)).a+Texel(tex,uv+vec2(0.,.002)).a+Texel(tex,uv-vec2(0.,.002)).a)/6.)*color.a*.075);
     }]])
@@ -81,6 +94,21 @@ function A.contactShadow(x,y,rx,ry,opacity)
     if not App or App.state~='playing' then return end
     local g=love.graphics;g.push('all');g.setShader();g.setBlendMode('alpha')
     local _,_,_,alpha=g.getColor()
+    if Campaign and Campaign.biome==1 and not (Secret and Secret.inArena()) then
+        if not A.paradiseContact then
+            local vertices={{0,0,0,0,1,1,1,1}}
+            for i=0,32 do
+                local angle=i*math.pi/16
+                vertices[#vertices+1]={math.cos(angle),math.sin(angle),0,0,1,1,1,0}
+            end
+            A.paradiseContact=g.newMesh(vertices,'fan','static')
+        end
+        g.setColor(.24,.18,.105,(opacity or .11)*alpha*2.2)
+        local ox,oy=g.transformPoint(0,0)
+        local dx,dy=g.inverseTransformPoint(ox+4,oy+7)
+        g.draw(A.paradiseContact,x+dx,y+dy,0,rx*1.12,ry*1.18)
+        g.pop();return
+    end
     for i=12,1,-1 do
         local scale=i/12
         g.setColor(.025,.018,.025,(opacity or .10)*alpha*2/12*(1-scale*.7))
@@ -188,7 +216,10 @@ function A.draw(key,x,y,width,angle,height)
     local a=assert(servants.image(key),key)
     local sx=width/a.w; local sy=height and height/a.h or sx
     if creature(key) then A.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2) end
+    local previous=love.graphics.getShader()
+    if key=='black_feather' or key:match('^merle_') or key=='cloud_snare' and Campaign.biome==6 then require('paradise_style').bind(a,'bird') end
     love.graphics.draw(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
+    love.graphics.setShader(previous)
     require('servant_art').web(a,a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
 end
 function A.drawTinted(key,x,y,width,angle,height)
@@ -210,7 +241,10 @@ function A.drawFacing(name,dir,x,y,size)
     local a=assert(servants.image(key),key)
     local scale=size/math.max(a.w,a.h)
     if not name:find('spider') then A.shadow(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2) end
+    local previous=love.graphics.getShader()
+    if name=='merle' or name=='gull' and Campaign.biome==6 then require('paradise_style').bind(a,'bird') end
     love.graphics.draw(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
+    love.graphics.setShader(previous)
     require('servant_art').web(a,a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
 end
 function A.drawWorm(dir,x,y,size,time)

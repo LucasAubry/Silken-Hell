@@ -10,6 +10,28 @@ for rank,world in ipairs(Worlds.order) do
 end
 C.names[22]='Soie dorée';C.keys[22]='original';C.crowned[22]=1
 C.names[23]='Cocon';C.keys[23]='cocon'
+C.names[24]='Champagne';C.keys[24]='champagne'
+C.names[25]='Sauge';C.keys[25]='sage'
+C.names[26]='Pétrole';C.keys[26]='petrol'
+-- Menu silk colors share the authored spider rig, including its gold markings.
+C.materials={
+ [24]={body={.98,.85,.65},markings={1,.72,.24},iris={1,.72,.22},effect={.98,.81,.51}},
+ [25]={body={.58,.73,.43},markings={1,.87,.54},iris={.71,.90,.35},effect={.65,.79,.46}},
+ [26]={body={.18,.42,.43},markings={1,.84,.45},iris={.40,.91,.88},effect={.30,.69,.68}},
+}
+-- Render palettes are separate from unlock rules and stable profile/replay IDs.
+C.silkPalettes={}
+local silkBodies={
+ [2]={.94,.92,.82},[3]={.89,.38,.22},[4]={.36,.69,.77},
+ [5]={.60,.43,.72},[6]={.95,.82,.50},[7]={.54,.73,.80},
+ [8]={.76,.49,.27},[9]={.32,.73,.62},[10]={.43,.49,.76},
+ [11]={.72,.29,.21},[12]={.82,.55,.64},[13]={.88,.64,.29},
+}
+local silkGold={1,.78,.35}
+for index,body in pairs(silkBodies) do
+ C.silkPalettes[index]={body=body,markings=silkGold,iris={.43,.78,.83},effect=body}
+end
+function C.material(index) return C.materials[index] or C.silkPalettes[index] end
 C.customSprites={[14]='maxance',[23]='cocon'}
 C.variants={}
 for reward,base in pairs(C.crowned) do C.variants[base]=reward end
@@ -20,10 +42,11 @@ function C.demonCompleted(world)
 end
 -- All spider skins are crown-free; reward IDs remain stable.
 C.nativeCrown={}
-C.baseIndices={1,2,3,4,5,6,7,8,9,10,11,12,13,14,23}
+C.baseIndices={1,2,3,4,5,6,7,8,9,10,11,12,13,14,23,24,25,26}
 C.baseCount=#C.baseIndices
 function C.unlocked(index)
     if not C.names[index] then return false end
+    if C.materials[index] then return true end
     if index==23 then return require('achievements').unlocked({id='flawless_all'}) end
     if (Profile.skinGrants or {})[tostring(index)]==true then return true end
     if index==22 then return Profile.hasCompleted(3) or (Hardcore and Hardcore.completed['3']==true) end
@@ -61,6 +84,20 @@ end
 C.playerWidth=59
 -- Authored PNGs: Perle's front/back silhouette, Soie's profile silhouette.
 C.skinColors={original={.61,.33,.14},spider={1,1,1},hell_spider={1,.25,.08},ocean_spider={.2,.75,1},crown_spider={.67,.42,.9}}
+local white={1,1,1}
+local blueIris={.35,.8,1}
+local brownIris={1,.65,.12}
+local eyePositions={.40,.60}
+-- Reuse these uniform vectors in the moving sprite and its dash ghosts.
+C.drawColors={}
+for index,key in ipairs(C.keys) do
+ local material=C.material(index)
+ if material then C.drawColors[index]=material.body
+ elseif C.skinColors[key] then
+  local body=C.skinColors[key];local tint=C.tints[index] or white
+  C.drawColors[index]={body[1]*tint[1],body[2]*tint[2],body[3]*tint[3]}
+ end
+end
 function C.model(dir,index)
     dir=dir or 'down'
     local custom=C.customSprites[C.crowned[index] or index]
@@ -103,10 +140,11 @@ function C.portrait(index,x,y,size,dir,locked,walk)
             local a=Art.images[C.model(dir)];local qx,qy=a.quad:getViewport()
             local iw,ih=a.image:getDimensions();local scale=size/math.max(a.w,a.h)
             local base=C.crowned[index] or index
+            local iris=C.material(base) and C.material(base).iris or base==1 and brownIris or blueIris
             g.setBlendMode('alpha')
-            for _,u in ipairs({.40,.60}) do
+            for _,u in ipairs(eyePositions) do
                 local ex=x+(u*iw-qx-a.w/2)*scale;local ey=y+(.595*ih-qy-a.h/2)*scale
-                g.setColor(base==1 and 1 or .35,base==1 and .65 or .8,base==1 and .12 or 1,alpha)
+                g.setColor(iris[1],iris[2],iris[3],alpha)
                 g.ellipse('fill',ex,ey,size*.022,size*.03)
                 g.setColor(1,.98,.9,alpha);g.circle('fill',ex-.18,ey-.35,.3)
             end
@@ -121,8 +159,9 @@ function C.portrait(index,x,y,size,dir,locked,walk)
     local key=C.model(dir,index)
     local a=Art.images[key];local pose=dir=='right' and 'left' or dir
     if C.customSprites[index] then
-        -- These PNGs already contain their final silk, glasses and iris colors.
-        g.setShader()
+        -- Keep each custom source and accessories, with the same softened ink finish.
+        C.customSkinShader=C.customSkinShader or g.newShader('assets/shaders/custom_skin_material.glsl')
+        g.setShader(C.customSkinShader)
         if locked then
             C.silhouetteShader=C.silhouetteShader or g.newShader([[
                 vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel) {
@@ -132,9 +171,14 @@ function C.portrait(index,x,y,size,dir,locked,walk)
             g.setShader(C.silhouetteShader)
         end
     else
-        local body=C.skinColors[C.keys[index]];local tint=C.tints[index] or {1,1,1}
+        local material=C.material(index)
         C.skinShader=C.skinShader or g.newShader('assets/shaders/player_skin.glsl')
-        C.skinShader:send('bodyColor',{body[1]*tint[1],body[2]*tint[2],body[3]*tint[3]})
+        C.skinShader:send('bodyColor',C.drawColors[index])
+        C.skinShader:send('paletteSkin',material~=nil)
+        if material then
+            C.skinShader:send('markingColor',material.markings)
+            C.skinShader:send('irisColor',material.iris)
+        end
         C.skinShader:send('sideView',pose=='left')
         C.skinShader:send('frontView',pose=='down')
         C.skinShader:send('brownSkin',index==1)
@@ -159,13 +203,14 @@ function C.selectionPortrait(x,y,size)
     local locked=not C.unlocked(selected)
     local x0,y0=g.transformPoint(0,0);local x1,y1=g.transformPoint(1,0)
     local scale=math.max(.25,math.sqrt((x1-x0)^2+(y1-y0)^2))
-    local pixels=math.ceil(size*scale);local key=base..':'..pixels..':'..tostring(locked)
+    local density=g.getPixelWidth()/g.getWidth()
+    local pixels=math.ceil(size*scale*density);local key=base..':'..pixels..':'..tostring(locked)
     -- Resolve the large PNG once at display resolution. Moving the cached image
     -- smoothly no longer selects different source pixels inside the gold markings.
     if C.menuCacheKey~=key then
         if C.menuCache then C.menuCache:release() end
         C.menuCache=g.newCanvas(pixels+8,pixels+8,{dpiscale=1})
-        C.menuCache:setFilter('linear','linear')
+        C.menuCache:setFilter('nearest','nearest')
         g.push('all');g.setCanvas(C.menuCache);g.origin();g.setScissor();g.setShader();g.clear(0,0,0,0)
         g.setBlendMode('alpha');g.setColor(1,1,1)
         C.portrait(base,(pixels+8)/2,(pixels+8)/2,pixels,'down',locked)
@@ -199,8 +244,11 @@ end
 -- Crown variants retain the body color of their base skin.
 C.bodyColors={original={.57,.29,.10},spider={.94,.90,.79},hell_spider={1,.20,.055},ocean_spider={.15,.68,.91},crown_spider={.94,.90,.79}}
 C.bodyColors.cocon={.94,.94,.90}
+for index,material in pairs(C.materials) do C.bodyColors[C.keys[index]]=material.effect end
 function C.effectColor(index)
     index=index or C.selected();index=C.crowned[index] or index
+    local material=C.material(index)
+    if material then return material.effect end
     local body=C.bodyColors[C.keys[index]] or C.bodyColors.original
     if index==5 then return {.60,.32,.90} end
     local tint=C.tints[index] or {1,1,1}

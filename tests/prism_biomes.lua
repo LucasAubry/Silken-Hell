@@ -47,7 +47,10 @@ function T.run()
   local c=g.newCanvas(160,160);g.push('all');g.setCanvas(c);g.origin();g.clear(0,0,0,0);g.setColor(1,1,1,.5)
   if scope then Material.beginScene(c) end
   if shader then g.setShader(shader) end
-  ink.draw('original_down',80,80,120)
+  -- Exercise the neutral material on protected trap art, independently of
+  -- Paradise's intentional palette and cast-shadow treatment.
+  local a=ink.frame('wheel');local scale=120/math.max(a.w,a.h)
+  g.draw(a.image,a.quad,80,80,0,scale,scale,a.w/2,a.h/2)
   if shader then assert(g.getShader()==shader,'Status shader must survive') end
   Material.endScene();g.pop();local data=c:newImageData();c:release();return data
  end
@@ -74,7 +77,7 @@ function T.run()
  local data=sample(true,true,status);data:release();status:release()
  for id,biome in pairs(Worlds.secretBiomes) do Campaign.select(id);assert(Palette.current()==biome) end
  Campaign.select(7);local palette=Palette.player();FX.death(300,300);FX.collect(400,300);Campaign.select(2)
- assert(FX.deathPulse.palette==palette and FX.pickupPulse.palette==Palette.get(7),'Pickup must retain the source biome through transitions')
+ assert(FX.deathPulse.palette==palette and FX.pickupPulse.palette==palette,'Events must retain the source skin palette through biome transitions')
  local dir=os.getenv('SILKEN_STYLE_CAPTURE_DIR')
  local draw=love.draw;local index,drawn=0,true
  local tasks={}
@@ -97,7 +100,7 @@ function T.run()
    g.newImage=image
    assert(uploads==0,'Biome changes must reuse textures: '..uploads)
    if os.getenv('SILKEN_PRISM_BENCH')=='1' then love.draw=draw;T.bench() end
-   print('PASS neutral sheen: original RGB proportions and alpha preserved, no biome recoloring; unchanged UI/status shaders; seven biomes/bosses; pickup effects retain biome palettes; no runtime texture uploads')
+   print('PASS neutral sheen: original RGB proportions and alpha preserved, no biome recoloring; unchanged UI/status shaders; seven biomes/bosses; pickup effects retain skin palettes; no runtime texture uploads')
    love.event.quit()
   end
  end

@@ -8,6 +8,6 @@ float noise(vec2 p) {
 vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
     vec4 base=Texel(tex,uv);
     vec2 p=pixel/dimensions.y;
-    vec3 c=base.rgb+vec3(.025,.024,.02)*pow(noise(p*8.0+clock*.009),3.0);
+    vec3 c=base.rgb+vec3(.027,.024,.018)*pow(noise(p*8.0+clock*.009),3.0);
     return vec4(c*base.a,1.0)*tint;
 }

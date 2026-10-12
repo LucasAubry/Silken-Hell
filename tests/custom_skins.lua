@@ -16,7 +16,7 @@ function T.run()
    assert(key~='player_skin_'..dir,'Each custom skin uses its own directional artwork')
    assert(art.w>0 and art.h>0 and art.w/art.h>.45 and art.w/art.h<2,'Directional silhouette fits the shared rig')
    Art.draw=function(actual,x,y,width,...)
-    assert(actual==key and g.getShader()==nil,'Authored colors bypass the shared recoloring shader')
+    assert(actual==key and g.getShader()==Characters.customSkinShader,'Custom artwork retains its own ink material')
     assert(math.abs(width-59*art.w/math.max(art.w,art.h))<.001,'Gameplay silhouette stays at the standard scale')
     calls=calls+1;return draw(actual,x,y,width,...)
    end
@@ -24,7 +24,7 @@ function T.run()
    Art.draw=draw
    walk.draw=function(image,pose,x,y,width,state,quad)
     assert(image==art.image and quad==art.quad and pose==(dir=='right' and 'left' or dir))
-    assert(g.getShader()==nil and math.abs(width-59*art.w/math.max(art.w,art.h))<.001)
+    assert(g.getShader()==Characters.customSkinShader and math.abs(width-59*art.w/math.max(art.w,art.h))<.001)
     calls=calls+1;return walkDraw(image,pose,x,y,width,state,quad)
    end
    Characters.portrait(id,150,150,59,dir,false,{walkMoving=true,walkPhase=.7})
@@ -37,7 +37,7 @@ function T.run()
   g.ellipse=ellipse
  end
  assert(calls==16,'Both skins render in all four poses and through the walking mesh')
- App.state='skins';UI.draw();assert(#UI.buttons==16,'Fifteen selectable skins plus Return')
+ App.state='skins';UI.draw();assert(#UI.buttons==19,'Eighteen selectable skins plus Return')
  UI.buttons[15].run();assert(Profile.character==23 and App.state=='menu','The last catalogue card equips Cocon')
  local tick=0
  local labels={'Face','Dos','Gauche','Droite'}

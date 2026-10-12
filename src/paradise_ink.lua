@@ -8,6 +8,7 @@ local function metadata()
  return P.metadata
 end
 function P.load()
+ require('paradise_style').load()
  for key in pairs(metadata()) do P.frame(key);if Art.onLoad then Art.onLoad() end end
 end
 function P.active()
@@ -25,8 +26,17 @@ end
 function P.draw(key,x,y,width,angle,height,flip)
  local a=P.frame(key);local sx=width/a.w;local sy=height and height/a.h or sx
  if flip then sx=-sx end
- if key~='egg' and key~='tear' then Art.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2) end
+ if key=='egg' then
+  Art.contactShadow(x,y+(height or a.h*sy)*.43,width*.50,(height or a.h*sy)*.10,.18)
+ elseif key~='tear' then
+  g.push()
+  if key=='wheel' or key=='trap_open' or key=='trap_closed' or key=='nest' then g.translate(-4,-8) end
+  Art.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
+  g.pop()
+ end
+ local previous=require('paradise_style').bind(a,key:match('^merle_') and 'bird' or key)
  g.draw(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
+ g.setShader(previous)
  require('servant_art').web(a,a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
 end
 local aliases={merle_egg='egg',nest='nest',wheel='wheel',catalog_ange='ange_down',catalog_snake='snake_down'}
@@ -75,11 +85,19 @@ function P.mob(m)
  end
  if m.type=='scie' then
   local x,y=m.tipX or m.x,m.tipY or m.y
-  g.push('all');g.setColor(.13,.16,.20);g.setLineWidth(4);g.line(m.x,m.y,x,y)
-  g.setColor(.62,.65,.66);g.setLineWidth(1)
-  for i=0,7 do local t=i/8;g.circle('line',m.x+(x-m.x)*t,m.y+(y-m.y)*t,2.3) end
-  g.setColor(.16,.19,.23);g.circle('fill',m.x,m.y,6)
-  g.setColor(.77,.78,.73);g.circle('line',m.x,m.y,4)
+  g.push('all');g.setShader()
+  g.setColor(.24,.18,.105,.24);g.setLineWidth(9);g.line(m.x+4,m.y+6,x+4,y+6)
+  g.setColor(.15,.17,.18);g.setLineWidth(11);g.line(m.x,m.y,x,y)
+  g.setColor(.60,.61,.55);g.setLineWidth(8);g.line(m.x,m.y-1,x,y-1)
+  local length=math.sqrt((x-m.x)^2+(y-m.y)^2)
+  for i=0,math.floor(length/7) do
+   local t=length>0 and i*7/length or 0
+   local px,py=m.x+(x-m.x)*t,m.y+(y-m.y)*t
+   g.setColor(.12,.15,.16);g.circle('fill',px,py,2.3)
+   g.setColor(.9,.88,.75,.65);g.arc('line','open',px,py,2.7,0,math.pi,8)
+  end
+  g.setColor(.16,.19,.20);g.circle('fill',m.x,m.y,5)
+  g.setColor(.85,.81,.65);g.setLineWidth(1);g.circle('line',m.x,m.y,4)
   g.setColor(1,1,1);P.draw('wheel',x,y,60,m.rotation or 0);g.pop()
   return true
  elseif m.type=='piege' then
@@ -91,6 +109,7 @@ end
 function P.edge(length)
  local a=P.frame('border');local tile=176
  g.push('all');g.setColor(1,1,1)
+ require('paradise_style').bind(a,'border')
  for x=0,length-1,tile do
   local w=math.min(tile,length-x)
   if w==tile then g.draw(a.image,a.quad,x,0,0,tile/a.w,22/a.h)
@@ -101,7 +120,19 @@ function P.edge(length)
    g.draw(a.image,P.edgeQuad,x,0,0,tile/a.w,22/a.h)
   end
  end
- g.setColor(.18,.20,.24,.28);g.setLineWidth(1);g.line(0,22,length,22)
+ g.setShader();g.setColor(.25,.22,.16,.28);g.setLineWidth(1);g.line(0,22,length,22)
+ g.pop()
+end
+function P.wall(r)
+ g.push('all');g.setShader()
+ g.setColor(.27,.205,.12,.16);g.rectangle('fill',r.x+3,r.y+5,r.w,r.h)
+ if r.w>=r.h then g.translate(r.x,r.y)
+ else g.translate(r.x+r.w,r.y);g.rotate(math.pi/2) end
+ local length,depth=math.max(r.w,r.h),math.min(r.w,r.h)
+ local rows=math.max(1,math.ceil(depth/22));local height=depth/rows
+ for row=0,rows-1 do
+  g.push();g.translate(0,row*height);g.scale(1,height/22);P.edge(length);g.pop()
+ end
  g.pop()
 end
 return P

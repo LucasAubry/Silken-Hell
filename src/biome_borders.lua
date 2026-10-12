@@ -79,9 +79,9 @@ function B.skyVoid()
  end
  for layer=0,12 do
   local t=math.max(0,(layer-1)/11);local depth=38-layer*2.5
-  if layer==0 then g.setColor(.78,.87,.94)
-  elseif layer==1 then g.setColor(.36,.49,.64)
-  else g.setColor(.25*(1-t)+.015,.35*(1-t)+.025,.47*(1-t)+.065) end
+  if layer==0 then g.setColor(.90,.91,.81)
+  elseif layer==1 then g.setColor(.33,.48,.49)
+  else g.setColor(.18*(1-t)+.02,.31*(1-t)+.045,.32*(1-t)+.055) end
   edge(w,depth,1)
   g.push();g.translate(w,600);g.rotate(math.pi);edge(w,depth,2);g.pop()
   g.push();g.translate(0,600);g.rotate(-math.pi/2);edge(600,depth,3);g.pop()
@@ -112,7 +112,8 @@ function B.draw()
    if d<Arena.width then x,y,angle=d,17,0 elseif d<Arena.width+600 then x,y,angle=Arena.width-17,d-Arena.width,math.pi/2
    elseif d<2*Arena.width+600 then x,y,angle=2*Arena.width+600-d,583,math.pi else x,y,angle=17,perimeter-d,-math.pi/2 end
    local size=24+rank*3+rand(i,4)*10
-   g.setColor(.93,.96,1,.30+rank*.055);require('final_art').draw('web_wall',x,y,size,i*.81)
+   if biome==1 then g.setColor(1,.94,.77,.42) else g.setColor(.93,.96,1,.30+rank*.055) end
+   require('final_art').draw('web_wall',x,y,size,i*.81)
   end
   g.setCanvas(old);g.pop()
  end

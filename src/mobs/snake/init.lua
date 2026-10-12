@@ -52,8 +52,12 @@ MobBehaviors.snake = {
 	    local centerY = m.y + offsetY + (m.hitBox_height or 0) / 2 + require('mobs.shared.floating').offset(m)
 
 	    -- Glow pulsant
-	    local pulse = math.sin(love.timer.getTime() * 5) * 5 -- oscillation
-	    draw_glow(centerX, centerY, 20 + pulse, 0, 1, 0, 0.08)
+	    local style=require('paradise_style')
+	    if style.active() then style.mobGlow(centerX,centerY,24+math.sin(UI.clock*2)*2,true)
+	    else
+	        local pulse = math.sin(love.timer.getTime() * 5) * 5
+	        draw_glow(centerX, centerY, 20 + pulse, 0, 1, 0, 0.08)
+	    end
 
 	    -- Dessin du mob normalement
 	    draw_mob(m)

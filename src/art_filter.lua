@@ -1,10 +1,10 @@
--- Preserve pixel skins and trophies; illustrated world textures use mipmaps.
--- Mipmaps stabilize high-resolution art at gameplay size without a screen blur.
+-- Keep the authored pixel-art spiders crisp; painted world textures use mipmaps.
 local F={images={}}
 function F.binaryAlpha(path)
  return path and (path:match('^assets/skins/commun/') or path:match('^assets/skins/maxance/') or path:match('^assets/skins/cocon/'))~=nil
 end
 function F.mode(path)
+ if F.binaryAlpha(path) then return 'nearest' end
  return path and (path:match('^assets/skins/') or path:match('^assets/ui/achievements/')) and 'nearest' or 'linear'
 end
 function F.image(path,data)

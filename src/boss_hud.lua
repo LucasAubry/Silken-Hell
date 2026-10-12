@@ -25,14 +25,15 @@ function H.kind(boss)
  end
  return common or 'mixed'
 end
-function H.overlaps(w,h)
+function H.overlaps(w,h,left,top,width,height)
  local scale,ox,oy=App.viewport(w,h);local ui=math.min(w/1200,h/750)
  local sx,sy=BossFX.offset()
  local x=(ox+(player.x+15+sx)*scale-(w-1200*ui)/2)/ui
  local y=(oy+(player.y+8+sy)*scale-(h-750*ui)/2)/ui
  local radius=31*scale/ui
- local top=H.top+(H.offsetY or 0)
- return x+radius>=H.left and x-radius<=H.left+H.width and y+radius>=top and y-radius<=top+H.height
+ left=left or H.left;top=top or H.top+(H.offsetY or 0)
+ width=width or H.width;height=height or H.height
+ return x+radius>=left and x-radius<=left+width and y+radius>=top and y-radius<=top+height
 end
 function H.stormOverlapsTop(w,h)
  local scale,ox,oy=App.viewport(w,h);local ui=math.min(w/1200,h/750)
@@ -127,16 +128,19 @@ function H.paint(boss,kind)
 end
 function H.draw(boss)
  if not boss or not boss.active or boss.defeated then H.lastTime=nil;return end
- -- Leave the expanded upper nest visible beneath the first boss HUD.
- H.offsetY=H.kind(boss)=='merle' and -34 or 0
- local target=H.overlaps(g.getDimensions()) and .28 or 1
+ local kind=H.kind(boss)
+ H.offsetY=12
+ local left,top,width,height=H.left,H.top+H.offsetY,H.width,H.height
+ local sw,sh=g.getDimensions()
+ local target=H.overlaps(sw,sh,left,top,width,height) and .28 or 1
  local dt=H.lastTime and math.max(0,math.min(.1,UI.clock-H.lastTime)) or 1/60
  H.lastTime=UI.clock;H.opacity=H.opacity+(target-H.opacity)*(1-math.exp(-dt*14))
  H.canvas=H.canvas or g.newCanvas(H.width,H.height)
+ local canvas=H.canvas
  local previous=g.getCanvas()
- g.push('all');g.setCanvas(H.canvas);g.origin();g.clear(0,0,0,0);g.setBlendMode('alpha');g.setShader();g.translate(-H.left,-H.top)
- H.paint(boss,H.kind(boss))
+ g.push('all');g.setCanvas(canvas);g.origin();g.clear(0,0,0,0);g.setBlendMode('alpha');g.setShader()
+ g.translate(-H.left,-H.top);H.paint(boss,kind)
  g.setCanvas(previous);g.pop()
- g.push('all');g.setBlendMode('alpha','premultiplied');g.setColor(H.opacity,H.opacity,H.opacity,H.opacity);g.draw(H.canvas,H.left,H.top+(H.offsetY or 0));g.pop()
+ g.push('all');g.setBlendMode('alpha','premultiplied');g.setColor(H.opacity,H.opacity,H.opacity,H.opacity);g.draw(canvas,left,top);g.pop()
 end
 return H

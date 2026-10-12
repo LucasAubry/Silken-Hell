@@ -11,6 +11,16 @@ float fbm(vec2 p) {
  for(int i=0;i<4;i++) { v+=a*noise(p);p=p*2.03+vec2(7.3,2.7);a*=.5; }
  return v;
 }
+vec3 champagneMarble(vec2 p) {
+    // Original marble contours from the reference, gently lifted toward ivory.
+    float terrain=fbm(p*7.0);
+    float marble=pow(abs(sin(p.x*8.0+p.y*5.0+fbm(p*4.0)*13.0)),18.0);
+    vec3 c=mix(vec3(.735,.653,.528),vec3(.940,.870,.736),terrain);
+    float veins=smoothstep(.78,.99,marble);
+    c=mix(c,vec3(.97,.947,.888),veins*.34);
+    c+=(noise(p*350.0)-.5)*.012;
+    return c;
+}
 vec2 cells(vec2 p) {
  vec2 base=floor(p),f=fract(p); float first=9.0,second=9.0;
  for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++) {
@@ -51,12 +61,13 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   float roots=abs(sin(p.y*14.0+fbm(vec2(p.x*4.0,p.y*.9))*16.0));
   c=mix(c,vec3(.11,.053,.024), (1.0-smoothstep(.01,.06,roots))*.4);
  } else if(biome==3.0) {
-  float meadow=fbm(p*9.0);
-  float blades=pow(noise(p*230.0),2.0);
-  c=mix(vec3(.045,.24,.025),vec3(.28,.61,.075),meadow);
-  c+=vec3(.12,.20,.025)*blades;
-  float sun=pow(max(0.0,sin(p.x*2.8+p.y*.7+clock*.025)),8.0);
-  c+=vec3(.22,.25,.055)*sun;
+  vec2 flow=p+vec2(fbm(p*2.0),fbm(p*2.0+19.0))*.36;
+  float pigment=fbm(flow*18.0)-.5;
+  float meadow=fbm(p*4.5);
+  c=mix(vec3(.19,.36,.22),vec3(.43,.59,.30),meadow);
+  float tufts=pow(noise(flow*vec2(110.0,55.0)),4.0);
+  c+=vec3(.06,.075,.025)*tufts;
+  c+=vec3(.045,.055,.02)*pigment;
  } else if(biome==2.0 || biome==8.0) {
   float fissure=1.0-smoothstep(.009,.045,cells(p*8.0+terrain).y);
   c=mix(vec3(.055,.028,.030),vec3(.14,.075,.062),terrain)+(grain-.5)*.025;
@@ -65,6 +76,9 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
     c+=vec3(.62,.65,.70)*fissure*(.65+.10*sin(clock*.6+p.x*4.0));
     c+=vec3(.11,.12,.15)*pow(max(0.0,sin(p.x*5.0+terrain*1.5)),12.0);
   } else c+=vec3(.34,.055,.007)*fissure*(.65+.15*sin(clock*.8+p.x*4.0));
+ } else if(biome==1.0) {
+  c=champagneMarble(p);
+  c+=vec3(.027,.024,.018)*pow(noise(p*8.0+clock*.009),3.0);
  } else {
   float marble=pow(abs(sin(p.x*8.0+p.y*5.0+fbm(p*4.0)*13.0)),18.0);
   // Preserve the marble pattern, with matte ivory washes and fine graphite veins.

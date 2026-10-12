@@ -203,57 +203,6 @@
       "ih": 1092
     }
   },
-  "original_down": {
-    "path": "assets/environments/paradis/characters-ink/original_down.png",
-    "x": 26,
-    "y": 33,
-    "w": 1390,
-    "h": 1029,
-    "iw": 1441,
-    "ih": 1092,
-    "source": {
-      "x": 41,
-      "y": 67,
-      "w": 1359,
-      "h": 978,
-      "iw": 1441,
-      "ih": 1092
-    }
-  },
-  "original_up": {
-    "path": "assets/environments/paradis/characters-ink/original_up.png",
-    "x": 36,
-    "y": 29,
-    "w": 1369,
-    "h": 1033,
-    "iw": 1441,
-    "ih": 1092,
-    "source": {
-      "x": 31,
-      "y": 42,
-      "w": 1353,
-      "h": 1018,
-      "iw": 1441,
-      "ih": 1092
-    }
-  },
-  "original_left": {
-    "path": "assets/environments/paradis/characters-ink/original_left.png",
-    "x": 30,
-    "y": 21,
-    "w": 1392,
-    "h": 1041,
-    "iw": 1441,
-    "ih": 1092,
-    "source": {
-      "x": 31,
-      "y": 40,
-      "w": 1379,
-      "h": 1019,
-      "iw": 1441,
-      "ih": 1092
-    }
-  },
   "tear": {
     "path": "assets/environments/paradis/characters-ink/tear.png",
     "x": 211,
@@ -286,57 +235,6 @@
       "h": 356,
       "iw": 2172,
       "ih": 724
-    }
-  },
-  "spider_down": {
-    "path": "assets/environments/paradis/characters-ink/spider_down.png",
-    "x": 39,
-    "y": 41,
-    "w": 1361,
-    "h": 1021,
-    "iw": 1441,
-    "ih": 1092,
-    "source": {
-      "x": 41,
-      "y": 69,
-      "w": 1355,
-      "h": 975,
-      "iw": 1441,
-      "ih": 1092
-    }
-  },
-  "spider_up": {
-    "path": "assets/environments/paradis/characters-ink/spider_up.png",
-    "x": 45,
-    "y": 34,
-    "w": 1350,
-    "h": 1031,
-    "iw": 1441,
-    "ih": 1092,
-    "source": {
-      "x": 31,
-      "y": 41,
-      "w": 1362,
-      "h": 1024,
-      "iw": 1441,
-      "ih": 1092
-    }
-  },
-  "spider_left": {
-    "path": "assets/environments/paradis/characters-ink/spider_left.png",
-    "x": 34,
-    "y": 36,
-    "w": 1377,
-    "h": 1029,
-    "iw": 1441,
-    "ih": 1092,
-    "source": {
-      "x": 30,
-      "y": 40,
-      "w": 1379,
-      "h": 1019,
-      "iw": 1441,
-      "ih": 1092
     }
   },
   "skull": {

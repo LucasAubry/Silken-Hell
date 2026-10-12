@@ -37,12 +37,17 @@ function W.draw(img,dir,x,y,width,p,bounds)
  local cached=poses[dir]
  if not cached then cached=build(img,dir,bounds);cached.image=img;poses[dir]=cached end
  local phase=p.walkPhase or 0
- for i,r in ipairs(cached.rig) do
-  local stride=math.sin(phase+r.offset);local lift=math.max(0,math.cos(phase+r.offset))
-  local v=cached.vertices[i]
-  v[1]=r.x+(stride*r.side*.043)*cached.w*r.weight
-  v[2]=r.y+(stride*.031-lift*.024)*cached.h*r.weight
-  cached.mesh:setVertex(i,v)
+ -- Several display frames may share one 60 Hz simulation pose.
+ -- Reuse that mesh, and batch changed vertices into a single upload.
+ if cached.phase~=phase then
+  for i,r in ipairs(cached.rig) do
+   local stride=math.sin(phase+r.offset);local lift=math.max(0,math.cos(phase+r.offset))
+   local v=cached.vertices[i]
+   v[1]=r.x+(stride*r.side*.043)*cached.w*r.weight
+   v[2]=r.y+(stride*.031-lift*.024)*cached.h*r.weight
+  end
+  cached.mesh:setVertices(cached.vertices)
+  cached.phase=phase
  end
  local scale=width/cached.w;local bob=math.cos(phase*2)*.55*width/62
  love.graphics.draw(cached.mesh,x,y+bob,math.sin(phase)*.012,scale,scale,cached.w/2,cached.h/2)

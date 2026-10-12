@@ -55,11 +55,13 @@ end
 function R.reset(w,n)
     R.custom=false; R.world=w; R.level=n; R.clock=0; R.tunnels={}; R.tornadoes={}; player.whirl=nil; player.throw=nil; player.skyWhirl=nil; player.skyThrow=nil; player.tunnelLock=false; player.tunnelTravel=nil; R.fireflies={};R.starPrevious=nil; R.wind={x=0,y=0,time=0,stage=0,tx=0,ty=0}; R.clouds={}; R.rain={}; R.rainClock=.25; R.current={}
     R.electricTrails={}; R.bolts={}; R.eggs={}; R.larvae={}; R.holes={}; R.rainSites={}; R.rainWave=0; R.vents={}; R.lightning={}; R.lightningClock=.35; player.illuminated=0
+    require('sky_lightning').reset()
     if w<4 then return end
     -- Reuse the ocean floor across deaths instead of releasing a GPU canvas
     -- that may still be referenced by the previous frame.
-    if not R.floor or R.floor:getWidth()~=Arena.width then
-        R.floor=love.graphics.newCanvas(Arena.width,600)
+    local density=w==6 and math.max(1,math.min(3,love.graphics.getPixelHeight()/600)) or 1
+    if not R.floor or R.floor:getWidth()~=Arena.width or math.abs(R.floor:getDPIScale()-density)>.001 then
+        R.floor=love.graphics.newCanvas(Arena.width,600,{dpiscale=density})
     end
     local g=love.graphics; g.push('all'); g.setCanvas(R.floor); g.clear(Worlds.color(w).floor)
     if w==4 or w==7 then
@@ -88,20 +90,23 @@ function R.reset(w,n)
         end
     else
         for _,p in ipairs({{.24,220},{.76,405}}) do R.tornadoes[#R.tornadoes+1]={x=Arena.width*p[1],y=p[2],cooldown=0} end
-        g.clear(.055,.10,.20)
-        g.setColor(.40,.57,.72); g.rectangle('fill',28,28,Arena.width-56,544,22)
-        -- Overlapping cloud banks, with broad highlights instead of a tile grid.
-        g.setScissor(28,28,Arena.width-56,544)
-        for i=1,160 do
-            local u=math.sin(i*127.1)*43758.5453; local v=math.sin(i*311.7)*19341.371
-            local x=28+(u-math.floor(u))*(Arena.width-56); local y=28+(v-math.floor(v))*544
-            local rx=45+i%5*11; local ry=24+i%3*8
-            g.setColor(.33,.42,.68,.32); g.ellipse('fill',x+8,y+12,rx,ry)
-            local warm=(math.sin(i*2.1+n*.7)+1)*.5
-            g.setColor(.55+warm*.2,.66-warm*.08,.81+warm*.04,.4); g.ellipse('fill',x,y,rx,ry)
-            g.setColor(.83,.80,.94,.17); g.ellipse('fill',x-12,y-8,rx*.65,ry*.7)
+        g.clear(.045,.105,.125)
+        g.setColor(.43,.57,.60); g.rectangle('fill',28,28,Arena.width-56,544,22)
+        -- Bake the cloud texture and its soft focus once, below sharp actors and HUD.
+        R.cloudShader=R.cloudShader or g.newShader('assets/shaders/sky_floor.glsl')
+        R.cloudShader:send('floorSize',{Arena.width,600})
+        g.setShader(R.cloudShader);g.setColor(1,1,1)
+        g.draw(UI.pixel,0,0,0,Arena.width,600);g.setShader()
+        R.cloudBlur=R.cloudBlur or g.newShader('assets/shaders/sky_floor_blur.glsl')
+        if not R.cloudBlurCanvas or R.cloudBlurCanvas:getWidth()~=Arena.width or math.abs(R.cloudBlurCanvas:getDPIScale()-density)>.001 then
+            R.cloudBlurCanvas=g.newCanvas(Arena.width,600,{dpiscale=density})
         end
-        g.setScissor()
+        g.setShader(R.cloudBlur);g.setBlendMode('replace')
+        R.cloudBlur:send('direction',{2/Arena.width,0})
+        g.setCanvas(R.cloudBlurCanvas);g.draw(R.floor,0,0)
+        R.cloudBlur:send('direction',{0,2/600})
+        g.setCanvas(R.floor);g.draw(R.cloudBlurCanvas,0,0)
+        g.setShader();g.setBlendMode('alpha')
         for i=1,math.min(6,2+math.floor(n/2)) do
             local p={x=Arena.width*(i%2==0 and .68 or .32),y=145+math.floor((i-1)/2)*145+(n%3-1)*15,rx=39,ry=28,seed=i*1.7+n}
             local safe=true
@@ -197,6 +202,7 @@ function R.update(dt)
     if Campaign.biome<4 and not R.custom then return end
     if Campaign.biome==5 then R.rain={};R.rainSites={} end
     R.clock=R.clock+dt
+    if Campaign.biome==6 then R.updateSkyImpacts(dt) end
     R.updateTraversal(dt)
     if Campaign.biome==5 or R.custom then R.separateEarth() end
     if Abyss.active then Abyss.update(dt) end
@@ -240,6 +246,22 @@ function R.skyBossActive()
     for _,item in ipairs(Bosses.items) do if item.kind=='storm' and not item.boss.defeated then return true end end
     return false
 end
+function R.updateSkyImpacts(dt)
+    require('sky_lightning').update(dt)
+    for i=#R.holes,1,-1 do
+        local p=R.holes[i]
+        if p.temporary then
+            p.age=p.age+dt
+            local scale=math.max(0,1-p.age/6.5)^.7
+            p.rx=22*scale;p.ry=17.16*scale
+            if p.age>=6.5 or Aftermath.cleared then table.remove(R.holes,i) end
+        end
+    end
+end
+function R.lightningImpact(x,y,seed)
+    require('sky_lightning').trigger(x,y,seed)
+    R.holes[#R.holes+1]={x=x,y=y,rx=22,ry=17.16,age=0,temporary=true,seed=seed or x+y}
+end
 function R.updateLightning(dt)
     if R.skyBossActive() then R.lightning={};return end
     if Aftermath.cleared then R.lightning={};return end
@@ -254,6 +276,7 @@ function R.updateLightning(dt)
         if p.age<.8 and p.target then p.x,p.y=p.target.x,p.target.y end
         if p.age>=.8 and not p.struck then
             p.struck=true
+            R.lightningImpact(p.x,p.y,p.x+p.y)
             require('sky_rain').electrify(p.x,p.y,45)
             if (player.x+15-p.x)^2+(player.y+12-p.y)^2<34^2 then Hazards.kill() end
         end
@@ -343,15 +366,15 @@ function R.drawWind(width,height)
     local dx,dy=1,-.08
     if strength>=4 then dx,dy=w.x/strength,w.y/strength end
     local g=love.graphics;g.push('all');g.setShader()
-    local count=math.floor(width*height/(Graphics.quality==1 and 12000 or 7500))
+    local count=math.floor(width*height/(Graphics.quality==1 and 50000 or 30000))
     for i=1,count do
         local age=(R.clock*(.18+strength*.001)+i*.173)%1
         local x=(i*137.31+R.clock*dx*(80+strength))%width
         local y=(i*79.73+R.clock*dy*(80+strength)+math.sin(i+R.clock)*8)%height
-        local length=30+strength*.25;local alpha=math.sin(age*math.pi)*(.32+math.min(1,strength/150)*.20)
-        g.setColor(.18,.32,.45,alpha*.65);g.setLineWidth(3)
+        local length=12+strength*.07;local alpha=math.sin(age*math.pi)*(.11+math.min(1,strength/150)*.05)
+        g.setColor(.18,.32,.35,alpha*.4);g.setLineWidth(1.4)
         g.line(x-dx*length,y-dy*length,x-dx*length*.5-dy*3,y-dy*length*.5+dx*3,x,y)
-        g.setColor(.88,.95,1,alpha);g.setLineWidth(1.4)
+        g.setColor(.89,.94,.88,alpha);g.setLineWidth(.7)
         g.line(x-dx*length,y-dy*length,x-dx*length*.5-dy*3,y-dy*length*.5+dx*3,x,y)
     end
     g.pop()
@@ -556,14 +579,9 @@ function R.drawGround()
         g.setColor(1,.94,.35,.95*alpha); g.setLineWidth(1.5); g.line(p.x,p.y,mx+j,my-j,p.tx,p.ty)
     end
     g.setLineWidth(1)
-    if Campaign.biome==6 and R.level>=5 and not Secret.inArena() then g.setColor(.19,.24,.31,.28); g.rectangle('fill',28,28,Arena.width-56,544) end
+    if Campaign.biome==6 then require('sky_lightning').drawAll() end
     for _,p in ipairs(R.lightning or {}) do
-        if p.age<.8 then g.setColor(.25,.48,.8,.3); g.ellipse('line',p.x,p.y,30,15)
-        elseif p.age<1.05 then
-            g.setColor(.65,.87,1,.95); g.setLineWidth(4)
-            g.line(p.x-24,30,p.x+13,110,p.x-8,175,p.x+18,p.y-55,p.x,p.y)
-            g.setColor(1,1,1,.9); g.setLineWidth(1); g.line(p.x-24,30,p.x+13,110,p.x-8,175,p.x+18,p.y-55,p.x,p.y)
-        end
+        if p.age<.8 then require('sky_lightning').warning(p.x,p.y,p.age/.8,30,15) end
     end
     g.setLineWidth(1)
     for _,t in ipairs(R.tunnels) do
@@ -589,16 +607,16 @@ function R.drawGround()
         end
     end
     if Campaign.biome==6 or R.custom then
+        require('sky_rain').draw(R.rain)
         for _,p in ipairs(R.holes) do
-            g.setColor(.78,.87,.94); R.drawHole(p,1.19)
-            g.setColor(.36,.49,.64); R.drawHole(p,1.08)
+            g.setColor(.90,.91,.81); R.drawHole(p,1.19)
+            g.setColor(.33,.48,.49); R.drawHole(p,1.08)
             -- Receding irregular ledges darken toward the bottom of the chasm.
             for depth=0,10 do
-                local t=depth/10; g.setColor(.25*(1-t)+.015,.35*(1-t)+.025,.47*(1-t)+.065)
+                local t=depth/10; g.setColor(.18*(1-t)+.02,.31*(1-t)+.045,.32*(1-t)+.055)
                 g.push(); g.translate(0,t*7); R.drawHole(p,1-t*.48); g.pop()
             end
         end
-        require('sky_rain').draw(R.rain)
     end
     -- Pulse warnings and digging tracks stay below all creatures.
     for _,m in ipairs(mobs) do

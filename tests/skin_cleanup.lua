@@ -34,11 +34,17 @@ function T.run()
   Characters.portrait(id,128,128,220,dir);g.pop();return canvas:newImageData()
  end
  for _,dir in ipairs({'down','up','left','right'}) do
+  -- Locate gold in the neutral source, not in Perle's new ivory body color.
+  local palette,body=Characters.silkPalettes[2],Characters.drawColors[2]
+  Characters.silkPalettes[2]=nil;Characters.drawColors[2]={1,1,1}
+  local source=render(2,dir)
+  Characters.silkPalettes[2]=palette;Characters.drawColors[2]=body
   local reference=render(2,dir);local points={}
   for y=25,125 do for x=45,210 do
-   local r,green,b,a=reference:getPixel(x,y)
+   local r,green,b,a=source:getPixel(x,y)
    if a>.999 and r-b>.15 and green-b>.075 and r<b*1.5+.1 then
-    points[#points+1]={x,y,r,green,b}
+    local rr,gg,bb=reference:getPixel(x,y)
+    points[#points+1]={x,y,rr,gg,bb}
    end
   end end
   assert(#points>0,'Pale gold regression samples: '..dir)
@@ -50,7 +56,7 @@ function T.run()
    end
    result:release()
   end end
-  reference:release()
+  source:release();reference:release()
  end
  canvas:release()
  local seen={}
@@ -66,7 +72,7 @@ function T.run()
  end
  for _,entry in ipairs(Bestiary.entries) do if entry.id=='merle' then assert(entry.art=='merle_egg' and Art.images[entry.art]) end end
  require('tests.skin_fx').run()
- print('PASS all 23 skins, crown-free portraits, seven distinct boss-only wall locations, egg bestiary and skin pickup palettes')
+ print('PASS all '..#Characters.keys..' skins, crown-free portraits, seven distinct boss-only wall locations, egg bestiary and skin pickup palettes')
  love.event.quit()
 end
 return T

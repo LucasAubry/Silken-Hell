@@ -80,7 +80,7 @@ export default {
         const hardcore=b.hardcore===true?1:0;
         if(b.world===8 && !hardcore) fail(400,'Le Sanctuaire libre ne possède pas de score classé.');
         const skin=b.skin===undefined?1:b.skin;
-        if(!Number.isInteger(skin)||skin<1||skin>23) fail(400,'Apparence invalide.');
+        if(!Number.isInteger(skin)||skin<1||skin>26) fail(400,'Apparence invalide.');
         const effects=b.effects===undefined?{}:b.effects;
         if(!effects || typeof effects!=='object' || Array.isArray(effects) || Object.entries(effects).some(([key,value])=>!['gold','hardcore','heartbreak'].includes(key)||typeof value!=='boolean')) fail(400,'Effets invalides.');
         const now=Date.now();

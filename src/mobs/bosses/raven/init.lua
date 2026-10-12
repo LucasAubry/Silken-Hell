@@ -128,7 +128,9 @@ local function drawCorpses()
     local g=love.graphics
     for _,m in ipairs(B.corpses) do
         local t=m.fall;local y=m.y+8*t*t
-        g.setColor(0,0,0,.22);g.ellipse('fill',m.x,y+8,20,6)
+        if Campaign.biome==1 and not (Secret and Secret.inArena()) then
+            g.setColor(1,1,1);Art.contactShadow(m.x,y+8,20,6,.12)
+        else g.setColor(0,0,0,.22);g.ellipse('fill',m.x,y+8,20,6) end
         g.push('all');g.translate(m.x,y);g.rotate(m.side*.9*t);g.scale(1,1-.38*t)
         g.setColor(.58,.57,.62);Art.drawFacing('merle',m.dir,0,0,50);g.pop()
     end

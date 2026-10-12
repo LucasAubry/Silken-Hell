@@ -504,7 +504,8 @@ function U.infoBadge(x,y,r)
     local ink={.96,.79,.46};g.setColor(ink);g.setLineWidth(1.2);g.circle('line',x,y,r,8)
     U.text('i',x-r,y-9,'small',ink,r*2,'center');g.pop()
 end
-function U.iconButton(cx,cy,kind,callback,disabled)
+function U.iconButton(cx,cy,kind,callback,disabled,paradise)
+    if paradise then return require('paradise_hud').icon(U,cx,cy,kind,callback,disabled) end
     local mx,my=U.mouse(); local hover=(mx-cx)^2+(my-cy)^2<19^2
     g.setColor(0.15,0.08,0.025,0.8); g.circle('fill',cx,cy,18)
     g.setColor(disabled and muted or hover and {1,0.95,0.75} or gold); g.setLineWidth(2); g.circle('line',cx,cy,18)
@@ -541,25 +542,37 @@ function U.deathCounter()
 end
 function U.gameHud()
     if Ending and Ending.active then Ending.drawHud();U.sanctuaryReturns();return end
+    local paradise=require('paradise_hud');local styled=paradise.active()
     Hardcore.draw()
-    if App.practice and not Replay.playing then U.fitText('Entraînement · non classé',640,22,'small',{.8,.85,.9},140) end
-    if Campaign.biome==7 and not require('abyss_gate').active and not Abyss.encounterActive() then U.text('Charges : '..(player.charges or 0),790,22,'small',{.4,.9,1}) end
-    g.setColor(1,1,1); Art.draw('clock',49,31,25)
-    U.outlined(U.time(Replay.playing and Replay.frame*Replay.step or Scoring.total(timer,player.death)),70,17,'medium',nil,144)
-    U.deathCounter()
-    if Replay.playing then
-        U.outlined(Replay.ghost and 'Entraînement' or ('/ '..U.time(Replay.data.frames*Replay.step)),335,43,'small',gold,215)
+    if App.practice and not Replay.playing then
+        if styled then
+            local encounter=Bosses.any() or Raven.active or Wasp.active or Storm.active or Hedgehog.active or Abyss.boss or Octopus.active
+            paradise.status(U,'Entraînement · non classé',encounter and 28 or 688,encounter and 58 or 11,295,40)
+        else U.fitText('Entraînement · non classé',640,22,'small',{.8,.85,.9},140) end
     end
-    U.outlined(string.format('%02d',player.level),564,16,'medium',nil,72)
+    if Campaign.biome==7 and not require('abyss_gate').active and not Abyss.encounterActive() then U.text('Charges : '..(player.charges or 0),790,22,'small',{.4,.9,1}) end
+    if styled then paradise.draw(U)
+    else
+        g.setColor(1,1,1); Art.draw('clock',49,31,25)
+        U.outlined(U.time(Replay.playing and Replay.frame*Replay.step or Scoring.total(timer,player.death)),70,17,'medium',nil,144)
+        U.deathCounter()
+        if Replay.playing then
+            U.outlined(Replay.ghost and 'Entraînement' or ('/ '..U.time(Replay.data.frames*Replay.step)),335,43,'small',gold,215)
+        end
+        U.outlined(string.format('%02d',player.level),564,16,'medium',nil,72)
+    end
     require('game_feedback').drawHud()
     if Replay.playing then
-        U.iconButton(1070,31,'pause',function() if not Replay.job then Replay.paused=not Replay.paused end end)
+        U.iconButton(1070,31,'pause',function() if not Replay.job then Replay.paused=not Replay.paused end end,nil,styled)
         U.button('Quitter',1100,13,95,36,function() Replay.stop() end)
     else
-        U.iconButton(1090,31,'pause',function() App.state='pause' end)
-        U.iconButton(1150,31,'restart',App.restartCurrent)
+        U.iconButton(1090,31,'pause',function() App.state='pause' end,nil,styled)
+        U.iconButton(1150,31,'restart',App.restartCurrent,nil,styled)
     end
-    if not Replay.playing then U.button('i',1008,13,36,36,Bestiary.openLevel,false,true) end
+    if not Replay.playing then
+        if styled then U.iconButton(1026,31,'info',Bestiary.openLevel,false,true)
+        else U.button('i',1008,13,36,36,Bestiary.openLevel,false,true) end
+    end
     local boss=Bosses.any() and Bosses.hud() or Raven.active and Raven or Wasp.active and Wasp or Storm.active and Storm or Hedgehog.active and Hedgehog or (Abyss.boss and Abyss) or Octopus
     if Abyss.boss and not Abyss.defeated and not Replay.playing then
         U.button(Abyss.physicsTest and 'Réactiver le boss' or 'Désactiver le boss',925,65,250,36,function()

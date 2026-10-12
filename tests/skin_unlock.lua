@@ -37,7 +37,7 @@ function T.run()
  end
  local before=snapshot()
  local random=love.math.getRandomState();App.state='menu';R.test()
- assert(R.active.preview and (R.active.index>=6 and R.active.index<=14 or R.active.index==23))
+ assert(R.active.preview and (R.active.index>=6 and R.active.index<=14 or R.active.index>=23 and R.active.index<=26))
  R.update(3.4);R.close(true)
  assert(before==snapshot(),'Preview never unlocks or equips a skin')
  assert(random==love.math.getRandomState(),'Preview leaves gameplay RNG intact')
