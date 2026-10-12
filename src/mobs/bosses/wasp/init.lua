@@ -42,7 +42,7 @@ function W.contact()
             if W.combo then
                 W.combo.hits[b.id]=true
                 if W.combo.hits[1] and W.combo.hits[2] and W.combo.hits[3] then
-                    Profile.achievements.gillou=true;Profile.save()
+                    Achievements.award('gillou')
                 end
             end
             b.hp=b.hp-1; W.hp=W.hp-1; b.flash=.3;W.flash=.3;b.contactGrace=.85;W.hitGrace=.85

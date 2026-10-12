@@ -8,7 +8,7 @@ function T.run()
  Profile.storyTexts={};N.init()
  local first,all
  for _,entry in ipairs(Achievements.list) do if entry.id=='story_first' then first=entry elseif entry.id=='story_all' then all=entry end end
- assert(first and all and not Achievements.unlocked(first) and not all.visible())
+ assert(first and all and not Achievements.unlocked(first) and not Achievements.unlocked(all) and not all.visible,'Both story trophies are listed before discovery')
  local function reset(world,n)
   Campaign.select(world);player.level=n or (world==3 and 1 or 10);reset_level();App.state='playing';player.reset=false
   local boss=({[1]=Raven,[2]=Wasp,[3]=require('final_spider'),[4]=Octopus,[5]=Hedgehog,[6]=Storm,[7]=Abyss})[Campaign.biome]
@@ -28,14 +28,14 @@ function T.run()
  S.updateWall(.1);assert(S.progress()==0,'A quick pass is not a reading')
  player.x=Arena.width*.5;player.y=300;S.updateWall(.1);assert(S.readTime==0)
  read();local found,total=S.progress();assert(found==1 and total==7,'Seven unique messages')
- assert(Achievements.unlocked(first) and all.visible() and not Achievements.unlocked(all) and all.description():find('1/7',1,true))
+ assert(Achievements.unlocked(first) and not Achievements.unlocked(all) and all.description():find('1/7',1,true))
  N.update(.1);assert(N.active and N.active.entry==first,'First discovery triggers the achievement notification')
  read();N.update(.1);assert(S.progress()==1 and #N.queue==0,'Rereading does not count or notify twice')
  Profile.load();assert(S.progress()==1 and Achievements.unlocked(first),'Read messages survive profile reload')
  N.init();N.update(.1);assert(not N.active,'Loading previously earned achievements stays silent')
  reset(6,1);read();assert(S.progress()==1,'Exploration walls are not messages')
  reset(6)
- for _,flag in ipairs({'preview','sessionLayout'}) do App[flag]=true;read();assert(S.progress()==1);App[flag]=nil end
+ for _,flag in ipairs({'preview','sessionLayout','singleLevel','practice'}) do App[flag]=true;read();assert(S.progress()==1,'No story achievement progress in '..flag);App[flag]=nil end
  Replay.playing=true;read();Replay.playing=false;assert(S.progress()==1,'Playback cannot discover messages')
  Replay.ghost=true;read();Replay.ghost=false;assert(S.progress()==1,'Ghosts cannot discover messages')
  player.reset=true;read();player.reset=false;assert(S.progress()==1,'Dead player cannot read')

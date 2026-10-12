@@ -103,7 +103,7 @@ function S.updateWall(dt)
  if S.readTime<.25 then return end
  local id=tostring(Campaign.biome)
  Profile.storyTexts=Profile.storyTexts or {}
- if Profile.storyTexts[id]~=true then Profile.storyTexts[id]=true;Profile.save() end
+ if Achievements.canEarn() and Profile.storyTexts[id]~=true then Profile.storyTexts[id]=true;Profile.save() end
 end
 function S.drawWallMessage()
  if not S.wallAvailable() then return end

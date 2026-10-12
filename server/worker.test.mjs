@@ -8,6 +8,45 @@ function database() {
   return {prepare(sql) {return {bind(...args){return {async first(){return db.prepare(sql).get(...args)},async all(){return {results:db.prepare(sql).all(...args)}},async run(){return db.prepare(sql).run(...args)}}}}},async batch(writes){db.exec('BEGIN');try {const results=await Promise.all(writes.map(w=>w.run()));db.exec('COMMIT');return results;}catch(e){db.exec('ROLLBACK');throw e;}}};
 }
 const token='a'.repeat(64);
+test('worldwide first places persist per identity, mode and run after being beaten',async()=>{
+ const env={DB:database()};
+ const owner=async key=>Buffer.from(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(key))).toString('hex');
+ const a=await owner(token),b=await owner('b'.repeat(64));
+ const insert=async(id,who,world,hardcore,time,deaths,date,country='FR')=>env.DB.prepare(
+  'INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin,hardcore) VALUES(?,?,?,?,?,?,?,?,?,?)'
+ ).bind(id,who,world,'Même pseudo',country,time,deaths,date,1,hardcore).run();
+ const first=crypto.randomUUID(),faster=crypto.randomUUID(),slow=crypto.randomUUID(),tie=crypto.randomUUID(),hard=crypto.randomUUID();
+ await insert(first,a,6,0,10000,3,1000);
+ await insert(slow,b,6,0,12000,0,1100,'BE'); // Country #1 is not worldwide #1.
+ await insert(faster,b,6,0,10500,0,1200);
+ await insert(tie,a,6,0,10500,0,1300);
+ await insert(hard,a,6,1,40000,0,1400);
+ await insert(crypto.randomUUID(),a,8,1,100,0,1500); // No biome award for the rush.
+ let history=await (await call(env,'/v1/achievements/top-one')).json();
+ assert.deepEqual(history.records.map(r=>r.runId),[hard,first]);
+ assert.equal(history.records[1].rawTime,10);assert.equal(history.records[1].deaths,3);assert.equal(history.records[1].achievedAt,1000);
+ const theirs=await (await call(env,'/v1/achievements/top-one',{auth:'b'.repeat(64)})).json();
+ assert.deepEqual(theirs.records.map(r=>r.runId),[faster]);
+ await env.DB.prepare('INSERT INTO run_replays(run_id,owner,payload,created_at) VALUES(?,?,?,?)').bind(first,a,'{}',2000).run();
+ await worker.scheduled(null,env);
+ history=await (await call(env,'/v1/achievements/top-one')).json();assert.equal(history.records[1].hasReplay,true);
+ await env.DB.prepare('DELETE FROM scores WHERE run_id=?').bind(first).run();
+ assert.equal((await (await call(env,'/v1/achievements/top-one')).json()).records.length,2,'A souvenir is independent of leaderboard rows');
+ assert.equal((await call(env,'/v1/achievements/top-one',{auth:'bad'})).status,401);
+ assert.equal((await call(env,'/v1/achievements/top-one?page=0')).status,400);
+});
+test('top-one migration rebuilds chronological record improvements, not country winners or slower runs',()=>{
+ const db=new DatabaseSync(':memory:');
+ for(const file of readdirSync(new URL('migrations/',import.meta.url)).filter(n=>/^\d{4}_/.test(n)&&!n.startsWith('0012_')).sort()) db.exec(readFileSync(new URL('migrations/'+file,import.meta.url),'utf8'));
+ const insert=db.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin,hardcore) VALUES(?,?,?,?,?,?,?,?,?,?)');
+ insert.run('last','b',1,'B','BE',5000,0,400,1,0);
+ insert.run('first','a',1,'A','FR',10000,0,100,1,0);
+ insert.run('slower','a',1,'A','FR',11000,0,200,1,0);
+ insert.run('middle','b',1,'B','BE',9000,0,300,1,0);
+ db.exec(readFileSync(new URL('migrations/0012_top_one_history.sql',import.meta.url),'utf8'));
+ assert.deepEqual(db.prepare('SELECT run_id FROM top_one_history ORDER BY achieved_at').all().map(r=>r.run_id),['first','middle','last']);
+ assert.equal(db.prepare('SELECT COUNT(*) AS n FROM scores').get().n,4);
+});
 async function call(env,path,{body,country='FR',auth=token,raw=false}={}) {
   if(!raw&&path==='/v1/workshop'&&body?.layout&&!body.proof) {
     const proof=await call(env,'/v1/workshop/validate',{auth,body:{layout:body.layout,replay:fixtureReplay(body.layout)}});
@@ -29,6 +68,8 @@ test('complete run, idempotency, country filtering, world isolation, and invalid
   assert.equal((await call(env,path,{body:{level:1,elapsedMs:100,deaths:0},auth:'b'.repeat(64)})).status,404);
   for(let level=1;level<=10;level++) assert.equal((await call(env,path,{body:{level,elapsedMs:level*100,deaths:1}})).status,200);
   assert.equal((await call(env,path,{body:{level:10,elapsedMs:1000,deaths:1}})).status,200);
+  const trophies=await (await call(env,'/v1/achievements/top-one')).json();
+  assert.equal(trophies.records.length,1);assert.equal(trophies.records[0].runId,run.id,'Completion and its top-one proof are committed together, without duplicates');
   const global=await (await call(env,'/v1/leaderboard?world=1')).json(); assert.equal(global.scores.length,1);assert.equal(global.scores[0].name,'Étoile');assert.equal(global.scores[0].country,'FR');
   assert.equal((await (await call(env,'/v1/leaderboard?world=1&scope=country',{country:'BE'})).json()).scores.length,0);
   assert.equal((await (await call(env,'/v1/leaderboard?world=1&scope=country',{country:'FR'})).json()).scores.length,1);
@@ -95,7 +136,7 @@ test('a nickname keeps its best time across computers, with the matching skin an
   await env.DB.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES(?,?,?,?,?,?,?,?,?)').bind(id,owner,1,'Même pseudo',country,ms,deaths,1,skin).run();
  }
  const data=await (await call(env,'/v1/leaderboard?world=1')).json();
- assert.equal(data.total,3); assert.deepEqual(data.scores.slice(0,1),[{runId:'better',hasReplay:false,name:'Même pseudo',country:'BE',time:16,rawTime:15,penalty:1,deaths:3,skin:4}]);
+ assert.equal(data.total,3); assert.deepEqual(data.scores.slice(0,1),[{runId:'better',hasReplay:false,name:'Même pseudo',country:'BE',time:16,rawTime:15,penalty:1,deaths:3,skin:4,effects:{}}]);
  const local=await (await call(env,'/v1/leaderboard?world=1&scope=country',{country:'BE'})).json();
  assert.equal(local.total,1); assert.equal(local.scores[0].time,16);
 });
@@ -338,4 +379,32 @@ test('Workshop creator tools protect ownership and aggregate idempotent play ses
  assert.equal((await call(env,path+'/remove',{body:{}})).status,200);
  assert.equal((await call(env,path)).status,404);
  assert.equal((await call(env,path+'/session',{auth,body})).status,404);
+});
+
+test('effects are validated, frozen per run and retained in both leaderboard scopes after run cleanup',async()=>{
+ const env={DB:database()};
+ for(const effects of [null,[],true,{heartbreak:1},{gold:'yes'},{unknown:true}]) {
+  assert.equal((await call(env,'/v1/runs',{body:{name:'Effects',world:9,effects}})).status,400);
+ }
+ for(const hardcore of [false,true]) {
+  const effects={heartbreak:true,hardcore:true,gold:false};
+  const started=await call(env,'/v1/runs',{body:{name:'Effects',world:9,skin:4,hardcore,effects}});
+  assert.equal(started.status,201);const {id}=await started.json();
+  assert.equal((await call(env,'/v1/runs/'+id+'/checkpoint',{body:{level:1,elapsedMs:1000,deaths:0,effects:{gold:true}}})).status,200);
+  await env.DB.prepare('DELETE FROM runs WHERE id=?').bind(id).run();
+  for(const scope of ['global','country']) {
+   const data=await (await call(env,'/v1/leaderboard?world=9&mode='+(hardcore?'hardcore':'normal')+'&scope='+scope)).json();
+   assert.equal(data.scores.length,1);assert.deepEqual(data.scores[0].effects,effects);
+  }
+ }
+});
+test('effects migration keeps old scores and recovers only recorded replay cosmetics',()=>{
+ const db=new DatabaseSync(':memory:');
+ for(const file of readdirSync(new URL('migrations/',import.meta.url)).filter(n=>/^\d{4}_/.test(n)&&n<'0013').sort()) db.exec(readFileSync(new URL('migrations/'+file,import.meta.url),'utf8'));
+ db.exec("INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin,hardcore) VALUES('old','owner',1,'Old','FR',1000,0,100,1,0),('recorded','owner',1,'Saved','FR',2000,0,200,1,0)");
+ db.prepare('INSERT INTO run_replays(run_id,owner,payload,created_at) VALUES(?,?,?,?)').run('recorded','owner',JSON.stringify({effects:{heartbreak:true,hardcore:false,gold:true}}),200);
+ db.exec(readFileSync(new URL('migrations/0013_score_effects.sql',import.meta.url),'utf8'));
+ assert.equal(db.prepare('SELECT COUNT(*) AS n FROM scores').get().n,2);
+ assert.equal(db.prepare("SELECT effects FROM scores WHERE run_id='old'").get().effects,'{}');
+ assert.deepEqual(JSON.parse(db.prepare("SELECT effects FROM scores WHERE run_id='recorded'").get().effects),{heartbreak:true,hardcore:false,gold:true});
 });

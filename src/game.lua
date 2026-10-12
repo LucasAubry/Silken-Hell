@@ -104,7 +104,7 @@ function App.start(world)
     Replay.begin(world)
     reset_level()
     Replay.leave()
-    App.runSkin=Characters.selected()
+    App.runSkin=Characters.selected();App.runEffects=require('skin_effects').snapshot()
     App.custom=os.getenv('SILKEN_PREVIEW_WORLD')~=nil or require('platform').flag('--preview')
     for _,layout in pairs(LevelLayouts.read()) do if layout.world==world then App.custom=true end end
     if Worlds.isSecret(world) then App.custom=false end
@@ -401,7 +401,8 @@ function love.draw()
     end
     local s=math.min(w/1200,h/750)
     love.graphics.push(); love.graphics.translate((w-1200*s)/2,(h-750*s)/2); love.graphics.scale(s)
-    if App.state~='credits' then UI.draw();Input.draw();require('discovery_notice').draw();require('achievement_notice').draw();RunStart.draw() end;love.graphics.pop()
+    if App.state~='credits' then UI.draw();Input.draw();require('discovery_notice').draw();RunStart.draw() end
+    require('achievement_notice').draw();require('skin_unlock').drawToast();love.graphics.pop()
     -- The final collectible also celebrates over the results screen.
     if App.state=='victory' or App.state=='customVictory' then
         local scale,x,y=App.viewport(w,h)
@@ -412,7 +413,7 @@ function love.draw()
     Hardcore.drawBorder(w,h)
     if App.state~='credits' and App.state~='skinUnlock' and not Ending.active then
         love.graphics.push('all');love.graphics.origin();love.graphics.setShader()
-        local cleanScreen=App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld'
+        local cleanScreen=App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements'
         love.graphics.setFont(cleanScreen and UI.fonts.body or UI.fonts.tiny)
         if not cleanScreen then love.graphics.setColor(.78,.78,.71,.7);love.graphics.print('v'..require('version'),12,h-18) end
         if Graphics.showFPS then love.graphics.setColor(.7,1,.8,.8);love.graphics.print(tostring(love.timer.getFPS())..' FPS',12,h-(cleanScreen and 26 or 33)) end
@@ -460,8 +461,13 @@ function love.keypressed(key,scancode,isrepeat)
         if key=='down' then WorldMap.step(1);return elseif key=='up' then WorldMap.step(-1);return elseif key=='right' then WorldMap.branch(true);return elseif key=='left' then WorldMap.branch(false);return elseif key=='return' then Audio.play('selection');App.openEntry(App.selectedWorld,WorldMap.hardcore);return end
     end
     if App.state=='achievements' then
-        if key=='down' or key=='pagedown' then require('achievements_screen').move(key=='down' and 45 or 350);return end
-        if key=='up' or key=='pageup' then require('achievements_screen').move(key=='up' and -45 or -350);return end
+        if key=='left' or key=='pageup' then Audio.play('selection');require('achievements_screen').step(-1);return end
+        if key=='right' or key=='pagedown' then Audio.play('selection');require('achievements_screen').step(1);return end
+        if key=='up' or key=='down' then Input.active=true;Input.navigate(0,key=='up' and -1 or 1);return end
+        if key=='tab' then Input.active=true;Input.index=Input.index%math.max(1,#UI.buttons)+1;return end
+        if key=='return' or key=='kpenter' or key=='space' then
+            local b=UI.buttons[Input.index];if b then UI.click(b.x+b.w/2,b.y+b.h/2) end;return
+        end
     end
     if App.state=='bestiary' then
         if key=='down' or key=='pagedown' then UI.scrollBestiary(key=='down' and 40 or 140);return end
@@ -489,6 +495,7 @@ function love.keypressed(key,scancode,isrepeat)
         elseif App.state=='rankings' then UI.backRankings()
         elseif App.state=='bestiary' then App.state=UI.bestReturn or 'menu'
         elseif App.state=='statistics' then App.state='achievements'
+        elseif App.state=='topRecords' then App.state='achievements'
         elseif App.state=='graphics' then App.state='settings'
         elseif App.state=='settings' then App.state=UI.returnTo or 'menu'
         else App.state='menu'; love.keyboard.setTextInput(false) end
@@ -549,7 +556,7 @@ function App.toggleFullscreen()
     love.window.setFullscreen(not love.window.getFullscreen(),'desktop')
 end
 function love.wheelmoved(_,y)
-    if App.state=='achievements' then require('achievements_screen').move(-y*52);return end
+    if App.state=='achievements' then require('achievements_screen').move(-y);return end
     if App.state=='worlds' then WorldMap.wheel(y);return end
     if App.state=='bestiary' then UI.scrollBestiary(-y*42);return end
     if App.state=='story' and Story.text~='' then

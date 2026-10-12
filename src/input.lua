@@ -122,14 +122,23 @@ function I.update(dt)
     if I.state~=App.state then I.state=App.state;I.index=1;I.repeatAt=0 end
     if UI.binding then return end
     local x,y=I.axes();if math.abs(x)+math.abs(y)>.3 then I.active=true end
-    if App.state=='achievements' and I.pad and I.pad:isConnected() then
-        local scroll=I.pad:getGamepadAxis('righty');if math.abs(scroll)>.2 then require('achievements_screen').move(scroll*280*dt);I.active=true end
-    end
     if App.state=='bestiary' and I.pad and I.pad:isConnected() then
         local scroll=I.pad:getGamepadAxis('righty');if math.abs(scroll)>.2 then UI.scrollBestiary(scroll*240*dt);I.active=true end
     end
     if App.state=='playing' or App.state=='bossWorld' then return end
     I.repeatAt=math.max(0,I.repeatAt-dt)
+    if App.state=='achievements' and I.pad and I.pad:isConnected() then
+        local turn=I.pad:getGamepadAxis('rightx')
+        local gallery=I.index<=2 and math.abs(x)>math.abs(y)
+        if math.abs(turn)>.5 or gallery and math.abs(x)>.5 then
+            I.active=true
+            if I.repeatAt==0 then
+                require('achievements_screen').move(math.abs(turn)>.5 and turn or x)
+                Audio.play('selection');I.repeatAt=.28
+            end
+            return
+        end
+    end
     if math.max(math.abs(x),math.abs(y))>.5 then
         if App.state=='worlds' then
             if I.repeatAt==0 then if math.abs(y)>math.abs(x) then WorldMap.step(y>0 and 1 or -1) else WorldMap.branch(x>0) end;I.repeatAt=.28 end
@@ -149,6 +158,9 @@ function I.press(j,b)
     if App.state=='pause' and b==Profile.padBindings.pause then I.padAction(b);return end
     if b=='start' or b=='b' then love.keypressed('escape');I.active=true;return end
     if App.state=='worlds' and b=='a' then Audio.play('selection');App.openEntry(App.selectedWorld,WorldMap.hardcore);return end
+    if App.state=='achievements' and (b=='leftshoulder' or b=='rightshoulder') then
+        require('achievements_screen').step(b=='leftshoulder' and -1 or 1);Audio.play('selection');return
+    end
     if App.state=='bossWorld' then
         if Secret.pending then if b=='a' then Secret.confirm() end;return end
         if b=='y' then Secret.switchCategory()

@@ -1,0 +1,36 @@
+Silken Hell — pixel-art achievement trophies
+Generator: built-in image_gen tool
+Mode: style-transfer edit
+Transparent background: true
+Style reference: /tmp/silken-achievement-gallery-gillou.png
+Replaces the previous illustrated versions in assets/ui/achievements/
+
+Asset: assets/ui/achievements/story_first.png
+
+Use case: style-transfer. Asset type: transparent pixel-art achievement trophy sprite for Silken Hell.
+Image 1 is the trophy to redraw; image 2 is the actual game's UI screenshot and its central pixel-art spider is the STYLE reference only.
+Primary request: completely redraw the trophy from image 1 as genuine deliberately LOW-RESOLUTION 16-bit PIXEL ART matching the coarse square pixels of the spider in image 2. Rebuild it using a 64-by-64 logical pixel grid, displayed as a large nearest-neighbor upscale. Large clearly visible square pixel clusters, every contour made of stair-step horizontal and vertical segments, dark 1-logical-pixel outline, restrained palette about 24 colors, each material only 3 flat color bands. Simplify the design to read as a collectible game sprite. Maintain the recognizable subject and its meaning but discard the realistic surface detail and complex ornament.
+Composition: one upright centered trophy, entire trophy and pedestal visible, sprite occupying roughly 80 percent of the square image height, generous fully transparent padding. Front view with a little top surface visible.
+Keep a consistent simple stepped dark-bronze pedestal, warm amber-gold details, cream highlights, near-black brown outlines.
+ABSOLUTELY NO painterly shading, airbrush, smooth curves, realistic metal, photographic textures, fine silk strands, gradients, antialiasing, 3D rendering, cast shadow, glowing haze or miniature intricate details. No text or letters, no interface, no numbers, no frame, no particles, no background. Real transparent alpha. Render only the single trophy asset; never reproduce the UI screenshot.
+Subject: an upright curled cream parchment with three small abstract pixel marks, held by two chunky bronze spider-leg supports. A simple white pixel silk ribbon winds around the scroll and a single amber gem sits on top. Use chunky shapes and a simple squat stepped bronze base.
+
+Asset: assets/ui/achievements/story_all.png
+
+Use case: style-transfer. Asset type: transparent pixel-art achievement trophy sprite for Silken Hell.
+Image 1 is the trophy to redraw; image 2 is the actual game's UI screenshot and its central pixel-art spider is the STYLE reference only.
+Primary request: completely redraw the trophy from image 1 as genuine deliberately LOW-RESOLUTION 16-bit PIXEL ART matching the coarse square pixels of the spider in image 2. Rebuild it using a 64-by-64 logical pixel grid, displayed as a large nearest-neighbor upscale. Large clearly visible square pixel clusters, every contour made of stair-step horizontal and vertical segments, dark 1-logical-pixel outline, restrained palette about 24 colors, each material only 3 flat color bands. Simplify the design to read as a collectible game sprite. Maintain the recognizable subject and its meaning but discard the realistic surface detail and complex ornament.
+Composition: one upright centered trophy, entire trophy and pedestal visible, sprite occupying roughly 80 percent of the square image height, generous fully transparent padding. Front view with a little top surface visible.
+Keep a consistent simple stepped dark-bronze pedestal, warm amber-gold details, cream highlights, near-black brown outlines.
+ABSOLUTELY NO painterly shading, airbrush, smooth curves, realistic metal, photographic textures, fine silk strands, gradients, antialiasing, 3D rendering, cast shadow, glowing haze or miniature intricate details. No text or letters, no interface, no numbers, no frame, no particles, no background. Real transparent alpha. Render only the single trophy asset; never reproduce the UI screenshot.
+Subject: an open cream book with a tiny cute white spider with two amber eyes in the middle, a simple chunky white pixel web above it connecting seven small cream paper tabs, on the same simple squat stepped bronze base. The spider should be as simple and cute as the reference game spider; plain flat book pages without intricate decorations.
+
+Asset: assets/ui/achievements/flawless_all.png
+
+Use case: style-transfer. Asset type: transparent pixel-art achievement trophy sprite for Silken Hell.
+Image 1 is the trophy to redraw; image 2 is the actual game's UI screenshot and its central pixel-art spider is the STYLE reference only.
+Primary request: completely redraw the trophy from image 1 as genuine deliberately LOW-RESOLUTION 16-bit PIXEL ART matching the coarse square pixels of the spider in image 2. Rebuild it using a 64-by-64 logical pixel grid, displayed as a large nearest-neighbor upscale. Large clearly visible square pixel clusters, every contour made of stair-step horizontal and vertical segments, dark 1-logical-pixel outline, restrained palette about 24 colors, each material only 3 flat color bands. Simplify the design to read as a collectible game sprite. Maintain the recognizable subject and its meaning but discard the realistic surface detail and complex ornament.
+Composition: one upright centered trophy, entire trophy and pedestal visible, sprite occupying roughly 80 percent of the square image height, generous fully transparent padding. Front view with a little top surface visible.
+Keep a consistent simple stepped dark-bronze pedestal, warm amber-gold details, cream highlights, near-black brown outlines.
+ABSOLUTELY NO painterly shading, airbrush, smooth curves, realistic metal, photographic textures, fine silk strands, gradients, antialiasing, 3D rendering, cast shadow, glowing haze or miniature intricate details. No text or letters, no interface, no numbers, no frame, no particles, no background. Real transparent alpha. Render only the single trophy asset; never reproduce the UI screenshot.
+Subject: a cute golden spider with eight short chunky legs, cream abdomen and two amber eyes, in an unbroken light-cream pixel silk ring. Set exactly seven simple diamond gems around the ring: ivory, sky blue, amber, turquoise, indigo, red and green. Each gem is a small blocky diamond with only 2 or 3 colors. Same simple squat stepped bronze base, blank face. Make the spider friendly and readable like the game's spider, never realistic anatomy.

@@ -18,7 +18,9 @@ function C.demonCompleted(world)
 end
 -- All spider skins are crown-free; reward IDs remain stable.
 C.nativeCrown={}
+C.baseCount=14
 function C.unlocked(index)
+    if (Profile.skinGrants or {})[tostring(index)]==true then return true end
     if index==22 then return Profile.hasCompleted(3) or (Hardcore and Hardcore.completed['3']==true) end
     if C.crowned[index] then return C.demonCompleted(Worlds.order[index-14]) end
     if index<=5 then return true end
@@ -31,28 +33,24 @@ function C.selected()
     return C.unlocked(index) and index or 1
 end
 function C.cycle(step)
-    local selected=C.selected();local gold=C.crowned[selected]~=nil
+    local selected=C.menuIndex()
     local base=C.crowned[selected] or selected
-    repeat
-        base=(base-1+step)%14+1
-    until C.unlocked(base) or (C.variants[base] and C.unlocked(C.variants[base]))
-    local variant=C.variants[base]
-    Profile.character=(variant and C.unlocked(variant) and (gold or not C.unlocked(base))) and variant or base
-    Profile.save()
+    base=(base-1+step)%14+1
+    C.select(base)
+end
+function C.menuIndex() return C.browsed or C.selected() end
+function C.select(index)
+    index=C.crowned[index] or index
+    C.browsed=index
+    if not C.unlocked(index) then return false end
+    Profile.character=index;Profile.save();return true
 end
 function C.selectVariant(gold)
-    local selected=C.selected();local base=C.crowned[selected] or selected
-    local target=base
-    if gold then target=C.variants[base] end
-    if not target or not C.unlocked(target) then return false end
-    Profile.character=target;Profile.save();return true
+    return require('skin_effects').equip('hardcore',gold)
 end
 function C.variantHint(reward)
     if not reward then return 'Ce skin ne possède pas de variante.' end
-    if C.unlocked(reward) then return 'Variante dorée débloquée' end
-    if reward==22 then return 'Termine Renaissance en histoire ou en hardcore.' end
-    local world=Worlds.order[reward-14]
-    return 'Termine '..Worlds.names[world]..(world==3 and ' en hardcore.' or ' en hardcore ou son boss du Sanctuaire.')
+    return require('skin_effects').unlocked('hardcore') and 'Auréole hardcore débloquée' or 'Termine un parcours en hardcore.'
 end
 C.playerWidth=59
 -- Authored PNGs: Perle's front/back silhouette, Soie's profile silhouette.
@@ -111,7 +109,7 @@ function C.portrait(index,x,y,size,dir,locked,walk)
     local reward=C.crowned[index]~=nil
     if reward then index=C.crowned[index] end
     local fx=require('skin_reward_fx')
-    if reward then fx.orbit(x,y,size,false,locked) end
+    if reward and not locked then fx.orbit(x,y,size,false,false) end
     local g=love.graphics;g.push('all')
     local key=C.model(dir)
     local a=Art.images[key];local pose=dir=='right' and 'left' or dir
@@ -127,14 +125,21 @@ function C.portrait(index,x,y,size,dir,locked,walk)
     local width=size*a.w/math.max(a.w,a.h)
     if not (walk and require('brown_walk').draw(a.image,pose,0,0,width,walk,a.quad)) then Art.draw(key,0,0,width,0) end
     g.pop()
-    if reward then fx.orbit(x,y,size,true,locked) end
+    if reward and not locked then fx.orbit(x,y,size,true,false) end
+    if locked then
+        g.push('all');g.setShader();g.setColor(.92,.94,.98,alpha)
+        local font=UI.fonts.body;local scale=math.max(1,size/90)
+        g.setFont(font);g.translate(x,y);g.scale(scale)
+        g.print('?',-font:getWidth('?')/2,-font:getHeight()/2);g.pop()
+    end
 end
 -- Dedicated selection artwork; movement sprites and gameplay animation stay separate.
 function C.selectionPortrait(x,y,size)
-    local g=love.graphics;local selected=C.selected();local base=C.crowned[selected] or selected
+    local g=love.graphics;local selected=C.menuIndex();local base=C.crowned[selected] or selected
+    local locked=not C.unlocked(selected)
     local x0,y0=g.transformPoint(0,0);local x1,y1=g.transformPoint(1,0)
     local scale=math.max(.25,math.sqrt((x1-x0)^2+(y1-y0)^2))
-    local pixels=math.ceil(size*scale);local key=base..':'..pixels
+    local pixels=math.ceil(size*scale);local key=base..':'..pixels..':'..tostring(locked)
     -- Resolve the large PNG once at display resolution. Moving the cached image
     -- smoothly no longer selects different source pixels inside the gold markings.
     if C.menuCacheKey~=key then
@@ -143,23 +148,33 @@ function C.selectionPortrait(x,y,size)
         C.menuCache:setFilter('linear','linear')
         g.push('all');g.setCanvas(C.menuCache);g.origin();g.setScissor();g.setShader();g.clear(0,0,0,0)
         g.setBlendMode('alpha');g.setColor(1,1,1)
-        C.portrait(base,(pixels+8)/2,(pixels+8)/2,pixels,'down')
+        C.portrait(base,(pixels+8)/2,(pixels+8)/2,pixels,'down',locked)
         g.pop();C.menuCacheKey=key
     end
-    local fx=require('skin_reward_fx');local reward=C.crowned[selected]~=nil
-    if reward then
-        if App.state=='menu' then fx.rays(x,y,size) end
-        fx.orbit(x,y,size,false,false)
-    end
+    local effects=require('skin_effects')
+    if not locked then effects.behind(x,y,size) end
     g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied')
     local r,green,b,a=g.getColor();g.setColor(r*a,green*a,b*a,a)
     g.draw(C.menuCache,x,y,0,size/pixels,size/pixels,(pixels+8)/2,(pixels+8)/2);g.pop()
-    if reward then fx.orbit(x,y,size,true,false) end
+    if not locked then effects.front(x,y,size) end
+    if not locked then require('skin_extension').draw(x,y,size,'down',false,true) end
 end
 function C.draw(x,y,width,dir,walk)
     local selected=C.selected()
+    local effects=require('skin_effects');effects.behind(x,y,width)
     if App.state=='playing' and C.crowned[selected] then require('skin_reward_fx').rays(x,y,width) end
     C.portrait(selected,x,y,width,dir,nil,walk)
+    effects.front(x,y,width,nil,dir)
+    require('skin_extension').draw(x,y,width,dir,false,true)
+end
+-- Score portraits use the run's cosmetics, never the current viewer's toggles.
+function C.scorePortrait(score,x,y,size)
+    local effects=score.effects or {};local fx=require('skin_effects')
+    if effects.gold then fx.behind(x,y,size,'gold') end
+    C.portrait(score.skin or 1,x,y,size)
+    if effects.hardcore then fx.front(x,y,size,'hardcore') end
+    if effects.gold then fx.front(x,y,size,'gold') end
+    if effects.heartbreak then require('skin_extension').draw(x,y,size,'down',true,true) end
 end
 -- Crown variants retain the body color of their base skin.
 C.bodyColors={original={.57,.29,.10},spider={.94,.90,.79},hell_spider={1,.20,.055},ocean_spider={.15,.68,.91},crown_spider={.94,.90,.79}}

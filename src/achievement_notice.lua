@@ -11,7 +11,7 @@ end
 function N.visible()
  if not N.active or Replay.playing then return false end
  if App.state=='playing' and require('run_start').active then return false end
- return App.state=='playing' or App.state=='menu' or App.state=='victory' or App.state=='customVictory' or App.state=='skinUnlock'
+ return App.state=='playing' or App.state=='menu' or App.state=='victory' or App.state=='customVictory' or App.state=='skinUnlock' or App.state=='credits'
 end
 function N.update(dt)
  if not N.seen then N.init() end

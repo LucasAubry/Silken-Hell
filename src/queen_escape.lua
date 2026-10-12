@@ -52,10 +52,17 @@ function Q.beginLay(f)
  local right=px<Arena.width/2;local bottom=py<300
  f.nest={x=right and Arena.width-135 or 135,y=bottom and 465 or 145}
  f.cornerSlots={}
- for row=0,5 do for col=0,6 do
-  f.cornerSlots[#f.cornerSlots+1]={x=right and Arena.width-65-col*46 or 65+col*46,y=bottom and 525-row*46 or 95+row*46}
- end end
- f.cornerGoal=f.carried;f.cornerTimer=0;f.shot=.25
+ -- A local sequence scatters the clutch without changing replay randomness.
+ local seed=((f.wave or 0)*104729+7919)%2147483647
+ local function spread() seed=seed*48271%2147483647;return seed/2147483647 end
+ for i=1,120 do
+  local dx,dy=65+spread()*235,spread()*230
+  local p={x=right and Arena.width-dx or dx,y=bottom and 525-dy or 95+dy}
+  local free=not Arena.blocked(p.x-22,p.y-22,44,44)
+  for _,slot in ipairs(f.cornerSlots) do if (p.x-slot.x)^2+(p.y-slot.y)^2<50^2 then free=false;break end end
+  if free then f.cornerSlots[#f.cornerSlots+1]=p end
+ end
+ f.cornerGoal=f.batch+math.min(8,f.carried);f.cornerTimer=0;f.cornerElapsed=0;f.shot=.25
 end
 function Q.point(f)
  for _,p in ipairs(f.cornerSlots) do
@@ -68,12 +75,13 @@ function Q.lay(f,dt,move)
  if not f.cornerReady then
   if move(f,f.nest.x,f.nest.y,270*f.surge,dt)<5 then f.cornerReady=true;f.cornerTimer=0 end
  else
+  f.cornerElapsed=f.cornerElapsed+dt
   f.cornerTimer=f.cornerTimer+dt
   if f.cornerTimer>=.18 then f.cornerTimer=f.cornerTimer-.18;f.layEgg() end
  end
  f.shot=f.shot-dt
  if f.shot<=0 then f.shoot();f.shot=.5 end
- if f.carried<=0 or f.batch>=f.cornerGoal then
+ if f.carried<=0 or f.batch>=f.cornerGoal or f.cornerElapsed>=2.5 then
   f.cornerLay=false;f.enraged=f.cornerPending;f.cornerSlots=nil;f.phase='webs';f.phaseTime=0;f.shot=.5
  end
 end

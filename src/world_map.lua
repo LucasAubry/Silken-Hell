@@ -193,8 +193,10 @@ function M.draw()
     local best=Profile.ranking(n,nil,M.hardcore)[1]
     UI.text(M.hardcore and (n==8 and 'Sept boss à la suite.\nChaque mort te ramène au boss précédent.' or 'Chaque mort te fait reculer d’un niveau.\nMinimum : niveau 1.') or best and ('Record : '..UI.time(best.time)..'\n'..best.deaths..' morts') or 'Aucun parcours terminé',785,M.hardcore and 242 or 227,'body',{.75,.78,.81},330,'center')
     if n~=8 then
-        local index=M.hardcore and Characters.crownedByWorld[n] or Worlds.rank(n)+5;g.setColor(1,1,1);Characters.portrait(index,950,331,74*(1+.025*math.sin(UI.clock*2)),'down',not Characters.unlocked(index))
-        UI.text(Characters.unlocked(index) and ('Skin obtenu : '..Characters.names[index]) or (M.hardcore and 'Termine en hardcore pour gagner ce skin' or 'Termine le monde pour gagner ce skin'),780,377,'small',{.73,.74,.78},340,'center')
+        local index=Worlds.rank(n)+5;g.setColor(1,1,1)
+        Characters.portrait(index,950,331,74*(1+.025*math.sin(UI.clock*2)),'down',not M.hardcore and not Characters.unlocked(index))
+        if M.hardcore then require('skin_effects').halo(950,331,74*(1+.025*math.sin(UI.clock*2))) end
+        UI.text(M.hardcore and 'Effet : auréole rouge' or Characters.unlocked(index) and ('Skin obtenu : '..Characters.names[index]) or 'Termine le monde pour gagner ce skin',780,377,'body',{.73,.74,.78},340,'center')
         UI.text(M.hardcore and 'Parcours complet · départ au niveau 1' or 'ENTRAÎNEMENT · sans classement',780,427,'small',{.89,.78,.52},340,'center')
         for level=1,(M.hardcore and 0 or Worlds.levelCount(n)) do
             local available=unlocked and level<=((Profile.levels or {})[n] or 1)

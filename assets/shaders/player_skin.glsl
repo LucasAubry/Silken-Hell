@@ -34,6 +34,6 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
         }
         rgb=mix(rgb,eye,max(blue,white));
     }
-    if (locked) rgb=vec3(dot(rgb,vec3(.299,.587,.114))*.65);
+    if (locked) rgb=vec3(0.);
     return vec4(rgb,smoothstep(.015,.075,p.a))*color;
 }

@@ -1,0 +1,14 @@
+Silken Hell — Un fil sans faute, silk-wrapped player spider
+Generator: built-in image_gen tool
+Mode: precise-object-edit
+Transparent background: true
+Destination: assets/ui/achievements/flawless_all.png
+Edit target: previous assets/ui/achievements/flawless_all.png
+
+Use case: precise-object-edit.
+Asset type: transparent pixel-art trophy sprite for Silken Hell, "Un fil sans faute".
+Input image is the trophy to EDIT.
+Change ONLY the central spider: densely wrap and cover its abdomen, head and all eight legs in layers of creamy WHITE SPIDER SILK. It must look genuinely cocooned and woven with many clear criss-crossing silk bands, nearly all brown covered, while retaining exactly the existing cute player-spider silhouette, rounded abdomen, little head, bent legs and its two visible amber eyes. Keep the gaps between legs so it remains recognizably a spider, not one big oval cocoon. White silk strands may span short gaps between its legs, but the outer silhouette must remain readable.
+Preserve the rest exactly: ring of cream silk, bronze stepped pedestal, composition, scale, margins, seven teardrops in the same clockwise color order starting top: white, pale ice-blue, ochre, cyan, dark navy blue, red, pale lime green. Exactly seven tears; no new gems, no text.
+Maintain crisp low-resolution PIXEL ART with chunky square clusters and stair-step edges matching the original. Show the silk with a small ivory/white palette and 2–3 flat gray shadow bands. Absolutely no smooth realistic fibers, fine hair, painterly blur, glow, 3D render or antialiasing. No extra objects or background.
+Real transparent alpha background, full trophy visible. Preserve existing transparency.

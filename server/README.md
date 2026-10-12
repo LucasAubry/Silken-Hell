@@ -1,5 +1,32 @@
 # API Silken Hell
 
+## Effets dans les classements
+
+Migration additive `0013_score_effects.sql`, puis déploiement du Worker.
+`POST /v1/runs` accepte `effects` avec les booléens `heartbreak`, `hardcore`, `gold`.
+Ces choix sont figés au départ, copiés dans le score final et retournés par les
+classements mondiaux et nationaux. Les anciens clients restent compatibles.
+La migration récupère les effets des anciens replays lorsqu'ils sont connus.
+
+## Historique permanent des premières places
+
+Migration additive `0012_top_one_history.sql`, puis déploiement du Worker. Un trigger
+enregistre chaque score publié qui atteint la première place **mondiale** d'un biome
+(1–7), séparément en normal et en hardcore. Le chrono classé inclut la pénalité
+habituelle et les égalités suivent le même ordre que le classement. Les résultats
+conservés permettent de reconstituer les anciens records à leur date de publication.
+
+`GET /v1/achievements/top-one?page=1` exige l'identité Bearer de l'installation et
+retourne ses souvenirs par pages de 100 : `runId`, `world`, `hardcore`, `name`,
+`rawTime` (secondes), `deaths`, `skin`, `achievedAt` (millisecondes UTC) et `hasReplay`.
+Les souvenirs persistent lorsqu'un meilleur score arrive. Les replays restent
+accessibles par `/v1/replays/:id` ; un ancien score sans replay reste consultable.
+
+Le client affiche 14 skins et trois effets indépendants : larme, aura rouge hardcore,
+éclat doré du top 1. Les identifiants historiques 15–22 restent acceptés pour les
+anciens scores/replays. Les nouveaux replays peuvent conserver les trois booléens
+cosmétiques dans `effects` (`heartbreak`, `hardcore`, `gold`).
+
 Worker et base exclusivement dédiés à Silken Hell. Aucun binding, migration ou route de GET OUT n'est utilisé.
 
 ## Routes

@@ -105,7 +105,7 @@ function U.button(label,x,y,w,h,callback,disabled,primary,sound,raw,tint)
         end
     end
     local translated=raw and label or L.render(label)
-    if App.state=='workshop' or App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' then translated=U.ellipsize(translated,'body',w-24) end
+    if App.state=='workshop' or App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements' then translated=U.ellipsize(translated,'body',w-24) end
     local font=U.fonts.body:getWidth(translated)>w-24 and 'small' or 'body'
     local scale=math.min(1,(w-24)/math.max(1,U.fonts[font]:getWidth(translated)))
     g.push();g.translate(x+w/2,y+h/2);g.scale(scale,scale)
@@ -152,6 +152,12 @@ function U.theme()
     for i=1,3 do gold[i]=tint[i]*.8+.12 end
     return w,tint
 end
+function U.menuPosition()
+    U.menuArrival=U.menuArrival or U.clock
+    local t=math.min(1,math.max(0,(U.clock-U.menuArrival)/3.2))
+    local settle=t*t*(3-2*t)
+    return 600+math.sin(U.clock*.32)*9*settle,-180+427*settle+math.sin(U.clock*.9)*7*settle
+end
 function U.background()
     local w,tint=U.theme()
     g.setShader(U.shader); g.setColor(1,1,1); g.draw(U.pixel,0,0,0,1200,750); g.setShader()
@@ -166,10 +172,11 @@ function U.background()
         g.setBlendMode('alpha')
     end
     -- The actual player sprite is the menu's living centerpiece.
-    if player and Art.images.original then
+    if player and Art.images.original and App.state~='skins' and App.state~='achievements' then
         local x=600+math.sin(U.clock*0.32)*9
         local y=247+math.sin(U.clock*0.9)*7
-        local selected=Characters.selected()
+        if App.state=='menu' then x,y=U.menuPosition() end
+        local selected=Characters.menuIndex()
         if U.lastPortrait~=selected then U.portraitChanged=U.clock;U.lastPortrait=selected end
         local t=math.min(1,math.max(0,(U.clock-(U.portraitChanged or U.clock))/.28))
         if Motion.enabled() then y=y-7*math.sin(t*math.pi)*(1-t) end
@@ -200,7 +207,7 @@ function U.board(x,y,w,country)
     end
     for i=1,math.min(10,#scores) do local score=scores[i]; local yy=y+96+(i-1)*30
         U.text(tostring(i),x+12,yy+3,'small',gold)
-        g.setColor(1,1,1); Characters.portrait(score.skin or 1,x+43,yy+11,25)
+        g.setColor(1,1,1); Characters.scorePortrait(score,x+43,yy+11,25)
         local name=score.name
         while U.fonts.small:getWidth(name)>w-184 do name=name:sub(1,(utf8.offset(name,-1) or 1)-1) end
         U.podiumName(name,x+61,yy+3,'small',i,U.boardWorld)
@@ -242,7 +249,7 @@ function U.rankings()
     U.text('Chrono',724,255,'small',muted); U.text('Morts · pénalité',843,255,'small',muted)
     for i,s in ipairs(data.scores) do local y=287+(i-1)*29
         U.text(tostring((U.boardPage-1)*10+i),226,y,'body',gold)
-        g.setColor(1,1,1); Characters.portrait(s.skin or 1,300,y+9,26)
+        g.setColor(1,1,1); Characters.scorePortrait(s,300,y+9,26)
         U.podiumName(s.name,330,y,'body',(U.boardPage-1)*10+i,U.boardWorld); U.text(U.time(s.time),724,y,'body',gold)
         U.text(tostring(s.deaths)..' ('..Scoring.label(s.deaths)..')',843,y,'small',white)
         U.infoBadge(976,y+10,10)
@@ -280,30 +287,53 @@ end
 function U.menu()
     U.boardHardcore=WorldMap.hardcore==true
     U.board(32,214,290,true); U.board(878,214,290,false)
-    local selected=Characters.selected();local base=Characters.crowned[selected] or selected
-    local variant=Characters.variants[base];local unlocked=variant and Characters.unlocked(variant)
-    if unlocked then
-        local x,y,r=738,301,16;local active=selected==variant
-        local mx,my=U.mouse();local hover=(mx-x)^2+(my-y)^2<=r*r
-        g.push('all');g.setLineWidth(hover and 2 or 1)
-        g.setColor(active and {.35,.25,.09,.96} or {.04,.07,.09,.96});g.circle('fill',x,y,r)
-        g.setColor(active and {1,.82,.36} or {.70,.59,.34});g.circle('line',x,y,r)
-        local points={}
-        for i=0,7 do local a=-math.pi/2+i*math.pi/4;local d=i%2==0 and 9 or 3.5;points[#points+1]=x+math.cos(a)*d;points[#points+1]=y+math.sin(a)*d end
-        g.polygon(active and 'fill' or 'line',points);g.pop()
-        U.buttons[#U.buttons+1]={x=x-r,y=y-r,w=r*2,h=r*2,radius=r,run=function()Characters.selectVariant(not active)end,sound='go'}
+    local effects=require('skin_effects')
+    for i,kind in ipairs({'hardcore','heartbreak','gold'}) do
+        if effects.unlocked(kind) then
+            local x,y,r=728+(i-1)*44,301,16;local active=effects.enabled(kind)
+            local mx,my=U.mouse();local hover=Input.active and Input.index==#U.buttons+1 or not Input.active and (mx-x)^2+(my-y)^2<=r*r
+            local tint=kind=='hardcore' and {1,.18,.23} or kind=='heartbreak' and {.96,.38,.49} or {1,.82,.36}
+            g.push('all');g.setShader()
+            if hover then
+                g.setBlendMode('add')
+                for ring=6,1,-1 do g.setColor(tint[1],tint[2],tint[3],.035);g.circle('fill',x,y,r+ring*2) end
+                g.setBlendMode('alpha')
+            end
+            g.setColor(active and {tint[1]*.23,tint[2]*.23,tint[3]*.23,.96} or {.04,.07,.09,.96});g.circle('fill',x,y,r)
+            g.setColor(tint[1],tint[2],tint[3],hover and 1 or .75);g.setLineWidth(hover and 2 or 1);g.circle('line',x,y,r)
+            effects.icon(kind,x,y,10,(active or hover) and 1 or .65,active);g.pop()
+            U.buttons[#U.buttons+1]={x=x-r,y=y-r,w=r*2,h=r*2,radius=r,effect=kind,run=function()effects.equip(kind,not effects.enabled(kind))end,sound='go'}
+        end
     end
+    local sx,sy=U.menuPosition()
+    U.buttons[#U.buttons+1]={x=sx-105,y=sy-95,w=210,h=190,run=function()App.state='skins';Input.index=1 end,sound='go'}
     U.text('Silken Hell',320,332,'title',white,560,'center')
     U.arrow(430,248,-1,function() Characters.cycle(-1) end)
     U.arrow(770,248,1,function() Characters.cycle(1) end)
+    require('menu_trophies').draw(gold)
     U.playGlow(425,496,350,54)
     U.button(WorldMap.hardcore and 'JOUER · HARDCORE' or 'JOUER',425,496,350,54,function() App.openEntry(App.selectedWorld,WorldMap.hardcore) end,false,true,'selection')
     U.button('BESTIAIRE',425,557,170,38,Bestiary.open)
-    U.button('SUCCÈS',605,557,170,38,function() App.state='achievements' end)
+    U.button('SUCCÈS',605,557,170,38,function() require('achievements_screen').open() end)
     U.button('HISTOIRE',425,603,170,38,function() App.state='story'; U.storyOffset=400 end)
     U.button('WORKSHOP',605,603,170,38,Workshop.open)
     U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open)
     U.iconButton(1148,54,'settings',function() App.state='settings'; U.returnTo='menu' end)
+end
+function U.skins()
+    U.text('SKINS',100,54,'heading',white,1000,'center')
+    local mx,my=U.mouse()
+    for i=1,Characters.baseCount do
+        local x=78+((i-1)%6)*176;local y=120+math.floor((i-1)/6)*130
+        local unlocked=Characters.unlocked(i)
+        local hover=Input.active and Input.index==#U.buttons+1 or not Input.active and mx>=x and mx<=x+164 and my>=y and my<=y+118
+        g.setColor(.025,.045,.065,.95);g.rectangle('fill',x,y,164,118,7)
+        g.setColor((Characters.selected()==i or hover) and gold or {.20,.28,.33});g.setLineWidth(1);g.rectangle('line',x,y,164,118,7)
+        g.setColor(1,1,1);Characters.portrait(i,x+82,y+45,78,'down',not unlocked)
+        U.rawText(U.ellipsize(unlocked and Characters.names[i] or '???','body',148),x+8,y+88,'body',white,148,'center')
+        U.buttons[#U.buttons+1]={x=x,y=y,w=164,h=118,disabled=not unlocked,run=function()Characters.select(i);App.state='menu';Input.index=1 end,sound='go'}
+    end
+    U.button('Retour',440,666,320,44,function()App.state='menu';Input.index=1 end)
 end
 function U.entry()
     if Input.active then
@@ -711,6 +741,8 @@ function U.draw()
     elseif App.state=='workshop' then U.workshop()
     elseif App.state=='statistics' then require('statistics').draw()
     elseif App.state=='achievements' then require('achievements_screen').draw()
+    elseif App.state=='skins' then U.skins()
+    elseif App.state=='topRecords' then require('top_records').draw()
     elseif App.state=='customVictory' then
         U.panel(300,235,600,350); U.text(Secret.duel and 'Duel terminé' or App.practice and 'Entraînement terminé' or 'Carte terminée',330,265,'heading',white,540,'center')
         U.text(U.time(Scoring.total(timer,player.death))..' · '..player.death..' morts ('..Scoring.label(player.death)..')',330,325,'body',gold,540,'center')

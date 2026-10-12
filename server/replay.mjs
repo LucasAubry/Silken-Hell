@@ -6,6 +6,8 @@ export function canonical(v) {
 }
 export async function fingerprint(v) {return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical(v))))].map(b=>b.toString(16).padStart(2,'0')).join('');}
 export function validateReplay(r) {
+ if(r?.effects!==undefined && (!r.effects || typeof r.effects!=='object' || Array.isArray(r.effects)
+  || Object.entries(r.effects).some(([key,value])=>!['gold','hardcore','heartbreak'].includes(key)||typeof value!=='boolean'))) return false;
  if(!r||r.version!==1||!r.completed||typeof r.build!=='string'||!/^[a-f0-9]{64}$/.test(r.build)||![1,2,3,4,5,6,7,8,9,10,11,12,13,14].includes(r.world)||!Number.isInteger(r.seed)||r.seed<1||r.seed>2147483646||!Number.isInteger(r.skin)||r.skin<1||r.skin>22||!Number.isFinite(r.width)||r.width<400||r.width>4000||r.height!==600||!Number.isInteger(r.startLevel)||r.startLevel<1||r.startLevel>10||typeof r.single!=='boolean') return false;
  if(r.hardcore!==undefined && typeof r.hardcore!=='boolean' || r.world===8 && r.hardcore!==true) return false;
  if(!Number.isFinite(r.time)||r.time<0||r.time>86400||!Number.isInteger(r.deaths)||r.deaths<0||r.deaths>100000||!Number.isInteger(r.frames)||r.frames<1||r.frames>5184000||r.time>r.frames/60+.1) return false;

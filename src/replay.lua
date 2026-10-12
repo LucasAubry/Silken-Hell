@@ -37,7 +37,7 @@ function R.begin(world)
         R.data=nil
         local layouts=LevelLayouts.read()
         local seed=love.math.random(1,2147483646)
-        R.data={version=1,build=R.build(),world=world,seed=seed,width=Arena.width,height=600,skin=Characters.selected(),startLevel=player.level,single=not not App.singleLevel,hardcore=not not App.hardcore,layouts=json.decode(json.encode(layouts)),duel=Secret.duel and {kind=Secret.duel.kind,name=Secret.duel.name,time=0} or nil,inputs={},checks={},frames=0,startedAt=os.time()}
+        R.data={version=1,build=R.build(),world=world,seed=seed,width=Arena.width,height=600,skin=Characters.selected(),effects=require('skin_effects').snapshot(),startLevel=player.level,single=not not App.singleLevel,hardcore=not not App.hardcore,layouts=json.decode(json.encode(layouts)),duel=Secret.duel and {kind=Secret.duel.kind,name=Secret.duel.name,time=0} or nil,inputs={},checks={},frames=0,startedAt=os.time()}
     end
     R.rng=love.math.newRandomGenerator(R.data.seed);R.recording=not R.playing;R.enter()
 end
@@ -104,6 +104,10 @@ end
 function R.validate(data)
     if type(data)=='table' and ((data.hardcore~=nil and type(data.hardcore)~='boolean') or data.world==8 and data.hardcore~=true) then return false,'Mode de replay invalide.' end
     if type(data)~='table' or type(data.version)~='number' or data.version%1~=0 or data.version<1 then return false,'Replay invalide.' end
+    if data.effects~=nil then
+        if type(data.effects)~='table' then return false,'Effets de replay invalides.' end
+        for key,value in pairs(data.effects) do if not ({gold=true,hardcore=true,heartbreak=true})[key] or type(value)~='boolean' then return false,'Effets de replay invalides.' end end
+    end
     if not Worlds.playable(data.world) or type(data.inputs)~='table' or type(data.checks)~='table' or type(data.layouts)~='table' or type(data.seed)~='number' or data.seed%1~=0 or type(data.width)~='number' or data.width~=data.width or data.width<400 or data.width>4000 or type(data.frames)~='number' or data.frames<1 then return false,'Replay invalide.' end
     local function integer(n,lo,hi) return type(n)=='number' and n%1==0 and n>=lo and n<=hi end
     if data.completed~=true or type(data.single)~='boolean' or not integer(data.startLevel,1,Worlds.levelCount(data.world)) or not integer(data.skin,1,#Characters.keys) or not integer(data.seed,1,2147483646) or not integer(data.frames,1,5184000) or not integer(data.deaths,0,100000) or type(data.time)~='number' or data.time~=data.time or data.time<0 or data.time>86400 or data.height~=600 or #data.inputs>100000 or #data.checks>25000 then return false,'Replay invalide.' end
@@ -128,7 +132,7 @@ function R.play(data)
     local ok,why=R.validate(data);if not ok then R.status=why;return false end
     R.job=nil;R.ghost=nil;R.ghostRetry=nil;R.levelStates={}
     R.saved={character=Profile.character,achievements=json.decode(json.encode(Profile.achievements)),selected=App.selectedWorld,
-        returnTo=App.state=='victory' and 'victory' or 'rankings',
+        returnTo=App.state=='victory' and 'victory' or App.state=='topRecords' and 'topRecords' or 'rankings',
         victory=(App.state=='victory' or UI.boardReturn=='victory') and require('victory_screen').run or nil}
     R.recording=false;R.playing=true;R.compatibility=data.build~=R.build() or data.version~=R.version;R.data=data;R.speed=1;R.paused=false
     Secret.duel=data.duel and {kind=data.duel.kind,name=data.duel.name,time=0} or nil;App.sessionLayout=nil;App.hardcore=data.hardcore==true;App.singleLevel=data.single;App.practice=data.startLevel;App.workshopMap=nil;App.preview=false
@@ -143,6 +147,7 @@ function R.stop(message)
     Secret.duel=nil;App.sessionLayout=nil;App.hardcore=false;App.singleLevel=false;App.practice=nil;App.state=saved and saved.returnTo or 'rankings';if App.state=='victory' and saved.victory then App.hardcore=saved.victory.hardcore end;R.status=message or 'Lecture arrêtée.'
 end
 function R.watch(score)
+    R.status=''
     if type(score.replay)=='string' and #score.replay==64 and score.replay:match('^[a-f0-9]+$') then
         local raw=love.filesystem.read('replays/'..score.replay..'.json');local ok,data=pcall(json.decode,raw or '')
         if ok then return R.play(data) end

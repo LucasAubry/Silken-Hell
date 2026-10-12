@@ -238,9 +238,18 @@ function O.releaseCrabs()
     end
     if Bestiary.discover('crab') then Bestiary.save() end
 end
+function O.crabWallContact(c,x,y)
+    if not O.active or O.defeated or c.dead or c.emerge or c.is_frozen or c.tunnelTravel then return false end
+    -- Include exact edge contact, even before a movement step overlaps the wall.
+    if Arena.blocked((x or c.x)-14.01,(y or c.y)-12.01,28.02,24.02) then
+        O.explodeCrab(c);return true
+    end
+    return false
+end
 function O.crabContact(c)
     if not c.dead then Realms.capture(c) end
     if c.dead or c.emerge or c.is_frozen or c.tunnelTravel or O.defeated or player.reset then return end
+    if O.crabWallContact(c) then return end
     if require('collision_shapes').touchCircle('crab',c.x,c.y,27) then
         if c.inked and player.dashing then
             if not c.kickGrace or c.kickGrace<=0 then
@@ -259,13 +268,17 @@ function O.crabContact(c)
     end
 end
 function O.moveFlungCrab(c,dt,contact)
+    if O.crabWallContact(c) then return end
     local f=c.fling;local speed=math.sqrt(f.vx*f.vx+f.vy*f.vy)
     local capped=math.min(speed,O.crabSpeedLimit());local factor=speed>0 and capped/speed or 0
     local vx,vy=f.vx*factor,f.vy*factor;speed=capped
     local steps=math.max(1,math.ceil(speed*dt/4))
     for _=1,steps do
         local hx,hy=Arena.move(c,vx*dt/steps,vy*dt/steps)
-        if hx or hy then c.crabNavTime=0;break end
+        if hx or hy then
+            if O.active and not O.defeated then O.explodeCrab(c) end
+            c.crabNavTime=0;break
+        end
         contact();if c.dead or player.reset then break end
     end
     f.time=f.time-dt;if f.time<=0 then c.fling=nil end
@@ -305,7 +318,8 @@ function O.crabSpeed(c)
     return math.min(requested,O.crabSpeedLimit())
 end
 function O.walkCrab(c,dt,contact)
-    -- Keep recovery for crabs embedded in a wall, independently of their old steering.
+    if O.crabWallContact(c) then return end
+    -- Outside the boss fight, recover crabs embedded in a wall.
     if Arena.blocked(c.x-14,c.y-12,28,24) then
         local x,y=Arena.clearSpot(c.x-14,c.y-12,28,24);c.x,c.y=x+14,y+12
     end
@@ -358,6 +372,7 @@ function O.walkCrab(c,dt,contact)
     local steps=math.max(1,math.ceil(speed*dt/4))
     for _=1,steps do
         local nx,ny=c.x+c.vx*speed*dt/steps,c.y+c.vy*speed*dt/steps
+        if O.crabWallContact(c,nx,ny) then break end
         if not O.crabPathClear(nx,ny) then break end
         local hx,hy=Arena.move(c,c.vx*speed*dt/steps,c.vy*speed*dt/steps)
         if hx or hy then c.crabNavTime=0;break end

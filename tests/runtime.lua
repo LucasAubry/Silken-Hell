@@ -9,6 +9,12 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_ACHIEVEMENT_RULES_TEST')=='1' then require('tests.achievement_rules').run();love.event.quit();return end
+    if os.getenv('SILKEN_ACHIEVEMENT_GALLERY_TEST')=='1' then require('tests.achievement_gallery').run();return end
+    if os.getenv('SILKEN_REUNION_MOTION_TEST')=='1' then require('tests.reunion_motion').run();return end
+    if os.getenv('SILKEN_CRAB_EXPLOSION_TEST')=='1' then require('tests.crab_explosion').run();return end
+    if os.getenv('SILKEN_EFFECTS_RECORDS_TEST')=='1' then require('tests.effects_records').run();return end
+    if os.getenv('SILKEN_HEARTBREAK_TEST')=='1' then require('tests.heartbreak').run();return end
     if os.getenv("SILKEN_ABYSS_INTRO_TEST")=="1" then require("tests.abyss_intro").run();return end
     if os.getenv("SILKEN_QUEEN_ESCAPE_TEST")=="1" then require("tests.queen_escape").run();return end
     if os.getenv("SILKEN_HUNT_WORKSHOP_TEST")=="1" then require("tests.hunt_workshop").run();return end

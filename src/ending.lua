@@ -1,5 +1,7 @@
 -- Renaissance: guardian encounter, reunion chase, credits, then combined results.
 local E={active=false,clock=0}
+local Motion=require 'reunion_motion'
+local Walk=require 'brown_walk'
 E.credits={
  {'SILKEN HELL','Un jeu de Lucas Aubry'},
  {'Développement','Aubry Lucas'},
@@ -15,8 +17,8 @@ E.credits={
 E.aiNotice='Certaines images ont été générées par intelligence artificielle.'
 function E.reset()
  E.active=(Campaign.world==3 or Campaign.world==8 and Campaign.biome==3) and not App.sessionLayout and not App.workshopMap and not App.preview
- E.pending=false;E.creditsStarted=false;E.clock=0;E.phase='approach';E.fade=0;E.family=false;E.completed=false
- E.partner={x=Arena.width-110,y=280,angle=0}
+ E.pending=false;E.creditsStarted=false;E.clock=0;E.phase='approach';E.fade=0;E.family=false;E.completed=false;E.departTime=0
+ E.partner={x=Arena.width-110,y=280,angle=0,walkPhase=0,walkMoving=false}
  if E.active then
   mobs={};Arena.interior={};while #Arena.walls>4 do table.remove(Arena.walls) end
   player.x=(player.level==1 or Campaign.world==8) and Arena.width*.5-15 or 75;player.y=(player.level==1 or Campaign.world==8) and 500 or 300
@@ -43,41 +45,19 @@ function E.update(dt)
  E.clock=E.clock+dt
  if (player.level==1 or Campaign.world==8) then require('final_spider').update(dt);return end
  if E.completed then return end
+ if E.phase=='depart' then
+  E.departTime=E.departTime+dt
+  E.partner.y=E.partner.y-Motion.speed*dt;E.partner.angle=math.pi;E.partner.facing='up'
+  Walk.advance(E.partner,Motion.speed*dt,dt)
+  if E.partner.y< -70 then E.complete() end
+  return
+ end
  local p=E.partner;local dx,dy=p.x-player.x-15,p.y-player.y-12;local d=math.sqrt(dx*dx+dy*dy)
  if d<43 then E.complete();return end
- -- Fast at first, progressively slower so a patient chase always catches up.
- local speed=math.max(45,440-E.clock*18)
- -- Commit to an escape waypoint instead of reversing at the middle of a wall.
- p.routeTime=(p.routeTime or 0)-dt
- local target=p.target
- if not target or p.routeTime<=0 or (target.x-p.x)^2+(target.y-p.y)^2<25^2 then
-  local best,score
-  for i=1,12 do
-   local a=i*math.pi/6
-   local c={x=Arena.width*.5+math.cos(a)*(Arena.width*.5-110),y=300+math.sin(a)*185}
-   local tx,ty=c.x-p.x,c.y-p.y;local travel=math.sqrt(tx*tx+ty*ty)
-   if travel>90 then
-    local distance=math.sqrt((c.x-player.x-15)^2+(c.y-player.y-12)^2)
-    local forward=(tx*(p.vx or dx)+ty*(p.vy or dy))/travel
-    local along=math.max(0,math.min(1,((player.x+15-p.x)*tx+(player.y+12-p.y)*ty)/(travel*travel)))
-    local clearance=math.sqrt((p.x+tx*along-player.x-15)^2+(p.y+ty*along-player.y-12)^2)
-    local value=distance+forward*.3-travel*.12-math.max(0,110-clearance)*8
-    if not score or value>score then best=c;score=value end
-   end
-  end
-  p.target=best;p.routeTime=1.6;target=best
+ if E.clock>=30 then
+  Achievements.award('heartbreak');E.phase='depart';return
  end
- local tx,ty=target.x-p.x,target.y-p.y;local length=math.max(.001,math.sqrt(tx*tx+ty*ty))
- local step=math.min(length,speed*dt);p.vx=tx/length;p.vy=ty/length
- p.x=p.x+p.vx*step;p.y=p.y+p.vy*step
- -- Four stable poses, with a margin before changing axis near a diagonal.
- local horizontal=p.facing=='left' or p.facing=='right'
- if not p.facing or (horizontal and math.abs(p.vy)>math.abs(p.vx)+.18) or (not horizontal and math.abs(p.vx)>math.abs(p.vy)+.18) then
-  horizontal=math.abs(p.vx)>math.abs(p.vy)
- end
- p.facing=horizontal and (p.vx>0 and 'right' or 'left') or (p.vy>0 and 'down' or 'up')
- p.angle=({down=0,up=math.pi,left=math.pi/2,right=-math.pi/2})[p.facing]
-
+ Walk.advance(p,Motion.advance(p,player.x+15,player.y+12,Arena.width,Arena.height,dt),dt)
 end
 -- Recolor the existing brown spider, preserving the exact silhouette and eyes.
 function E.spider(x,y,size,white,spots,variant,angle)
@@ -106,7 +86,7 @@ end
 function E.drawFamily()
  if not E.active then return end
  if (player.level==1 or Campaign.world==8) then require('final_spider').draw();return end
- love.graphics.setColor(1,1,1);require('final_art').spider('partner',E.partner.x,E.partner.y,62,E.partner.angle)
+ love.graphics.setColor(1,1,1);require('final_art').spider('partner',E.partner.x,E.partner.y,62,E.partner.angle,E.partner)
 end
 function E.openReunion()
  if Campaign.world==8 then
@@ -125,9 +105,7 @@ function E.drawHud()
  UI.outlined(UI.time(Scoring.total(timer,player.death)),40,20,'medium',{1,.95,.85},200)
  UI.deathCounter()
  UI.text((Campaign.world==8 and 'Boss ' or 'Niveau ')..player.level,520,18,'small',{1,.94,.86},160,'center')
- if F.active then
-  require('boss_hud').draw(F)
- else UI.text('Rejoins l’araignée blanche.',300,66,'body',{1,.97,.9},600,'center') end
+ if F.active then require('boss_hud').draw(F) end
  if not Replay.playing then
   UI.button('i',1008,13,36,36,Bestiary.openLevel,false,true)
   UI.iconButton(1090,31,'pause',function() App.state='pause' end)
@@ -146,7 +124,11 @@ function E.drawOverlay(w,h)
  local g=love.graphics;g.push('all');g.setShader();g.setColor(0,0,0,E.fade);g.rectangle('fill',0,0,w,h);g.pop()
 end
 function E.resize(ratio)
- if E.partner then E.partner.x=E.partner.x*ratio;if E.partner.target then E.partner.target.x=E.partner.target.x*ratio end end
+ if E.partner then
+  local x=E.partner.x*ratio
+  E.partner.x=math.max(Motion.margin,math.min(Arena.width-Motion.margin,x))
+  if E.partner.x~=x then E.partner.heading=nil end
+ end
  if E.active then require('final_spider').resize(ratio) end
 end
 local creditSpacing,creditSpeed=90,90

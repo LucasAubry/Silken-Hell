@@ -4,7 +4,7 @@ local config=require 'online_config'
 local function saveOutbox()
     local rows={}
     for _,r in ipairs(N.runs) do
-        if not r.failed and (#r.pending>0 or r.replay and not r.replayUploaded) then rows[#rows+1]={id=r.id,name=r.name,skin=r.skin,startedAtMs=r.startedAtMs,world=r.world,hardcore=r.hardcore,pending=r.pending,replay=r.replay,replayUploaded=r.replayUploaded} end
+        if not r.failed and (#r.pending>0 or r.replay and not r.replayUploaded) then rows[#rows+1]={id=r.id,name=r.name,skin=r.skin,effects=r.effects,startedAtMs=r.startedAtMs,world=r.world,hardcore=r.hardcore,pending=r.pending,replay=r.replay,replayUploaded=r.replayUploaded} end
     end
     love.filesystem.write('online-outbox.json',json.encode(rows))
 end
@@ -73,6 +73,18 @@ function N.locate()
         end
     end)
 end
+function N.syncTopRecords(page)
+    if not N.enabled or Replay.playing or (N.topLoading and not page) then return end
+    page=page or 1;N.topLoading=true;N.nextTopPoll=N.clock+60
+    request('/v1/achievements/top-one?page='..page,nil,function(data,code)
+        if Replay.playing then N.topLoading=false;N.nextTopPoll=N.clock+5;return end
+        if code==200 and type(data.records)=='table' then
+            require('top_records').merge(data.records)
+            if data.hasMore then N.syncTopRecords(page+1);return end
+        end
+        N.topLoading=false
+    end)
+end
 function N.init()
     N.enabled=os.getenv('SILKEN_TEST')~='1'
     if not N.enabled then N.country='FR'; return end
@@ -87,12 +99,12 @@ function N.init()
         for _,r in ipairs(rows) do if (type(r.id)=='string' or type(r.name)=='string') and type(r.pending)=='table' and Worlds.playable(r.world) then N.runs[#N.runs+1]=r end end
     end
     N.thread=love.thread.newThread('src/network_thread.lua'); N.thread:start()
-    N.locate(); N.refresh(1)
+    N.locate(); N.refresh(1);N.syncTopRecords()
 end
 function N.begin(run)
     if run.starting or run.id or run.failed or (run.retryAt and N.clock<run.retryAt) then return end
     run.starting=true
-    request('/v1/runs',{world=run.world,name=run.name,skin=run.skin or 1,hardcore=run.hardcore==true,startedAtMs=run.startedAtMs},function(data,code)
+    request('/v1/runs',{world=run.world,name=run.name,skin=run.skin or 1,effects=run.effects,hardcore=run.hardcore==true,startedAtMs=run.startedAtMs},function(data,code)
         run.starting=false
         if code==201 and type(data.id)=='string' then
             run.id=data.id;run.retryAt=nil;saveOutbox()
@@ -111,7 +123,7 @@ function N.start(world,name,skin,hardcore)
     if Replay and Replay.playing then return end
     N.current=nil; N.scoreStatus='Partie hors ligne'
     if not N.enabled then return end
-    local run={world=world,name=name,skin=skin or 1,hardcore=hardcore==true,highest=0,startedAtMs=os.time()*1000,pending={}};N.runs[#N.runs+1]=run;N.current=run
+    local run={world=world,name=name,skin=skin or 1,effects=require('skin_effects').snapshot(),hardcore=hardcore==true,highest=0,startedAtMs=os.time()*1000,pending={}};N.runs[#N.runs+1]=run;N.current=run
     N.scoreStatus='Connexion au classement…';N.begin(run)
 end
 function N.checkpoint(level,time,deaths)
@@ -139,6 +151,7 @@ function N.flush(r)
                 N.pages={}
                 if N.current==r then N.scoreStatus='Score publié dans les classements' end
                 N.refresh(r.world,r.hardcore)
+                N.syncTopRecords()
             end
             N.flush(r)
         elseif code==0 or code>=500 or code==429 then
@@ -161,7 +174,7 @@ function N.uploadReplay(r)
     r.busy=true
     request('/v1/runs/'..r.id..'/replay',{replay=data},function(result,code)
         r.busy=false
-        if code==200 or code==201 then r.replayUploaded=true;N.pages={};saveOutbox()
+        if code==200 or code==201 then r.replayUploaded=true;N.pages={};saveOutbox();N.syncTopRecords()
         else r.retryAt=N.clock+60;N.scoreStatus='Score enregistré · replay conservé localement, envoi en attente' end
     end)
 end
@@ -176,6 +189,7 @@ function N.update(dt)
         if cb then cb(ok and type(data)=='table' and data or {},response.code) end
     end
     if N.clock>=N.nextPoll then N.locate() end
+    if N.clock>=(N.nextTopPoll or 0) then N.syncTopRecords() end
     for _,r in ipairs(N.runs) do N.flush(r) end
 end
 function N.quit()

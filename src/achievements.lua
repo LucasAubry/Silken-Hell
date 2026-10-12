@@ -4,49 +4,78 @@ local T=require('localization').text
 function A.maxanceTime() return Scoring.total(552.732,95) end
 function A.gillouTime() return Scoring.total(2264.85,513) end
 A.list={
-    {id='story_first',category='story',name='Une longue histoire',story=1,
+    {id='heartbreak',category='secrets',name='Une triste fin',rewardEffect='heartbreak',description=function()
+        return ''
+    end},
+    {id='story_first',category='story',name='Une longue histoire',story=1,trophy='story_first',
         description=function() return 'Trouve un texte qu’elle t’a laissé.' end},
-    {id='story_all',category='story',name='Tous ses mots',story='all',
-        visible=function() return require('story').progress()>0 end,
+    {id='story_all',category='story',name='Tous ses mots',story='all',trophy='story_all',
         description=function() local found,total=require('story').progress();return T('Retrouve tous les textes qu’elle t’a laissés. %d/%d',found,total) end},
-    {id='gillou',category='secrets',name='Plus rapide que Gillou',description=function()
+    {id='gillou',category='secrets',name='3 piques d’un coup',rewardSkin=13,description=function()
         return 'En Enfer, fais charger les trois sœurs contre un mur, puis touche-les toutes avant le réveil de la première.'
     end},
-    {id='maxance',category='secrets',name='Maxance',description=function()
+    {id='maxance',category='secrets',name='C’est dur ?',rewardSkin=14,description=function()
         return 'Termine un parcours complet du Paradis avec au moins 95 morts.'
+    end},
+    {id='flawless_all',category='mastery',name='Un fil sans faute',trophy='flawless_all',description=function()
+        return 'Termine chacun des sept mondes sans mourir, en parcours complet (hors entraînement).'
+    end},
+    {id='hardcore',category='mastery',name='Auréole hardcore',rewardEffect='hardcore',description=function()
+        return 'Termine un biome en hardcore, en parcours complet (hors entraînement).'
+    end},
+    {id='top1',category='mastery',name='Premier du classement',rewardEffect='gold',description=function()
+        return 'Atteins la première place mondiale d’un biome, en normal ou en hardcore.'
     end}
 }
-for _,world in ipairs({1,6,5,4,7,2,3}) do
-    local w=world
-    A.list[#A.list+1]={id='flawless'..w,category='mastery',name=(Worlds.names[w] or 'Monde')..' sans faute',localizedName=function() return T('%s sans faute',T(Worlds.names[w] or 'Monde')) end,description=function() return T('Termine le parcours complet : %s, sans mourir (hors entraînement).',T(Worlds.names[w])) end}
-end
 for _,world in ipairs(Worlds.order) do
     local w=world
-    A.list[#A.list+1]={id='world'..w,world=w,category='worlds',name=Worlds.names[w],description=function() return T('Termine tous les niveaux de %s en parcours complet (hors entraînement).',T(Worlds.names[w])) end}
+    A.list[#A.list+1]={id='world'..w,world=w,rewardSkin=Worlds.rank(w)+5,category='worlds',name=Worlds.names[w],description=function() return T('Termine tous les niveaux de %s en parcours complet (hors entraînement).',T(Worlds.names[w])) end}
 end
-A.list[#A.list+1]={id='bossflawless1',category='mastery',name='Coquille parfaite',description=function() return 'Au Paradis, termine le niveau 10 sans mourir : percute l’Œuf du Merle à pleine vitesse pour le briser.' end}
+-- Group the gallery by its reward while preserving the order within each group.
+local grouped={}
+for _,field in ipairs({'rewardEffect','rewardSkin','trophy'}) do
+    for _,a in ipairs(A.list) do if a[field] then grouped[#grouped+1]=a end end
+end
+A.list=grouped
+local function allFlawless(flags,scores)
+    local done={}
+    for _,score in ipairs(scores or {}) do if score.deaths==0 then done[score.world]=true end end
+    for _,world in ipairs(Worlds.order) do
+        if flags['flawless'..world]~=true and not done[world] then return false end
+    end
+    return true
+end
 function A.unlocked(a)
+    local flags=Profile.achievements or {}
+    if a.id=='flawless_all' then return flags.flawless_all==true or allFlawless(flags,Profile.scores) end
+    if a.id=='top1' then return require('skin_effects').unlocked('gold') end
+    if a.id=='hardcore' then return require('skin_effects').unlocked('hardcore') end
     if a.story then
         local found,total=require('story').progress()
         return found>=(a.story=='all' and total or a.story)
     end
-    return a.world and Profile.hasCompleted(a.world) or Profile.achievements[a.id]==true
+    return a.world and Profile.hasCompleted(a.world) or flags[a.id]==true
 end
-function A.enterLevel()
-    if not A.level or A.level.world~=Campaign.world or A.level.number~=player.level then
-        A.level={world=Campaign.world,number=player.level,deaths=player.death}
-    end
+-- Retain these hooks for the level lifecycle; the retired boss challenge no
+-- longer awards progress. Its old save flag remains available to boss stats.
+function A.enterLevel() end
+function A.finishLevel() end
+function A.canEarn()
+    return not Replay.playing and not App.preview and not App.sessionLayout and not App.workshopMap
+        and not App.practice and not App.singleLevel and not Secret.duel
 end
-function A.finishLevel()
-    if Replay.playing or App.sessionLayout or App.preview or Campaign.world~=1 or player.level~=10 then return end
-    local l=A.level
-    if l and l.world==1 and l.number==10 and l.deaths==player.death and Raven.active and Raven.defeated then
-        Profile.achievements.bossflawless1=true;Profile.save()
-    end
+function A.award(id)
+    if not A.canEarn() or Profile.achievements[id] then return false end
+    Profile.achievements[id]=true;Profile.save();return true
 end
 function A.check(score,unlocked)
-    if score.deaths==0 and not Worlds.isSecret(score.world) then unlocked['flawless'..score.world]=true end
-    if score.world==1 and score.deaths==0 then unlocked.bossflawless1=true end
+    -- Keep per-world flags as saved progress, not separate achievements. Runs
+    -- may be completed in any order and in either normal or hardcore mode.
+    if Worlds.rank(score.world)<=#Worlds.order then
+        if score.deaths==0 then unlocked['flawless'..score.world]=true end
+        if score.hardcore==true then unlocked.hardcore=true end
+    end
+    if allFlawless(unlocked) then unlocked.flawless_all=true end
     if score.world==1 and score.deaths>=95 then unlocked.maxance=true end
 end
 return A

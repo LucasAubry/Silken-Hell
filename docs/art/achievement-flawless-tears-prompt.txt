@@ -1,0 +1,24 @@
+Silken Hell — Un fil sans faute, player-spider and world-tear revision
+Generator: built-in image_gen tool
+Mode: precise-object-edit
+Transparent background: true
+Destination: assets/ui/achievements/flawless_all.png
+Edit target: previous assets/ui/achievements/flawless_all.png
+Player shape reference: assets/skins/soie/down.png
+
+Use case: precise-object-edit.
+Asset type: transparent pixel-art achievement trophy sprite for the game Silken Hell, achievement "Un fil sans faute".
+Image 1 is the existing trophy EDIT TARGET. Image 2 is the actual player spider, the identity and shape reference.
+Edit the trophy's central spider and its surrounding gems, while keeping the cream unbroken silk ring and simple stepped bronze pedestal, front view, centered full trophy with generous transparent margins.
+Central spider: faithfully match Image 2's cute chunky brown player spider: large simple rounded abdomen above a smaller round head, two large shiny amber eyes looking toward viewer, eight short bent chunky legs, tiny two front fangs. Match the exact friendly silhouette and compact proportions of the reference. Brown flat pixel clusters like the playable character. Do not retain Image 1's angular thin-headed mechanical-looking golden spider.
+Replace ALL diamond gems with exactly SEVEN pointed-up teardrops around the ring. Every tear must have a pointed top and rounded wide bottom, never a diamond. Same readable size, no eighth tear or gem. In CLOCKWISE order starting at top center (12 o'clock):
+1 at 12 o'clock: white #FFFFFF (Paradis).
+2 at upper right around 2 o'clock: very pale ice blue #CCEBFF (Ciel).
+3 at lower right around 4 o'clock: earthy tan ochre #DBA663 (Terre).
+4 at bottom right around 5:30: vivid light cyan #52F0FF (Océan).
+5 at bottom left around 6:30: dark navy blue #14387A (Abysse).
+6 at lower left around 8 o'clock: red #FF1F1A (Enfer).
+7 at upper left around 10 o'clock: pale lime green #D9FF80 (Renaissance).
+Space these seven tears evenly around the silk ring with only a narrow gold edging. Remove the old small gold ornament at the bottom of the ring; no other gem, no other tear outside this exact seven. The pedestal is blank.
+Style: genuine 16-bit PIXEL ART on a consistent low-resolution logical grid, large crisp square pixel clusters, stair-step contours, dark outline one logical pixel wide, each material 2 or 3 flat bands. Match the existing game's coarse pixel aesthetic, with readable spider and teardrop shapes at thumbnail size. Absolutely no realistic metal, airbrush, gradients, smooth antialiasing, intricate texture, 3D render, cast shadows, glow, particles, text, numbers, letters or interface.
+Real transparent alpha background. Single trophy only, full pedestal visible.

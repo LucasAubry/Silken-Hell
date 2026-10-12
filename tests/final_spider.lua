@@ -34,7 +34,7 @@ function T.run()
  player.x=Arena.width*.5-15;player.y=25;F.update(.01)
  assert(player.level==2 and App.state=='playing' and not F.active and timer==42 and RunDetails.rows[1].time==42,'Door opens level two without resetting run')
  local earlyX,earlyY=Ending.partner.x,Ending.partner.y;Ending.update(.02);local fast=((Ending.partner.x-earlyX)^2+(Ending.partner.y-earlyY)^2)^.5
- Ending.partner.x,Ending.partner.y=earlyX,earlyY;Ending.clock=30;Ending.update(.02);local slow=((Ending.partner.x-earlyX)^2+(Ending.partner.y-earlyY)^2)^.5;assert(slow<fast)
+ Ending.partner={x=earlyX,y=earlyY,angle=0};Ending.clock=20;Ending.update(.02);local later=((Ending.partner.x-earlyX)^2+(Ending.partner.y-earlyY)^2)^.5;assert(math.abs(later-fast)<.001,'Partner keeps the same speed')
  App.simulate(.02);player.x=Ending.partner.x-15;player.y=Ending.partner.y-12;Ending.update(.01)
  assert(App.state=='credits' and completed==1 and #V.run.rows==2 and checkpoints[#checkpoints]==2)
  Ending.update(.1);assert(completed==1,'Completion only once');Ending.updateCredits(Ending.creditDuration()+1)
@@ -49,7 +49,7 @@ function T.run()
   elseif frame==7 then Ending.openReunion();App.capture='final-reunion.png'
   elseif frame==10 then Ending.startCredits();Ending.creditTime=Ending.creditDuration()-3;App.capture='final-thanks.png'
   elseif frame==13 then V.run=result;App.state='victory';App.capture='final-two-level-recap.png'
-  elseif frame==16 then Profile.complete=complete;print('PASS final boss: 20HP, eggs/hatching/shells, persistent webs, immobilization, baby bait, lethal charge/reset, peaceful retreat/door, slower partner, credits, combined splits');love.event.quit() end
+  elseif frame==16 then Profile.complete=complete;print('PASS final boss: 20HP, eggs/hatching/shells, persistent webs, immobilization, baby bait, lethal charge/reset, peaceful retreat/door, constant-speed partner, credits, combined splits');love.event.quit() end
  end
 end
 return T

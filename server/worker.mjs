@@ -40,6 +40,18 @@ export default {
       const replayResponse=await replays(request,env,{reply,fail,ownerOf,bodyOf});if(replayResponse) return replayResponse;
       const community=await workshop(request,env,{reply,fail,ownerOf,bodyOf}); if(community) return community;
       if(request.method==='GET' && path==='/v1/location') return reply({country:countryOf(request)});
+      if(request.method==='GET' && path==='/v1/achievements/top-one') {
+        const owner=await ownerOf(request);
+        const page=Number(url.searchParams.get('page') || 1);
+        if(!Number.isSafeInteger(page)||page<1) fail(400,'Page invalide.');
+        const [{results},count]=await Promise.all([
+          env.DB.prepare(`SELECT h.*,EXISTS(SELECT 1 FROM run_replays r WHERE r.run_id=h.run_id) AS has_replay
+            FROM top_one_history h WHERE owner=? ORDER BY achieved_at DESC,run_id LIMIT 100 OFFSET ?`).bind(owner,(page-1)*100).all(),
+          env.DB.prepare('SELECT COUNT(*) AS total FROM top_one_history WHERE owner=?').bind(owner).first()
+        ]);
+        return reply({page,hasMore:page*100<count.total,records:results.map(r=>({runId:r.run_id,world:r.world,hardcore:!!r.hardcore,
+          name:r.name,rawTime:r.elapsed_ms/1000,deaths:r.deaths,skin:r.skin,achievedAt:r.achieved_at,hasReplay:!!r.has_replay}))});
+      }
       if(request.method==='GET' && path==='/v1/leaderboard') {
         const world=Number(url.searchParams.get('world'));
         if(![1,2,3,4,5,6,7,8,9,10,11,12,13,14].includes(world)) fail(400,'Monde invalide.');
@@ -54,10 +66,10 @@ export default {
         const ranked=`SELECT * FROM scores WHERE world=? AND hardcore=? ${local?'AND country=?':''}`;
         const args=local?[world,hardcore,country]:[world,hardcore];
         const [{results},count]=await Promise.all([
-          env.DB.prepare(`SELECT name,country,elapsed_ms,deaths,skin,run_id,EXISTS(SELECT 1 FROM run_replays r WHERE r.run_id=s.run_id) AS has_replay FROM (${ranked}) s ORDER BY (elapsed_ms+deaths*${DEATH_PENALTY_MS}),deaths,completed_at,run_id LIMIT 10 OFFSET ?`).bind(...args,(page-1)*10).all(),
+          env.DB.prepare(`SELECT name,country,elapsed_ms,deaths,skin,effects,run_id,EXISTS(SELECT 1 FROM run_replays r WHERE r.run_id=s.run_id) AS has_replay FROM (${ranked}) s ORDER BY (elapsed_ms+deaths*${DEATH_PENALTY_MS}),deaths,completed_at,run_id LIMIT 10 OFFSET ?`).bind(...args,(page-1)*10).all(),
           env.DB.prepare(`SELECT COUNT(*) AS total FROM (${ranked})`).bind(...args).first()
         ]);
-        return reply({world,country,page,total:count.total,hasMore:page*10<count.total,scores:results.map(s=>({runId:s.run_id,hasReplay:!!s.has_replay,name:s.name,country:s.country,time:(s.elapsed_ms+s.deaths*DEATH_PENALTY_MS)/1000,rawTime:s.elapsed_ms/1000,penalty:s.deaths*DEATH_PENALTY_MS/1000,deaths:s.deaths,skin:s.skin}))});
+        return reply({world,country,page,total:count.total,hasMore:page*10<count.total,scores:results.map(s=>({runId:s.run_id,hasReplay:!!s.has_replay,name:s.name,country:s.country,time:(s.elapsed_ms+s.deaths*DEATH_PENALTY_MS)/1000,rawTime:s.elapsed_ms/1000,penalty:s.deaths*DEATH_PENALTY_MS/1000,deaths:s.deaths,skin:s.skin,effects:JSON.parse(s.effects)}))});
       }
       if(request.method==='POST' && path==='/v1/runs') {
         const owner=await ownerOf(request), b=await bodyOf(request);
@@ -69,13 +81,15 @@ export default {
         if(b.world===8 && !hardcore) fail(400,'Le Sanctuaire libre ne possède pas de score classé.');
         const skin=b.skin===undefined?1:b.skin;
         if(!Number.isInteger(skin)||skin<1||skin>22) fail(400,'Apparence invalide.');
+        const effects=b.effects===undefined?{}:b.effects;
+        if(!effects || typeof effects!=='object' || Array.isArray(effects) || Object.entries(effects).some(([key,value])=>!['gold','hardcore','heartbreak'].includes(key)||typeof value!=='boolean')) fail(400,'Effets invalides.');
         const now=Date.now();
         const startedAt=b.startedAtMs===undefined?now:b.startedAtMs;
         if(!Number.isSafeInteger(startedAt)||startedAt>now+2500||startedAt<now-86400000) fail(400,'Date de départ invalide.');
         const recent=await env.DB.prepare('SELECT COUNT(*) AS count FROM runs WHERE owner=? AND started_at>?').bind(owner,now-60000).first();
         if(recent.count>=12) fail(429,'Trop de nouvelles parties.');
         const id=crypto.randomUUID();
-        await env.DB.prepare('INSERT INTO runs(id,owner,world,name,country,started_at,skin,hardcore) VALUES(?,?,?,?,?,?,?,?)').bind(id,owner,b.world,name,countryOf(request),startedAt,skin,hardcore).run();
+        await env.DB.prepare('INSERT INTO runs(id,owner,world,name,country,started_at,skin,hardcore,effects) VALUES(?,?,?,?,?,?,?,?,?)').bind(id,owner,b.world,name,countryOf(request),startedAt,skin,hardcore,JSON.stringify(effects)).run();
         return reply({id,country:countryOf(request)},201);
       }
       const match=path.match(/^\/v1\/runs\/([a-f0-9-]{36})\/checkpoint$/);
@@ -93,8 +107,8 @@ export default {
         if(now-run.started_at>86400000) fail(410,'Partie expirée.');
         if(elapsedMs<run.elapsed_ms+100||elapsedMs>now-run.started_at+2500||elapsedMs>86400000||deaths<run.deaths) fail(400,'Chronomètre ou compteur incohérent.');
         const writes=[env.DB.prepare('UPDATE runs SET level=?,elapsed_ms=?,deaths=? WHERE id=? AND owner=? AND level=?').bind(level,elapsedMs,deaths,run.id,owner,run.level)];
-        if(level===lastLevel) writes.push(env.DB.prepare(`INSERT OR IGNORE INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin,hardcore)
-          SELECT id,owner,world,name,country,elapsed_ms,deaths,?,skin,hardcore FROM runs WHERE id=? AND owner=? AND level=?`).bind(now,run.id,owner,lastLevel));
+        if(level===lastLevel) writes.push(env.DB.prepare(`INSERT OR IGNORE INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin,hardcore,effects)
+          SELECT id,owner,world,name,country,elapsed_ms,deaths,?,skin,hardcore,effects FROM runs WHERE id=? AND owner=? AND level=?`).bind(now,run.id,owner,lastLevel));
         await env.DB.batch(writes);
         return reply({ok:true,completed:level===lastLevel});
       }

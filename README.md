@@ -160,3 +160,5 @@ Le bouton « Mode hardcore » affiche les parcours hardcore des sept mondes et d
 Le fond conserve le biome sélectionné et un contour rouge animé indique le mode hardcore, dans le menu, la carte, le classement et en jeu, même lorsque les effets décoratifs sont désactivés. Le Sanctuaire hardcore enchaîne : Œuf du Merle, Merle noir, Hérisson, Pieuvre, Monstre d’os, Guêpes brûlées, Gardienne de la Soie.
 
 Vérification : `SILKEN_TEST=1 SILKEN_HARDCORE_MODES_TEST=1 love dist/game.love`, puis `npm test --prefix server`. Le classement en ligne nécessite la migration `0010_hardcore_rankings.sql` et le Worker correspondant.
+
+Sur macOS, lancer les tests masqués hors du Bureau avec `python3 tools/test_background.py SILKEN_ABYSS_INTRO_TEST` (ou un autre sélecteur `SILKEN_*_TEST`, avec `--editor` pour le concepteur). Le lanceur reconstruit une copie dans Application Support et conserve le focus sur les applications ouvertes.

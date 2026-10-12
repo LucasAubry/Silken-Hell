@@ -1,16 +1,22 @@
--- Queue newly earned skins, then present them outside live play and credits.
+-- Achievements precede their rewards; credits keep scrolling behind reward cards.
 local R={queue={}}
 local function clamp(t)return math.max(0,math.min(1,t))end
 local function ease(t)t=clamp(t);return 1-(1-t)^3 end
 function R.init()
- R.seen={};R.queue={};R.active=nil;R.scanTime=0
- for i=1,#Characters.keys do R.seen[i]=Characters.unlocked(i)==true end
+ R.seen={};R.queue={};R.active=nil;R.toast=nil;R.scanTime=0
+ R.seenEffects={};for _,kind in ipairs({'heartbreak','hardcore','gold'}) do R.seenEffects[kind]=require('skin_effects').unlocked(kind) end
+ for i=1,Characters.baseCount do R.seen[i]=Characters.unlocked(i)==true end
  R.random=R.random or love.math.newRandomGenerator(os.time())
 end
 function R.observe()
  if not R.seen then R.init();return end
  if Replay.playing then return end
- for i=1,#Characters.keys do
+ for _,kind in ipairs({'heartbreak','hardcore','gold'}) do
+  local unlocked=require('skin_effects').unlocked(kind)
+  if unlocked and not R.seenEffects[kind] then R.queue[#R.queue+1]=kind end
+  R.seenEffects[kind]=unlocked
+ end
+ for i=1,Characters.baseCount do
   local unlocked=Characters.unlocked(i)==true
   if unlocked and not R.seen[i] then R.queue[#R.queue+1]=i end
   R.seen[i]=unlocked
@@ -25,18 +31,30 @@ end
 function R.test()
  if not R.seen then R.init() end
  -- Private generator: previewing never advances the game's random sequence.
- return R.open(R.random:random(6,#Characters.keys),true)
+ return R.open(R.random:random(6,Characters.baseCount),true)
 end
 function R.close(equip)
  local a=R.active;if not a or a.time<3.25 then return false end
- if equip and not a.preview and Characters.unlocked(a.index) then Profile.character=a.index;Profile.save() end
+ if equip and not a.preview then
+  if type(a.index)=='string' then require('skin_effects').equip(a.index,true)
+  elseif Characters.unlocked(a.index) then Characters.select(a.index) end
+ end
  App.state=a.returnState;R.active=nil;UI.buttons={};UI.pressed=nil;Input.index=1
  return true
 end
 function R.update(dt)
  R.scanTime=(R.scanTime or 0)-dt
  if R.scanTime<=0 then R.observe();R.scanTime=.2 end
- if not R.active and #R.queue>0 and not Replay.playing
+ local notices=require('achievement_notice')
+ local waiting=notices.active or #notices.queue>0
+ if R.toast then
+  if not waiting then R.toast.age=R.toast.age+dt end
+  if R.toast.age>=3.6 then R.toast=nil end
+ end
+ if not R.active and not R.toast and not waiting and #R.queue>0 and not Replay.playing and App.state=='credits' then
+  R.toast={index=table.remove(R.queue,1),age=0};Audio.play('pick')
+ end
+ if not R.active and not R.toast and not waiting and #R.queue>0 and not Replay.playing
     and (App.state=='menu' or App.state=='victory' or App.state=='customVictory' or App.state=='worlds') then
   R.open(table.remove(R.queue,1),false)
  end
@@ -100,8 +118,12 @@ function R.draw()
   -- Reveal the full-resolution sprite immediately. Fading crowned/gold skins
   -- used the small trail compositor and blurred them until opacity reached 1.
   g.setColor(1,1,1)
-  Characters.portrait(a.index,cx,cy,240,'down')
-  UI.text(Characters.names[a.index],250,499,'heading',{1,.96,.83,reveal},700,'center')
+  local extension=type(a.index)=='string'
+  if extension then require('skin_effects').behind(cx,cy,240,a.index) end
+  Characters.portrait(extension and Characters.selected() or a.index,cx,cy,240,'down')
+  if extension then require('skin_effects').front(cx,cy,240,a.index) end
+  if a.index=='heartbreak' then require('skin_extension').draw(cx,cy,240,'down',true) end
+  UI.text(extension and require('skin_effects').names[a.index] or Characters.names[a.index],250,499,'heading',{1,.96,.83,reveal},700,'center')
  end
  if t>=3.25 then
   if a.preview then UI.button('CONTINUER',460,602,280,46,function()R.close()end,false,true)
@@ -111,5 +133,16 @@ function R.draw()
   end
  end
  g.pop()
+end
+function R.drawToast()
+ local a=R.toast;local notices=require('achievement_notice')
+ if not a or notices.active or #notices.queue>0 then return end
+ local extension=type(a.index)=='string'
+ require('notice_card').draw(a.age,extension and 'EFFET DÉBLOQUÉ' or 'SKIN DÉBLOQUÉ',
+  extension and require('skin_effects').names[a.index] or Characters.names[a.index],nil,function(x,y,alpha)
+   love.graphics.setColor(1,1,1,alpha)
+   if extension then require('skin_effects').icon(a.index,x,y,15,alpha)
+   else Characters.portrait(a.index,x,y,48) end
+  end)
 end
 return R

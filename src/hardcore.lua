@@ -10,7 +10,7 @@ function H.load()
  H.completed=ok and type(data)=='table' and data or {}
 end
 function H.complete(world)
- if Replay.playing then return end
+ if not Achievements.canEarn() then return end
  require('app_icon').complete(world)
  H.completed[tostring(world)]=true
  love.filesystem.write('hardcore.json',require('json').encode(H.completed))

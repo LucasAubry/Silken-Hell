@@ -35,10 +35,10 @@ function T.run()
  S.hp=1;S.hurt(true);assert(S.defeated and S.hp==0,'Final hit finishes the boss')
  local counts={}
  for _,a in ipairs(Achievements.list) do assert(a.category);counts[a.category]=(counts[a.category] or 0)+1 end
- assert(counts.secrets==2 and counts.worlds==7 and counts.mastery>=8)
- reset(1,10);Raven.defeated=true;Achievements.finishLevel();assert(Profile.achievements.bossflawless1)
- Profile.achievements.bossflawless1=nil;player.death=player.death+1;reset_level();Raven.defeated=true
- Achievements.finishLevel();assert(not Profile.achievements.bossflawless1,'Death and retry cannot erase the boss challenge failure')
+ assert(counts.secrets==3 and counts.worlds==7 and counts.mastery==3 and counts.story==2)
+ Profile.achievements.bossflawless1=nil
+ reset(1,10);Raven.defeated=true;Achievements.finishLevel()
+ assert(not Profile.achievements.bossflawless1,'The retired boss challenge no longer awards an achievement')
  for _,e in ipairs(Bestiary.entries) do assert(#e.text<420,'Short bestiary description: '..e.id) end
  local servants=require('servant_art');assert(servants.amount(1,1)<servants.amount(6,10) and servants.amount(6,10)<servants.amount(2,10))
  for _,key in ipairs({'mole_up','mole_down','mole_left','mole_right','merle_up','merle_down','merle_left','merle_right','crab_open','crab_closed','magma_larva'}) do assert(servants.frames[key],key) end
