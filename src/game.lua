@@ -51,6 +51,7 @@ Replay=require 'replay'
 Graphics=require 'graphics_settings'
 local Psyche=require 'psychedelic_fx'
 local Prism=require 'prism_material'
+local OldTV=require 'old_tv'
 local RunStart=require 'run_start'
 local GameFeedback=require 'game_feedback'
 RunDetails=require 'run_details'
@@ -132,6 +133,7 @@ function love.load()
     Campaign.select(1);reset_level()
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
     polishShader=love.graphics.newShader('assets/shaders/polish.glsl')
+    OldTV.load()
     Psyche.load()
     Prism.load()
     App.selectedWorld=1
@@ -420,6 +422,7 @@ function love.draw()
         if Graphics.showFPS then love.graphics.setColor(.7,1,.8,.8);love.graphics.print(tostring(love.timer.getFPS())..' FPS',12,h-(cleanScreen and 26 or 33)) end
         love.graphics.pop()
     end
+    OldTV.draw(w,h)
     if App.state=='playing' then require('abyss_gate').blackout() end
     if App.capture then
         local path=App.capture; App.capture=nil
