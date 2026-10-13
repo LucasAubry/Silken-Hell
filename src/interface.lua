@@ -307,7 +307,7 @@ function U.menu()
             g.setColor(active and {tint[1]*.23,tint[2]*.23,tint[3]*.23,.96} or {.04,.07,.09,.96});g.circle('fill',x,y,r)
             g.setColor(tint[1],tint[2],tint[3],hover and 1 or .75);g.setLineWidth(hover and 2 or 1);g.circle('line',x,y,r)
             effects.icon(kind,x,y,10,(active or hover) and 1 or .65,active);g.pop()
-            U.buttons[#U.buttons+1]={x=x-r,y=y-r,w=r*2,h=r*2,radius=r,effect=kind,run=function()effects.equip(kind,not effects.enabled(kind))end,sound='go'}
+            U.buttons[#U.buttons+1]={x=x-r,y=y-r,w=r*2,h=r*2,radius=r,effect=kind,run=function()effects.equip(kind,not effects.enabled(kind))end,sound=active and 'back' or 'go'}
         end
     end
     local sx,sy=U.menuPosition()

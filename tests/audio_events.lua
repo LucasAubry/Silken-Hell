@@ -11,13 +11,19 @@ function T.run()
  end
  A.ambiences={[2]=source(),[3]=source(),[6]=source()};A.paradise=source();A.focused=true
  local p={sound=.37,music=.18};App.state='playing';Campaign.biome=6
- A.update(p);A.update(p);assert(A.ambiences[6].plays==1 and A.ambiences[6].volume==.37 and not A.ambiences[2].playing)
+ A.update(p);A.update(p);assert(A.ambiences[6].plays==1 and math.abs(A.ambiences[6].volume-.037)<.00001 and not A.ambiences[2].playing)
  App.state='pause';A.update(p);assert(not A.ambiences[6].playing and A.ambiences[6].paused)
  App.state='playing';A.update(p);assert(A.ambiences[6].plays==2)
  Campaign.biome=2;A.update(p);assert(A.ambiences[2].playing and not A.ambiences[6].playing)
  A.focus(false);assert(not A.ambiences[2].playing);A.update(p);assert(not A.ambiences[2].playing)
  A.focus(true);A.update(p);assert(A.ambiences[2].playing)
- Campaign.biome=3;A.update(p);assert(A.ambiences[3].playing and not A.ambiences[2].playing)
+ Campaign.biome=3;Campaign.world=3;player.level=1;A.update(p);assert(not A.ambiences[3].playing and not A.ambiences[2].playing,'No birds during the Renaissance boss')
+ player.level=2;A.update(p);assert(A.ambiences[3].playing,'Birds start in the reunion level')
+ App.state='pause';A.update(p);assert(A.ambiences[3].paused and not A.ambiences[3].playing)
+ App.state='playing';A.update(p);assert(A.ambiences[3].playing)
+ player.level=1;A.update(p);assert(not A.ambiences[3].playing,'Returning to the boss stops birds')
+ Campaign.world=8;player.level=2;A.update(p);assert(not A.ambiences[3].playing,'Birds are exclusive to Renaissance level 2')
+ Campaign.world=3;A.update(p);assert(A.ambiences[3].playing)
  App.state='menu';A.update(p);assert(A.paradise.playing and not A.ambiences[3].playing)
  A.ambiences=actualAmbiences;A.paradise=actualMenu
  local sounds={};local play=A.play

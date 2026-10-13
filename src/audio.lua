@@ -4,6 +4,7 @@ local ambienceFiles={
     [3]='assets/audio/ambience/renaissance-birds.mp3',
     [6]='assets/audio/ambience/sky-rain.mp3',
 }
+local ambienceVolumes={[6]=.1}
 local eventFiles={
     notice='assets/audio/effects/progression/notice.mp3',
     inkStep='assets/audio/effects/ocean/ink-step.mp3',
@@ -48,12 +49,14 @@ function A.update(p,hell)
     end
     for _,k in ipairs({'pick','death','click','selection','go','back','editor'}) do if A[k] then A[k]:setVolume(p.sound) end end
     for name in pairs(eventFiles) do if A[name] then A[name]:setVolume(p.sound) end end
-    local biome=App.state=='playing' and Campaign and Campaign.biome or nil
+    local biome=Campaign and Campaign.biome or nil
+    -- Birds accompany the reunion after the Renaissance boss, only in level 2.
+    if biome==3 and not (Campaign.world==3 and player and player.level==2) then biome=nil end
     for id,source in pairs(A.ambiences or {}) do
-        source:setVolume(p.sound)
-        if id==biome then
+        source:setVolume(p.sound*(ambienceVolumes[id] or 1))
+        if App.state=='playing' and id==biome then
             if not source:isPlaying() then source:play() end
-        elseif App.state=='pause' and Campaign and Campaign.biome==id then source:pause()
+        elseif App.state=='pause' and biome==id then source:pause()
         else source:stop() end
     end
     if App.state~='playing' then

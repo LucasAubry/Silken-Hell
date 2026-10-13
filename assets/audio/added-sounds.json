@@ -2,7 +2,7 @@
   "sourceFolder": "son a push dans le jeux",
   "ambience": {
     "Enfer": "ambience/hell-fire.mp3",
-    "Renaissance": "ambience/renaissance-birds.mp3",
+    "Renaissance : niveau 2, après le boss": "ambience/renaissance-birds.mp3",
     "Ciel": "ambience/sky-rain.mp3"
   },
   "events": {
