@@ -1,12 +1,14 @@
 local B={}
 B.palettes={
  [1]={1,.80,.42},[3]={.66,1,.50},[4]={.12,.78,1},[5]={1,.61,.24},[6]={.62,.82,1},
+ [2]={1,.25,.055},[7]={.15,.46,1},[8]={.57,.46,1},
 }
+function B.biome()return (App.state=='bossWorld' or Secret.inArena()) and 8 or Campaign.biome end
 function B.active()
- return Graphics.effects and B.palettes[Campaign.biome]~=nil and not Secret.inArena()
+ return Graphics.effects and B.palettes[B.biome()]~=nil and not (App.state=='playing' and Abyss.playerHidden())
 end
 function B.sources(add,time)
- local biome=Campaign.biome;local tint=B.palettes[biome]
+ local biome=B.biome();local tint=B.palettes[biome]
  if not B.active() then return end
  if biome==4 then
   for i=1,4 do local x,y=B.coralPosition(i)
@@ -19,7 +21,15 @@ function B.sources(add,time)
  elseif biome==5 then
   for i=1,3 do add(Arena.width*(.12+i*.22),95+i%2*90,230,.40+.025*math.sin(time*.7+i),tint) end
  elseif biome==1 then
-  add(Arena.width*.25,110,280,.25,tint);add(Arena.width*.78,330,255,.18,{.64,.78,1})
+  add(Arena.width*.25,100,300,.40,tint);add(Arena.width*.78,380,260,.30,{.42,.72,1})
+ elseif biome==2 then
+  add(Arena.width*.12,550,220,.26+.04*math.sin(time*.65),tint)
+  add(Arena.width*.88,70,180,.23,{.85,.12,.38})
+ elseif biome==7 then
+  -- Color only existing revealed surfaces; this light never removes darkness.
+  add(Arena.width*.20,100,220,.16,tint);add(Arena.width*.82,480,180,.13,{.43,.18,.83})
+ elseif biome==8 then
+  add(Arena.width*.18,135,270,.27,tint);add(Arena.width*.82,135,270,.27,{.25,.64,1})
  else
   add(Arena.width*(.28+.025*math.sin(time*.09)),165,330,.20,tint)
   add(Arena.width*.76,375,270,.18,{1,.81,.57})
@@ -38,12 +48,13 @@ function B.drawMap()
  if not B.active() then return end
  local g=love.graphics
  B.shader=B.shader or g.newShader('assets/shaders/biome_radiance.glsl')
- B.shader:send('clock',UI.clock);B.shader:send('biome',Campaign.biome);B.shader:send('arenaSize',{Arena.width,600})
+ B.shader:send('clock',UI.clock);B.shader:send('biome',B.biome());B.shader:send('arenaSize',{Arena.width,600})
  g.setShader(B.shader);g.rectangle('fill',0,0,Arena.width,600)
 end
 function B.motes()
  if not B.active() then return end
- local g=love.graphics;local biome=Campaign.biome;local t=UI.clock;local tint=B.palettes[biome]
+ local g=love.graphics;local biome=B.biome();local t=UI.clock;local tint=B.palettes[biome]
+ if biome==7 then return end -- Existing plankton already respects encounter visibility.
  g.push('all');g.setShader();g.setBlendMode('add')
  local count=Graphics.quality==1 and 18 or 34
  for i=1,count do

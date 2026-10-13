@@ -131,7 +131,7 @@ function P.wall(r)
  local length,depth=math.max(r.w,r.h),math.min(r.w,r.h)
  local rows=math.max(1,math.ceil(depth/22));local height=depth/rows
  for row=0,rows-1 do
-  g.push();g.translate(0,row*height);g.scale(1,height/22);P.edge(length);g.pop()
+  g.push();g.translate(0,row*height);g.scale(1,height/22);require('paradise_scenery').edge(length);g.pop()
  end
  g.pop()
 end

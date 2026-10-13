@@ -12,6 +12,7 @@ function T.run()
  local walls=Arena.interior
  Arena.interior={{x=350,y=225,w=20,h=150}}
  L.lights={{x=260,y=300,radius=300,power=1,color={1,.4,.1}}}
+ local radiance=require('biome_radiance');local drawMap=radiance.drawMap;radiance.drawMap=function()end
  local function sample(data,x,y)
   return data:getPixel(math.floor(x/Arena.width*data:getWidth()),math.floor(y/600*data:getHeight()))
  end
@@ -27,6 +28,7 @@ function T.run()
  Arena.interior[1].rotation=0
  data=map();local straight=sample(data,410,390);data:release()
  assert(rotated>straight*3,'Occlusion must follow rotated editor walls')
+ radiance.drawMap=drawMap
  Arena.interior=walls
  local state=love.math.getRandomState();local x,y=player.x,player.y
  local before=require('json').encode(LevelLayouts.snapshot())

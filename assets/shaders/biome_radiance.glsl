@@ -4,6 +4,7 @@ extern vec2 arenaSize;
 // Slow, irregular shafts: color and rhythm belong to each environment.
 vec4 effect(vec4 color, Image tex, vec2 uv, vec2 pixel) {
  vec2 p=pixel/love_ScreenSize.xy;
+ if(biome==2.0) p.y=1.0-p.y;
  float rays=0.0;
  for(int i=0;i<4;i++) {
   float k=float(i);
@@ -20,11 +21,14 @@ vec4 effect(vec4 color, Image tex, vec2 uv, vec2 pixel) {
  }
  vec3 tint=vec3(1.0,.74,.32);
  float strength=.48;
- if(biome==1.0) { tint=vec3(1.0,.80,.43);strength=.42; }
+ if(biome==1.0) { tint=vec3(1.0,.82,.50);strength=.62; }
+ if(biome==2.0) { tint=vec3(1.0,.22,.035);strength=.25; }
  if(biome==3.0) { tint=vec3(.71,1.0,.48);strength=.54; }
  if(biome==4.0) { tint=vec3(.18,.82,1.0);strength=.70; }
  if(biome==5.0) { tint=vec3(1.0,.62,.25);strength=.72; }
  if(biome==6.0) { tint=vec3(.68,.86,1.0);strength=.42; }
+ if(biome==7.0) { tint=vec3(.13,.40,1.0);strength=.16; }
+ if(biome==8.0) { tint=vec3(.47,.39,1.0);strength=.34; }
  vec3 light=tint*rays*strength;
  if(biome==4.0) {
   vec2 q=p*vec2(arenaSize.x/600.0,1.0);

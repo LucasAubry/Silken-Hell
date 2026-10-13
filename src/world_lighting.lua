@@ -13,7 +13,10 @@ local function pulse(time,seed)
 end
 function L.collect()
  L.lights={}
- if not Graphics.effects or Secret.inArena() or Abyss.playerHidden() then return L.lights end
+ if not Graphics.effects or App.state=='playing' and Abyss.playerHidden() then return L.lights end
+ if App.state=='bossWorld' or Secret.inArena() then
+  require('biome_radiance').sources(add,UI.clock);return L.lights
+ end
  local time=Realms.clock or 0
  -- Transient sources get priority when a crowded custom map reaches the budget.
  for _,p in ipairs(BossFX.events or {}) do
@@ -41,6 +44,8 @@ function L.collect()
  for _,m in ipairs(mobs) do if not m.dead and not m.abyssHeld and not m.spent then
   local dx,dy=require('render_motion').offset(m)
   if m.type=='lanternfish' then add(m.x+dx,m.y+dy-15,145,.65,gold)
+  elseif Campaign.biome==1 and m.type=='ange' then add(m.x+dx,m.y+dy,105,.24,gold)
+  elseif Campaign.biome==2 and m.type=='imp' then add(m.x+dx,m.y+dy,85,.25,fire)
   elseif m.type=='light_jelly' or Campaign.biome==4 and m.type=='jelly' then add(m.x+dx,m.y+dy,100,.4,blue)
   elseif m.type=='magma_larva' then
    local charge=math.max(0,1-((m.fuse or 3.6)-(m.age or 0))/.8)
@@ -81,7 +86,9 @@ function L.renderMap()
  local g=love.graphics;local shader=L.sourceShader
  -- Large obstacles cast first; rotate each occluder in its own local space.
  local walls={}
- for _,wall in ipairs(Arena.interior) do walls[#walls+1]=wall end
+ if App.state~='bossWorld' then
+  for _,wall in ipairs(Arena.interior) do walls[#walls+1]=wall end
+ end
  table.sort(walls,function(a,b)return a.w*a.h>b.w*b.h end)
  local count=math.min(24,#walls)
  for i=1,24 do
@@ -109,10 +116,11 @@ function L.apply(scene)
  L.renderMap()
  g.setCanvas(L.output);g.origin();g.clear();g.setColor(1,1,1);g.setBlendMode('replace','premultiplied')
  L.composite:send('lightMap',L.map);L.composite:send('lightStep',{1/L.map:getWidth(),1/L.map:getHeight()})
- local ambient=({[1]=.89,[2]=.91,[3]=.87,[4]=.88,[5]=.88,[6]=.91,[7]=1})[Campaign.biome] or .97
+ local biome=require('biome_radiance').biome()
+ local ambient=({[1]=.91,[2]=.91,[3]=.87,[4]=.88,[5]=.88,[6]=.91,[7]=1,[8]=.97})[biome] or .97
  L.composite:send('ambient',ambient)
- L.composite:send('scatter',Campaign.biome==7 and 0 or Campaign.biome==4 and .06 or .035)
- L.composite:send('softHighlights',require('biome_radiance').active() and 1 or 0)
+ L.composite:send('scatter',biome==7 and 0 or biome==4 and .06 or biome==8 and .016 or .035)
+ L.composite:send('softHighlights',biome~=7 and biome~=2 and require('biome_radiance').active() and 1 or 0)
  g.setShader(L.composite);g.draw(scene);g.pop()
  return L.output
 end

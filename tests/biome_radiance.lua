@@ -14,8 +14,8 @@ function T.run()
   assert(g.getCanvas()==nil,'Light passes must restore canvas state')
   return rendered:newImageData()
  end
- for _,world in ipairs({4,1,5,3,6}) do
-  App.practice=world==3 and 2 or 5;App.singleLevel=true;App.start(world);require('run_start').active=false
+ for _,world in ipairs({1,2,3,4,5,6,7,9}) do
+  App.practice=world==3 and 2 or world==9 and 1 or 5;App.singleLevel=true;App.start(world);require('run_start').active=false
   UI.clock=4;Realms.clock=4
   Graphics.quality=2;Graphics.effects=false
   assert(not B.active());local before=draw();before:encode('png','radiance-'..world..'-off.png')
@@ -35,7 +35,18 @@ function T.run()
   UI.clock=12;local data=draw();data:release()
   print('PASS biome '..world..': visible lights, three quality levels, animation and simulation isolation')
  end
+ App.practice=5;App.start(7);Graphics.effects=true
+ local black=g.newCanvas(Arena.width,600)
+ g.push('all');g.setCanvas(black);g.clear(0,0,0,1);g.pop()
+ local dark=apply(black):newImageData();local r,green,b=dark:getPixel(100,100)
+ assert(r==0 and green==0 and b==0,'Abyss lighting must not reveal completely dark surfaces');dark:release()
+ local hidden=Abyss.playerHidden;Abyss.playerHidden=function()return true end
+ assert(apply(black)==black and #L.lights==0,'Hidden Abyss phases must bypass decorative light')
+ Abyss.playerHidden=hidden;black:release()
+ for _,world in ipairs(Worlds.order) do Profile.completed[world]=true end
+ Secret.open(false);love.draw();local hall=rendered:newImageData();hall:encode('png','radiance-sanctuary.png');hall:release()
+ assert(B.biome()==8 and #L.lights==2,'Sanctuary lobby receives its own lights without stale gameplay sources')
  L.apply=apply;Graphics.quality=2
- print('PASS ocean scenery and Ori-inspired lighting across all five requested biomes');love.event.quit()
+ print('PASS all biomes, Sanctuary, hidden Abyss phases and preserved darkness');love.event.quit()
 end
 return T

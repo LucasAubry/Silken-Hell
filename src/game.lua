@@ -357,7 +357,7 @@ function love.draw()
         for _,m in ipairs(mobs) do if m~=droppedCarrier and m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
         Renaissance.drawBlasts(); Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false)
         Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
-        Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw();require('biome_radiance').motes() end
+        Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end;require('biome_radiance').motes()
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies(); Realms.drawAnemoneElectric() end
         Abyss.drawLights(); Bosses.drawLights();require('earth_light').draw();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage()
         -- Boss rewards remain readable above the arena effects.
@@ -371,6 +371,7 @@ function love.draw()
         refreshSceneResolution()
         sceneCanvas=gameCanvas
         love.graphics.setCanvas(gameCanvas);love.graphics.origin();love.graphics.clear();Prism.beginScene(gameCanvas);Secret.drawWorld();Prism.endScene();love.graphics.setCanvas()
+        sceneCanvas=require('world_lighting').apply(gameCanvas)
     end
     local w,h=love.graphics.getDimensions()
     if App.state=='playing' or App.state=='bossWorld' then
