@@ -241,6 +241,7 @@ function C.drawTear(overlay)
     if not objet.larme.taken then
         local x,y=objet.larme.x,objet.larme.y+math.sin(UI.clock*2)*3
         local fx=require('tear_fx');g.push('all')
+        if C.tearCarried() then g.translate(require('render_motion').offset(C.carrier)) end
         local tint=Worlds.color(C.biome).tear
         if require('paradise_style').active() then tint=require('paradise_style').tear end
         if C.biome==5 then tint={.86,.65,.39} end
@@ -260,7 +261,7 @@ function C.drawTear(overlay)
     end
     g.setColor(1,1,1)
 end
-function C.drawMob(m)
+local function drawMob(m)
     if m.abyssHeld then return end
     local behavior=MobBehaviors[m.type]
     if not behavior or not behavior.draw then return end
@@ -271,6 +272,9 @@ function C.drawMob(m)
         behavior.draw(m);g.pop();m.tunnelTravel=travel
     else require('monster_fx').mob(m);behavior.draw(m) end
     servants.current=previous
+end
+function C.drawMob(m)
+    require('render_motion').draw(m,drawMob,m)
 end
 function C.updateTear(dt)
     if Ending.active then return end

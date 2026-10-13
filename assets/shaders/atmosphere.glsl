@@ -42,21 +42,23 @@ vec4 effect(vec4 color,Image texture,vec2 uv,vec2 pixel) {
     if(biome==1.0 || biome==6.0) rays*=1.12;
 
     if(biome==4.0) rays*=1.35;
-    if(biome==5.0) { rays*=.55;patches=haze*.035; } // Narrow overhead shafts; keep the surrounding earth dark.
+    if(biome==5.0) { rays*=.30;patches=haze*.035; } // A quiet ochre wash over the painted clay.
     if(biome==2.0) rays=patches*.18; // Ember light rises from the floor in Hell.
     float lit=clamp(rays*.7+patches*(biome==5.0?.95:.35)*transmission+local,0.0,1.0);
     float shade=biome==5.0?.20:biome==4.0?.12:biome==2.0?.22:.13;
     shade+=(1.0-transmission)*.16+depth*.045;
     float edge=length((p-.5)*vec2(1.0,.8));
     shade+=smoothstep(.3,.7,edge)*.09;
+    if(biome==5.0) shade=.055+(1.0-transmission)*.035+depth*.02+smoothstep(.3,.7,edge)*.035;
     float caustic=0.0;
     if(biome==4.0) {
         float wave=sin(p.x*59.0+p.y*26.0+sin(p.y*39.0-clock*.6)*1.8+clock*.4);
         caustic=pow(abs(wave),24.0)*patches*.07;
     }
     vec3 shadow=biome==4.0?vec3(.0,.025,.07):vec3(.017,.009,.02);
+    if(biome==5.0) shadow=vec3(.20,.15,.095);
     float blend=smoothstep(.03,biome==5.0?.5:.8,lit);
     vec3 tint=mix(shadow,lightTint,blend);
-    float alpha=mix(shade,.19,blend)+caustic;
+    float alpha=mix(shade,biome==5.0?.10:.19,blend)+caustic;
     return vec4(tint,alpha)*color;
 }

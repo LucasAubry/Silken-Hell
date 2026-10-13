@@ -29,7 +29,9 @@ function T.run()
  player.x=Arena.width*.5;player.y=300;S.updateWall(.1);assert(S.readTime==0)
  read();local found,total=S.progress();assert(found==1 and total==7,'Seven unique messages')
  assert(Achievements.unlocked(first) and not Achievements.unlocked(all) and all.description():find('1/7',1,true))
- N.update(.1);assert(N.active and N.active.entry==first,'First discovery triggers the achievement notification')
+ N.update(.1);assert(N.active and N.active.entry.progress==1 and N.active.entry.total==7,'First discovery immediately shows 1/7')
+ assert(#N.queue==1 and N.queue[1]==first,'First discovery also retains its unlocked achievement')
+ N.update(4);assert(N.active and N.active.entry==first,'The first achievement follows the progress notice')
  read();N.update(.1);assert(S.progress()==1 and #N.queue==0,'Rereading does not count or notify twice')
  Profile.load();assert(S.progress()==1 and Achievements.unlocked(first),'Read messages survive profile reload')
  N.init();N.update(.1);assert(not N.active,'Loading previously earned achievements stays silent')
@@ -40,7 +42,14 @@ function T.run()
  Replay.ghost=true;read();Replay.ghost=false;assert(S.progress()==1,'Ghosts cannot discover messages')
  player.reset=true;read();player.reset=false;assert(S.progress()==1,'Dead player cannot read')
  reset(9);read();assert(S.progress()==1,'Hardcore variant reuses the same message')
- for _,world in ipairs({6,5,4,7,2,3}) do reset(world);read() end
+ for i,world in ipairs({6,5,4,7,2,3}) do
+  reset(world);read();N.update(.1)
+  if i<6 then
+   assert(N.active and N.active.entry.progress==i+1 and N.active.entry.total==7,'Each new inscription notifies its progress')
+   read();N.update(.1);assert(#N.queue==0,'Rereading cannot repeat a progress notice')
+   N.update(4)
+  end
+ end
  found,total=S.progress();assert(found==total and found==7 and Achievements.unlocked(all),'All seven distinct texts complete the second achievement')
  N.update(.1);assert(N.active and N.active.entry==all,'Collection completion triggers a notification')
  Profile.storyTexts['999']=true;assert(S.progress()==7,'Unknown saved keys never inflate progress')
@@ -57,6 +66,8 @@ function T.run()
   if frame==1 then
    Profile.storyTexts={['1']=true};reset(1);Raven.defeated=true;Aftermath.update(0);read()
    N.init();N.active={entry=first,age=.6};App.capture='story-gold-paradise.png'
+  elseif frame==2 then
+   N.active={entry={id=all.id,name=all.name,progress=1,total=7},age=.6};App.capture='story-progress-notice.png'
   elseif frame==3 then
    App.state='achievements';UI.achievementFilter='todo';screen.scroll=0;App.capture='story-progress-one.png'
   elseif frame==5 then

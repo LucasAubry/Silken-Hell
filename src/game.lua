@@ -128,7 +128,7 @@ function love.load()
     Arena.configure(love.graphics.getDimensions())
     Campaign.install()
     local resetReplayLevel=reset_level
-    reset_level=function(options) Replay.beforeLevelReset();Achievements.enterLevel();return resetReplayLevel(options) end
+    reset_level=function(options) require('render_motion').reset();Replay.beforeLevelReset();Achievements.enterLevel();return resetReplayLevel(options) end
     Campaign.select(1);reset_level()
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
     polishShader=love.graphics.newShader('assets/shaders/polish.glsl')
@@ -239,6 +239,7 @@ function love.update(dt)
     if Replay.playing and not Replay.ghost and Replay.compatibility and (App.state=='victory' or App.state=='customVictory') then App.state='playing' end
 end
 function App.simulate(dt)
+    require('render_motion').capture()
     Psyche.update(dt)
     local liberation=require('boss_liberation')
     if liberation.busy() then liberation.update(dt);return end
@@ -566,6 +567,7 @@ end
 function love.quit() if App.preview then love.filesystem.remove('preview-heartbeat.txt') end; Online.quit() end
 
 function love.resize(w,h)
+    require('render_motion').reset()
     require('biome_borders').key=nil
     for _,surface in ipairs(require('biome_floor').surfaces or {}) do surface.tick=nil end
     if Replay and (Replay.playing or Replay.recording) then return end

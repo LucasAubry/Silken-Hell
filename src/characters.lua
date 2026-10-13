@@ -224,6 +224,24 @@ function C.selectionPortrait(x,y,size)
     if not locked then effects.front(x,y,size) end
     if not locked then require('skin_extension').draw(x,y,size,'down',false,true) end
 end
+function C.shadow(x,y,size,dir,walk)
+    local g=love.graphics
+    local index=C.selected();index=C.crowned[index] or index
+    local a=Art.images[C.model(dir,index)];local pose=dir=='right' and 'left' or dir
+    C.shadowShader=C.shadowShader or g.newShader([[
+        vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel) {
+            return vec4(.012,.009,.007,Texel(image,uv).a*color.a);
+        }
+    ]])
+    g.push('all');g.setShader(C.shadowShader);g.setBlendMode('alpha');g.setColor(1,1,1,.52)
+    g.translate(x+1.5,y+4);if dir=='right' then g.scale(-1,1) end
+    local width=size*a.w/math.max(a.w,a.h)
+    if not (walk and require('brown_walk').draw(a.image,pose,0,0,width,walk,a.quad)) then
+        local scale=size/math.max(a.w,a.h)
+        g.draw(a.image,a.quad,0,0,0,scale,scale,a.w/2,a.h/2)
+    end
+    g.pop()
+end
 function C.draw(x,y,width,dir,walk)
     local selected=C.selected()
     local effects=require('skin_effects');effects.behind(x,y,width)

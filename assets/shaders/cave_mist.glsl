@@ -14,5 +14,5 @@ vec4 effect(vec4 color,Image tex,vec2 uv,vec2 screen) {
  float pockets=smoothstep(.48,.76,noise(p*vec2(3,4)+vec2(-clock*.009,0)));
  float ribbons=smoothstep(.38,.72,n)*pockets;
  float clear=smoothstep(25.0,115.0,distance(screen,traveler));
- return vec4(.27,.31,.30,ribbons*(.11+.13*p.y)*(.45+.55*clear));
+ return vec4(.24,.15,.075,ribbons*(.05+.06*p.y)*(.45+.55*clear));
 }

@@ -43,6 +43,16 @@ function N.test()
  N.active={entry=Achievements.list[#Achievements.list],age=0,preview=true}
  Audio.play('pick')
 end
+function N.storyProgress(found,total)
+ -- Only a newly read inscription emits progress; loading a save stays silent.
+ if found>=total then N.invalidate();return end
+ for _,entry in ipairs(Achievements.list) do
+  if entry.id=='story_all' then
+   N.queue[#N.queue+1]={id=entry.id,name=entry.name,progress=found,total=total}
+   return
+  end
+ end
+end
 function N.visible()
  if not N.active or Replay.playing then return false end
  if App.state=='playing' and require('run_start').active then return false end
@@ -73,8 +83,14 @@ end
 function N.draw()
  if not N.visible() then return end
  local n=N.active;local entry=n.entry
- require('notice_card').draw(n.age,n.preview and 'APERÇU · SUCCÈS DÉBLOQUÉ' or 'SUCCÈS DÉBLOQUÉ',
-  entry.localizedName and entry.localizedName() or entry.name,
+ local L=require('localization')
+ local heading=n.preview and 'APERÇU · SUCCÈS DÉBLOQUÉ' or 'SUCCÈS DÉBLOQUÉ'
+ local name=entry.localizedName and entry.localizedName() or entry.name
+ if entry.progress then heading=L.text('SUCCÈS')..' · '..entry.progress..'/'..entry.total
+ elseif entry.id=='story_all' and not n.preview then
+  local found,total=require('story').progress();name=L.render(name)..' · '..found..'/'..total
+ end
+ require('notice_card').draw(n.age,heading,name,
   n.preview and 'Aperçu sans déblocage' or 'Ajouté à vos succès',function(x,y,a)
    local g=love.graphics;g.setColor(1,.8,.42,a);g.setLineWidth(2);g.setLineStyle('smooth')
    g.polygon('line',x-11,y-15,x+11,y-15,x+9,y+1,x+4,y+7,x-4,y+7,x-9,y+1)
