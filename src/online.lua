@@ -179,6 +179,14 @@ function N.uploadReplay(r)
         else r.retryAt=N.clock+60;N.scoreStatus='Score enregistré · replay conservé localement, envoi en attente' end
     end)
 end
+function N.syncProfile()
+    if not N.enabled or N.profileLoading or Profile.devProgress or Replay.playing or Profile.name=='' then return end
+    N.profileLoading=true;N.profileDirty=false;N.nextProfileSync=N.clock+30
+    request('/v1/profile',require('player_profile').snapshot(),function(_,code)
+        N.profileLoading=false
+        if code~=200 then N.profileDirty=true;N.nextProfileSync=N.clock+60 end
+    end)
+end
 function N.update(dt)
     if not N.enabled then return end
     N.clock=N.clock+dt
@@ -191,6 +199,7 @@ function N.update(dt)
     end
     if N.clock>=N.nextPoll then N.locate() end
     if N.clock>=(N.nextTopPoll or 0) then N.syncTopRecords() end
+    if N.profileDirty and N.clock>=(N.nextProfileSync or 0) then N.syncProfile() end
     for _,r in ipairs(N.runs) do N.flush(r) end
 end
 function N.quit()

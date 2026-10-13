@@ -27,7 +27,7 @@ function W.playLayout(layout,row)
     local allowed,message=require('workshop_access').check(layout)
     if not allowed then W.status=message;return false end
     App.hardcore=false;App.practice=nil;App.sessionLayout=layout; App.singleLevel=true; App.workshopMap=row
-    App.start(layout.world); return true
+    App.start(layout.world);Achievements.workshop('workshop_test'); return true
 end
 function W.play(row)
     if W.busy then return end
@@ -144,6 +144,7 @@ function W.publish()
         Online.request('/v1/workshop',{id=ids[key],title=title,author=author,layout=layout,proof=proof.id},function(data,status)
             W.busy=false
             if status==200 or status==201 then
+                Achievements.workshop('workshop_publish')
                 ids[key]=data.id;love.filesystem.write('workshop-publications.json',json.encode(ids));reply('Niveau publié.')
                 W.publishing=false;W.focus=nil;love.keyboard.setTextInput(false);W.page=1;W.refresh()
             else W.status=data.error or 'Publication impossible. Ta carte reste enregistrée localement.';reply(W.status) end

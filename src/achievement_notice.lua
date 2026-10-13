@@ -41,7 +41,6 @@ function N.init()
 end
 function N.test()
  N.active={entry=Achievements.list[#Achievements.list],age=0,preview=true}
- Audio.play('pick')
 end
 function N.storyProgress(found,total)
  -- Only a newly read inscription emits progress; loading a save stays silent.
@@ -76,13 +75,14 @@ function N.update(dt)
   N.active.age=N.active.age+dt
   if N.active.age>=3.6 then N.active=nil end
  end
- if not N.active and #N.queue>0 and not Replay.playing then
-  N.active={entry=table.remove(N.queue,1),age=0};Audio.play('pick')
+ if not N.active and #N.queue>0 and not Replay.playing and not require('discovery_notice').visible() then
+  N.active={entry=table.remove(N.queue,1),age=0}
  end
 end
 function N.draw()
  if not N.visible() then return end
  local n=N.active;local entry=n.entry
+ if n.age>0 and not n.sounded then n.sounded=true;Audio.play('notice') end
  local L=require('localization')
  local heading=n.preview and 'APERÇU · SUCCÈS DÉBLOQUÉ' or 'SUCCÈS DÉBLOQUÉ'
  local name=entry.localizedName and entry.localizedName() or entry.name

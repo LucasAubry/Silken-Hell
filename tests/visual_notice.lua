@@ -20,8 +20,10 @@ function T.run()
  D.test();D.active.preview=false
  local card=require('notice_card');local render=card.draw;local slots={}
  card.draw=function(age,heading,name,detail,icon,slot)slots[#slots+1]=slot or 0;render(age,heading,name,detail,icon,slot)end
- D.draw();N.draw();card.draw=render
- assert(slots[1]==1 and slots[2]==0 and card.y<110,'Discovery and achievement stack at the top right')
+ D.draw();N.draw()
+ assert(#slots==1 and slots[1]==0 and card.y<110,'Only the current achievement appears at the top right')
+ N.active=nil;D.update(.1);D.draw();assert(#slots==2 and slots[2]==0,'Discovery follows in the same top slot')
+ D.active=nil;card.draw=render
  local circle,arc=love.graphics.circle,love.graphics.arc;local circles=0
  love.graphics.circle=function(...)circles=circles+1;return circle(...)end
  love.graphics.arc=function(...)circles=circles+1;return arc(...)end

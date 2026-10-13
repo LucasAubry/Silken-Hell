@@ -9,11 +9,11 @@ function T.run()
  local ok,err=xpcall(function()
   local json=require('json');local effects=require('skin_effects')
   local entries={};local trophyCount,worldCount=0,0
-  assert(#Achievements.list==16,'Sixteen achievements including all-worlds hardcore')
+  assert(#Achievements.list==18,'Eighteen achievements including Workshop rewards')
   for _,entry in ipairs(Achievements.list) do
    assert(not entries[entry.id],'Unique achievement ID');entries[entry.id]=entry
    assert(not entry.id:match('^flawless%d+$') and not entry.id:match('^top1_') and entry.id~='bossflawless1','Retired achievements stay out of the gallery')
-   if entry.world then worldCount=worldCount+1;assert(entry.rewardSkin==Worlds.rank(entry.world)+5)end
+   if entry.world then worldCount=worldCount+1;assert(entry.rewardSkin==(entry.world==4 and 4 or Worlds.rank(entry.world)+5))end
    if entry.trophy then trophyCount=trophyCount+1;assert(not entry.rewardEffect)
    else assert(entry.rewardSkin or entry.rewardEffect,'Each achievement displays its reward or an authored trophy')end
   end
@@ -24,10 +24,10 @@ function T.run()
   assert(entries.hardcore.rewardEffect=='hardcore' and entries.top1.rewardEffect=='gold')
   assert(not entries.story_first and entries.worlds_all.trophy=='story_first' and entries.story_all.trophy=='story_all' and entries.flawless_all.trophy=='flawless_all')
   assert(entries.flawless_all.rewardSkin==23,'The flawless trophy also awards the Cocon skin')
-  assert(#Characters.keys==26 and Characters.names[14]=='Maxance' and Characters.names[23]=='Cocon')
+  assert(#Characters.keys==27 and Characters.names[14]=='Max' and Characters.names[23]=='Cocon')
   assert(Characters.baseCount==17 and #Characters.baseIndices==17)
   for position,index in ipairs(Characters.baseIndices)do
-   assert(index==({1,2,4,5,6,7,8,9,10,11,12,13,14,23,24,25,26})[position],'Retired skins and legacy variants stay outside selection')
+   assert(index==({1,2,4,5,6,7,8,10,11,12,13,14,23,24,25,26,27})[position],'Retired skins and legacy variants stay outside selection')
   end
 
   local flags={};Profile.achievements=flags;Profile.scores={};Profile.completed={};Profile.skinGrants={};Profile.topRecords={}
@@ -43,11 +43,12 @@ function T.run()
   Achievements.check({world=Worlds.order[1],deaths=0},flags)
   assert(flags.flawless_all and Achievements.unlocked(entries.flawless_all),'Separate flawless runs combine regardless of order or mode')
   assert(Characters.unlocked(23) and Characters.select(23) and Characters.selected()==23)
-  for index=24,26 do Characters.cycle(1);assert(Characters.menuIndex()==index and Profile.character==index) end
+  for _,index in ipairs({24,25,26,27}) do Characters.cycle(1);assert(Characters.menuIndex()==index and Profile.character==23,'Locked rewards stay unequipped') end
   Characters.cycle(1);assert(Characters.menuIndex()==1 and Profile.character==1)
-  for index=26,23,-1 do Characters.cycle(-1);assert(Characters.menuIndex()==index and Profile.character==index) end
-  Characters.cycle(-1);assert(Characters.menuIndex()==14 and Profile.character==23,'Browsing a locked skin never equips it')
-  Characters.cycle(1);assert(Characters.menuIndex()==23,'Cycle proceeds directly from Maxance to Cocon')
+  for _,index in ipairs({27,26,25,24}) do Characters.cycle(-1);assert(Characters.menuIndex()==index and Profile.character==1) end
+  Characters.cycle(-1);assert(Characters.menuIndex()==23 and Profile.character==23)
+  Characters.cycle(-1);assert(Characters.menuIndex()==14 and Profile.character==23)
+  Characters.cycle(1);assert(Characters.menuIndex()==23)
   assert(not flags.bossflawless1,'Completing Paradise no longer awards Coquille parfaite')
   Achievements.finishLevel();assert(not flags.bossflawless1)
   local excluded={};Achievements.check({world=8,deaths=0},excluded);Achievements.check({world=9,deaths=0},excluded)
@@ -118,7 +119,7 @@ function T.run()
  for key in pairs(Profile)do Profile[key]=nil end
  for key,value in pairs(profile)do Profile[key]=value end
  assert(ok,err)
- print('PASS sixteen achievements, combined flawless runs, reward rules, excluded practice and replay, legacy profile/score migration and persistence')
+ print('PASS eighteen achievements, combined flawless runs, reward rules, excluded practice and replay, legacy profile/score migration and persistence')
 end
 
 -- This rule test also runs without a window: lua tests/achievement_rules.lua.

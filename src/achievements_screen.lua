@@ -142,7 +142,7 @@ local function arrow(step,x,y)
  g.line(cx-step*13,cy,cx+step*13,cy)
  g.line(cx+step*2,cy-12,cx+step*14,cy,cx+step*2,cy+12)
  U.buttons[#U.buttons+1]={x=x,y=y,w=w,h=h,radius=38,achievementStep=step,
-  run=function()S.step(step)end,sound='selection'}
+  run=function()S.step(step)end,sound='go'}
 end
 function S.draw()
  local U,g=UI,love.graphics;local a=S.current();local earned,total=S.count()

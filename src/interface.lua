@@ -210,6 +210,7 @@ function U.board(x,y,w,country)
         g.setColor(1,1,1); Characters.scorePortrait(score,x+43,yy+11,25)
         local name=score.name
         while U.fonts.small:getWidth(name)>w-184 do name=name:sub(1,(utf8.offset(name,-1) or 1)-1) end
+        U.buttons[#U.buttons+1]={x=x+30,y=yy,w=w-150,h=28,run=function()require('player_profile').open(score)end,sound='go'}
         U.podiumName(name,x+61,yy+3,'small',i,U.boardWorld)
         U.text(U.time(score.time),x+w-117,yy+3,'small',gold)
         g.setColor(1,1,1); Art.draw('skull',x+w-43,yy+10,14)
@@ -239,7 +240,9 @@ function U.rankings()
     U.button('Cet appareil',740,194,240,34,function() U.boardLocal=true;U.boardPage=1 end,false,U.boardLocal)
     U.boardPage=U.boardPage or 1
     local data,status
-    if U.boardLocal then
+    if not Worlds.canViewScores(U.boardWorld,U.boardHardcore) then
+        data={scores={},total=0,hasMore=false};status='locked'
+    elseif U.boardLocal then
         local all=Profile.ranking(U.boardWorld,nil,U.boardHardcore);local rows={}
         for i=(U.boardPage-1)*10+1,math.min(U.boardPage*10,#all) do rows[#rows+1]=all[i] end
         data={scores=rows,total=#all,hasMore=U.boardPage*10<#all};status='local'
@@ -250,13 +253,14 @@ function U.rankings()
     for i,s in ipairs(data.scores) do local y=287+(i-1)*29
         U.text(tostring((U.boardPage-1)*10+i),226,y,'body',gold)
         g.setColor(1,1,1); Characters.scorePortrait(s,300,y+9,26)
+        U.buttons[#U.buttons+1]={x=280,y=y-2,w=430,h=27,run=function()require('player_profile').open(s)end,sound='go'}
         U.podiumName(s.name,330,y,'body',(U.boardPage-1)*10+i,U.boardWorld); U.text(U.time(s.time),724,y,'body',gold)
         U.text(tostring(s.deaths)..' ('..Scoring.label(s.deaths)..')',843,y,'small',white)
         U.infoBadge(976,y+10,10)
         U.buttons[#U.buttons+1]={x=966,y=y,w=20,h=22,run=function() RunDetails.openScore(s,U.boardWorld) end,sound='go'}
         U.button('Visionner',990,y-2,112,25,function() Replay.watch(s) end,not (s.replay or s.hasReplay))
     end
-    if #data.scores==0 then U.text(status=='loading' and 'Connexion…' or status=='offline' and 'Connexion indisponible' or 'Aucun score',300,407,'body',muted,600,'center') end
+    if #data.scores==0 then U.text(status=='locked' and 'Termine ce monde pour voir son classement' or status=='loading' and 'Connexion…' or status=='offline' and 'Connexion indisponible' or 'Aucun score',300,407,'body',muted,600,'center') end
     U.rawText(T('Page %d / %d  ·  %d records',U.boardPage,math.max(1,math.ceil((data.total or 0)/10)),data.total or 0),370,610,'body',gold,460,'center')
     U.button('Précédente',200,605,160,36,function() U.boardPage=U.boardPage-1 end,U.boardPage==1 or status=='loading')
     U.button('Suivante',840,605,160,36,function() U.boardPage=U.boardPage+1 end,not data.hasMore or status=='loading')
@@ -285,6 +289,7 @@ function U.playGlow(x,y,w,h)
     g.pop()
 end
 function U.menu()
+    U.boardWorld=App.selectedWorld or 1
     U.boardHardcore=WorldMap.hardcore==true
     U.board(32,214,290,true); U.board(878,214,290,false)
     local effects=require('skin_effects')
@@ -769,6 +774,7 @@ function U.draw()
         U.button('Rester',410,378,380,44,function() App.state='menu' end,false,true)
         U.button('Quitter le jeu',410,438,380,40,function() App.quitDelay=.4 end)
     elseif App.state=='workshop' then U.workshop()
+    elseif App.state=='playerProfile' then require('player_profile').draw()
     elseif App.state=='statistics' then require('statistics').draw()
     elseif App.state=='achievements' then require('achievements_screen').draw()
     elseif App.state=='skins' then U.skins()

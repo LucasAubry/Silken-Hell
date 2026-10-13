@@ -134,7 +134,7 @@ function I.update(dt)
             I.active=true
             if I.repeatAt==0 then
                 require('achievements_screen').move(math.abs(turn)>.5 and turn or x)
-                Audio.play('selection');I.repeatAt=.28
+                Audio.play('go');I.repeatAt=.28
             end
             return
         end
@@ -159,7 +159,7 @@ function I.press(j,b)
     if b=='start' or b=='b' then love.keypressed('escape');I.active=true;return end
     if App.state=='worlds' and b=='a' then Audio.play('selection');App.openEntry(App.selectedWorld,WorldMap.hardcore);return end
     if App.state=='achievements' and (b=='leftshoulder' or b=='rightshoulder') then
-        require('achievements_screen').step(b=='leftshoulder' and -1 or 1);Audio.play('selection');return
+        require('achievements_screen').step(b=='leftshoulder' and -1 or 1);Audio.play('go');return
     end
     if App.state=='bossWorld' then
         if Secret.pending then if b=='a' then Secret.confirm() end;return end

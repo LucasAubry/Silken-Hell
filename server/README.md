@@ -112,3 +112,27 @@ Migration `0011_workshop_stats.sql`. La liste expose `owned`, calculé depuis le
 - `POST /v1/workshop/:id/session` : instantané cumulatif identifié, sauvegardé et réessayé côté client. Les doublons n'ajoutent pas de morts. Les parties du créateur sont exclues. Une republication ouvre une nouvelle version statistique ; les instantanés retardés de l'ancienne version sont ignorés.
 
 Les statistiques sont déclarées par le client, sans vérification par simulation. Aucune statistique historique n'est inventée ; les anciennes versions du jeu n'envoient pas ces mesures. Une carte Workshop représente un niveau : les zones de mort divisent le terrain en quatre colonnes et trois lignes. Les essais moyens correspondent aux morts + 1 des sessions terminées, pas à une estimation pour les sessions abandonnées.
+
+## Profils publics et Amir
+
+Migration `0016_amir_player_profiles.sql`, puis déploiement du Worker. Le skin 27
+est Amir ; les identifiants 3 et 9 restent lisibles pour les anciens replays mais
+ne sont plus sélectionnables.
+
+- `POST /v1/profile` enregistre les statistiques, mondes et succès de l'identité
+  Bearer appelante. Le client synchronise au plus toutes les 30 secondes et exclut
+  les profils artificiellement débloqués par les outils de développement.
+- `GET /v1/players/by-run/:runId` retrouve le joueur à partir d'un score public,
+  sans divulguer son identité d'authentification. Les pseudos identiques ne sont
+  pas fusionnés. Sans synchronisation, seules les statistiques déduites des
+  parcours classés sont affichées, explicitement identifiées comme telles.
+
+Les succès hors parcours proviennent de la sauvegarde du client, comme les
+récompenses locales ; cette fiche publique n'est pas une preuve anti-triche.
+
+Déployé le 13 octobre 2026 : version Worker
+`532b0940-7e5a-42bd-a4b5-b4637904eef3`, migrations jusqu'à 0016.
+La sauvegarde préalable et la vérification après migration ont conservé les
+83 scores, 37 replays, 14 souvenirs de première place et la carte Workshop.
+Vérification HTTP réelle : santé, classement, fiche publique et refus d'écriture
+sans authentification. Les 38 tests serveur passent.

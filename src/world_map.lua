@@ -125,6 +125,7 @@ local function node(n,i,x,y)
     local labelX=math.max(48,x-245)
     g.setColor(.015,.025,.035,.96);g.rectangle('fill',labelX-6,y-20,187,40,8,8)
     UI.text(Worlds.names[n],labelX,y-10,'medium',{.97,.90,.72},175,'right')
+    if Profile.flawless(n) then require('flawless_badge').draw(x+32,y+25,12) end
     for j=1,(n==3 and 1 or 2) do local a=UI.clock*.25+j*math.pi
         local xx,yy=x+math.cos(a)*76,y+math.sin(a)*29
         if n==3 then
@@ -201,7 +202,7 @@ function M.draw()
     local best=Profile.ranking(n,nil,M.hardcore)[1]
     UI.text(M.hardcore and (n==8 and 'Sept boss à la suite.\nChaque mort te ramène au boss précédent.' or 'Chaque mort te fait reculer d’un niveau.\nMinimum : niveau 1.') or best and ('Record : '..UI.time(best.time)..'\n'..best.deaths..' morts') or 'Aucun parcours terminé',785,M.hardcore and 242 or 227,'body',{.75,.78,.81},330,'center')
     if n~=8 then
-        local index=Worlds.rank(n)+5;g.setColor(1,1,1)
+        local index=n==4 and 4 or Worlds.rank(n)+5;g.setColor(1,1,1)
         Characters.portrait(index,950,331,74*(1+.025*math.sin(UI.clock*2)),'down',not M.hardcore and not Characters.unlocked(index))
         if M.hardcore then require('skin_effects').halo(950,331,74*(1+.025*math.sin(UI.clock*2))) end
         UI.text(M.hardcore and 'Effet : auréole rouge' or Characters.unlocked(index) and ('Skin obtenu : '..Characters.names[index]) or 'Termine le monde pour gagner ce skin',780,377,'body',{.73,.74,.78},340,'center')

@@ -29,6 +29,7 @@ function P.load()
         elseif k=='totalAttempts' then P.stats.attempts=math.max(0,math.floor(tonumber(v) or 0))
         elseif k=='achievementGillou' then P.achievements.gillou=v=='2'
         elseif k=='achievementMaxance' then P.achievements.maxance=v=='2'
+        elseif k=='workshop_publish' or k=='workshop_test' then P.achievements[k]=v=='1'
         elseif k=='heartbreak' then P.achievements.heartbreak=v=='1'
         elseif k=='progressResetAt' then P.progressResetAt=tonumber(v) or 0
         elseif k=='flawless_all' or k=='top1' or k=='hardcore' then P.achievements[k]=v=='1'
@@ -51,6 +52,17 @@ function P.load()
     if version<2 then
         local old=P.unlocked; P.unlocked=1
         for _,id in ipairs({1,2,4,5,6}) do if id<=old then P.unlocked=math.max(P.unlocked,Worlds.rank(id)) end end
+    end
+    -- Existing successful publications already satisfy the new Workshop rewards.
+    if P.progressResetAt==0 then
+        local ok,publications=pcall(json.decode,love.filesystem.read('workshop-publications.json') or '{}')
+        if ok and type(publications)=='table' then
+            for _,id in pairs(publications) do
+                if type(id)=='string' and #id==36 and id:match('^[a-f0-9%-]+$') then
+                    P.achievements.workshop_publish=true;P.achievements.workshop_test=true;break
+                end
+            end
+        end
     end
     -- Country is resolved from the connection by Cloudflare, never from language.
     P.country='ZZ'
@@ -100,7 +112,7 @@ function P.save()
     rows[#rows+1]='tearExtension='..(P.tearExtension and '1' or '0')
     rows[#rows+1]='skinEffects='..json.encode(P.skinEffects or {})
     for id,done in pairs(P.achievements) do
-        if done and (id:match('^flawless%d+$') or id:match('^bossflawless%d+$') or id=='flawless_all' or id=='top1' or id=='hardcore') then rows[#rows+1]=id..'=1' end
+        if done and (id:match('^flawless%d+$') or id:match('^bossflawless%d+$') or id=='flawless_all' or id=='top1' or id=='hardcore' or id=='workshop_publish' or id=='workshop_test') then rows[#rows+1]=id..'=1' end
     end
     for world,n in pairs(P.levels or {}) do rows[#rows+1]='level'..world..'='..n end
     for world,done in pairs(P.completed or {}) do if done then rows[#rows+1]='completed'..world..'=1' end end
@@ -112,6 +124,7 @@ function P.save()
     local details={};for _,s in ipairs(P.scores) do if s.splits then details[RunDetails.key(s)]=s.splits end end
     local ok3=love.filesystem.write('score_details.json',json.encode(details))
     local ok4=love.filesystem.write('hardcore-scores.json',json.encode(hardcoreScores))
+    if Online then Online.profileDirty=true end
     P.error=not (ok and ok2 and ok3 and ok4) and 'Sauvegarde impossible : vérifie les droits du dossier.' or nil
 end
 function P.record(kind,world)
@@ -160,6 +173,11 @@ function P.levelReached(world,n)
     if Replay and Replay.playing then return end
     if App.singleLevel or App.sessionLayout or App.preview then return end
     P.levels=P.levels or {};P.levels[world]=math.max(P.levels[world] or 1,n);P.save()
+end
+function P.flawless(world)
+    if (P.achievements or {})['flawless'..world] then return true end
+    for _,s in ipairs(P.scores or {}) do if s.world==world and s.deaths==0 then return true end end
+    return false
 end
 function P.hasCompleted(world)
     if (P.completed or {})[world] then return true end

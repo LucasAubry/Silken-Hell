@@ -234,6 +234,7 @@ function C.suction(a,dt)
  player.dashing=false
  if d>0 then player.x=player.x+dx/d*step;player.y=player.y+dy/d*step end
  if d-step>30 then return end
+ Audio.play('abyssSwallow')
  a.absorbed=true;a.grab=nil
  player.charges=0;player.electrified=0;player.illuminated=0
  BossFX.burst(mx,my,{.25,.8,1},2)

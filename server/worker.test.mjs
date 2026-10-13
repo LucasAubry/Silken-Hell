@@ -84,7 +84,7 @@ test('payload and rate limit are bounded',async()=>{
 });
 test('new worlds store the run skin and reject invalid skins',async()=>{
  const env={DB:database()};
- for(const skin of [0,27,99,1.5,'2',null]) assert.equal((await call(env,'/v1/runs',{body:{name:'Test',world:4,skin}})).status,400);
+ for(const skin of [0,28,99,1.5,'2',null]) assert.equal((await call(env,'/v1/runs',{body:{name:'Test',world:4,skin}})).status,400);
  for(const world of [4,5,6,7]) {
   const skin=world%5+1; const start=await call(env,'/v1/runs',{body:{name:'Abysses',world,skin}}); assert.equal(start.status,201);
   const run=await start.json();
@@ -296,7 +296,7 @@ test('Cocon skin persists through score publication, top-one proof and replay do
  for(let level=1;level<=10;level++) assert.equal((await call(env,'/v1/runs/'+run.id+'/checkpoint',{body:{level,elapsedMs:level*100,deaths:0}})).status,200);
  const replay={...fixtureReplay(map),skin,single:false,layouts:{},checks:[[60,10,100,100,0,true]]};
  assert.equal(validateReplay(replay),true);
- for(const invalid of [0,27,99,23.5,'23',null]) assert.equal(validateReplay({...replay,skin:invalid}),false);
+ for(const invalid of [0,28,99,23.5,'23',null]) assert.equal(validateReplay({...replay,skin:invalid}),false);
  assert.equal((await call(env,'/v1/runs/'+run.id+'/replay',{body:{replay}})).status,201);
  const board=await (await call(env,'/v1/leaderboard?world=1')).json();
  assert.equal(board.scores[0].skin,23);assert.equal(board.scores[0].hasReplay,true);
@@ -337,7 +337,7 @@ test('menu palette skins survive online runs, leaderboards, top-one records and 
  }
  const history=await (await call(env,'/v1/achievements/top-one')).json();
  assert.deepEqual(history.records.map(record=>record.skin).sort(),[24,25,26]);
- for(const skin of [27,26.5,'26',null]) {
+ for(const skin of [28,26.5,'26',null]) {
   assert.equal((await call(env,'/v1/runs',{body:{world:1,name:'Invalid',skin}})).status,400);
   assert.equal(validateReplay({...fixtureReplay(map),skin}),false);
  }
@@ -482,4 +482,32 @@ test('effects migration keeps old scores and recovers only recorded replay cosme
  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM scores').get().n,2);
  assert.equal(db.prepare("SELECT effects FROM scores WHERE run_id='old'").get().effects,'{}');
  assert.deepEqual(JSON.parse(db.prepare("SELECT effects FROM scores WHERE run_id='recorded'").get().effects),{heartbreak:true,hardcore:false,gold:true});
+});
+
+test('public player profiles follow account identity, validate snapshots and keep authentication private',async()=>{
+ const env={DB:database()};
+ const hash=async t=>Buffer.from(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t))).toString('hex');
+ const first=crypto.randomUUID(),other=crypto.randomUUID();
+ for(const [id,key] of [[first,token],[other,'b'.repeat(64)]]) await env.DB.prepare('INSERT INTO scores(run_id,owner,world,name,country,elapsed_ms,deaths,completed_at,skin) VALUES(?,?,?,?,?,?,?,?,?)').bind(id,await hash(key),1,'Même nom','FR',12000,0,100,27).run();
+ const payload={name:'Amir',skin:27,stats:{tears:43,eggs:2,deaths:10,attempts:20},worlds:[1,6,5,4,7,2,3].map(world=>({world,completed:world===1,hardcore:false,flawless:world===1,tears:0,deaths:0,attempts:0,bosses:world===1?2:0})),achievements:['world1','workshop_test','gillou']};
+ assert.equal((await call(env,'/v1/profile',{body:payload,auth:'bad'})).status,401);
+ assert.equal((await call(env,'/v1/profile',{body:{...payload,achievements:['unknown']}})).status,400);
+ assert.equal((await call(env,'/v1/profile',{body:{...payload,stats:{tears:-1}}})).status,400);
+ assert.equal((await call(env,'/v1/profile',{body:{...payload,worlds:[]}})).status,400);
+ assert.equal((await call(env,'/v1/profile',{body:payload})).status,200);
+ const profile=await (await call(env,'/v1/players/by-run/'+first)).json();
+ assert.equal(profile.source,'profile');assert.equal(profile.name,'Amir');assert.equal(profile.stats.bosses,2);assert.equal(profile.stats.tears,43);assert.ok(profile.achievements.includes('gillou'));
+ assert.equal(profile.owner,undefined);assert.equal(profile.token,undefined);
+ const second=await (await call(env,'/v1/players/by-run/'+other)).json();
+ assert.equal(second.source,'scores');assert.equal(second.stats.runs,1);assert.equal(second.name,'Même nom');assert.ok(!second.achievements.includes('gillou'));
+ assert.equal((await call(env,'/v1/players/by-run/'+crypto.randomUUID())).status,404);
+ const reset={...payload,stats:{},achievements:[]};assert.equal((await call(env,'/v1/profile',{body:reset})).status,200);
+ assert.deepEqual((await (await call(env,'/v1/players/by-run/'+first)).json()).achievements,[]);
+});
+test('Amir is preserved in runs, replays, leaderboard and historical trophy records',async()=>{
+ const env={DB:database()};const response=await call(env,'/v1/runs',{body:{world:1,name:'Amir',skin:27,hardcore:true}});assert.equal(response.status,201);const run=await response.json();
+ for(let level=1;level<=10;level++) assert.equal((await call(env,'/v1/runs/'+run.id+'/checkpoint',{body:{level,elapsedMs:level*100,deaths:0}})).status,200);
+ assert.equal((await (await call(env,'/v1/leaderboard?world=1&mode=hardcore')).json()).scores[0].skin,27);
+ assert.equal((await (await call(env,'/v1/achievements/top-one')).json()).records[0].skin,27);
+ assert.ok(validateReplay({...fixtureReplay(map),skin:27}));
 });

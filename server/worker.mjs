@@ -1,6 +1,7 @@
 const DEATH_PENALTY_MS=1000/3;
 import {replays} from './replay.mjs';
 import {workshop} from './workshop.mjs';
+import {playerProfiles} from './player-profile.mjs';
 const reply=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 const fail=(status,error)=>{throw Object.assign(new Error(error),{status});};
 export function countryOf(request) {
@@ -37,6 +38,7 @@ export default {
         const {success}=await env.API_LIMITER.limit({key:request.headers.get('CF-Connecting-IP') || 'unknown'});
         if(!success) return reply({error:'Trop de requêtes. Réessaie dans une minute.'},429);
       }
+      const profile=await playerProfiles(request,env,{reply,fail,ownerOf,bodyOf});if(profile) return profile;
       const replayResponse=await replays(request,env,{reply,fail,ownerOf,bodyOf});if(replayResponse) return replayResponse;
       const community=await workshop(request,env,{reply,fail,ownerOf,bodyOf}); if(community) return community;
       if(request.method==='GET' && path==='/v1/location') return reply({country:countryOf(request)});
@@ -80,7 +82,7 @@ export default {
         const hardcore=b.hardcore===true?1:0;
         if(b.world===8 && !hardcore) fail(400,'Le Sanctuaire libre ne possède pas de score classé.');
         const skin=b.skin===undefined?1:b.skin;
-        if(!Number.isInteger(skin)||skin<1||skin>26) fail(400,'Apparence invalide.');
+        if(!Number.isInteger(skin)||skin<1||skin>27) fail(400,'Apparence invalide.');
         const effects=b.effects===undefined?{}:b.effects;
         if(!effects || typeof effects!=='object' || Array.isArray(effects) || Object.entries(effects).some(([key,value])=>!['gold','hardcore','heartbreak'].includes(key)||typeof value!=='boolean')) fail(400,'Effets invalides.');
         const now=Date.now();

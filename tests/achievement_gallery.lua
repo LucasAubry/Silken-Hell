@@ -14,7 +14,7 @@ function T.run()
    Profile.achievements={gillou=true,flawless1=true,bossflawless=true,top1_2=true}
    Profile.completed[1]=true;Profile.storyTexts[tostring(Worlds.order[1])]=true
   elseif kind=='full' then
-   Profile.achievements={gillou=true,maxance=true,heartbreak=true,hardcore=true,top1=true,flawless_all=true}
+   Profile.achievements={gillou=true,maxance=true,heartbreak=true,hardcore=true,top1=true,flawless_all=true,workshop_publish=true,workshop_test=true}
    for _,world in ipairs(Worlds.order)do Profile.completed[world]=true;Profile.storyTexts[tostring(world)]=true;Hardcore.completed[tostring(world)]=true end
   end
  end
@@ -23,7 +23,7 @@ function T.run()
    grants=Profile.skinGrants,stories=Profile.storyTexts,records=Profile.topRecords,hardcore=Hardcore.completed})
  end
  profile('empty');S.index=1;S.open();UI.clock=4.2;Input.active=false
- assert(#Achievements.list==16,'The gallery has sixteen achievements, including undiscovered stories')
+ assert(#Achievements.list==18,'The gallery has eighteen achievements, including undiscovered stories')
  local byId={};local group=0;local groups={0,0,0}
  for i,a in ipairs(Achievements.list)do
   byId[a.id]=i
@@ -31,8 +31,8 @@ function T.run()
   assert(nextGroup>=group,'The gallery groups effects, skins, then trophies')
   group=nextGroup;groups[group]=groups[group]+1
  end
- assert(groups[1]==3 and groups[2]==10 and groups[3]==3,'The flawless skin appears once in the skin reward group')
- local earned,total=S.count();assert(earned==0 and total==16)
+ assert(groups[1]==3 and groups[2]==13 and groups[3]==2,'The flawless skin appears once in the skin reward group')
+ local earned,total=S.count();assert(earned==0 and total==18)
  local selected=Characters.selected();local equipped=json.encode(E.snapshot());local before=progress()
  local fonts={};local rawText=UI.rawText;local background=UI.background;local backgrounds=0
  UI.background=function(...) backgrounds=backgrounds+1;return background(...) end
@@ -46,7 +46,7 @@ function T.run()
  end
  draw();assert(fonts.body and fonts.heading);assert(backgrounds==1,'Gallery uses the shared menu background')
  UI.rawText=rawText;UI.background=background
- assert(S.current()==Achievements.list[1]);love.keypressed('left');assert(S.index==16)
+ assert(S.current()==Achievements.list[1]);love.keypressed('left');assert(S.index==18)
  love.keypressed('right');assert(S.index==1)
  love.keypressed('pagedown');assert(S.index==2);love.keypressed('pageup');assert(S.index==1)
  love.wheelmoved(0,-1);assert(S.index==2);love.wheelmoved(0,1);assert(S.index==1)
@@ -74,13 +74,13 @@ function T.run()
  -- The left number counts acquired achievements, never the selected page.
  profile('partial');before=progress();local counterCalls=0
  UI.rawText=function(text,x,y,font,...)
-  if x==165 and y==329 then assert(text=='2/16','Left counter remains acquired / total');counterCalls=counterCalls+1 end
+  if x==165 and y==329 then assert(text=='2/18','Left counter remains acquired / total');counterCalls=counterCalls+1 end
   return rawText(text,x,y,font,...)
  end
  for i=1,#Achievements.list do
-  S.index=i;S.open();draw();earned,total=S.count();assert(earned==2 and total==16,'Legacy flags are not extra achievements')
+  S.index=i;S.open();draw();earned,total=S.count();assert(earned==2 and total==18,'Legacy flags are not extra achievements')
  end
- UI.rawText=rawText;assert(counterCalls==16);assert(progress()==before)
+ UI.rawText=rawText;assert(counterCalls==18);assert(progress()==before)
 
  -- Effect achievements display the existing standalone logo, even with reduced effects.
  local portrait=Characters.portrait;local icon=E.icon;local iconCalls=0
@@ -203,7 +203,7 @@ function T.run()
   Graphics.effects=effects
   if shot.reduced then Graphics.effects=false elseif shot.age then Graphics.effects=true end
   profile(shot.profile or 'full');earned,total=S.count()
-  assert(earned==({empty=0,partial=2,full=16})[shot.profile or 'full'] and total==16)
+  assert(earned==({empty=0,partial=2,full=18})[shot.profile or 'full'] and total==18)
   if shot.menu then App.state='menu';UI.pressed=nil;UI.menuArrival=0
   else
    S.index=assert(byId[shot.id]);S.open()

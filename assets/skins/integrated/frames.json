@@ -4,10 +4,10 @@
     "frames": {
       "down": {
         "path": "assets/skins/integrated/aureole_down.png",
-        "x": 175,
-        "y": 18,
-        "w": 1091,
-        "h": 1046
+        "x": 181,
+        "y": 17,
+        "w": 1080,
+        "h": 1042
       },
       "up": {
         "path": "assets/skins/integrated/aureole_up.png",
@@ -121,6 +121,31 @@
         "y": 114,
         "w": 707,
         "h": 576
+      }
+    }
+  },
+  "amir": {
+    "frames": {
+      "down": {
+        "path": "assets/skins/integrated/amir_down.png",
+        "x": 62,
+        "y": 160,
+        "w": 1131,
+        "h": 934
+      },
+      "up": {
+        "path": "assets/skins/integrated/amir_up.png",
+        "x": 55,
+        "y": 68,
+        "w": 1332,
+        "h": 979
+      },
+      "profil": {
+        "path": "assets/skins/integrated/amir_profil.png",
+        "x": 28,
+        "y": 36,
+        "w": 1350,
+        "h": 1005
       }
     }
   }

@@ -17,6 +17,7 @@ function C.contact()
     if not A.active or A.defeated or player.reset or player.abyssHeld or player.abyssSpit or (player.abyssGrace or 0)>0 then return end
     local mx,my=C.mouth();local px,py=player.x+15,player.y+12
     if A.phase=='suction' and (px-mx)^2+(py-my)^2<38^2 then
+        Audio.play('abyssSwallow')
         if (player.charges or 0)==0 then Hazards.kill('bone');return end
         A.swallowed={time=0,charged=player.charges};player.abyssHeld=A;player.charges=0;player.electrified=0
         player.dashing=false;player.has_moved=false;player.whirl=nil;player.throw=nil;player.tunnelTravel=nil

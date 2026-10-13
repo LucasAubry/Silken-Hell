@@ -91,6 +91,7 @@ function App.start(world)
     if App.hardcore and not Replay.playing and not Hardcore.available(world) then return false end
     if world==8 and not App.hardcore then if Worlds.canEnter(8) then Secret.open(false) end;return end
     if not App.sessionLayout and not Worlds.canEnter(world) and not App.preview and os.getenv('SILKEN_TEST')~='1' and not Replay.playing then return end
+    require('demo_progress').played()
     Achievements.level=nil
     Profile.record('attempts',world)
     Arena.configure(love.graphics.getDimensions())
@@ -452,6 +453,7 @@ function love.textinput(text)
 end
 function love.keypressed(key,scancode,isrepeat)
     Input.active=false
+    if key=='escape' and not isrepeat then Audio.play('back') end
     if App.state=='bossWorld' and Secret.key(key,isrepeat) then return end
     if key=='escape' and App.state=='victory' and require('podium_celebration').closePreview() then return end
     if App.state=='skinUnlock' then
@@ -459,14 +461,13 @@ function love.keypressed(key,scancode,isrepeat)
         return
     end
     if App.state=='credits' then Ending.creditKey(key,isrepeat);return end
-    if key=='escape' then Audio.play('go') end
     if Replay.playing then Replay.key(key);return end
     if App.state=='worlds' then
         if key=='down' then WorldMap.step(1);return elseif key=='up' then WorldMap.step(-1);return elseif key=='right' then WorldMap.branch(true);return elseif key=='left' then WorldMap.branch(false);return elseif key=='return' then Audio.play('selection');App.openEntry(App.selectedWorld,WorldMap.hardcore);return end
     end
     if App.state=='achievements' then
-        if key=='left' or key=='pageup' then Audio.play('selection');require('achievements_screen').step(-1);return end
-        if key=='right' or key=='pagedown' then Audio.play('selection');require('achievements_screen').step(1);return end
+        if key=='left' or key=='pageup' then Audio.play('go');require('achievements_screen').step(-1);return end
+        if key=='right' or key=='pagedown' then Audio.play('go');require('achievements_screen').step(1);return end
         if key=='up' or key=='down' then Input.active=true;Input.navigate(0,key=='up' and -1 or 1);return end
         if key=='tab' then Input.active=true;Input.index=Input.index%math.max(1,#UI.buttons)+1;return end
         if key=='return' or key=='kpenter' or key=='space' then
@@ -496,6 +497,8 @@ function love.keypressed(key,scancode,isrepeat)
         elseif App.state=='customVictory' and Secret.duel then Secret.open()
         elseif App.state=='bossWorld' then WorldMap.hardcore=Secret.hardcore;WorldMap.open()
         elseif App.state=='workshop' or App.state=='customVictory' then App.leaveCustom()
+        elseif App.state=='playerProfile' then require('player_profile').close()
+        elseif App.state=='rankings' and RunDetails.view then RunDetails.view=nil
         elseif App.state=='rankings' then UI.backRankings()
         elseif App.state=='bestiary' then App.state=UI.bestReturn or 'menu'
         elseif App.state=='statistics' then App.state='achievements'
@@ -560,7 +563,7 @@ function App.toggleFullscreen()
     love.window.setFullscreen(not love.window.getFullscreen(),'desktop')
 end
 function love.wheelmoved(_,y)
-    if App.state=='achievements' then require('achievements_screen').move(-y);return end
+    if App.state=='achievements' then if y~=0 then Audio.play('go');require('achievements_screen').move(-y) end;return end
     if App.state=='worlds' then WorldMap.wheel(y);return end
     if App.state=='bestiary' then UI.scrollBestiary(-y*42);return end
     if App.state=='story' and Story.text~='' then

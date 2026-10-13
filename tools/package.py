@@ -6,6 +6,7 @@ import shutil
 import re
 import os
 import sys
+import time
 
 root = Path(__file__).resolve().parents[1]
 paths = set()
@@ -23,7 +24,17 @@ with tempfile.TemporaryDirectory(prefix='silken-build-') as folder:
     output = Path(folder) / 'game.love'
     with ZipFile(output, 'w', ZIP_DEFLATED) as archive:
         for path in sorted(paths):
-            archive.write(path, path.relative_to(root))
+            # iCloud placeholders can transiently read as empty during hydration.
+            # Never replace a working release with an incomplete source read.
+            for attempt in range(5):
+                expected = path.stat().st_size
+                data = path.read_bytes()
+                if data and len(data) == expected == path.stat().st_size:
+                    break
+                if attempt == 4:
+                    raise RuntimeError(f"Fichier incomplet, attends le téléchargement iCloud : {path}")
+                time.sleep(0.2)
+            archive.writestr(path.relative_to(root).as_posix(), data)
     dist = root / 'dist'
     dist.mkdir(exist_ok=True)
     staged = dist / 'game.love.tmp'

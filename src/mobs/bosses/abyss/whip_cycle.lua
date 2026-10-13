@@ -63,6 +63,7 @@ function C.enter(a,phase)
 end
 function C.absorb(a)
  if a.absorbed or a.defeated or player.reset then return end
+ Audio.play('abyssSwallow')
  a.absorbed=true
  local charges=math.min(3,player.charges or 0)
  if charges==0 then Hazards.kill('abyss_bite');return end

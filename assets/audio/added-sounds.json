@@ -1,0 +1,14 @@
+{
+  "sourceFolder": "son a push dans le jeux",
+  "ambience": {
+    "Enfer": "ambience/hell-fire.mp3",
+    "Renaissance": "ambience/renaissance-birds.mp3",
+    "Ciel": "ambience/sky-rain.mp3"
+  },
+  "events": {
+    "Notification visible de succès ou de découverte": "effects/progression/notice.mp3",
+    "Poulpe : jet d’encre": "effects/ocean/ink-spit.mp3",
+    "Joueur ou crabe : pas dans l’encre": "effects/ocean/ink-step.mp3",
+    "Tête du boss des Abysses : joueur avalé": "effects/abyss/swallow.mp3"
+  }
+}

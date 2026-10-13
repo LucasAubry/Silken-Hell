@@ -1,5 +1,5 @@
 -- Complete authored sprites: body and accessories live in the same PNG.
-local S={names={[4]='ecume',[6]='aureole',[8]='ambre',[9]='corail',[11]='cendre'}}
+local S={names={[4]='ecume',[6]='aureole',[8]='ambre',[9]='corail',[11]='cendre',[27]='amir'}}
 function S.load(art)
  local metadata=require('json').decode(love.filesystem.read('assets/skins/integrated/frames.json'))
  for name,entry in pairs(metadata) do

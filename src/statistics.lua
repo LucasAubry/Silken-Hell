@@ -21,7 +21,7 @@ function S.draw()
   g.setColor(tint);g.rectangle('fill',100,y+4,3,38)
   U.text(Worlds.names[world],114,y+3,'body',white)
   U.rawText(U.ellipsize(require('localization').render(entry and entry.name or ''),'body',350),114,y+25,'body',muted)
-  U.text(beaten and 'VAINCU' or 'À VAINCRE',468,y+15,'body',beaten and {.5,.9,.65} or muted,140,'center')
+  U.text(Profile.flawless(world) and 'SANS MOURIR' or beaten and 'VAINCU' or 'À VAINCRE',440,y+15,'body',beaten and {.5,.9,.65} or muted,172,'center')
   for j,n in ipairs({row.tears or 0,row.deaths or 0,row.attempts or 0,count}) do U.text(tostring(n),620+(j-1)*117,y+11,'medium',white,112,'center') end
  end
  U.button('Retour',440,652,320,36,function()App.state='achievements' end)

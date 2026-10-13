@@ -6,7 +6,7 @@ function O.reset(active)
     O.x=Arena.width/2; O.y=300; O.angle=0; O.faceAngle=0; O.spin=1; O.clock=0
     O.angularVelocity=.32; O.shot=2; O.summon=1.2; O.extension=1
     O.rider=nil; O.escape=nil; O.grace=0; O.waveActive=false; O.waveId=0; O.dashHeld=false
-    O.inkPools={}; O.blasts={}; O.inkCount=0; O.poolCooldown=0;O.inkRotation=0;O.crabRage=0
+    O.audioInkState={};O.inkPools={}; O.blasts={}; O.inkCount=0; O.poolCooldown=0;O.inkRotation=0;O.crabRage=0
     O.projectiles={}; O.blots={}; O.crabs={}; O.wounds={}; player.ink=0
     O.arms={3,3,3,3,3,3,3,3}
     O.stun=0;O.enraged=false;O.barrage=0;O.barrageShot=0;O.tipOffsets=nil;O.tether=nil;O.restCurves=nil;O.pullCurve=nil;O.restSpines=nil;O.armRasterKey=nil;O.restReach=nil
@@ -133,6 +133,7 @@ function O.ink()
         end
         if not x then return end
     end
+    Audio.play('inkSpit')
     O.projectiles[#O.projectiles+1]={x=O.x,y=O.y,fromX=O.x,fromY=O.y,tx=x,ty=y,age=0,life=.85}
 end
 function O.explodeCrab(c)
@@ -164,11 +165,17 @@ function O.updateInk(dt)
             end
         else table.remove(O.projectiles,i) end
     end
+    local inInk=false
     for i=#O.inkPools,1,-1 do local p=O.inkPools[i]
         p.life=p.life-dt
         if p.life<=0 then table.remove(O.inkPools,i)
-        elseif O.poolCooldown==0 and Hazards.inEllipse(player.x+15,player.y+12,p,0) then O.splash();O.poolCooldown=4 end
+        elseif Hazards.inEllipse(player.x+15,player.y+12,p,0) then
+            inInk=true
+            if O.poolCooldown==0 then O.splash();O.poolCooldown=4 end
+        end
     end
+    O.audioInkState=O.audioInkState or {}
+    Audio.inkContact(O.audioInkState,inInk and not player.reset,player.x,player.y)
     for i=#O.blasts,1,-1 do local p=O.blasts[i];p.age=p.age+dt;if p.age>.5 then table.remove(O.blasts,i) end end
 end
 function O.drawGround()
@@ -285,9 +292,12 @@ function O.moveFlungCrab(c,dt,contact)
 end
 function O.inkCrab(c,dt)
     c.kickGrace=math.max(0,(c.kickGrace or 0)-dt)
-    if not c.inked then for _,p in ipairs(O.inkPools or {}) do
-        if Hazards.inEllipse(c.x,c.y,p,0) then c.inked=true;c.frenzy=true;c.frenzyTurn=0;break end
-    end end
+    local inside=false
+    for _,p in ipairs(O.inkPools or {}) do
+        if Hazards.inEllipse(c.x,c.y,p,0) then inside=true;break end
+    end
+    Audio.inkContact(c,inside,c.x,c.y)
+    if inside and not c.inked then c.inked=true;c.frenzy=true;c.frenzyTurn=0 end
 end
 function O.updateCrabs(dt)
     for i=#O.crabs,1,-1 do local c=O.crabs[i]

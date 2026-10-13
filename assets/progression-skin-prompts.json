@@ -1,0 +1,43 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+{
+  "key": "aureole_down",
+  "prompt": "Use case: precise-object-edit. Transparent pixel-art spider sprite. Fix ONLY depth order of wings relative to upper round abdomen: both white wings must be visibly IN FRONT of this upper round abdomen. Move wing roots inward so lower third of each feathered wing covers the left and right quarters of the abdomen, like two large foreground feather fans rising from immediately behind the HEAD. Their foreground white feathers must occlude the abdomen outer black outline on both sides. Central gold abdomen emblem remains partly visible between them. Current wings read as behind abdomen; correct that unmistakably. Keep head eyes legs colors pixel scale and overall wing height unchanged, keep wings upright tall and symmetrical, head unobscured. Actual transparent background, no text or shadow.",
+  "refs": [
+    "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-3350737c-b9f6-4e0e-93e6-6d0fc0246878.png"
+  ],
+  "source": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-eef52746-5e9e-412c-8146-e0036abdd771.png",
+  "destination": "assets/skins/integrated/aureole_down.png"
+},
+    {
+      "key": "amir_down",
+      "refs": [
+        "assets/ui/achievements/hardcore_all.png"
+      ],
+      "prompt": "Use case: background-extraction. Game sprite PNG on actual transparent background. Extract and faithfully reproduce ONLY the spider at the CENTER of this trophy. Remove entire trophy, wreath, gems, flames, pedestal. One whole symmetric front/down-facing spider centered and filling frame with margin. Exact central spider design: charcoal obsidian body with muted dark purple block highlights, subtle orange-red glowing rim around body and eight legs, bright red-orange-yellow fiery eyes, two small fangs. Same chunky crisp pixel art, same anatomy, no gold markings, no horns, no wings, no ambient glow outside silhouette, no shadow or text.",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-4974d336-8c15-4708-94de-1400c5056ebc.png",
+      "destination": "assets/skins/integrated/amir_down.png"
+    },
+    {
+      "key": "amir_up",
+      "refs": [
+        "assets/ui/achievements/hardcore_all.png",
+        "assets/skins/soie/up.png"
+      ],
+      "prompt": "Use case: style-transfer. One transparent game sprite, back/up view. Reference1 ONLY center spider is identity/color; reference2 is exact back pose/anatomy to recolor. Create Amir, same charcoal obsidian and dark purple pixel highlights with thin orange-red edge accents on all eight legs and body as center spider in reference1. Preserve exact back pose of reference2: smaller head at top, large abdomen nearest viewer at bottom, 4 legs per side, NO visible eyes, no facial features on abdomen. Faithful crisp chunky pixel art, no gold marks, no horns, no wings, no trophy, no flames, no pedestal. Full sprite centered, transparent background, no text, no ground shadow.",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-9e857a44-9de5-4456-9e83-2ca912fdd788.png",
+      "destination": "assets/skins/integrated/amir_up.png"
+    },
+    {
+      "key": "amir_profil",
+      "refs": [
+        "assets/ui/achievements/hardcore_all.png",
+        "assets/skins/soie/profil.png"
+      ],
+      "prompt": "Use case: style-transfer. One transparent game sprite, left-facing three-quarter profile. Reference1 ONLY center spider is identity/color; reference2 is exact profile pose/anatomy to recolor. Create Amir, same charcoal obsidian and dark purple pixel highlights with thin orange-red rim around body and eight legs as central spider in reference1. Preserve exact side pose of reference2, head lower left and abdomen upper right, 4 legs on each side, visible near eye fiery orange-red-yellow rather than brown. Faithful crisp chunky pixel art, no gold markings, no horns, no wings, no trophy or flames or pedestal. Full sprite centered, transparent background, no text, no ground shadow.",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-2abe9abe-290d-439a-b0c0-930997e2817f.png",
+      "destination": "assets/skins/integrated/amir_profil.png"
+    }
+  ]
+}

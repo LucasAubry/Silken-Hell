@@ -1,4 +1,4 @@
-local C={names={'Soie','Perle','Braise','Écume','Royale','Auréole','Zéphyr','Ambre','Corail','Lanterne','Cendre','Renouveau','Gillou','Maxance'},keys={'original','spider','hell_spider','ocean_spider','crown_spider','spider','spider','spider','ocean_spider','spider','hell_spider','crown_spider','crown_spider','crown_spider'}}
+local C={names={'Soie','Perle','Braise','Écume','Royale','Auréole','Zéphyr','Ambre','Corail','Lanterne','Cendre','Renouveau','Gil','Max'},keys={'original','spider','hell_spider','ocean_spider','crown_spider','spider','spider','spider','ocean_spider','spider','hell_spider','crown_spider','crown_spider','crown_spider'}}
 C.tints={[6]={1,.9,.55},[7]={.58,.83,1},[8]={.8,.49,.21},[9]={.25,1,.82},[10]={.43,.45,1},[11]={1,.25,.12},[12]={1,.63,.78},[13]={1,.68,.12},[14]={.7,1,.6}}
 -- IDs 1–14 stay stable for existing profiles, leaderboards and replays.
 -- Keep legacy reward IDs and lookup names for saved profiles and replays.
@@ -13,6 +13,7 @@ C.names[23]='Cocon';C.keys[23]='cocon'
 C.names[24]='Champagne';C.keys[24]='champagne'
 C.names[25]='Sauge';C.keys[25]='sage'
 C.names[26]='Pétrole';C.keys[26]='petrol'
+C.names[27]='Amir';C.keys[27]='amir'
 -- Menu silk colors share the authored spider rig, including its gold markings.
 C.materials={
  [24]={body={.98,.85,.65},markings={1,.72,.24},iris={1,.72,.22},effect={.98,.81,.51}},
@@ -49,12 +50,16 @@ function C.demonCompleted(world)
 end
 -- All spider skins are crown-free; reward IDs remain stable.
 C.nativeCrown={}
-C.baseIndices={1,2,4,5,6,7,8,9,10,11,12,13,14,23,24,25,26}
+C.baseIndices={1,2,4,5,6,7,8,10,11,12,13,14,23,24,25,26,27}
 C.baseCount=#C.baseIndices
 function C.unlocked(index)
-    if index==3 then return false end
+    if index==3 or index==9 then return false end
     if not C.names[index] then return false end
-    if C.materials[index] then return true end
+    if index==5 or index==26 then return require('demo_progress').unlocked() or Profile.devProgress==true end
+    if index==4 then return Profile.hasCompleted(4) end
+    if index==24 then return Profile.achievements.workshop_publish==true end
+    if index==25 then return Profile.achievements.workshop_test==true end
+    if index==27 then return require('achievements').unlocked({id='hardcore_all'}) end
     if index==23 then return require('achievements').unlocked({id='flawless_all'}) end
     if (Profile.skinGrants or {})[tostring(index)]==true then return true end
     if index==22 then return Profile.hasCompleted(3) or (Hardcore and Hardcore.completed['3']==true) end
@@ -75,7 +80,7 @@ function C.cycle(step)
     for i,index in ipairs(C.baseIndices) do if index==base then position=i;break end end
     C.select(C.baseIndices[(position-1+step)%C.baseCount+1])
 end
-function C.menuIndex() return C.browsed~=3 and C.browsed or C.selected() end
+function C.menuIndex() return C.browsed~=3 and C.browsed~=9 and C.browsed or C.selected() end
 function C.select(index)
     index=C.crowned[index] or index
     C.browsed=index
@@ -259,6 +264,7 @@ end
 -- Crown variants retain the body color of their base skin.
 C.bodyColors={original={.57,.29,.10},spider={.94,.90,.79},hell_spider={1,.20,.055},ocean_spider={.15,.68,.91},crown_spider={.94,.90,.79}}
 C.bodyColors.cocon={.94,.94,.90}
+C.bodyColors.amir={1,.23,.035}
 for index,material in pairs(C.materials) do C.bodyColors[C.keys[index]]=material.effect end
 function C.effectColor(index)
     index=index or C.selected();index=C.crowned[index] or index

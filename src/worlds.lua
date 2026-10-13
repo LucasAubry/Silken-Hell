@@ -30,7 +30,11 @@ function W.canEnter(id)
     return W.playable(id) and (not previous or Profile.hasCompleted(previous))
 end
 function W.canViewScores(id,hardcore)
-    if hardcore then return Hardcore.available(id) end
+    if hardcore then
+        if (Hardcore.completed or {})[tostring(id)] or (Hardcore.completed or {})[id] then return true end
+        for _,score in ipairs(Profile.scores or {}) do if score.world==id and score.hardcore==true then return true end end
+        return false
+    end
     return Profile.hasCompleted(id)
 end
 function W.displayName(id) return W.canEnter(id) and W.names[id] or '???' end
