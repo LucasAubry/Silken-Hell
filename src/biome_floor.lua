@@ -46,13 +46,17 @@ function B.draw(world,width,height,time)
     end
     B.surfaces[#B.surfaces+1]=cache;B.cache=cache
     local hz=Graphics and Graphics.backgroundHz() or 60
-    local tick=world==5 and 0 or math.floor((time or 0)*hz)
+    local tick=(world==5 or world==4 and Graphics and not Graphics.effects) and 0 or math.floor((time or 0)*hz)
     if cache.tick~=tick or cache.world~=world then
         local base=world==1 and paradiseBase(cache)
         local previous=g.getCanvas();g.push('all');g.setCanvas(cache.canvas);g.origin();g.setScissor();g.clear();g.setColor(1,1,1)
         if base then
             B.paradiseLightShader:send('clock',tick/hz);B.paradiseLightShader:send('dimensions',cache.dimensions)
             g.setShader(B.paradiseLightShader);g.draw(base)
+        elseif world==4 then
+            B.oceanShader=B.oceanShader or g.newShader('assets/shaders/ocean_floor.glsl')
+            B.oceanShader:send('clock',tick/hz);B.oceanShader:send('dimensions',cache.dimensions)
+            g.setShader(B.oceanShader);g.rectangle('fill',0,0,cw,ch)
         else
             B.shader:send('biome',world);B.shader:send('clock',tick/hz);B.shader:send('dimensions',cache.dimensions)
             g.setShader(B.shader);g.rectangle('fill',0,0,cw,ch)

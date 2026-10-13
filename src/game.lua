@@ -335,6 +335,7 @@ local function refreshSceneResolution()
     App.scenePixelDensity=density
 end
 function love.draw()
+    local sceneCanvas=gameCanvas
     love.graphics.clear(0.013,0.025,0.035)
     if App.state=='playing' then
         refreshSceneResolution()
@@ -356,7 +357,7 @@ function love.draw()
         for _,m in ipairs(mobs) do if m~=droppedCarrier and m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
         Renaissance.drawBlasts(); Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false)
         Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
-        Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end
+        Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw();require('biome_radiance').motes() end
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies(); Realms.drawAnemoneElectric() end
         Abyss.drawLights(); Bosses.drawLights();require('earth_light').draw();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage()
         -- Boss rewards remain readable above the arena effects.
@@ -365,8 +366,10 @@ function love.draw()
         if Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
         if not (require('abyss_gate').active and require('abyss_gate').closing) then draw_player_beacon() end;if not Abyss.playerHidden() then Replay.drawGhost() end
         Prism.endScene();love.graphics.setCanvas()
+        sceneCanvas=require('world_lighting').apply(gameCanvas)
     elseif App.state=='bossWorld' then
         refreshSceneResolution()
+        sceneCanvas=gameCanvas
         love.graphics.setCanvas(gameCanvas);love.graphics.origin();love.graphics.clear();Prism.beginScene(gameCanvas);Secret.drawWorld();Prism.endScene();love.graphics.setCanvas()
     end
     local w,h=love.graphics.getDimensions()
@@ -386,7 +389,7 @@ function love.draw()
         love.graphics.setColor(1,1,1)
         local psychedelic=App.state=='playing' and Psyche.bind()
         if not psychedelic and Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
-        love.graphics.draw(gameCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale); love.graphics.setShader()
+        love.graphics.draw(sceneCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale); love.graphics.setShader()
         if App.state=='playing' then Realms.drawWind(w,h); Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
     elseif App.state=='skinUnlock' then
         love.graphics.clear(.008,.015,.027)

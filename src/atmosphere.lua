@@ -62,7 +62,7 @@ function A.draw()
     local settings=A.settings(world,player.level)
     -- Keep Paradise readable: no full-screen rays or translucent veil.
     -- Its motes below need none of the invisible veil's uniforms or light scan.
-    if world~=1 and world~=6 then
+    if world==2 or world==5 then
         A.shader=A.shader or g.newShader('assets/shaders/atmosphere.glsl')
         A.shader:send('transmission',settings.transmission); A.shader:send('levelSeed',settings.seed); A.shader:send('depth',settings.depth)
         A.shader:send('clock',t); A.shader:send('biome',world)
@@ -94,7 +94,7 @@ function A.draw()
     end
     g.setBlendMode('add')
     -- Bounded, deterministic motes: no growing particle arrays or per-frame random state.
-    local count=world==5 and 0 or world==6 and 38 or 76
+    local count=(world==1 or world==5 or world==6) and 0 or world==4 and 28 or 76
     for i=1,count do
         local seed=i*2.39996323+settings.seed
         local speed=world==2 and 17 or world==4 and 7 or 3
