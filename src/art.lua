@@ -179,7 +179,7 @@ function A.load()
         A.add('rebirth_'..key,'assets/sprites/renaissance/'..key..'.png')
     end
     A.add('map_cloud','assets/sprites/map_cloud.png')
-    A.add('cave_wall','assets/sprites/cave_wall-v2.png')
+    A.add('cave_wall','assets/environments/terre/soil-wall.png')
     A.add('magma_larva','assets/monstres/enfer/larve/magma_larva.png')
     A.add('merle_flight','assets/monstres/paradis/merle/merle_flight.png')
     for _,dir in ipairs({'left','up','down'}) do A.add('merle_flight_'..dir,'assets/sprites/merle_flight_'..dir..'.png') end

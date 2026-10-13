@@ -2,6 +2,6 @@
   "name": "silken-hell-api",
   "private": true,
   "type": "module",
-  "scripts": {"test":"node --test worker.test.mjs", "deploy":"npx wrangler deploy", "dev":"npx wrangler dev"},
+  "scripts": {"test":"node --test *.test.mjs", "deploy":"npx wrangler deploy", "dev":"npx wrangler dev"},
   "devDependencies": {"wrangler":"4.132.0"}
 }

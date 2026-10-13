@@ -21,7 +21,7 @@ local B={seen={},unread={},dirty=false,entries={
  {id='electric_gull',name='Mouette électrique',art='gull_down',world=6,text='La foudre du Merle a resserré ses liens. Son aura jaune et la traînée électrique qu’elle abandonne sont mortelles.'},
  {id='lanternfish',name='Poisson-lanterne',art='lanternfish_down',world=7,text='Sa lampe n’éclaire plus que les chasses du Monstre d’os. Il fuit ton ombre mais fonce sur toi lorsque l’électricité te révèle.'},
  {id='cloud_snare',trap=true,name='Tornade',art='cloud_snare',world=6,text='Le Merle emprisonne dans ces vents les fils tombés du ciel. Ils t’emportent en spirale avant de te projeter vers le bord.'},
- {id='earth_tunnel',trap=true,name='Tunnel de terre',art='earth_tunnel',world=5,text='Les taupes creusent ces passages pour fuir leur maître. Entre dans l’un pour ressortir par son jumeau ; leurs poursuivants savent aussi les emprunter.'},
+ {id='earth_tunnel',trap=true,name='Tunnel de terre',art='earth_mound',world=5,text='Les taupes creusent ces passages pour fuir leur maître. Entre dans l’un pour ressortir par son jumeau ; leurs poursuivants savent aussi les emprunter.'},
  {id='lava',trap=true,name='Flaque de lave',art='lava',world=2,text='Les Guêpes y ont perdu leurs ailes. Le feu te tue, mais leurs serviteurs le traversent et le traînent derrière eux.'},
  {id='fish',name='Poisson-lame',art='fish_down',world=4,text='La Pieuvre les a liés les uns aux autres. Le banc avance lentement, puis tous chargent ensemble ta dernière position.'},
  {id='jelly',name='Méduse électrique',art='jelly_down',world=4,text='La Pieuvre a fait de sa peur une arme. Elle s’illumine avant de répandre ses fils électriques : glisse-toi entre eux.'},
@@ -34,6 +34,40 @@ local B={seen={},unread={},dirty=false,entries={
  ,{id='final_spider',boss=true,name='La Gardienne de la Soie',art='final_queen',world=3,text='Elle tient les gardiens, qui tiennent leurs créatures. Toute cette descente était sa toile. Attire sa charge vers ses enfants : chaque bébé écrasé lui coûte une vie, et les œufs touchés se fissurent.'}
  ,{id='queen_child',name='Enfant de la Soie',art='final_baby_red',world=3,text='La Gardienne noue ses propres enfants avant leur premier pas. Ils te poursuivent. La charge de leur mère peut les écraser, même sans toile, et lui retire alors une vie.'}
 }}
+-- Keep encounter IDs stable while grouping related appearances on one page.
+B.variants={
+ piege={{name='Piège de capture',world=1,trapKind='piege'},{name='Piège de terre',world=5,trapKind='piege'}},
+ scie={{name='Roue enchaînée',world=1,trapKind='scie'},{name='Roue de terre',world=5,trapKind='scie'}},
+ queen_child={{name='Enfant de la Soie · Rouge',world=3,art='final_baby_red'},
+  {name='Enfant de la Soie · Blanc',world=3,art='final_baby_white'},
+  {name='Enfant de la Soie · Noir',world=3,art='final_baby_black'}},
+ gull={{name='Mouette des vents',world=6,art='gull_down'},
+  {name='Mouette électrique',world=6,art='gull_down',electric=true}},
+}
+function B.known(e)
+ return B.seen[e.id] or e.id=='gull' and B.seen.electric_gull
+end
+function B.appearance(e,index)
+ local variants=B.variants[e.id]
+ if not variants then return e end
+ local v=variants[((index or 1)-1)%#variants+1]
+ local result={};for k,value in pairs(e) do result[k]=value end
+ for k,value in pairs(v) do result[k]=value end
+ if e.id=='gull' then result.undiscovered=not B.seen[v.electric and 'electric_gull' or 'gull'] end
+ if v.electric then
+  for _,entry in ipairs(B.entries) do if entry.id=='electric_gull' then result.text=entry.text end end
+ end
+ return result
+end
+function B.defaultVariant(e,world)
+ for i,v in ipairs(B.variants[e.id] or {}) do if v.world==world then return i end end
+ return 1
+end
+function B.inWorld(e,world)
+ if not world or e.world==world then return true end
+ for _,v in ipairs(B.variants[e.id] or {}) do if v.world==world then return true end end
+ return false
+end
 function B.load()
     local ok,data=pcall(json.decode,love.filesystem.read('bestiary.json') or '{}')
     B.seen=ok and type(data)=='table' and data.seen or {}; B.unread=ok and type(data)=='table' and data.unread or {}
@@ -52,7 +86,7 @@ function B.pending() for _,entry in ipairs(B.entries) do if B.unread[entry.id] t
 function B.category(entry) return entry.boss and 'boss' or entry.trap and 'traps' or 'creatures' end
 function B.list(category)
     local rows={}
-    for i,e in ipairs(B.entries) do if B.category(e)==category and (not B.worldFilter or e.world==B.worldFilter) and (not B.levelFilter or B.levelFilter[e.id]) then rows[#rows+1]={index=i,entry=e} end end
+    for i,e in ipairs(B.entries) do if e.id~='electric_gull' and B.category(e)==category and B.inWorld(e,B.worldFilter) and (not B.levelFilter or B.levelFilter[e.id] or e.id=='gull' and B.levelFilter.electric_gull) then rows[#rows+1]={index=i,entry=e} end end
     table.sort(rows,function(a,b)local x,y=Worlds.rank(a.entry.world),Worlds.rank(b.entry.world);if x==y then return a.index<b.index end;return x<y end)
     return rows
 end
@@ -88,12 +122,15 @@ function B.openLevel()
     B.open(id,boss and boss.hardcore,ids)
 end
 function B.open(id,hardcore,filter)
+    local electric=id=='electric_gull' or not id and B.latest=='electric_gull'
+    if electric then id='gull' end
+    UI.bestVariant=electric and 2 or 1
     B.levelFilter=filter;B.worldFilter=nil
     UI.bestSelected=nil;UI.bestScroll=0;UI.bestHardcore=hardcore or false
     UI.bestReturn=App.state; UI.bestPage=1; UI.bestCategory=UI.bestCategory or 'creatures'
-    for i,e in ipairs(B.entries) do if e.id==(id or B.latest) and (not filter or filter[e.id]) then UI.bestSelected=i; UI.bestCategory=B.category(e) end end
+    for i,e in ipairs(B.entries) do if e.id==(id or B.latest) and (not filter or filter[e.id] or electric and e.id=='gull') then UI.bestSelected=i; UI.bestCategory=B.category(e) end end
     if not UI.bestSelected then
-        for i,e in ipairs(B.entries) do if (not filter or filter[e.id]) and B.seen[e.id] then UI.bestSelected=i;UI.bestCategory=B.category(e);break end end
+        for i,e in ipairs(B.entries) do if (not filter or filter[e.id]) and B.known(e) and e.id~='electric_gull' then UI.bestSelected=i;UI.bestCategory=B.category(e);break end end
     end
     for i,row in ipairs(B.list(UI.bestCategory)) do if row.index==UI.bestSelected then UI.bestPage=math.floor((i-1)/8)+1 end end
     B.unread={}; B.dirty=true; B.save(); App.state='bestiary'

@@ -20,6 +20,9 @@ A.list={
     {id='flawless_all',category='mastery',name='Un fil sans faute',trophy='flawless_all',rewardSkin=23,description=function()
         return 'Termine chacun des sept mondes sans mourir, en parcours complet (hors entraînement).'
     end},
+    {id='hardcore_all',category='mastery',name='Tous les mondes · Hardcore',trophy='hardcore_all',description=function()
+        return 'Termine chacun des sept mondes en hardcore, en parcours complet (hors entraînement).'
+    end},
     {id='hardcore',category='mastery',name='Auréole hardcore',rewardEffect='hardcore',description=function()
         return 'Termine un biome en hardcore, en parcours complet (hors entraînement).'
     end},
@@ -51,6 +54,14 @@ function A.unlocked(a)
     local flags=Profile.achievements or {}
     if a.id=='worlds_all' then
         for _,world in ipairs(Worlds.order) do if not Profile.hasCompleted(world) then return false end end
+        return true
+    end
+    if a.id=='hardcore_all' then
+        local done={}
+        for _,score in ipairs(Profile.scores or {}) do if score.hardcore==true then done[score.world]=true end end
+        for _,world in ipairs(Worlds.order) do
+            if not done[world] and not ((Hardcore.completed or {})[tostring(world)] or (Hardcore.completed or {})[world]) then return false end
+        end
         return true
     end
     if a.id=='flawless_all' then return flags.flawless_all==true or allFlawless(flags,Profile.scores) end

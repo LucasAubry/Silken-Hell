@@ -4,25 +4,25 @@
     "frames": {
       "down": {
         "path": "assets/skins/integrated/aureole_down.png",
-        "x": 223,
-        "y": 40,
-        "w": 1003,
-        "h": 999
+        "x": 175,
+        "y": 18,
+        "w": 1091,
+        "h": 1046
       },
       "up": {
         "path": "assets/skins/integrated/aureole_up.png",
-        "renderScale": 1.14,
-        "x": 105,
-        "y": 42,
-        "w": 1238,
-        "h": 987
+        "x": 46,
+        "y": 50,
+        "w": 1349,
+        "h": 1014,
+        "renderScale": 1.14
       },
       "profil": {
         "path": "assets/skins/integrated/aureole_profil.png",
-        "x": 208,
-        "y": 62,
-        "w": 904,
-        "h": 976
+        "x": 178,
+        "y": 29,
+        "w": 1102,
+        "h": 1041
       }
     }
   },

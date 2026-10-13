@@ -122,6 +122,7 @@ end
 function N.start(world,name,skin,hardcore)
     if Replay and Replay.playing then return end
     N.current=nil; N.scoreStatus='Partie hors ligne'
+    if Profile.devProgress then N.scoreStatus='Partie de développement';return end
     if not N.enabled then return end
     local run={world=world,name=name,skin=skin or 1,effects=require('skin_effects').snapshot(),hardcore=hardcore==true,highest=0,startedAtMs=os.time()*1000,pending={}};N.runs[#N.runs+1]=run;N.current=run
     N.scoreStatus='Connexion au classement…';N.begin(run)

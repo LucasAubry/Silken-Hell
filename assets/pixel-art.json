@@ -1780,5 +1780,16 @@
       1145
     ],
     "binaryAlpha": true
+  },
+  "assets/environments/terre/soil-wall.png": {
+    "sourceSize": [
+      2172,
+      724
+    ],
+    "binaryAlpha": true,
+    "size": [
+      2172,
+      724
+    ]
   }
 }

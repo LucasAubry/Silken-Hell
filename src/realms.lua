@@ -97,15 +97,6 @@ function R.reset(w,n)
         R.cloudShader:send('floorSize',{Arena.width,600})
         g.setShader(R.cloudShader);g.setColor(1,1,1)
         g.draw(UI.pixel,0,0,0,Arena.width,600);g.setShader()
-        for i=1,math.min(6,2+math.floor(n/2)) do
-            local p={x=Arena.width*(i%2==0 and .68 or .32),y=145+math.floor((i-1)/2)*145+(n%3-1)*15,rx=39,ry=28,seed=i*1.7+n}
-            local safe=true
-            if (p.x-player.x-15)^2+(p.y-player.y-12)^2<100^2 then safe=false end
-            for _,t in ipairs(levels[player.level].larme_position) do if (p.x-t.x-15)^2+(p.y-t.y-20)^2<85^2 then safe=false end end
-            for _,t in ipairs(R.tornadoes) do if (p.x-t.x)^2+(p.y-t.y)^2<110^2 then safe=false end end
-            for _,m in ipairs(mobs) do if (m.type=='piege' or m.capture) and (p.x-m.x)^2+(p.y-m.y)^2<85^2 then safe=false end end
-            if safe then R.holes[#R.holes+1]=p end
-        end
         for row=1,4 do for col=1,6 do
             R.rainSites[#R.rainSites+1]={x=Arena.width*(.12+(col-1)*.15),y=95+(row-1)*130,phase=(row+col+n)%3}
         end end
@@ -378,8 +369,12 @@ function R.fallAt(x,y)
     for _,item in ipairs(Bosses.items) do if item.kind=='storm' and item.boss.holeAt(x,y) then return true end end
     if Campaign.biome==6 and (x<=40 or x>=Arena.width-40 or y<=38 or y>=562) then return true end
     for _,p in ipairs(R.holes) do
+        if p.points then
+            if require('ground_holes').contains(p,x,y) then return true end
+        else
         local dx,dy=(x-p.x)/p.rx,(y-p.y)/p.ry
         if math.sqrt(dx*dx+dy*dy)<R.holeRadius(p,math.atan2(dy,dx))-.07 then return true end
+        end
     end
     return false
 end
@@ -387,6 +382,7 @@ function R.holeRadius(p,a)
     return 1+.22*math.sin(a*3+(p.seed or 0))+.13*math.sin(a*7-(p.seed or 0))
 end
 function R.drawHole(p,scale)
+    if p.points then return require('ground_holes').draw(p,scale) end
     local g=love.graphics
     for j=0,47 do
         local a,b=j*math.pi/24,(j+1)*math.pi/24

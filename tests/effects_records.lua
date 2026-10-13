@@ -5,7 +5,7 @@ function T.run()
  App.preview=false;App.sessionLayout=nil;App.singleLevel=false;App.practice=nil;App.workshopMap=nil;Secret.duel=nil;App.state='menu'
  local files={};for _,n in ipairs({'profile.txt','scores.tsv','hardcore-scores.json','score_details.json','top-records.json','top-records.backup.json'}) do files[n]=love.filesystem.read(n) or false end
  local save=Profile.save;Profile.save=function()end;Bestiary.save=function()end
- Profile.skinGrants={};Profile.achievements={heartbreak=true};Profile.character=1;Characters.browsed=nil;Profile.skinEffects={};Profile.tearExtension=false;Profile.topRecords={}
+ Profile.progressResetAt=0;Profile.skinGrants={};Profile.achievements={heartbreak=true};Profile.character=1;Characters.browsed=nil;Profile.skinEffects={};Profile.tearExtension=false;Profile.topRecords={}
  Profile.completed={};Profile.scores={};Hardcore.completed={}
  local E=require('skin_effects');local records=require('top_records');local N=require('achievement_notice');local R=require('skin_unlock');local g=love.graphics
  assert(not E.unlocked('gold') and not E.unlocked('hardcore') and E.unlocked('heartbreak'))
@@ -23,7 +23,7 @@ function T.run()
  N.update(3.7);R.update(.01);assert(R.active.index=='gold' and App.state=='skinUnlock')
  R.update(3.3);R.close(true);assert(E.enabled('gold') and Profile.character==1,'Equipping gold does not select a different skin')
  Characters.select(2);assert(E.enabled('gold') and E.enabled('hardcore') and E.enabled('heartbreak'),'Effects follow the selected skin')
- App.state='skins';UI.draw();assert(#UI.buttons==15,'Only fourteen skins and the return button appear in the gallery')
+ App.state='skins';UI.draw();assert(#UI.buttons==Characters.baseCount+1,'Available base skins and the return button appear in the gallery')
  Characters.select(1);App.state='menu';UI.clock=4;UI.menuArrival=0
  local mouse=UI.mouse;UI.mouse=function()return 760,301 end
  UI.draw();local seen={};for _,b in ipairs(UI.buttons) do if b.effect then seen[b.effect]=b end end

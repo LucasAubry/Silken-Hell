@@ -1,0 +1,53 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "key": "earth-wall",
+      "refs": [
+        "assets/skins/commun/down.png"
+      ],
+      "prompt": "Create a game asset: one horizontal continuous packed BROWN EARTH WALL segment, top-down slight front depth, 3:1 wide strip. Same chunky crisp pixel art pixel size and dark outlines as reference spider, but ONLY soil: dark chocolate and warm umber compacted clods, small stones and a few thin embedded roots. Solid irregular rectangular wall mass with shallow jagged organic edges, continuous across full width, NOT spikes, not mountains, not crystals, not marble, no grass, no background, no text. Transparent around the wall. Suitable repeated horizontally and rotated vertically as solid game wall.",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-40fb1abb-d3ba-4e85-9071-e7d37285289f.png",
+      "destination": "assets/environments/terre/soil-wall.png"
+    },
+    {
+      "key": "hardcore-trophy",
+      "refs": [
+        "assets/ui/achievements/flawless_all.png"
+      ],
+      "prompt": "Edit reference trophy into ALL SEVEN WORLDS HARDCORE completion trophy. Preserve same silhouette scale, chunky pixel-art style, seven gemstones and gold pedestal. Change central white spider to dark obsidian spider with fiery red eyes, change white enclosing wreath to dark red and glowing orange flame-shaped wreath. Keep all seven different colored gems in gold settings. Strong dark crimson / orange palette unmistakably hardcore. Transparent background, no text, full trophy isolated.",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-9eeb68f1-3388-4ae4-942b-7ff10a992f09.png",
+      "destination": "assets/ui/achievements/hardcore_all.png"
+    },
+    {
+      "key": "angel-down",
+      "refs": [
+        "assets/skins/commun/down.png",
+        "assets/skins/integrated/aureole_down.png"
+      ],
+      "prompt": "Use case precise-object-edit. Image1 is EXACT spider base body/pose to retain. Image2 is reference ONLY for wings. Create single down pose angel spider: keep Image1 entire ivory white body silhouette, proportions, head, round abdomen, gold markings orientation, blue eyes (if visible), all eight legs exactly. Integrate the TWO large white feather angel wings from image2 into this base spider PNG, same wing shape, angle, relative size and anatomical root near head/thorax as image2. Do not narrow/elongate abdomen or change the common spider body. Wings both same physical size. Coarse chunky PIXEL ART same pixel blocks as Image1, not smooth painted feathers. Transparent background, full character with generous margin, no shadow, no text. Front view: symmetrical wings rising up from shoulder roots beside head, four legs each side.",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-3433228a-6008-465c-9cf3-9d7c046424a9.png",
+      "destination": "assets/skins/integrated/aureole_down.png"
+    },
+    {
+      "key": "angel-up",
+      "refs": [
+        "assets/skins/commun/up.png",
+        "assets/skins/integrated/aureole_up.png"
+      ],
+      "prompt": "Use case precise-object-edit. Image1 is EXACT spider base body/pose to retain. Image2 is reference ONLY for wings. Create single up pose angel spider: keep Image1 entire ivory white body silhouette, proportions, head, round abdomen, gold markings orientation, blue eyes (if visible), all eight legs exactly. Integrate the TWO large white feather angel wings from image2 into this base spider PNG, same wing shape, angle, relative size and anatomical root near head/thorax as image2. Do not narrow/elongate abdomen or change the common spider body. Wings both same physical size. Coarse chunky PIXEL ART same pixel blocks as Image1, not smooth painted feathers. Transparent background, full character with generous margin, no shadow, no text. Back view: wings in front of abdomen, far head visible at top; no eyes.",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-15a1c552-3a89-4fb2-837a-1775219982f7.png",
+      "destination": "assets/skins/integrated/aureole_up.png"
+    },
+    {
+      "key": "angel-profil",
+      "refs": [
+        "assets/skins/commun/profil.png",
+        "assets/skins/integrated/aureole_profil.png"
+      ],
+      "prompt": "Use case precise-object-edit. Image1 is EXACT spider base body/pose to retain. Image2 is reference ONLY for wings. Create single profil pose angel spider: keep Image1 entire ivory white body silhouette, proportions, head, round abdomen, gold markings orientation, blue eyes (if visible), all eight legs exactly. Integrate the TWO large white feather angel wings from image2 into this base spider PNG, same wing shape, angle, relative size and anatomical root near head/thorax as image2. Do not narrow/elongate abdomen or change the common spider body. Wings both same physical size. Coarse chunky PIXEL ART same pixel blocks as Image1, not smooth painted feathers. Transparent background, full character with generous margin, no shadow, no text. Profile facing lower left: both wings individually clearly visible, parallel angled upper right.",
+      "source": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-69a65700-b0ae-474f-9fba-560239d796e5.png",
+      "destination": "assets/skins/integrated/aureole_profil.png"
+    }
+  ]
+}

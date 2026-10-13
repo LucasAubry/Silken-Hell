@@ -35,6 +35,7 @@ MobBehaviors.piege = {
     end,
 
     draw = function(m)
+        if Campaign.biome==5 then return require('trap_art').draw('piege',m.x,m.y,52,5,m.active) end
         draw_mob(m)
     end
 }

@@ -19,7 +19,7 @@ function T.merge(rows)
  if Replay.playing then return end
  local all=Profile.topRecords or {};local known={};local changed=false
  for _,r in ipairs(all) do known[r.runId]=r end
- for _,r in ipairs(rows or {}) do if valid(r) then
+ for _,r in ipairs(rows or {}) do if valid(r) and r.achievedAt>(Profile.progressResetAt or 0) then
   local old=known[r.runId]
   if not old then
    old={runId=r.runId,world=r.world,hardcore=r.hardcore==true,achievedAt=r.achievedAt,

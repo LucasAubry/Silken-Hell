@@ -1,7 +1,7 @@
 -- Renaissance guardian. Eggs are independent actors, including the carried clutch.
 local ArtSet=require 'final_art'
 local Escape=require 'queen_escape'
-local F={active=false,name='La Gardienne de la Soie',maxHp=13}
+local F={active=false,name='La Gardienne de la Soie',maxHp=13,leapRadius=180}
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 local function length(x,y) return math.sqrt(x*x+y*y) end
 local function towards(o,x,y,speed,dt)
@@ -82,6 +82,7 @@ function F.updateCharge(dt)
  end
 end
 function F.reset(active)
+ F.landed=nil
  Escape.reset(F)
  F.active=active;F.hp=13;F.maxHp=13;F.defeated=false;F.x=Arena.width*.5;F.y=165;F.angle=0;F.clock=0;F.flash=0
  F.chargeDeaths={};F.chargeEggs={};F.grief=nil
@@ -204,7 +205,7 @@ local function updateBehavior(dt)
  local p=playerPoint()
  if not F.engaged then
   F.angle=math.atan2(p.y-F.y,p.x-F.x)-math.pi/2
-  if near(F,p,29) then
+  if near(F,p,F.leapRadius) then
    F.beginCombat()
   end
   return
@@ -214,9 +215,9 @@ local function updateBehavior(dt)
   local t=math.min(1,F.phaseTime/.85);local ease=t*t*(3-2*t);local j=F.jump
   F.x=j.x+(j.tx-j.x)*ease;F.y=j.y+(j.ty-j.y)*ease
   F.jumpHeight=math.sin(t*math.pi)*115
-  if t>=1 then F.phase=F.jumpResume or 'webs';F.phaseTime=F.phase=='lay' and F.jumpResumeTime or 0;F.shot=.45;F.contactGrace=.35;F.jump=nil;F.jumpHeight=0 end
+  if t>=1 then require('queen_presence').land(F);F.phase=F.jumpResume or 'webs';F.phaseTime=F.phase=='lay' and F.jumpResumeTime or 0;F.shot=.45;F.contactGrace=.35;F.jump=nil;F.jumpHeight=0 end
  end
- if not F.cornerLay and not jumping and F.jumpCooldown<=0 and (F.phase=='webs' or F.phase=='lay') and near(F,p,115) then
+ if not F.cornerLay and not jumping and F.jumpCooldown<=0 and (F.phase=='webs' or F.phase=='lay') and near(F,p,F.leapRadius) then
   F.leap(F.phase);jumping=true
  end
  F.contactGrace=math.max(0,(F.contactGrace or 0)-dt)
@@ -260,6 +261,7 @@ local function updateBehavior(dt)
   local t=clamp(F.phaseTime/.65,0,1);local ease=t*t*(3-2*t);local jump=F.jump
   F.x=jump.x+(jump.tx-jump.x)*ease;F.y=jump.y+(jump.ty-jump.y)*ease;F.jumpHeight=math.sin(t*math.pi)*85
   if t>=1 then
+   require('queen_presence').land(F)
    F.phase='recover';F.phaseTime=0;F.contactGrace=.45;F.jump=nil;F.jumpHeight=0;F.grief=nil;F.chargeDeaths={};F.shot=.6
   end
  elseif F.phase=='recover' then
@@ -383,9 +385,10 @@ function F.draw()
  end
  local pulse=(F.layPulse or 0)/.32
  local facing=F.visualAngle()
- if F.jumpHeight>0 then g.setColor(0,0,0,.28);g.ellipse('fill',F.x,F.y+16,24,8);g.setColor(1,1,1) end
+ require('queen_presence').ground(F);g.setColor(1,1,1)
  require('monster_fx').halo(F.x,F.y-F.jumpHeight,84)
- g.push();g.translate(F.x,F.y-F.jumpHeight);g.scale(1+pulse*.045,1-pulse*.045)
+ local breath=math.sin(F.clock*(F.enraged and 5 or 2.6))*.012
+ g.push();g.translate(F.x,F.y-F.jumpHeight);g.scale(1+pulse*.045+breath,1-pulse*.045-breath*.55)
  F.spider(0,0,62,'queen',facing,F)
  ArtSet.clutch(0,0,62,F.carried,facing);F.drawGriefTear(facing);g.pop()
  for _,w in ipairs(F.webs) do g.setColor(1,1,1);ArtSet.draw('web_shot',w.x,w.y,32,math.atan2(w.vy,w.vx)) end

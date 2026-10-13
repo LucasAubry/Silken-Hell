@@ -31,9 +31,9 @@ function O.bubblePosition()
     return O.headPosition(player.x+15,player.y+8,Characters.playerWidth,direction)
 end
 function O.lanternPosition(x,y,r,clock,dir)
-    local sign=dir=='left' and -1 or 1
+
     local bob=math.sin((clock or 0)*2.5)*r*.02
-    return x+sign*r*.36,y-r*1.20+bob
+    return x,y-r*1.20+bob
 end
 function O.lightPosition()
     if not Campaign or Campaign.biome~=7 then return end
@@ -45,27 +45,35 @@ function O.lightPosition()
 end
 -- One anglerfish-lure design in every pose, mirrored only for the left view.
 function O.drawLantern(x,y,r,clock,locked,alpha,dir)
-    local scale=r/12
-    local lx,ly=O.lanternPosition(x,y,r,clock,dir)
-    local sign=dir=='left' and -1 or 1
-    local rootX=x-sign*r*.13;local rootY=y-r*.64
-    local crownY=y-r*1.75
     local g=love.graphics;alpha=alpha or 1
+    local lx,ly=O.lanternPosition(x,y,r,clock,dir)
+    local scale=r/12
     g.push('all');g.setShader();g.setBlendMode('alpha')
-    g.setLineStyle('smooth');g.setLineWidth(1.65*scale)
-    if locked then g.setColor(0,0,0,alpha) else g.setColor(.38,.68,.76,alpha) end
-    local curve=love.math.newBezierCurve(rootX,rootY,rootX-sign*r*.08,crownY,lx,crownY,lx,ly)
-    g.line(curve:render(3))
     if not locked and (not Graphics or Graphics.effects) then
-        for i=4,1,-1 do
-            g.setColor(1,.79,.32,.10*alpha);g.circle('fill',lx,ly,(2.5+i*1.5)*scale)
+        g.setBlendMode('add')
+        for i=5,1,-1 do
+            g.setColor(1,.77,.25,.035*alpha);g.circle('fill',lx,ly,(3+i*1.8)*scale)
         end
+        g.setBlendMode('alpha')
     end
-    if locked then g.setColor(0,0,0,alpha) else g.setColor(.40,.35,.16,alpha) end
-    g.circle('fill',lx,ly,2.8*scale)
+    -- Stepped pixel clusters match the spider's blue/lavender shell and gold.
+    -- The luminous tip stays on the head's centerline in all three poses.
+    g.translate(lx,ly);g.scale(scale)
+    local stem={-1,7,-3,5,-5,2,-5,-2,-3,-5,0,-6,3,-5,4,-3,4,0,2,0,2,-3,0,-4,-2,-3,-3,-1,-3,2,-1,4,1,5,1,7}
+    g.setColor(locked and 0 or .12,locked and 0 or .14,locked and 0 or .24,alpha)
+    g.polygon('fill',stem)
     if not locked then
-        g.setColor(1,.85,.40,alpha);g.circle('fill',lx,ly,2.25*scale)
-        g.setColor(1,1,.87,alpha);g.circle('fill',lx-.35*scale,ly-.35*scale,1.35*scale)
+        g.setColor(.46,.51,.76,alpha)
+        g.rectangle('fill',-3,0,1,3);g.rectangle('fill',-2,3,1,2)
+        g.rectangle('fill',-3,-2,1,2);g.rectangle('fill',-2,-4,3,1)
+        g.setColor(.72,.76,.94,alpha);g.rectangle('fill',-1,-5,2,1)
+    end
+    g.setColor(locked and 0 or .22,locked and 0 or .16,locked and 0 or .07,alpha)
+    g.polygon('fill',-2,-4,2,-4,4,-2,4,2,2,4,-2,4,-4,2,-4,-2)
+    if not locked then
+        g.setColor(1,.72,.18,alpha);g.rectangle('fill',-2,-3,4,6);g.rectangle('fill',-3,-2,6,4)
+        g.setColor(1,.94,.55,alpha);g.rectangle('fill',-2,-2,4,4)
+        g.setColor(1,1,.94,alpha);g.rectangle('fill',-2,-2,3,3)
     end
     g.pop()
 end

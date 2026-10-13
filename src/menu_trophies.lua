@@ -2,8 +2,10 @@ local M={thumbnails={}}
 
 function M.slots()
  local slots={}
- for index,a in ipairs(Achievements.list) do
-  if a.trophy then slots[#slots+1]={achievement=a,achievementIndex=index} end
+ for _,id in ipairs({'worlds_all','flawless_all','hardcore_all'}) do
+  for index,a in ipairs(Achievements.list) do
+   if a.id==id then slots[#slots+1]={achievement=a,achievementIndex=index};break end
+  end
  end
  local width,height,gap=28,32,24
  local left=600-(#slots*width+math.max(0,#slots-1)*gap)/2

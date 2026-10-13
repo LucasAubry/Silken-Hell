@@ -77,5 +77,7 @@ MobBehaviors.scie.draw=function(m)
     g.setColor(ink and {.62,.65,.66} or {.65,.48,.23}); g.setLineWidth(2)
     for i=0,7 do local t=i/8; g.circle('line',m.x+(x-m.x)*t,m.y+(y-m.y)*t,3) end
     g.setColor(ink and {.77,.78,.73} or {.9,.7,.3}); g.circle('fill',m.x,m.y,7); g.setLineWidth(1)
-    g.setColor(1,1,1); Art.draw('wheel',x,y,60,m.rotation or 0)
+    g.setColor(1,1,1)
+    if Campaign.biome==5 then require('trap_art').draw('scie',x,y,60,5,false,m.rotation or 0)
+    else Art.draw('wheel',x,y,60,m.rotation or 0) end
 end

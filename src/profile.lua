@@ -5,10 +5,11 @@ local PadControls=require('pad_controls')
 P.padBindings=PadControls.load()
 local actions={'up','down','left','right','dash','restartLevel','restartWorld','nextWorld','previousWorld','replayFaster','replaySlower','pause','ghost'}
 function P.load()
+    P.devProgress=love.filesystem.getInfo('dev-progress.enabled')~=nil
     local grantsOK,grants=pcall(json.decode,love.filesystem.read('skin-grants.json') or '{}')
     P.skinGrants=grantsOK and type(grants)=='table' and grants or {}
     P.skinEffects={};require('top_records').load()
-    P.language='fr';P.speedMode='accelerate';P.iconBiome=nil;P.padBindings=PadControls.load();P.tearExtension=false
+    P.language='fr';P.speedMode='accelerate';P.iconBiome=nil;P.padBindings=PadControls.load();P.tearExtension=false;P.progressResetAt=0
     P.levels={};P.completed={};P.scores={}; P.achievements={};P.stats={tears=0,eggs=0,deaths=0,attempts=0}
     P.biomeStats={};P.bossKills={};P.storyTexts={}
     local data=love.filesystem.read('profile.txt') or ''
@@ -29,6 +30,7 @@ function P.load()
         elseif k=='achievementGillou' then P.achievements.gillou=v=='2'
         elseif k=='achievementMaxance' then P.achievements.maxance=v=='2'
         elseif k=='heartbreak' then P.achievements.heartbreak=v=='1'
+        elseif k=='progressResetAt' then P.progressResetAt=tonumber(v) or 0
         elseif k=='flawless_all' or k=='top1' or k=='hardcore' then P.achievements[k]=v=='1'
         elseif k and k:match('^top1_%d+$') then P.achievements.top1=P.achievements.top1==true or v=='1'
         elseif k=='tearExtension' then P.tearExtension=v=='1'
@@ -90,6 +92,7 @@ function P.save()
     if Replay and Replay.playing then return end
     local rows={'iconBiome='..(P.iconBiome or 0),'speedMode='..P.speedMode,'statsVersion=1','totalTears='..P.stats.tears,'totalEggs='..(P.stats.eggs or 0),'totalDeaths='..P.stats.deaths,'totalAttempts='..P.stats.attempts,'achievementGillou='..(P.achievements.gillou and '2' or '0'),'achievementMaxance='..(P.achievements.maxance and '2' or '0'),'progressVersion=2','name='..P.name,'country='..P.country,'language='..P.language,'character='..(P.character or 1),'unlocked='..P.unlocked,'music='..P.music,'sound='..P.sound}
     rows[#rows+1]='biomeStats='..json.encode(P.biomeStats or {})
+    rows[#rows+1]='progressResetAt='..tostring(P.progressResetAt or 0)
     rows[#rows+1]='bossKills='..json.encode(P.bossKills or {})
     rows[#rows+1]='padBindings='..json.encode(P.padBindings)
     rows[#rows+1]='storyTexts='..json.encode(P.storyTexts or {})

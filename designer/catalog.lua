@@ -22,7 +22,7 @@ add('magma_spawner',nil,'Nid de larves','magma_nest',2,{rx=31,ry=23,spawnDelay=1
 add('lava',nil,'Flaque de lave','lava',2,{rx=42,ry=27})
 add('vent',nil,'Anémone électrique','electric_anemone',7,{rx=30,ry=23})
 add('tunnel',nil,'Tunnel (par paire)','earth_tunnel',5)
-add('hole',nil,'Trou dans les nuages',nil,6,{rx=45,ry=30,seed=1})
+add('hole',nil,'Dessiner un trou',nil,6,{radius=28,points={0,0}})
 add('tornado',nil,'Tornade','cloud_snare',6)
 add('rain',nil,'Pluie',nil,6,{phase=0})
 add('current',nil,'Courant marin',nil,4,{rx=50,ry=150,dx=1})

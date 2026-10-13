@@ -14,6 +14,12 @@ local function rand(i,k) local n=math.sin(i*127.1+k*311.7)*43758.5453;return n-m
 local function tint(c,a,m) love.graphics.setColor(c[1]*(m or 1),c[2]*(m or 1),c[3]*(m or 1),a or 1) end
 function B.edge(length,biome,seed)
  if biome==1 then return require('paradise_ink').edge(length) end
+ if biome==5 then
+  local g=love.graphics;g.push('all');g.setColor(1,1,1)
+  local count=math.ceil(length/110);local span=length/count
+  for i=1,count do Art.draw('cave_wall',(i-.5)*span,11,span+2,0,24) end
+  g.pop();return
+ end
  if biome==3 or biome==4 or biome==7 then
   local g=love.graphics;B.images=B.images or {}
   local image=B.images[biome]

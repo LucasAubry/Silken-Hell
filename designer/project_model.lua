@@ -12,7 +12,7 @@ function X.install(M)
  end
  function M.openProject(project,slot)
   M.currentProject=project;M.currentProject.current=slot or project.current or 1
-  local e=project.entries[M.currentProject.current];M.layout=M.clone(e.layout);M.world=M.layout.biome or M.layout.world;M.level=1
+  local e=project.entries[M.currentProject.current];M.layout=require('layout_schema').migrate(M.clone(e.layout));M.world=M.layout.biome or M.layout.world;M.level=1
   M.history={};M.future={};M.selected=nil;M.dirty={};return true
  end
  function M.select(world,level)

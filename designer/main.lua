@@ -1,6 +1,6 @@
 local g=love.graphics
 local M,C,json,Worlds,Art,Biome,Projects
-local state={all=true,world=1,level=1,category='Mobs',tool=nil,grid=true,snap=true,scroll=0,buttons={},status='Choisis un objet à gauche, puis clique sur le terrain.',clock=0}
+local state={all=true,world=1,level=1,category='Mobs',tool=nil,brush=28,grid=true,snap=true,scroll=0,buttons={},status='Choisis un objet à gauche, puis clique sur le terrain.',clock=0}
 local color={bg={.018,.027,.045},panel={.035,.065,.10},line={.20,.39,.55},text={.87,.94,1},muted={.53,.66,.77},accent={.40,.74,1}}
 local function q(s) return "'"..s:gsub("'","'\\''").."'" end
 local function text(s,x,y,size,c,w)
@@ -42,7 +42,7 @@ local function backdrop()
     g.setCanvas(); g.pop()
 end
 local function select(w,n)
-    M.select(w,n); state.tool=nil; state.input=nil; state.scroll=0; backdrop()
+    M.select(w,n); state.tool=nil;state.stroke=nil; state.input=nil; state.scroll=0; backdrop()
 end
 local function bounds()
     local w,h=g.getDimensions(); local avail=w-530
@@ -61,7 +61,12 @@ local function entity(e,ghost)
     local c=catalog(e); g.setColor(1,1,1,ghost and .45 or 1)
     if e.type=='larva' then Art.drawLarva(e.x,e.y,22,0,state.clock);return end
     if e.kind=='wall' then g.push();g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180);g.translate(-e.x,-e.y);g.setColor(.29,.31,.33,ghost and .5 or 1); g.rectangle('fill',e.x-e.w/2,e.y-e.h/2,e.w,e.h); g.setColor(.65,.64,.56); g.rectangle('line',e.x-e.w/2,e.y-e.h/2,e.w,e.h);g.pop()
-    elseif e.kind=='hole' then g.setColor(.025,.04,.08); g.ellipse('fill',e.x,e.y,e.rx,e.ry); g.setColor(.5,.65,.8); g.ellipse('line',e.x,e.y,e.rx,e.ry)
+    elseif e.kind=='hole' then
+        if e.points then
+            local holes=require('ground_holes')
+            g.setColor(.68,.79,.85,ghost and .5 or 1);holes.draw(e,1.06)
+            g.setColor(.025,.04,.08,ghost and .5 or 1);holes.draw(e)
+        else g.setColor(.025,.04,.08);g.ellipse('fill',e.x,e.y,e.rx,e.ry);g.setColor(.5,.65,.8);g.ellipse('line',e.x,e.y,e.rx,e.ry) end
     elseif e.kind=='rain' then g.setColor(.25,.6,1,.8); for i=-1,1 do g.line(e.x+i*8,e.y-18,e.x+i*8-5,e.y+7) end
     elseif e.kind=='current' then g.setColor(.2,.85,1,.2); g.ellipse('fill',e.x,e.y,e.rx,e.ry); text(e.dx==1 and '>' or '<',e.x-6,e.y-9,18)
     elseif c.art and Art.images[c.art] then
@@ -89,7 +94,10 @@ local function entity(e,ghost)
         g.setColor(color.accent); g.setLineWidth(2)
         local w,h=e.w and e.w+8 or e.type=='skeleton_head' and 178 or 70,e.h and e.h+8 or e.type=='skeleton_head' and 158 or 70
         g.push();g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180)
-        g.rectangle('line',-w/2,-h/2,w,h,4);g.pop(); g.setLineWidth(1)
+        if e.kind=='hole' and e.points then
+            local x0,y0,x1,y1=require('ground_holes').bounds(e);g.rectangle('line',x0-4,y0-4,x1-x0+8,y1-y0+8,4)
+        else g.rectangle('line',-w/2,-h/2,w,h,4) end
+        g.pop(); g.setLineWidth(1)
     end
 end
 local function apply()
@@ -154,7 +162,7 @@ function love.load()
     if ok and type(templates)=='table' then for _,t in ipairs(templates) do if t.kind=='mob' or t.kind=='boss' then C[#C+1]=t end end end
     state.templates=ok and type(templates)=='table' and templates or {}
     state.editorSound=love.audio.newSource('assets/audio/effects/editeur start.mp3','static');state.editorSound:setVolume(.65);state.editorSound:play()
-    if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require(M.projects and 'project_selftest' or M.workshop and 'workshop_selftest' or 'selftest').run(M,state,select,apply,preview) end
+    if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require(os.getenv('SILKEN_GROUND_HOLES_TEST')=='1' and 'holes_selftest' or M.projects and 'project_selftest' or M.workshop and 'workshop_selftest' or 'selftest').run(M,state,select,apply,preview) end
 end
 function love.draw()
     if not M then return end
@@ -181,7 +189,7 @@ function love.draw()
     button(state.all and 'Tous les biomes' or 'Ce biome',14,280,220,30,function() state.all=not state.all; state.scroll=0 end,state.all)
     local palette={}
     for _,c in ipairs(C) do
-        local cat=c.kind=='boss' and 'Boss' or c.kind=='mob' and (c.type=='piege' or c.type=='scie') and 'Pièges' or c.kind=='mob' and 'Mobs' or (c.kind=='magma_spawner' or c.kind=='lava' or c.kind=='vent' or c.kind=='hole' or c.kind=='tornado') and 'Pièges' or 'Terrain'
+        local cat=c.kind=='boss' and 'Boss' or c.kind=='mob' and (c.type=='piege' or c.type=='scie') and 'Pièges' or c.kind=='mob' and 'Mobs' or (c.kind=='magma_spawner' or c.kind=='lava' or c.kind=='vent' or c.kind=='tornado') and 'Pièges' or 'Terrain'
         if cat==state.category and (state.all or c.world==0 or c.world==M.world) then palette[#palette+1]=c end
     end
     local max=math.max(1,math.floor((h-386)/68)); state.scroll=math.min(state.scroll,math.max(0,#palette-max))
@@ -189,7 +197,7 @@ function love.draw()
         local y=324+(i-1)*68
         button('',14,y,220,60,function() state.tool=c; M.selected=nil; state.input=nil end,state.tool==c)
         if c.type=='larva' then Art.drawLarva(45,y+29,22,0,state.clock) elseif c.art then g.setColor(1,1,1); local a=Art.images[c.art]; local width=math.min(42,44*a.w/a.h); Art.draw(c.art,45,y+29,width) end
-        text(c.name,77,y+((M.workshop or M.devMode) and 20 or 8),12,nil,145); if not M.workshop and not M.devMode then text(c.kind=='boss' and 'Rencontre' or c.kind=='mob' and 'Créature' or 'Placement',77,y+36,12,color.muted) end
+        text(c.name,77,y+((M.workshop or M.devMode or c.kind=='hole') and 20 or 8),c.kind=='hole' and 16 or 12,nil,145); if not M.workshop and not M.devMode and c.kind~='hole' then text(c.kind=='boss' and 'Rencontre' or c.kind=='mob' and 'Créature' or 'Placement',77,y+36,12,color.muted) end
     end end
     if not M.workshop and not M.devMode then text('Molette : parcourir la liste',20,h-54,12,color.muted) end
     local x,y,scale=bounds(); state.canvas={x=x,y=y,s=scale}
@@ -201,8 +209,12 @@ function love.draw()
     if state.grid then g.setColor(1,1,1,.09); for xx=0,M.layout.width,40 do g.line(xx,0,xx,600) end; for yy=0,600,40 do g.line(0,yy,M.layout.width,yy) end end
     for _,e in ipairs(M.layout.entities) do if e.kind~='mob' and e.kind~='boss' and e.kind~='spawn' then entity(e) end end
     for _,e in ipairs(M.layout.entities) do if e.kind=='mob' or e.kind=='boss' or e.kind=='spawn' then entity(e) end end
+    if state.stroke then entity(state.stroke,true) end
     if state.tool then local mx,my=love.mouse.getPosition(); local px,py=point(mx,my)
-        if inside(mx,my) then local ghost=M.clone(state.tool); ghost.x=snapped(px); ghost.y=snapped(py); entity(ghost,true) end
+        if inside(mx,my) then
+            if state.tool.kind=='hole' then g.setColor(color.accent);g.circle('line',px,py,state.brush)
+            else local ghost=M.clone(state.tool); ghost.x=snapped(px); ghost.y=snapped(py); entity(ghost,true) end
+        end
     end
     g.pop()
     g.setColor(color.line); g.rectangle('line',x,y,M.layout.width*scale,600*scale)
@@ -233,7 +245,11 @@ function love.draw()
         button('Supprimer',right+108,yy,99,34,M.delete)
     else
         text(state.tool and state.tool.name or 'Aucun objet sélectionné',right,212,18,nil,208)
-        if not M.workshop and not M.devMode then text('Clique sur le terrain pour placer.\n\nÉchap : sélectionner et déplacer.\n\nGlisse un objet pour le déplacer.\n\nSuppr : effacer.\nCmd+Z / Cmd+Maj+Z : annuler / rétablir.',right,270,14,color.muted,205) end
+        if state.tool and state.tool.kind=='hole' then
+            text('Taille : '..state.brush*2,right,268,16)
+            button('−',right,308,98,36,function() state.brush=math.max(4,state.brush-4) end)
+            button('+',right+108,308,98,36,function() state.brush=math.min(120,state.brush+4) end)
+        elseif not M.workshop and not M.devMode then text('Clique sur le terrain pour placer.\n\nÉchap : sélectionner et déplacer.\n\nGlisse un objet pour le déplacer.\n\nSuppr : effacer.\nCmd+Z / Cmd+Maj+Z : annuler / rétablir.',right,270,14,color.muted,205) end
     end
     button(M.workshop and 'Vider la carte' or 'Restaurer l’original',right,h-110,207,34,function() M.restore(); state.status=M.workshop and 'Carte réinitialisée.' or 'Original restauré en brouillon. Appliquer pour le garder.' end)
     if not M.workshop and not M.devMode then text('Les niveaux personnalisés ne sont pas classés.',right,h-66,12,color.muted,210) end
@@ -255,7 +271,10 @@ function love.mousepressed(mx,my,button)
     if not inside(mx,my) then return end
     state.input=nil; love.keyboard.setTextInput(false)
     local x,y=point(mx,my)
-    if button==2 then state.tool=nil end
+    if button==2 then state.tool=nil;state.stroke=nil end
+    if state.tool and state.tool.kind=='hole' and button==1 then
+        M.selected=nil;state.stroke={kind='hole',x=x,y=y,radius=state.brush,points={0,0}};return
+    end
     if state.tool and button==1 then M.add(state.tool,snapped(x),snapped(y));state.status=require('workshop_access').warning(state.tool,M.world) or ''; return end
     M.selected=nil
     for i=#M.layout.entities,1,-1 do local e=M.layout.entities[i]
@@ -267,17 +286,37 @@ function love.mousepressed(mx,my,button)
             dx,dy=math.cos(a)*dx+math.sin(a)*dy,-math.sin(a)*dx+math.cos(a)*dy
             rx,ry=math.max(12,e.w/2),math.max(12,e.h/2)
         elseif e.type=='skeleton_head' then rx,ry=85,75 end
-        if math.abs(dx)<=rx and math.abs(dy)<=ry then M.selected=e; M.checkpoint(); state.drag={dx=x-e.x,dy=y-e.y}; break end
+        local hit=e.kind=='hole' and e.points and require('ground_holes').contains(e,x,y)
+            or not (e.kind=='hole' and e.points) and math.abs(dx)<=rx and math.abs(dy)<=ry
+        if hit then M.selected=e; M.checkpoint(); state.drag={dx=x-e.x,dy=y-e.y}; break end
     end
 end
 function love.mousemoved(mx,my)
     if Projects and ((not M.currentProject and not M.devMode) or Projects.publication) then return end
+    if state.stroke then
+        local x,y=point(mx,my);local e=state.stroke;local p=e.points
+        x=math.max(0,math.min(M.layout.width,x))-e.x;y=math.max(0,math.min(600,y))-e.y
+        if (x-p[#p-1])^2+(y-p[#p])^2>=16 then
+            if #p>=512 then local reduced={};for i=1,#p,4 do reduced[#reduced+1]=p[i];reduced[#reduced+1]=p[i+1] end;e.points=reduced;p=reduced end
+            p[#p+1]=x;p[#p+1]=y
+        end
+        return
+    end
     if state.drag and M.selected then local x,y=point(mx,my)
         M.selected.x=math.max(25,math.min(M.layout.width-25,snapped(x-state.drag.dx)))
         M.selected.y=math.max(25,math.min(575,snapped(y-state.drag.dy)))
     end
 end
-function love.mousereleased() if state.drag then M.persist(); state.drag=nil end end
+function love.mousereleased(mx,my,button)
+    if state.stroke and button==1 then
+        love.mousemoved(mx,my)
+        local points={};local e=state.stroke
+        for i=1,#e.points,2 do points[i]=e.x+e.points[i];points[i+1]=e.y+e.points[i+1] end
+        local hole=require('ground_holes').stroke(points,e.radius)
+        M.add(hole,hole.x,hole.y);M.selected=nil;state.stroke=nil;state.status='';return
+    end
+    if state.drag then M.persist();state.drag=nil end
+end
 function love.wheelmoved(x,y) if love.mouse.getX()<250 then state.scroll=math.max(0,state.scroll-y) end end
 function love.textinput(s) if Projects and Projects.text(s) then return end;if state.input then if state.input=='templateName' then state.inputText=(state.inputText..s:gsub('[%c]','')):sub(1,60) else state.inputText=state.inputText..s:gsub('[^%d%.%-]','') end end end
 function love.keypressed(key)
@@ -301,7 +340,7 @@ function love.keypressed(key)
         return
     end
     local cmd=love.keyboard.isDown('lgui','rgui','lctrl','rctrl')
-    if key=='escape' then state.tool=nil; M.selected=nil
+    if key=='escape' then state.tool=nil;state.stroke=nil; M.selected=nil
     elseif key=='delete' or key=='backspace' then M.delete()
     elseif key=='z' and cmd then M.undo(love.keyboard.isDown('lshift','rshift'))
     elseif key=='s' and cmd then apply()

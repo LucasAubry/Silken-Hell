@@ -54,6 +54,8 @@ L’éditeur partage les projets de ce dossier ; ses préférences restent dans 
 
 **Appliquer** enregistre les niveaux personnalisés ; les aperçus rechargent leurs données sans redémarrage. Le Workshop permet de publier une carte, de jouer aux cartes partagées et de leur attribuer une étoile.
 
+Dans **Terrain → Dessiner un trou**, maintenir le clic gauche peint une ouverture au sol ; les boutons **− / +** règlent la taille du pinceau. Chaque tracé peut être déplacé ou supprimé après **Échap**, et possède son propre historique d’annulation. Les anciens trous fixes du Ciel sont retirés des niveaux et des anciens brouillons à leur chargement. Les trous temporaires créés par les attaques restent des dangers de combat.
+
 Les fichiers `custom_levels.json` et `designer/default_levels.json` sont des données utiles : ne pas les supprimer lors d’un nettoyage.
 
 ## Développement et vérification
@@ -162,3 +164,7 @@ Le fond conserve le biome sélectionné et un contour rouge animé indique le mo
 Vérification : `SILKEN_TEST=1 SILKEN_HARDCORE_MODES_TEST=1 love dist/game.love`, puis `npm test --prefix server`. Le classement en ligne nécessite la migration `0010_hardcore_rankings.sql` et le Worker correspondant.
 
 Sur macOS, lancer les tests masqués hors du Bureau avec `python3 tools/test_background.py SILKEN_ABYSS_INTRO_TEST` (ou un autre sélecteur `SILKEN_*_TEST`, avec `--editor` pour le concepteur). Le lanceur reconstruit une copie dans Application Support et conserve le focus sur les applications ouvertes.
+
+Les outils de développement sont activés localement par `dev-tools.enabled` dans le dossier de sauvegarde (ou `SILKEN_DEV=1`). Dans Paramètres → Jeu et son, les boutons **Réinitialiser** et **Tout débloquer** agissent sur la progression locale. Le reset demande un second clic et conserve le nom, les réglages et l’identité en ligne ; chaque action archive la progression précédente dans `dev-backups/`. Les anciennes premières places ne sont pas réimportées après un reset. Un profil débloqué par ce bouton ne soumet pas de parties classées.
+
+Le menu expose dans cet ordre les trophées de tous les mondes, des sept parcours sans mort et des sept parcours hardcore. Le trophée des mots reste dans la galerie. Les variantes de pièges, d’enfants de la Soie et de mouettes se parcourent avec les flèches du bestiaire.

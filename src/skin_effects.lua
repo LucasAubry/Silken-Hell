@@ -1,16 +1,15 @@
 -- Cosmetics are independent of the fourteen skins. Legacy IDs stay replayable.
 local E={names={gold='Éclat du champion',hardcore='Auréole hardcore',heartbreak='Cœur brisé'}}
 function E.unlocked(kind)
- if kind=='heartbreak' then return require('skin_extension').unlocked() end
+ if kind=='heartbreak' then return (Profile.achievements or {}).heartbreak==true end
  if kind=='gold' then return (Profile.achievements or {}).top1==true or #(Profile.topRecords or {})>0 end
  if kind=='hardcore' then
   if (Profile.achievements or {}).hardcore==true then return true end
-  for _,done in pairs(Hardcore and Hardcore.completed or {}) do if done then return true end end
+  local completed=Hardcore and Hardcore.completed or {}
+  for _,world in ipairs(Worlds.order) do if completed[world] or completed[tostring(world)] then return true end end
   for _,score in ipairs(Profile.scores or {}) do
    if score.hardcore==true and Worlds.rank(score.world)<=#Worlds.order then return true end
   end
-  for world in pairs(Worlds.secretBiomes) do if Profile.hasCompleted(world) then return true end end
-  for i=15,22 do if (Profile.skinGrants or {})[tostring(i)] then return true end end
  end
  return false
 end

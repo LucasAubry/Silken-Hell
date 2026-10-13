@@ -9,7 +9,7 @@ function T.run()
  local ok,err=xpcall(function()
   local json=require('json');local effects=require('skin_effects')
   local entries={};local trophyCount,worldCount=0,0
-  assert(#Achievements.list==15,'Exactly fifteen achievements remain')
+  assert(#Achievements.list==16,'Sixteen achievements including all-worlds hardcore')
   for _,entry in ipairs(Achievements.list) do
    assert(not entries[entry.id],'Unique achievement ID');entries[entry.id]=entry
    assert(not entry.id:match('^flawless%d+$') and not entry.id:match('^top1_') and entry.id~='bossflawless1','Retired achievements stay out of the gallery')
@@ -17,7 +17,7 @@ function T.run()
    if entry.trophy then trophyCount=trophyCount+1;assert(not entry.rewardEffect)
    else assert(entry.rewardSkin or entry.rewardEffect,'Each achievement displays its reward or an authored trophy')end
   end
-  assert(worldCount==7 and trophyCount==3)
+  assert(worldCount==7 and trophyCount==4)
   assert(entries.gillou.name=='3 piques d’un coup' and entries.gillou.rewardSkin==13)
   assert(entries.maxance.name=='C’est dur ?' and entries.maxance.rewardSkin==14)
   assert(entries.heartbreak.name=='Une triste fin' and entries.heartbreak.rewardEffect=='heartbreak')
@@ -25,9 +25,9 @@ function T.run()
   assert(not entries.story_first and entries.worlds_all.trophy=='story_first' and entries.story_all.trophy=='story_all' and entries.flawless_all.trophy=='flawless_all')
   assert(entries.flawless_all.rewardSkin==23,'The flawless trophy also awards the Cocon skin')
   assert(#Characters.keys==26 and Characters.names[14]=='Maxance' and Characters.names[23]=='Cocon')
-  assert(Characters.baseCount==18 and #Characters.baseIndices==18)
+  assert(Characters.baseCount==17 and #Characters.baseIndices==17)
   for position,index in ipairs(Characters.baseIndices)do
-   assert(index==(position>=15 and position+8 or position),'The selection excludes legacy variants without renumbering them')
+   assert(index==({1,2,4,5,6,7,8,9,10,11,12,13,14,23,24,25,26})[position],'Retired skins and legacy variants stay outside selection')
   end
 
   local flags={};Profile.achievements=flags;Profile.scores={};Profile.completed={};Profile.skinGrants={};Profile.topRecords={}
@@ -99,7 +99,7 @@ function T.run()
   Profile.topRecords={{world=6,hardcore=true}};assert(Achievements.unlocked(entries.top1) and effects.unlocked('gold'))
   Profile.topRecords={{world=1,hardcore=false}};assert(Achievements.unlocked(entries.top1))
   Hardcore.completed['5']=true;assert(Achievements.unlocked(entries.hardcore) and effects.unlocked('hardcore'))
-  Hardcore.completed={};Profile.completed[9]=true;assert(Achievements.unlocked(entries.hardcore),'Legacy hardcore boss completions retain the halo')
+  Hardcore.completed={};Profile.completed[9]=true;assert(not Achievements.unlocked(entries.hardcore),'A secret boss alone does not meet the full-world achievement')
 
   Profile.storyTexts={};assert(not Achievements.unlocked(entries.story_all))
   Profile.storyTexts['1']=true;assert(not Achievements.unlocked(entries.story_all))
@@ -118,7 +118,7 @@ function T.run()
  for key in pairs(Profile)do Profile[key]=nil end
  for key,value in pairs(profile)do Profile[key]=value end
  assert(ok,err)
- print('PASS fifteen achievements, combined flawless runs, reward rules, excluded practice and replay, legacy profile/score migration and persistence')
+ print('PASS sixteen achievements, combined flawless runs, reward rules, excluded practice and replay, legacy profile/score migration and persistence')
 end
 
 -- This rule test also runs without a window: lua tests/achievement_rules.lua.

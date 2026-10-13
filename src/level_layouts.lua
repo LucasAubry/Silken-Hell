@@ -2,7 +2,9 @@ local json=require 'json'
 local L={disabled=false}
 local fields={'x','y','speed','rota','radius','phase','rx','ry','dx','seed','w','h','electric','has_larme','elite','startUnderground','customName','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage','rotation'}
 local function copy(t)
-    local r={}; for _,k in ipairs(fields) do if type(t[k])=="number" or type(t[k])=="boolean" then r[k]=t[k] end end; return r
+    local r={}; for _,k in ipairs(fields) do if type(t[k])=="number" or type(t[k])=="boolean" then r[k]=t[k] end end
+    if t.points then r.points={};for i,v in ipairs(t.points) do r.points[i]=v end end
+    return r
 end
 function L.snapshot()
     local out={width=Arena.width,height=600,world=Campaign.world,level=player.level,entities={}}
@@ -88,6 +90,10 @@ function L.apply(layout)
     local bossEntities={}; local nests={}
     for _,raw in ipairs(layout.entities) do
         local e=copy(raw); e.type=raw.type; e.kind=raw.kind; e.x=e.x*scale
+        if e.kind=='hole' and e.points then
+            for i=1,#e.points,2 do e.points[i]=e.points[i]*scale end
+            e.rx=(e.rx or e.radius)*scale;e.ry=e.ry or e.radius
+        end
         if e.kind=='spawn' then player.x=e.x-15; player.y=e.y-12
         elseif e.kind=='tear' then tears[#tears+1]={x=e.x-15,y=e.y-39}
         elseif e.kind=='wall' then

@@ -357,7 +357,7 @@ function love.draw()
         Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies(); Realms.drawAnemoneElectric() end
-        Abyss.drawLights(); Bosses.drawLights();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage()
+        Abyss.drawLights(); Bosses.drawLights();require('earth_light').draw();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage()
         -- Boss rewards remain readable above the arena effects.
         if not Campaign.tearCarried() and not droppedCarrier and not Renaissance.active then Campaign.drawTear(true) end
         love.graphics.setColor(1,1,1)

@@ -405,14 +405,27 @@ function U.settings()
         end
         U.button(love.window.getFullscreen() and 'Plein écran : activé' or 'Plein écran : désactivé',310,491,580,44,App.toggleFullscreen)
         U.button('Graphismes',310,559,580,44,function() Input.cancelBinding();App.state='graphics' end)
+        local dev=require('dev_profile')
+        if dev.available() then
+            if dev.status then U.rawText(U.ellipsize(dev.status,'body',580),310,216,'body',gold,580,'center') end
+            local armed=U.devResetArmed and U.clock<U.devResetArmed
+            U.button(armed and 'Confirmer le reset' or 'Réinitialiser',310,610,280,40,function()
+                if U.devResetArmed and U.clock<U.devResetArmed then dev.apply(false) else U.devResetArmed=U.clock+5 end
+            end)
+            U.button('Tout débloquer',610,610,280,40,function()dev.apply(true)end)
+        end
     end
     U.button('Retour',310,666,580,40,function() Input.cancelBinding();App.state=U.returnTo or 'menu';Profile.save() end,false,true)
 end
 function U.worlds() WorldMap.draw() end
 function U.bestiaryIcon(entry,x,y,size)
     g.setColor(1,1,1)
-    if entry.id=='electric_gull' then g.setColor(1,.88,.15) end
-    if entry.art=='cloud' then
+    if entry.electric or entry.id=='electric_gull' then g.setColor(1,.88,.15) end
+    if entry.trapKind then
+        require('trap_art').draw(entry.trapKind,x,y,size,entry.world,false)
+    elseif entry.id=='earth_tunnel' then
+        g.push('all');g.translate(x,y);g.scale(size/104);require('earth_mound').draw(0,0);g.pop()
+    elseif entry.art=='cloud' then
         g.setColor(.79,.87,.95); g.ellipse('fill',x,y,size*.45,size*.2); g.circle('fill',x-size*.16,y-size*.1,size*.23); g.circle('fill',x+size*.14,y-size*.14,size*.28)
     elseif entry.art=='rain' then
         g.setColor(1,.85,.32);g.polygon('fill',x+size*.14,y-size*.42,x-size*.25,y+size*.05,x-size*.04,y+size*.05,x-size*.14,y+size*.42,x+size*.25,y-size*.06,x+size*.04,y-size*.06)
@@ -432,7 +445,7 @@ function U.bestiary()
     local category=U.bestCategory or 'creatures'
     local function selectCategory(value)
         local first=Bestiary.list(value)[1]
-        U.bestCategory=value;U.bestPage=1;U.bestSelected=first and first.index;U.bestScroll=0;U.bestHardcore=false
+        U.bestCategory=value;U.bestPage=1;U.bestSelected=first and first.index;U.bestScroll=0;U.bestHardcore=false;U.bestVariant=first and Bestiary.defaultVariant(first.entry,Bestiary.worldFilter) or 1
     end
     U.button('Créatures',360,107,155,38,function() selectCategory('creatures') end,Bestiary.levelFilter and #Bestiary.list('creatures')==0,category=='creatures')
     U.button('Boss',530,107,135,38,function() selectCategory('boss') end,Bestiary.levelFilter and #Bestiary.list('boss')==0,category=='boss')
@@ -447,22 +460,26 @@ function U.bestiary()
     end
     local page=U.bestPage or 1
     for j=1,8 do local row=rows[(page-1)*8+j]; local index=row and row.index; local e=row and row.entry
-        if e then local y=165+(j-1)*51; local seen=Bestiary.seen[e.id]
-            U.button(seen and e.name or '???',125,y,330,43,function() U.bestSelected=index;U.bestScroll=0;U.bestHardcore=false end,not seen,U.bestSelected==index)
+        if e then local y=165+(j-1)*51; local seen=Bestiary.known(e)
+            U.button(seen and e.name or '???',125,y,330,43,function() U.bestSelected=index;U.bestScroll=0;U.bestHardcore=false;U.bestVariant=Bestiary.defaultVariant(e,Bestiary.worldFilter) end,not seen,U.bestSelected==index)
         end
     end
     local e=Bestiary.entries[U.bestSelected or 0]
-    if e and Bestiary.seen[e.id] then
+    if e and Bestiary.known(e) then
         if U.bestTextEntry~=e.id then U.bestTextEntry=e.id;U.bestScroll=0;U.bestRevealed=U.clock end
-        if U.bestHardcore and e.id=='wasp' then g.setShader(Wasp.lavaMaterial(U.clock)) end
-        local reveal=Motion.reveal(U.bestRevealed or U.clock,.22)
-        U.bestiaryIcon(e,780,245+5*(1-reveal),132*(.94+.06*reveal));g.setShader()
-        U.fitText(U.bestHardcore and e.id=='wasp' and 'Les Guêpes brûlées · Hardcore' or e.name,490,332,'heading',white,570,'center')
-        U.text(Worlds.names[e.world],490,373,'body',gold,570,'center')
-        if e.boss then
-            U.button(U.bestHardcore and 'Voir la version normale' or 'Voir la version hardcore',585,399,390,34,function() U.bestHardcore=not U.bestHardcore;U.bestScroll=0 end)
+        local variants=Bestiary.variants[e.id]
+        local appearance=Bestiary.appearance(e,U.bestVariant)
+        if variants then
+            U.arrow(560,245,-1,function()U.bestVariant=((U.bestVariant or 1)-2)%#variants+1;U.bestScroll=0 end)
+            U.arrow(1000,245,1,function()U.bestVariant=(U.bestVariant or 1)%#variants+1;U.bestScroll=0 end)
         end
-        local content=L.render(Bestiary.description(e,U.bestHardcore and e.boss))
+        local reveal=Motion.reveal(U.bestRevealed or U.clock,.22)
+        if appearance.undiscovered then require('locked_art').bind() end
+        U.bestiaryIcon(appearance,780,245+5*(1-reveal),132*(.94+.06*reveal));g.setShader()
+        if appearance.undiscovered then require('locked_art').question(780,245,132) end
+        U.rawText(U.ellipsize(appearance.undiscovered and '???' or T(appearance.name),'body',570),490,332,'body',white,570,'center')
+        U.text(Worlds.names[appearance.world],490,373,'body',gold,570,'center')
+        local content=appearance.undiscovered and '' or L.render(Bestiary.description(appearance,false))
         local font=U.fonts.body;local _,lines=font:getWrap(content,490)
         local height=#lines*font:getHeight()*font:getLineHeight()
         U.bestScrollMax=math.max(0,height-161);U.bestScroll=math.min(U.bestScroll or 0,U.bestScrollMax)

@@ -3,6 +3,12 @@ local S={}
 function S.migrate(layout)
     if type(layout)=='table' and type(layout.entities)=='table' then
         for _,e in ipairs(layout.entities) do if e.kind=='boss' and e.type=='hellserpent' then e.type='wasp' end end
+        if (layout.biome or layout.world)==6 then
+            for i=#layout.entities,1,-1 do
+                local e=layout.entities[i]
+                if e.kind=='hole' and not e.points then table.remove(layout.entities,i) end
+            end
+        end
     end
     return layout
 end
@@ -28,6 +34,18 @@ function S.validate(l)
         if not e.x or not e.y or e.x<0 or e.x>l.width or e.y<0 or e.y>600 then return false,'Un objet sort du terrain.' end
         for _,key in ipairs({'w','h','rx','ry','radius'}) do if e[key] and e[key]<1 then return false,'Les dimensions doivent être positives.' end end
         if e.kind=='wall' and (not e.w or not e.h) then return false,'Dimensions du mur manquantes.' end
+        if e.points~=nil then
+            if e.kind~='hole' or type(e.points)~='table' or #e.points<2 or #e.points>512 or #e.points%2~=0 then return false,'Dessin de trou invalide.' end
+            local count=0
+            for i,v in pairs(e.points) do
+                count=count+1
+                if type(i)~='number' or i%1~=0 or i<1 or i>#e.points or type(v)~='number' or v~=v or math.abs(v)>4000 then return false,'Point du trou invalide.' end
+                local coordinate=v+(i%2==1 and e.x or e.y)
+                if coordinate<0 or coordinate>(i%2==1 and l.width or 600) then return false,'Le dessin du trou sort du terrain.' end
+            end
+            if count~=#e.points then return false,'Dessin de trou incomplet.' end
+            if not e.radius or e.radius<4 or e.radius>120 then return false,'Taille du pinceau entre 4 et 120.' end
+        end
         if e.customName~=nil and (type(e.customName)~='string' or #e.customName>60) then return false,'Nom de créature invalide.' end
         for _,key in ipairs({'electric','has_larme','elite','startUnderground'}) do if e[key]~=nil and type(e[key])~='boolean' then return false,'Option invalide.' end end
         if e.kind=='spawn' then spawn=spawn+1 end

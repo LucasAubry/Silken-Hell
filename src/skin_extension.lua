@@ -1,5 +1,5 @@
 local E={}
-function E.unlocked() return Profile.achievements.heartbreak==true or (Profile.skinGrants or {}).heartbreak==true end
+function E.unlocked() return Profile.achievements.heartbreak==true end
 function E.toggle()
  if not E.unlocked() then return end
  Profile.tearExtension=not Profile.tearExtension;Profile.save()

@@ -20,7 +20,7 @@ function T.run()
   F.drawSource(image,50,60,.4,.17,.23,11,23);g.draw=draw;assert(called)
   count=count+1
  end
- assert(count==162,'Retained pixel-art illustrations must be registered')
+ assert(count==163,'Retained pixel-art illustrations must be registered')
  for _,path in ipairs({'assets/environments/paradis/encre-atlas.json','assets/environments/paradis/characters-ink.json','assets/monstres/serviteurs/frames.json'}) do
   for name,frame in pairs(require('json').decode(love.filesystem.read(path))) do
    local image=F.image(frame.path);local w,h=image:getDimensions()
@@ -35,7 +35,7 @@ function T.run()
   assert(image:getFilter()=='linear','Bone projectiles retain smooth filtering')
   assert(Art.images[name].image~=image,'Boss art stays independent of projectile art')
  end
- print('PASS pixel art: 162 cached nearest textures, original display sizes and pivots, all animation atlas bounds')
+ print('PASS pixel art: 163 cached nearest textures, original display sizes and pivots, all animation atlas bounds')
  io.stdout:flush();love.event.quit()
 end
 return T

@@ -18,6 +18,13 @@ export function validateLayout(l) {
   if(!Number.isFinite(e.x)||!Number.isFinite(e.y)||e.x<0||e.x>l.width||e.y<0||e.y>600) return false;
   for(const k of ['w','h','rx','ry','radius']) if(e[k]!==undefined&&e[k]<1) return false;
   if(e.kind==='wall'&&(!e.w||!e.h)) return false;
+  if(e.points!==undefined) {
+   if(e.kind!=='hole'||!Array.isArray(e.points)||e.points.length<2||e.points.length>512||e.points.length%2||!Number.isFinite(e.radius)||e.radius<4||e.radius>120) return false;
+   for(let i=0;i<e.points.length;i++) {
+    const v=e.points[i],coordinate=v+(i%2===0?e.x:e.y);
+    if(!Number.isFinite(v)||Math.abs(v)>4000||coordinate<0||coordinate>(i%2===0?l.width:600)) return false;
+   }
+  }
   if(e.customName!==undefined&&(typeof e.customName!=='string'||e.customName.length>60)) return false;
   for(const k of ['electric','has_larme','elite','startUnderground']) if(e[k]!==undefined&&typeof e[k]!=='boolean') return false;
   if(e.kind==='spawn') spawn++;
