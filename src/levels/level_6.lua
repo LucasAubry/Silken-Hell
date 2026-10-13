@@ -66,12 +66,12 @@ function draw_objet_6()
 	end
 
 	-- aureoles
-	love.graphics.draw(objet.aureole.img, 30, 105, 0, objet.aureole.size)
+	require('art_filter').drawSource(objet.aureole.img, 30, 105, 0, objet.aureole.size)
 
 	local floatOffset = math.sin(larme_float_timer * 2) * 5
 	draw_shadow(10, 10, objet.larme.x + 17, objet.larme.y + 43 + floatOffset)
 	love.graphics.draw(particleSystem, objet.larme.x + 16, objet.larme.y + 25 + floatOffset)
-	love.graphics.draw(objet.larme.img, objet.larme.x, objet.larme.y + floatOffset, 0, objet.larme.size)
+	require('art_filter').drawSource(objet.larme.img, objet.larme.x, objet.larme.y + floatOffset, 0, objet.larme.size)
 
 
 end

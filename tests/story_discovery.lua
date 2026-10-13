@@ -8,7 +8,7 @@ function T.run()
  Profile.storyTexts={};N.init()
  local first,all
  for _,entry in ipairs(Achievements.list) do if entry.id=='story_first' then first=entry elseif entry.id=='story_all' then all=entry end end
- assert(first and all and not Achievements.unlocked(first) and not Achievements.unlocked(all) and not all.visible,'Both story trophies are listed before discovery')
+ assert(not first and all and not Achievements.unlocked(all) and not all.visible,'Only the complete story trophy remains')
  local function reset(world,n)
   Campaign.select(world);player.level=n or (world==3 and 1 or 10);reset_level();App.state='playing';player.reset=false
   local boss=({[1]=Raven,[2]=Wasp,[3]=require('final_spider'),[4]=Octopus,[5]=Hedgehog,[6]=Storm,[7]=Abyss})[Campaign.biome]
@@ -28,12 +28,12 @@ function T.run()
  S.updateWall(.1);assert(S.progress()==0,'A quick pass is not a reading')
  player.x=Arena.width*.5;player.y=300;S.updateWall(.1);assert(S.readTime==0)
  read();local found,total=S.progress();assert(found==1 and total==7,'Seven unique messages')
- assert(Achievements.unlocked(first) and not Achievements.unlocked(all) and all.description():find('1/7',1,true))
+ assert(not Achievements.unlocked(all) and all.description():find('1/7',1,true))
  N.update(.1);assert(N.active and N.active.entry.progress==1 and N.active.entry.total==7,'First discovery immediately shows 1/7')
- assert(#N.queue==1 and N.queue[1]==first,'First discovery also retains its unlocked achievement')
- N.update(4);assert(N.active and N.active.entry==first,'The first achievement follows the progress notice')
+ assert(#N.queue==0,'The removed first-word achievement never notifies')
+ N.update(4);assert(not N.active,'Only the progress notice is shown')
  read();N.update(.1);assert(S.progress()==1 and #N.queue==0,'Rereading does not count or notify twice')
- Profile.load();assert(S.progress()==1 and Achievements.unlocked(first),'Read messages survive profile reload')
+ Profile.load();assert(S.progress()==1 and not Achievements.unlocked(all),'Read messages survive profile reload')
  N.init();N.update(.1);assert(not N.active,'Loading previously earned achievements stays silent')
  reset(6,1);read();assert(S.progress()==1,'Exploration walls are not messages')
  reset(6)
@@ -59,13 +59,13 @@ function T.run()
   for _,key in ipairs({'Une longue histoire','Tous ses mots','Trouve un texte qu’elle t’a laissé.','Retrouve tous les textes qu’elle t’a laissés. %d/%d'}) do assert(require('localization').has(key,lang.code)) end
  end
  Profile.language='fr'
- print('PASS seven unique texts, first and all achievements, 1/7 progress, durable saves, duplicate/hardcore handling, read-only rendering, preview/replay/ghost/death isolation and notifications')
+ print('PASS seven unique texts, complete story achievement, 1/7 progress, durable saves, duplicate/hardcore handling, read-only rendering, preview/replay/ghost/death isolation and notifications')
  local frame=0
  love.update=function()
   frame=frame+1
   if frame==1 then
    Profile.storyTexts={['1']=true};reset(1);Raven.defeated=true;Aftermath.update(0);read()
-   N.init();N.active={entry=first,age=.6};App.capture='story-gold-paradise.png'
+   N.init();N.active={entry={id=all.id,name=all.name,progress=1,total=7},age=.6};App.capture='story-gold-paradise.png'
   elseif frame==2 then
    N.active={entry={id=all.id,name=all.name,progress=1,total=7},age=.6};App.capture='story-progress-notice.png'
   elseif frame==3 then

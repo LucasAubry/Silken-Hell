@@ -22,17 +22,22 @@ C.materials={
 -- Render palettes are separate from unlock rules and stable profile/replay IDs.
 C.silkPalettes={}
 local silkBodies={
- [2]={.94,.92,.82},[3]={.89,.38,.22},[4]={.36,.69,.77},
+ [2]={.94,.92,.82},[3]={1,.40,.06},[4]={.36,.69,.77},
  [5]={.60,.43,.72},[6]={.95,.82,.50},[7]={.54,.73,.80},
- [8]={.76,.49,.27},[9]={.32,.73,.62},[10]={.43,.49,.76},
- [11]={.72,.29,.21},[12]={.82,.55,.64},[13]={.88,.64,.29},
+ [8]={.74,.55,.33},[9]={.32,.73,.62},[10]={.43,.49,.76},
+ [11]={.93,.12,.05},[12]={.82,.55,.64},[13]={.90,.16,.07},
 }
 local silkGold={1,.78,.35}
 for index,body in pairs(silkBodies) do
  C.silkPalettes[index]={body=body,markings=silkGold,iris={.43,.78,.83},effect=body}
 end
+C.silkPalettes[13].markings={1,.34,.08}
+C.silkPalettes[13].iris={1,.49,.15}
 function C.material(index) return C.materials[index] or C.silkPalettes[index] end
 C.customSprites={[14]='maxance',[23]='cocon'}
+for index,name in pairs(require('integrated_skins').names) do C.customSprites[index]=name end
+-- Retired Braise ID stays readable in old scores/replays, using Cendre artwork.
+C.customSprites[3]='cendre';C.names[3]='Cendre'
 C.variants={}
 for reward,base in pairs(C.crowned) do C.variants[base]=reward end
 function C.demonCompleted(world)
@@ -42,9 +47,10 @@ function C.demonCompleted(world)
 end
 -- All spider skins are crown-free; reward IDs remain stable.
 C.nativeCrown={}
-C.baseIndices={1,2,3,4,5,6,7,8,9,10,11,12,13,14,23,24,25,26}
+C.baseIndices={1,2,4,5,6,7,8,9,10,11,12,13,14,23,24,25,26}
 C.baseCount=#C.baseIndices
 function C.unlocked(index)
+    if index==3 then return false end
     if not C.names[index] then return false end
     if C.materials[index] then return true end
     if index==23 then return require('achievements').unlocked({id='flawless_all'}) end
@@ -67,7 +73,7 @@ function C.cycle(step)
     for i,index in ipairs(C.baseIndices) do if index==base then position=i;break end end
     C.select(C.baseIndices[(position-1+step)%C.baseCount+1])
 end
-function C.menuIndex() return C.browsed or C.selected() end
+function C.menuIndex() return C.browsed~=3 and C.browsed or C.selected() end
 function C.select(index)
     index=C.crowned[index] or index
     C.browsed=index
@@ -103,38 +109,38 @@ function C.model(dir,index)
     local custom=C.customSprites[C.crowned[index] or index]
     return 'player_skin_'..(custom and custom..'_' or '')..((dir=='left' or dir=='right') and 'profil' or dir)
 end
-function C.portrait(index,x,y,size,dir,locked,walk)
+function C.portrait(index,x,y,size,dir,locked,walk,marineOverlay)
     index=math.max(1,math.min(#C.keys,tonumber(index) or 1));dir=dir or 'down'
     local g=love.graphics;local red,green,blue,alpha=g.getColor()
     if alpha<1 and C.crowned[index] then
         -- Fade body and its accessories/FX together, including overlaps in trails.
-        C.fadeCanvas=C.fadeCanvas or g.newCanvas(160,160)
+        C.fadeCanvas=C.fadeCanvas or g.newCanvas(200,200)
         local target=g.getCanvas()
         g.push('all');g.setCanvas(C.fadeCanvas);g.origin();g.setScissor();g.setShader()
         g.clear(0,0,0,0);g.setColor(1,1,1);g.setBlendMode('alpha')
-        C.portrait(index,80,80,100,dir,locked,walk)
+        C.portrait(index,100,100,100,dir,locked,walk,marineOverlay)
         g.setCanvas(target);g.pop()
         g.push('all');g.setColor(red*alpha,green*alpha,blue*alpha,alpha)
-        g.setBlendMode('alpha','premultiplied');g.draw(C.fadeCanvas,x,y,0,size/100,size/100,80,80);g.pop()
+        g.setBlendMode('alpha','premultiplied');g.draw(C.fadeCanvas,x,y,0,size/100,size/100,100,100);g.pop()
         return
     end
     -- Resolve tiny leaderboard portraits from the complete eye artwork, rather
     -- than letting nearest-neighbour sampling select only their dark pupils.
     if size<=32 and not walk then
         C.smallPortraits=C.smallPortraits or {}
-        local cacheKey=index..':'..dir..':'..tostring(locked)
+        local cacheKey=index..':'..dir..':'..tostring(locked)..':'..tostring(marineOverlay)
         local canvas=C.smallPortraits[cacheKey]
         if not canvas then
-            canvas=g.newCanvas(256,256,{mipmaps='auto',dpiscale=1})
+            canvas=g.newCanvas(384,384,{mipmaps='auto',dpiscale=1})
             canvas:setFilter('linear','linear');canvas:setMipmapFilter('linear')
             g.push('all');g.setCanvas(canvas);g.origin();g.setScissor();g.setShader()
             g.clear(0,0,0,0);g.setColor(1,1,1);g.setBlendMode('alpha')
-            C.portrait(index,128,128,224,dir,locked)
+            C.portrait(index,192,192,224,dir,locked,nil,marineOverlay)
             g.pop();C.smallPortraits[cacheKey]=canvas
         end
         g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied')
         g.setColor(red*alpha,green*alpha,blue*alpha,alpha)
-        g.draw(canvas,x,y,0,size/224,size/224,128,128)
+        g.draw(canvas,x,y,0,size/224,size/224,192,192)
         if dir=='down' and not locked and not C.customSprites[C.crowned[index] or index] then
             -- Keep the iris and catchlight legible below one source eye pixel.
             local a=Art.images[C.model(dir)];local qx,qy=a.quad:getViewport()
@@ -155,20 +161,17 @@ function C.portrait(index,x,y,size,dir,locked,walk)
     if reward then index=C.crowned[index] end
     local fx=require('skin_reward_fx')
     if reward and not locked then fx.orbit(x,y,size,false,false) end
+    require('skin_accessories').draw(index,x,y,size,dir,locked,false,alpha,marineOverlay)
     local g=love.graphics;g.push('all')
     local key=C.model(dir,index)
     local a=Art.images[key];local pose=dir=='right' and 'left' or dir
     if C.customSprites[index] then
         -- Keep each custom source and accessories, with the same softened ink finish.
         C.customSkinShader=C.customSkinShader or g.newShader('assets/shaders/custom_skin_material.glsl')
+        C.customSkinShader:send('brownBody',index==8)
         g.setShader(C.customSkinShader)
         if locked then
-            C.silhouetteShader=C.silhouetteShader or g.newShader([[
-                vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel) {
-                    return vec4(.48,.50,.53,Texel(image,uv).a)*color;
-                }
-            ]])
-            g.setShader(C.silhouetteShader)
+            require('locked_art').bind()
         end
     else
         local material=C.material(index)
@@ -186,15 +189,13 @@ function C.portrait(index,x,y,size,dir,locked,walk)
         g.setShader(C.skinShader)
     end
     g.translate(x,y);if dir=='right' then g.scale(-1,1) end
-    local width=size*a.w/math.max(a.w,a.h)
+    local width=size*a.w/math.max(a.w,a.h)*(a.renderScale or 1)
     if not (walk and require('brown_walk').draw(a.image,pose,0,0,width,walk,a.quad)) then Art.draw(key,0,0,width,0) end
     g.pop()
+    require('skin_accessories').draw(index,x,y,size,dir,locked,true,alpha,marineOverlay)
     if reward and not locked then fx.orbit(x,y,size,true,false) end
     if locked then
-        g.push('all');g.setShader();g.setColor(.92,.94,.98,alpha)
-        local font=UI.fonts.body;local scale=math.max(1,size/90)
-        g.setFont(font);g.translate(x,y);g.scale(scale)
-        g.print('?',-font:getWidth('?')/2,-font:getHeight()/2);g.pop()
+        require('locked_art').question(x,y,size,alpha)
     end
 end
 -- Dedicated selection artwork; movement sprites and gameplay animation stay separate.
@@ -209,44 +210,40 @@ function C.selectionPortrait(x,y,size)
     -- smoothly no longer selects different source pixels inside the gold markings.
     if C.menuCacheKey~=key then
         if C.menuCache then C.menuCache:release() end
-        C.menuCache=g.newCanvas(pixels+8,pixels+8,{dpiscale=1})
+        C.menuCache=g.newCanvas(pixels*2+8,pixels*2+8,{dpiscale=1})
         C.menuCache:setFilter('nearest','nearest')
         g.push('all');g.setCanvas(C.menuCache);g.origin();g.setScissor();g.setShader();g.clear(0,0,0,0)
         g.setBlendMode('alpha');g.setColor(1,1,1)
-        C.portrait(base,(pixels+8)/2,(pixels+8)/2,pixels,'down',locked)
+        C.portrait(base,pixels+4,pixels+4,pixels,'down',locked)
         g.pop();C.menuCacheKey=key
     end
     local effects=require('skin_effects')
     if not locked then effects.behind(x,y,size) end
     g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied')
     local r,green,b,a=g.getColor();g.setColor(r*a,green*a,b*a,a)
-    g.draw(C.menuCache,x,y,0,size/pixels,size/pixels,(pixels+8)/2,(pixels+8)/2);g.pop()
+    g.draw(C.menuCache,x,y,0,size/pixels,size/pixels,pixels+4,pixels+4);g.pop()
     if not locked then effects.front(x,y,size) end
     if not locked then require('skin_extension').draw(x,y,size,'down',false,true) end
 end
 function C.shadow(x,y,size,dir,walk)
     local g=love.graphics
-    local index=C.selected();index=C.crowned[index] or index
-    local a=Art.images[C.model(dir,index)];local pose=dir=='right' and 'left' or dir
     C.shadowShader=C.shadowShader or g.newShader([[
         vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel) {
-            return vec4(.012,.009,.007,Texel(image,uv).a*color.a);
+            float radius=length((uv-.5)*2.);
+            float shade=1.-smoothstep(.20,1.,radius);
+            return vec4(.012,.009,.007,shade*color.a);
         }
     ]])
-    g.push('all');g.setShader(C.shadowShader);g.setBlendMode('alpha');g.setColor(1,1,1,.52)
-    g.translate(x+1.5,y+4);if dir=='right' then g.scale(-1,1) end
-    local width=size*a.w/math.max(a.w,a.h)
-    if not (walk and require('brown_walk').draw(a.image,pose,0,0,width,walk,a.quad)) then
-        local scale=size/math.max(a.w,a.h)
-        g.draw(a.image,a.quad,0,0,0,scale,scale,a.w/2,a.h/2)
-    end
+    g.push('all');g.setShader(C.shadowShader);g.setBlendMode('alpha');g.setColor(1,1,1,.46)
+    local rx,ry=size*.43,size*.20
+    g.draw(UI.pixel,x-rx,y+size*.15-ry,0,rx*2,ry*2)
     g.pop()
 end
-function C.draw(x,y,width,dir,walk)
+function C.draw(x,y,width,dir,walk,marineOverlay)
     local selected=C.selected()
     local effects=require('skin_effects');effects.behind(x,y,width)
     if App.state=='playing' and C.crowned[selected] then require('skin_reward_fx').rays(x,y,width) end
-    C.portrait(selected,x,y,width,dir,nil,walk)
+    C.portrait(selected,x,y,width,dir,nil,walk,marineOverlay)
     effects.front(x,y,width,nil,dir)
     require('skin_extension').draw(x,y,width,dir,false,true)
 end

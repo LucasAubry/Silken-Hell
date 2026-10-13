@@ -32,7 +32,11 @@ local function backdrop()
     state.background=g.newCanvas(M.layout.width,600)
     g.push('all'); g.setCanvas(state.background); g.origin(); g.clear(.25,.35,.45)
     if M.world==6 then
-        if state.sky then g.setColor(1,1,1); g.draw(state.sky,0,0,0,M.layout.width/state.sky:getWidth(),600/state.sky:getHeight())
+        if state.sky then
+            state.skyShader=state.skyShader or g.newShader('assets/shaders/sky_floor.glsl')
+            state.skyShader:send('floorSize',{M.layout.width,600})
+            g.setShader(state.skyShader);g.setColor(1,1,1)
+            g.draw(state.sky,0,0,0,M.layout.width/state.sky:getWidth(),600/state.sky:getHeight());g.setShader()
         else for i=1,140 do g.setColor(.8,.87,.94,.5); g.ellipse('fill',(i*137)%M.layout.width,(i*89)%600,55,33) end end
     else Biome.draw(M.world,M.layout.width,600,0) end
     g.setCanvas(); g.pop()
@@ -117,7 +121,7 @@ local function loadArt()
     end end
     for _,key in ipairs({'skeleton_spine','skeleton_rib','skeleton_tail'}) do Art.add(key,'assets/sprites/'..key..'.png') end
     local sky=love.filesystem.getInfo('designer/sky_floor.png') and 'designer/sky_floor.png' or 'sky_floor.png'
-    if love.filesystem.getInfo(sky) then state.sky=g.newImage(sky) end
+    if love.filesystem.getInfo(sky) then state.sky=require('art_filter').image(sky) end
 end
 function love.load()
     local source=love.filesystem.getSource():gsub('\\','/')

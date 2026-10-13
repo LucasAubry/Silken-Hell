@@ -225,7 +225,7 @@ function C.draw(a)
    g.translate(p.x,p.y);g.rotate(p.angle)
    g.polygon('fill',-p.w*.5,-p.h*.5,p.w*.5,0,-p.w*.35,p.h*.5,-p.w*.2,0)
    g.setColor(.48*visibility,.65*visibility,.72*visibility);g.line(-p.w*.35,p.h*.5,p.w*.5,0)
-  else Art.draw(p.key or 'skeleton_spine',p.x,p.y,p.w,p.key and p.angle or 0,p.h) end
+  else Art.drawBoneProjectile(p.key or 'skeleton_spine',p.x,p.y,p.w,p.key and p.angle or 0,p.h) end
   g.pop()
  end
  if a.phase=='inhaleTell' or a.phase=='suction' then

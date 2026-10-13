@@ -3854,5 +3854,13 @@
     "ru": "Уворачивайся от быстрых пар костей. После всасывания он выплюнет тебя невредимым. Пока он плывёт, заманивай его к бомбам, чтобы он их проглотил. Касание бомб смертельно для тебя.",
     "zh": "躲开成对射来的快速骨头。被吸入后，你会被安全地吐出。游动时，引诱它吞下炸弹。你碰到炸弹就会死亡。",
     "ja": "素早く飛んでくる2本の骨を避けよう。吸い込まれても無傷で吐き出される。泳いでいる間に爆弾へ誘導して飲み込ませよう。自分が触れると即死する。"
+  },
+  "Termine les sept mondes en parcours complet (hors entraînement).": {
+    "en": "Complete full runs of all seven worlds (outside practice).",
+    "es": "Completa recorridos enteros de los siete mundos (fuera del entrenamiento).",
+    "ru": "Пройди все семь миров целиком (не в тренировке).",
+    "pt": "Conclui percursos completos dos sete mundos (fora do treino).",
+    "zh": "完整通关全部七个世界（训练模式除外）。",
+    "ja": "7つすべてのワールドを通しでクリアする（練習を除く）。"
   }
 }

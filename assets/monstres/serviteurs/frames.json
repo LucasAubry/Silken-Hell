@@ -1,79 +1,79 @@
 {
   "mole_down": {
     "path": "assets/monstres/serviteurs/mole.png",
-    "x": 46,
-    "y": 30,
-    "w": 676,
-    "h": 474
+    "x": 58,
+    "y": 59,
+    "w": 652,
+    "h": 434
   },
   "mole_up": {
     "path": "assets/monstres/serviteurs/mole.png",
-    "x": 822,
-    "y": 30,
-    "w": 663,
-    "h": 460
+    "x": 824,
+    "y": 59,
+    "w": 654,
+    "h": 427
   },
   "mole_left": {
     "path": "assets/monstres/serviteurs/mole.png",
-    "x": 48,
-    "y": 539,
-    "w": 671,
-    "h": 459
+    "x": 57,
+    "y": 546,
+    "w": 641,
+    "h": 435
   },
   "mole_right": {
     "path": "assets/monstres/serviteurs/mole.png",
-    "x": 829,
-    "y": 542,
-    "w": 661,
-    "h": 458
+    "x": 838,
+    "y": 546,
+    "w": 641,
+    "h": 435
   },
   "crab_open": {
     "path": "assets/monstres/serviteurs/crab.png",
-    "x": 51,
-    "y": 71,
-    "w": 783,
-    "h": 727
+    "x": 44,
+    "y": 83,
+    "w": 798,
+    "h": 712
   },
   "crab_closed": {
     "path": "assets/monstres/serviteurs/crab.png",
-    "x": 941,
-    "y": 71,
-    "w": 780,
+    "x": 932,
+    "y": 83,
+    "w": 798,
     "h": 702
   },
   "merle_down": {
     "path": "assets/monstres/serviteurs/bird.png",
-    "x": 12,
-    "y": 41,
-    "w": 702,
-    "h": 500
+    "x": 14,
+    "y": 54,
+    "w": 694,
+    "h": 486
   },
   "merle_up": {
     "path": "assets/monstres/serviteurs/bird.png",
-    "x": 731,
-    "y": 41,
+    "x": 728,
+    "y": 54,
     "w": 697,
-    "h": 482
+    "h": 468
   },
   "merle_left": {
     "path": "assets/monstres/serviteurs/bird.png",
-    "x": 93,
-    "y": 561,
-    "w": 585,
-    "h": 497
+    "x": 91,
+    "y": 566,
+    "w": 575,
+    "h": 485
   },
   "merle_right": {
     "path": "assets/monstres/serviteurs/bird.png",
-    "x": 766,
-    "y": 561,
-    "w": 580,
-    "h": 497
+    "x": 770,
+    "y": 566,
+    "w": 577,
+    "h": 484
   },
   "magma_larva": {
     "path": "assets/monstres/serviteurs/larva.png",
-    "x": 276,
-    "y": 21,
-    "w": 602,
-    "h": 1245
+    "x": 266,
+    "y": 11,
+    "w": 618,
+    "h": 1264
   }
 }

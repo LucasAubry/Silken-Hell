@@ -306,8 +306,8 @@ function S.drawGround()
   local points={}
   for i=0,31 do local a=i*math.pi/16;local r=p.r*(1+.07*math.sin(i*2.7+p.seed));points[#points+1]=p.x+math.cos(a)*r;points[#points+1]=p.y+math.sin(a)*r*.78 end
   g.setColor(.02,.04,.09,.98);g.polygon('fill',points)
-  g.setColor(.89,.90,.80,.65);g.setLineWidth(3);g.polygon('line',points)
-  g.setColor(.25,.45,.47,.22);g.ellipse('line',p.x,p.y,p.r*.7,p.r*.48)
+  g.setColor(.91,.95,.96,.65);g.setLineWidth(3);g.polygon('line',points)
+  g.setColor(.28,.40,.49,.22);g.ellipse('line',p.x,p.y,p.r*.7,p.r*.48)
  end
  g.pop()
 end

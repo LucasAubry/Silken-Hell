@@ -1,0 +1,41 @@
+{
+  "mode": "Built-in ImageGen",
+  "earthFrontCount": "Use ONLY the LEFTMOST/front-facing Earth spider from this sheet. Output one single complete front-facing sprite on transparent 4:3 canvas. Keep the same brown body, blue eyes, gold motifs, FOUR walking legs on each side (eight total), and coarse pixel-art style. Harmonize its ivory spikes to EXACTLY EIGHT on the UPPER ABDOMEN only: four on the left half of its rim and four symmetrically on the right half, with no central ninth spike. Keep the LOWER HEAD entirely smooth and without spikes. Every spike clearly separated. Do not change the pose, colors or leg geometry. No other poses or text.",
+  "cendreFinal": "Image 1 is the EDIT TARGET, a single orange spider in left profile with exactly TWO horns and correct walking legs. Image 2 is COLOR REFERENCE ONLY, the burgundy Cendre skin sheet. Recolor ONLY the orange body and legs of image 1 to the deep burgundy-red body palette of image 2. Keep both horns vivid orange-red. Keep all gold motifs, blue eye, every walking leg, all body geometry, transparent canvas, the TWO horns and their positions, pixel grid exactly as image 1. Do NOT add or remove limbs or horns. Output one sprite, same 4:3 canvas as image 1.",
+  "edits": [
+    {
+      "name": "ambre_up",
+      "prompt": "Precise object edit of this single BACK-view pixel art spider. The UPPER body segment is the HEAD: remove ALL ivory spikes from that upper segment and restore its plain smooth brown rim. The LOWER segment is the ABDOMEN: put exactly EIGHT ivory spikes only around this lower abdomen, four on the left rim and four on the right rim, evenly spaced, none on the head, no additional central bottom spike. Preserve the brown body, inverted gold markings, exact pose, coarse pixels, and especially all EIGHT walking legs, four per side. Keep same transparent 4:3 canvas. One single complete spider."
+    },
+    {
+      "name": "ambre_profil",
+      "prompt": "Precise edit of this single left-profile pixel art brown spider. It currently has NINE ivory spikes around the big upper-right abdomen. REMOVE ONLY the lowest central ivory spike at bottom center of abdomen, the one pointing downward toward the gap between the head and walking legs. Restore brown pixels at that removed spike's root. Retain the other EIGHT ivory spikes, retain every leg (four near-side walking legs), fangs, blue eye, gold motifs, pixel size and transparent canvas. Do not add anything. Single complete spider unchanged except deletion of one lowest spike."
+    },
+    {
+      "name": "braise_profil",
+      "ref": "braise",
+      "prompt": "Input is a three-pose pixel art spider sheet. Produce ONLY the RIGHTMOST left-facing PROFILE spider as a single complete sprite on a transparent 4:3 canvas. Correct the two red demon horns: BOTH horns must be distinct full silhouettes attached to the HEAD above the blue eye, one near horn and one slightly higher/further back far horn, separated by a clear gap. Matching size and same upward hooked curvature as front view horns. Neither horn on the abdomen. Keep body color, gold motifs, blue eye, all walking legs, coarse square-pixel style identical to this reference. No other poses, text, frame, or accessories."
+    },
+    {
+      "name": "cendre_profil",
+      "ref": "cendre",
+      "prompt": "Input is a three-pose pixel art spider sheet. Produce ONLY the RIGHTMOST left-facing PROFILE spider as a single complete sprite on a transparent 4:3 canvas. Correct the two red demon horns: BOTH horns must be distinct full silhouettes attached to the HEAD above the blue eye, one near horn and one slightly higher/further back far horn, separated by a clear gap. Matching size and same upward hooked curvature as front view horns. Neither horn on the abdomen. Keep body color, gold motifs, blue eye, all walking legs, coarse square-pixel style identical to this reference. No other poses, text, frame, or accessories."
+    },
+    {
+      "name": "aureole_profil",
+      "ref": "aureole",
+      "prompt": "Input is a three-pose angel spider sheet. Produce ONLY the RIGHTMOST left-facing PROFILE spider as a single complete pixel-art sprite on transparent 4:3 canvas. Replace its mismatched wings with a coherent MATCHING PAIR of ivory feathered angel wings. Both wings arise at the left/front base of the large abdomen (junction with head), BOTH point diagonally UP and BACK toward upper right, same sweep, curvature and feather count. The far wing is slightly higher and behind; the near wing slightly lower and in front. Leave a clear transparent gap between their upper feathered silhouettes so TWO separate wings are immediately readable even at tiny game size. Do not draw one wing pointing down and another up. Match the shape of the extended wings in leftmost front reference. Keep white spider, golden markings, blue eye, every leg, chunky pixel grid, no extra decorations. One spider only."
+    },
+    {
+      "name": "ecume_up",
+      "ref": "ecume",
+      "prompt": "Input is a three-pose ocean spider sprite sheet. Produce ONLY the MIDDLE/BACK-view spider as a single complete pixel-art sprite on transparent 4:3 canvas. Fix the bubble placement: the UPPER body segment is the HEAD, the LOWER body segment is the ABDOMEN. REMOVE the bubble entirely from the lower abdomen, restore its plain blue/teal surface and gold motif. Put ONE small transparent glass air bubble tightly around the UPPER HEAD ONLY, with white/cyan rim and reflection, same visual style as front view reference. The bottom abdomen remains outside the bubble and unobscured. No eyes in back view. Preserve all EIGHT walking legs, four each side, existing inverted gold emblems, color palette, coarse pixel grid and black outline. One spider only, no extra poses or text."
+    },
+    {
+      "name": "corail_up",
+      "ref": "corail",
+      "prompt": "Input is a three-pose ocean spider sprite sheet. Produce ONLY the MIDDLE/BACK-view spider as a single complete pixel-art sprite on transparent 4:3 canvas. Fix the bubble placement: the UPPER body segment is the HEAD, the LOWER body segment is the ABDOMEN. REMOVE the bubble entirely from the lower abdomen, restore its plain blue/teal surface and gold motif. Put ONE small transparent glass air bubble tightly around the UPPER HEAD ONLY, with white/cyan rim and reflection, same visual style as front view reference. The bottom abdomen remains outside the bubble and unobscured. No eyes in back view. Preserve all EIGHT walking legs, four each side, existing inverted gold emblems, color palette, coarse pixel grid and black outline. One spider only, no extra poses or text."
+    }
+  ],
+  "cendreSecondPass": "Precise edit of this single profile spider: it currently has THREE orange horns. REMOVE the far LEFT horn (above the left edge of the eye, at about x370 y460). Keep exactly TWO horns: the upper-middle horn at x510 y380 and the right/near horn at x610 y510. Restore plain burgundy head pixels under the removed left horn. Retain the other two horns completely, every walking leg, gold markings, blue eye, pixel grid, transparent background and canvas. Change ONLY that one horn removal."
+}

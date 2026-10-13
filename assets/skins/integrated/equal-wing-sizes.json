@@ -1,0 +1,23 @@
+{
+  "mode": "Built-in ImageGen",
+  "backWidthRefinement": "Precise width-only edit of this BACK-view angel spider. Keep the current wing LENGTH and root positions exactly, but make EACH wing substantially BROADER: about 400 pixels wide instead of 260. Extend the left wing OUTWARD to the left and the right wing OUTWARD to the right, overlapping some leg roots naturally. Each wing should be a broad full feather fan like a front-view angel wing, not a narrow strip. Keep the central gold abdomen motif visible. Keep feather tips at same bottom y around1000, roots at same y330, no length change. Keep head, body, eight legs, inverted gold emblems, existing transparent1448x1086canvas and coarse pixel style unchanged. Width and feather fullness only.",
+  "edits": [
+    {
+      "name": "aureole_profil",
+      "refs": [
+        "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/integrated/aureole_profil.png",
+        "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/integrated/aureole_down.png"
+      ],
+      "prompt": "Precise pixel-art size correction. IMAGE1 is the left-profile spider edit target; IMAGE2 FRONT VIEW defines the canonical wing size. Enlarge BOTH existing profile wings by about 25 percent in length AND width, keeping their roots anchored at the same head/neck points, their exact current diagonal-up-right angles, matching shape, spacing and foreground placement. Each wing's root-to-tip length should be about 60% of the spider's total left-to-right leg span, matching IMAGE2's wings in game. Do not change body, head, eye, legs, gold markings, pixel style or body size. Keep both wings visible and not merged. Keep transparent 1448x1086 canvas. One complete spider only. This changes wing size only."
+    },
+    {
+      "name": "aureole_up",
+      "refs": [
+        "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/integrated/aureole.png",
+        "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/integrated/aureole_down.png"
+      ],
+      "prompt": "Precise pixel-art size consistency correction. IMAGE1 is an old three-pose sheet: use ONLY its MIDDLE BACK-view spider as edit target. IMAGE2 FRONT VIEW is the authoritative NEW wing size. Output ONE single BACK-view spider on a transparent 1448x1086 canvas. Keep the BACK-view head at top, abdomen below, no visible eyes, inverted gold emblems and all EIGHT legs, four each side. Enlarge BOTH existing folded back-view ivory wings by about 55 percent in length and width: they must now be as big relative to the spider as the wings in IMAGE2. Wing roots stay at the same neck junction on the left and right sides, tips point downward toward and beyond the lower abdomen. Wings remain in the foreground over the sides of the abdomen, leaving center gold motif visible. Each wing root-to-tip length should be about 60% of total left-to-right leg span, matching IMAGE2. Keep white/gold palette, coarse square pixels, black outline, body proportions. Do not retain the small stubby back wings. One complete BACK sprite only, not a sheet."
+    }
+  ],
+  "backRefinement": "Precise size edit of this BACK-view spider. The wings are still too short compared with its front-view wings. Enlarge ONLY both ivory feather wings by another 30% in length and width around their existing roots at the neck. Each wing must have root-to-tip length around 680 pixels, compared to the roughly 1130-pixel total leg span. Keep their current downward direction and symmetry, with feather tips extending distinctly BELOW the feet. Keep the head, body and all eight legs unchanged in size. To fit the longer wings on the transparent 1448x1086 canvas, translate the WHOLE spider about 100 pixels UP before extending the wings: head near y70, roots near y350, tips near y1030. Do not clip feathers. Preserve gold emblems, coarse pixels, black outline and no eyes."
+}

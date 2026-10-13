@@ -22,7 +22,7 @@ function T.run()
   assert(entries.maxance.name=='C’est dur ?' and entries.maxance.rewardSkin==14)
   assert(entries.heartbreak.name=='Une triste fin' and entries.heartbreak.rewardEffect=='heartbreak')
   assert(entries.hardcore.rewardEffect=='hardcore' and entries.top1.rewardEffect=='gold')
-  assert(entries.story_first.trophy=='story_first' and entries.story_all.trophy=='story_all' and entries.flawless_all.trophy=='flawless_all')
+  assert(not entries.story_first and entries.worlds_all.trophy=='story_first' and entries.story_all.trophy=='story_all' and entries.flawless_all.trophy=='flawless_all')
   assert(entries.flawless_all.rewardSkin==23,'The flawless trophy also awards the Cocon skin')
   assert(#Characters.keys==26 and Characters.names[14]=='Maxance' and Characters.names[23]=='Cocon')
   assert(Characters.baseCount==18 and #Characters.baseIndices==18)
@@ -101,8 +101,15 @@ function T.run()
   Hardcore.completed['5']=true;assert(Achievements.unlocked(entries.hardcore) and effects.unlocked('hardcore'))
   Hardcore.completed={};Profile.completed[9]=true;assert(Achievements.unlocked(entries.hardcore),'Legacy hardcore boss completions retain the halo')
 
-  Profile.storyTexts={};assert(not Achievements.unlocked(entries.story_first) and not Achievements.unlocked(entries.story_all))
-  Profile.storyTexts['1']=true;assert(Achievements.unlocked(entries.story_first) and not Achievements.unlocked(entries.story_all))
+  Profile.storyTexts={};assert(not Achievements.unlocked(entries.story_all))
+  Profile.storyTexts['1']=true;assert(not Achievements.unlocked(entries.story_all))
+  Profile.completed={};Profile.scores={};Profile.achievements={story_first=true};Hardcore.completed={}
+  assert(not Achievements.unlocked(entries.worlds_all),'The retired first-word flag cannot grant the all-worlds trophy')
+  for i,world in ipairs(Worlds.order) do
+   Profile.completed[world]=true
+   assert(Achievements.unlocked(entries.worlds_all)==(i==#Worlds.order),'Every world is required')
+  end
+  Profile.save();Profile.load();assert(Achievements.unlocked(entries.worlds_all),'Existing completed-world progress persists')
   for _,world in ipairs(Worlds.order)do Profile.storyTexts[tostring(world)]=true end
   assert(Achievements.unlocked(entries.story_all))
  end,debug.traceback)

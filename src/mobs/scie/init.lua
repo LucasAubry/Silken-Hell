@@ -44,7 +44,7 @@ MobBehaviors.scie = {
     end,
 
     draw = function(m)
-        draw_mob(m, 50, m.img:getHeight() / 2)
+        draw_mob(m, 50)
     end
 }
 

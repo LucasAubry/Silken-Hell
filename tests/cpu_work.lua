@@ -39,7 +39,7 @@ function T.run()
   assert(not N.active and not N.seen.gillou,'Direct removals update the baseline')
   Profile.achievements={maxance=true};expect('maxance')
   Profile.completed[2]=true;expect('world2')
-  Profile.storyTexts['1']=true;expect('story_first')
+  for _,world in ipairs(Worlds.order) do Profile.storyTexts[tostring(world)]=true end;expect('story_all')
   Profile.topRecords[1]={world=6};expect('top1')
   Hardcore.completed['5']=true;expect('hardcore')
   Profile.skinGrants.heartbreak=true

@@ -55,7 +55,7 @@ local function textureInfo(texture)
   local path=M.paths[texture]
   local iw,ih=texture:getDimensions()
   info={width=iw,height=ih,protected=M.protected(path),ink=path~=nil,
-   skip=path and (path:match('^assets/skins/') or path:match('^assets/effects/')),
+   skip=path and (path:match('^assets/skins/') or path:match('^assets/effects/') or require('art_filter').pixelArt[path]),
    scenery=ground(texture,path) and 1 or 0}
   textures[texture]=info
  end

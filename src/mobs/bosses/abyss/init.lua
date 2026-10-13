@@ -386,7 +386,8 @@ function A.siteVisibility(x,y)
         local d=math.sqrt((x-lx)^2+(y-ly)^2)
         visibility=math.max(visibility,math.max(0,math.min(1,(r-d)/35)))
     end
-    if (player.illuminated or 0)>0 and not player.abyssHeld then light(player.x+15,player.y+12,A.playerLightRadius()) end
+    local lx,ly=Ocean.lightPosition()
+    if lx and (player.illuminated or 0)>0 then light(lx,ly,A.playerLightRadius()) end
     for _,m in ipairs(mobs) do if not m.abyssHeld and m.type=='lanternfish' then light(m.x,m.y-15,145) end end
     local function cages(boss)
         for _,p in ipairs(boss.lightSites or {}) do if p.cage and (p.light or 0)>0 then light(p.x,p.y,95+25*p.light) end end
@@ -548,13 +549,6 @@ function A.drawLights()
             g.setColor(.3,.75,1,.14); g.circle('fill',x,y,4)
             g.setColor(.65,.9,1,.8); g.circle('fill',x,y,1.4)
         end end
-        for r=4,1,-1 do local glow=A.playerBrightness();g.setColor(.15,.65,1,.022*glow);g.ellipse('fill',player.x+15,player.y+12,23+r*13+20*glow,18+r*10+16*glow) end
-        local brightness=player.circleLight and .7 or A.playerBrightness()
-        g.setColor(.35,.9,1,.38*brightness); g.ellipse('fill',player.x+15,player.y+12,35,27)
-        g.setColor(.75,1,1,.95*brightness); g.setLineWidth(2); g.ellipse('line',player.x+15,player.y+12,31,24); g.setLineWidth(1)
-        for i=1,8 do local a=i*math.pi/4+A.clock; g.setColor(.5,.9,1,.8*brightness)
-            g.circle('fill',player.x+15+math.cos(a)*29,player.y+12+math.sin(a)*20,1.5)
-        end
     end
     for _,p in ipairs(A.ejected) do
         local t=p.age/.4; g.setColor(.4,.8,1,(1-t)*.6)

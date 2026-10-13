@@ -104,17 +104,17 @@ function draw_wall_1()
 
 
 
-    love.graphics.draw(world.lv_1.wall, -140, -615, 0, 0.7)
-    love.graphics.draw(world.lv_1.wall, -230, 474, 0, 1)
+    require('art_filter').drawSource(world.lv_1.wall, -140, -615, 0, 0.7)
+    require('art_filter').drawSource(world.lv_1.wall, -230, 474, 0, 1)
 
 
-    love.graphics.draw(world.lv_1.poto_2, -50, -25, 0, 0.5)
-    love.graphics.draw(world.lv_1.poto_2, -50, 190, 0, 0.5)
-    love.graphics.draw(world.lv_1.poto_2, -50, 408, 0, 0.5)
+    require('art_filter').drawSource(world.lv_1.poto_2, -50, -25, 0, 0.5)
+    require('art_filter').drawSource(world.lv_1.poto_2, -50, 190, 0, 0.5)
+    require('art_filter').drawSource(world.lv_1.poto_2, -50, 408, 0, 0.5)
 
-    love.graphics.draw(world.lv_1.poto_2, 720, -25, 0, 0.5)
-    love.graphics.draw(world.lv_1.poto_2, 720, 190, 0, 0.5)
-    love.graphics.draw(world.lv_1.poto_2, 720, 408, 0, 0.5)
+    require('art_filter').drawSource(world.lv_1.poto_2, 720, -25, 0, 0.5)
+    require('art_filter').drawSource(world.lv_1.poto_2, 720, 190, 0, 0.5)
+    require('art_filter').drawSource(world.lv_1.poto_2, 720, 408, 0, 0.5)
 
 
 end
@@ -125,15 +125,15 @@ function draw_objet_1()
 	end
 
 	-- aureoles
-	love.graphics.draw(objet.aureole.img, 353, 80, 0, objet.aureole.size)
-	love.graphics.draw(objet.aureole.img, 625, 285, 0, objet.aureole.size)
-	love.graphics.draw(objet.aureole.img, 60, 285, 0, objet.aureole.size)
-	love.graphics.draw(objet.aureole.img, 353, 500, 0, objet.aureole.size)
+	require('art_filter').drawSource(objet.aureole.img, 353, 80, 0, objet.aureole.size)
+	require('art_filter').drawSource(objet.aureole.img, 625, 285, 0, objet.aureole.size)
+	require('art_filter').drawSource(objet.aureole.img, 60, 285, 0, objet.aureole.size)
+	require('art_filter').drawSource(objet.aureole.img, 353, 500, 0, objet.aureole.size)
 
 	local floatOffset = math.sin(larme_float_timer * 2) * 5
 	draw_shadow(10, 10, objet.larme.x + 17, objet.larme.y + 43 + floatOffset)
 	love.graphics.draw(particleSystem, objet.larme.x + 16, objet.larme.y + 25 + floatOffset)
-	love.graphics.draw(objet.larme.img, objet.larme.x, objet.larme.y + floatOffset, 0, objet.larme.size)
+	require('art_filter').drawSource(objet.larme.img, objet.larme.x, objet.larme.y + floatOffset, 0, objet.larme.size)
 
 
 end

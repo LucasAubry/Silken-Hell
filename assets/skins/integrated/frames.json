@@ -1,0 +1,127 @@
+{
+  "aureole": {
+    "path": "assets/skins/integrated/aureole.png",
+    "frames": {
+      "down": {
+        "path": "assets/skins/integrated/aureole_down.png",
+        "x": 223,
+        "y": 40,
+        "w": 1003,
+        "h": 999
+      },
+      "up": {
+        "path": "assets/skins/integrated/aureole_up.png",
+        "renderScale": 1.14,
+        "x": 105,
+        "y": 42,
+        "w": 1238,
+        "h": 987
+      },
+      "profil": {
+        "path": "assets/skins/integrated/aureole_profil.png",
+        "x": 208,
+        "y": 62,
+        "w": 904,
+        "h": 976
+      }
+    }
+  },
+  "ambre": {
+    "frames": {
+      "down": {
+        "path": "assets/skins/integrated/ambre_down.png",
+        "x": 43,
+        "y": 42,
+        "w": 1362,
+        "h": 997
+      },
+      "up": {
+        "path": "assets/skins/integrated/ambre_up.png",
+        "x": 33,
+        "y": 51,
+        "w": 1382,
+        "h": 1003
+      },
+      "profil": {
+        "path": "assets/skins/integrated/ambre_profil.png",
+        "x": 30,
+        "y": 16,
+        "w": 1378,
+        "h": 1030
+      }
+    }
+  },
+  "cendre": {
+    "frames": {
+      "down": {
+        "path": "assets/skins/integrated/cendre_down.png",
+        "x": 48,
+        "y": 50,
+        "w": 1347,
+        "h": 988
+      },
+      "up": {
+        "path": "assets/skins/integrated/cendre_up.png",
+        "x": 41,
+        "y": 25,
+        "w": 1363,
+        "h": 1037
+      },
+      "profil": {
+        "path": "assets/skins/integrated/cendre_profil.png",
+        "x": 20,
+        "y": 26,
+        "w": 1369,
+        "h": 1008
+      }
+    }
+  },
+  "ecume": {
+    "path": "assets/skins/integrated/ecume.png",
+    "frames": {
+      "down": {
+        "x": 15,
+        "y": 92,
+        "w": 695,
+        "h": 567
+      },
+      "up": {
+        "path": "assets/skins/integrated/ecume_up.png",
+        "x": 119,
+        "y": 68,
+        "w": 1191,
+        "h": 986
+      },
+      "profil": {
+        "x": 1455,
+        "y": 92,
+        "w": 703,
+        "h": 573
+      }
+    }
+  },
+  "corail": {
+    "path": "assets/skins/integrated/corail.png",
+    "frames": {
+      "down": {
+        "x": 24,
+        "y": 112,
+        "w": 680,
+        "h": 567
+      },
+      "up": {
+        "path": "assets/skins/integrated/corail_up.png",
+        "x": 125,
+        "y": 74,
+        "w": 1198,
+        "h": 968
+      },
+      "profil": {
+        "x": 1456,
+        "y": 114,
+        "w": 707,
+        "h": 576
+      }
+    }
+  }
+}

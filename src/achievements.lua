@@ -7,8 +7,8 @@ A.list={
     {id='heartbreak',category='secrets',name='Une triste fin',rewardEffect='heartbreak',description=function()
         return ''
     end},
-    {id='story_first',category='story',name='Une longue histoire',story=1,trophy='story_first',
-        description=function() return 'Trouve un texte qu’elle t’a laissé.' end},
+    {id='worlds_all',category='worlds',name='Tous les mondes',trophy='story_first',
+        description=function() return 'Termine les sept mondes en parcours complet (hors entraînement).' end},
     {id='story_all',category='story',name='Tous ses mots',story='all',trophy='story_all',
         description=function() local found,total=require('story').progress();return T('Retrouve tous les textes qu’elle t’a laissés. %d/%d',found,total) end},
     {id='gillou',category='secrets',name='3 piques d’un coup',rewardSkin=13,description=function()
@@ -49,6 +49,10 @@ local function allFlawless(flags,scores)
 end
 function A.unlocked(a)
     local flags=Profile.achievements or {}
+    if a.id=='worlds_all' then
+        for _,world in ipairs(Worlds.order) do if not Profile.hasCompleted(world) then return false end end
+        return true
+    end
     if a.id=='flawless_all' then return flags.flawless_all==true or allFlawless(flags,Profile.scores) end
     if a.id=='top1' then return require('skin_effects').unlocked('gold') end
     if a.id=='hardcore' then return require('skin_effects').unlocked('hardcore') end

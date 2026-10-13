@@ -352,7 +352,7 @@ function love.draw()
         end
         for _,m in ipairs(mobs) do if m~=droppedCarrier and m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
         Renaissance.drawBlasts(); Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false)
-        Ocean.drawBubble(); Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
+        Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies(); Realms.drawAnemoneElectric() end
         Abyss.drawLights(); Bosses.drawLights();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage()

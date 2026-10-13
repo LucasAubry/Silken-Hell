@@ -63,15 +63,15 @@ function E.halo(x,y,size,dir)
  -- Anchor the floating ring to the head in each authored pose, including the
  -- far head of the back view. The near poses frame the top of the forehead.
  local headX,headY=.5,dir=='up' and .13 or .43
- local rx,ry=size*.25,size*.095
+ local rx,ry=size*.30,size*.125
  local facing,tilt=1,0
  if dir=='left' or dir=='right' then
   facing=dir=='right' and -1 or 1
   headX,headY=.29,.38
-  rx,ry,tilt=size*.22,size*.09,.12*facing
+  rx,ry,tilt=size*.27,size*.12,.12*facing
  end
  local cx=x+(headX*iw-qx-art.w/2)*scale*facing
- local cy=y+(headY*ih-qy-art.h/2)*scale-size*.025
+ local cy=y+(headY*ih-qy-art.h/2)*scale-size*.035
  -- Add light to the head instead of painting an opaque red band over it.
  g.push('all');g.setShader(E.shader);g.setBlendMode('add')
  E.shader:send('clock',UI.clock)

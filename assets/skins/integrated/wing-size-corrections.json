@@ -1,0 +1,20 @@
+{
+  "mode": "Built-in ImageGen",
+  "wingEdits": [
+    {
+      "name": "aureole_down",
+      "path": "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/integrated/aureole_down.png",
+      "prompt": "Precise edit of this front-facing pixel-art angel spider: enlarge ONLY its two ivory feather wings by about 50 percent in both length and width. Keep each wing root anchored at its current lower position beside the junction between head and abdomen, preserve their current upward orientation and matching left/right symmetry. Larger feather fans should extend above and to the sides of the abdomen and be clearly visible. Do not enlarge the spider body, change its face, eyes, legs, gold markings or pixel grid. Keep all eight walking legs. Keep transparent 4:3 canvas; maintain crisp pixel art and dark outline. One complete spider."
+    },
+    {
+      "name": "aureole_profil",
+      "path": "/var/folders/sj/69gwdk0x21g121fzv0rm9c7r0000gn/T/codex-clipboard-7b855b61-9eb6-44db-a869-ab61614057e4.png",
+      "prompt": "Minimal positional edit of this exact pixel-art sprite. Treat the TWO EXISTING WINGS as a single rigid group. Translate the entire wing pair about 280 pixels LEFT and 140 pixels DOWN toward the HEAD, keeping EXACTLY their original sizes, shapes, feather arrangement, diagonal plane, upward-right angles and relative spacing. Do not rotate either wing. Their roots should now attach at the head/neck area beside and above the blue eye, rather than at the back end of the abdomen. The wings can overlap the abdomen because they are in the foreground. Restore the old wing locations to transparent background or original abdomen pixels where necessary. Preserve body/head/eye, all legs, gold motifs, black outlines, pixel grid, and transparent 1448x1086 canvas completely. Do not fold wings onto the abdomen or redraw their design: the only change is moving the unchanged pair toward the head."
+    }
+  ],
+  "earthRestoration": {
+    "down": "exec-03b2d943-f9a1-473a-9fb6-308fd759cb6e.png",
+    "profil": "exec-5c47ad82-2ede-417f-8c44-77edd19f5a6d.png",
+    "up": "Existing four spikes per side on abdomen retained."
+  }
+}

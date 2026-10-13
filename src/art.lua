@@ -8,7 +8,7 @@ if raw and os.getenv('SILKEN_EXPORT_ART')~='1' then local ok,data=pcall(require(
 function A.imageData(path)
     path=require("asset_paths").resolve(path)
     local data=love.image.newImageData(path)
-    local checker=path:match('/waspling_left%.png$')
+    local checker=path:match('/waspling_left%.png$') and not require('art_filter').pixelArt[path]
     if checker then
         local w,h=data:getDimensions(); local queue={0}; local seen={[0]=true}; local head=1
         while head<=#queue do
@@ -30,7 +30,7 @@ function A.add(key,path)
     if A.onLoad then A.onLoad() end
     path=require("asset_paths").resolve(path)
     local saved=cached[path]
-    if saved and saved.fileSize==love.filesystem.getInfo(path).size and not path:match('/waspling_left%.png$') then
+    if saved and saved.fileSize==love.filesystem.getInfo(path).size and (require('art_filter').pixelArt[path] or not path:match('/waspling_left%.png$')) then
         local image=require('art_filter').image(path)
         local iw,ih=image:getDimensions()
         local a={image=image,quad=love.graphics.newQuad(saved.x,saved.y,saved.w,saved.h,iw,ih),w=saved.w,h=saved.h,glow=saved.glow}
@@ -167,6 +167,7 @@ function A.drawLarva(x,y,size,angle,time)
     g.pop()
 end
 function A.load()
+    require('integrated_skins').load(A)
     A.add('ocean_coral_wall','assets/environments/ocean/coral-wall.png')
     for _,pose in ipairs({'down','up','profil'}) do
         A.add('player_skin_'..pose,'assets/skins/commun/'..pose..'.png')
@@ -217,7 +218,9 @@ function A.draw(key,x,y,width,angle,height)
     local sx=width/a.w; local sy=height and height/a.h or sx
     if creature(key) then A.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2) end
     local previous=love.graphics.getShader()
-    if key=='black_feather' or key:match('^merle_') or key=='cloud_snare' and Campaign.biome==6 then require('paradise_style').bind(a,'bird') end
+    if key=='black_feather' or key:match('^merle_') or key=='cloud_snare' and Campaign and Campaign.biome==6 then
+        require('paradise_style').bind(a,key=='cloud_snare' and 'cloud' or 'bird')
+    end
     love.graphics.draw(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
     love.graphics.setShader(previous)
     require('servant_art').web(a,a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
@@ -229,6 +232,12 @@ function A.drawTinted(key,x,y,width,angle,height)
     }]])
     local old=love.graphics.getShader(); love.graphics.setShader(A.tintShader)
     A.draw(key,x,y,width,angle,height); love.graphics.setShader(old)
+end
+-- Bone shots retain their original art independently of the pixel-art boss.
+function A.drawBoneProjectile(name,x,y,width,angle,height)
+    local key='projectile_'..name
+    if not A.images[key] then A.add(key,'assets/effects/projectiles/'..name..'.png') end
+    A.draw(key,x,y,width,angle,height)
 end
 function A.direction(dx,dy,previous)
     if math.abs(dx)+math.abs(dy)<.001 then return previous or 'down' end
@@ -242,7 +251,7 @@ function A.drawFacing(name,dir,x,y,size)
     local scale=size/math.max(a.w,a.h)
     if not name:find('spider') then A.shadow(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2) end
     local previous=love.graphics.getShader()
-    if name=='merle' or name=='gull' and Campaign.biome==6 then require('paradise_style').bind(a,'bird') end
+    if name=='merle' or name=='gull' and Campaign and Campaign.biome==6 then require('paradise_style').bind(a,'bird') end
     love.graphics.draw(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
     love.graphics.setShader(previous)
     require('servant_art').web(a,a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)

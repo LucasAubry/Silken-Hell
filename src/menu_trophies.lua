@@ -19,11 +19,9 @@ function M.thumbnail(a)
  if not art then return nil end
  local thumbnail=M.thumbnails[key]
  if not thumbnail then
-  -- Tiny menu rewards need averaged pixels: keep the gallery's crisp texture
-  -- untouched and upload a separate, mipmapped copy of the same artwork.
+  -- Share the crisp pixel-art texture with the achievement gallery.
   local path=require('asset_paths').resolve('assets/ui/achievements/'..a.trophy..'.png')
-  local image=love.graphics.newImage(path,{mipmaps=true})
-  image:setFilter('linear','linear');image:setMipmapFilter('linear',0)
+  local image=require('art_filter').image(path)
   thumbnail={image=image,quad=art.quad,w=art.w,h=art.h}
   M.thumbnails[key]=thumbnail
  end
@@ -49,12 +47,15 @@ function M.draw(tint)
   g.setColor(tint[1],tint[2],tint[3],hover and 1 or done and .72 or .32)
   g.polygon('line',hex)
   -- The trophy sits in front of its smaller case and extends above the rim.
-  if done then
+  do
    local trophy=M.thumbnail(a)
    if trophy then
     local scale=40/math.max(trophy.w,trophy.h)
     g.setColor(1,1,1)
+    if not done then require('locked_art').bind() end
     g.draw(trophy.image,trophy.quad,cx,cy-5,0,scale,scale,trophy.w/2,trophy.h/2)
+    g.setShader()
+    if not done then require('locked_art').question(cx,cy-5,40) end
    end
   end
   U.buttons[#U.buttons+1]={x=hitX,y=hitY,w=44,h=44,trophyId=a.id,

@@ -92,21 +92,11 @@ function R.reset(w,n)
         for _,p in ipairs({{.24,220},{.76,405}}) do R.tornadoes[#R.tornadoes+1]={x=Arena.width*p[1],y=p[2],cooldown=0} end
         g.clear(.045,.105,.125)
         g.setColor(.43,.57,.60); g.rectangle('fill',28,28,Arena.width-56,544,22)
-        -- Bake the cloud texture and its soft focus once, below sharp actors and HUD.
+        -- Bake the Paradise-style cloud material once; actors remain crisp above it.
         R.cloudShader=R.cloudShader or g.newShader('assets/shaders/sky_floor.glsl')
         R.cloudShader:send('floorSize',{Arena.width,600})
         g.setShader(R.cloudShader);g.setColor(1,1,1)
         g.draw(UI.pixel,0,0,0,Arena.width,600);g.setShader()
-        R.cloudBlur=R.cloudBlur or g.newShader('assets/shaders/sky_floor_blur.glsl')
-        if not R.cloudBlurCanvas or R.cloudBlurCanvas:getWidth()~=Arena.width or math.abs(R.cloudBlurCanvas:getDPIScale()-density)>.001 then
-            R.cloudBlurCanvas=g.newCanvas(Arena.width,600,{dpiscale=density})
-        end
-        g.setShader(R.cloudBlur);g.setBlendMode('replace')
-        R.cloudBlur:send('direction',{2/Arena.width,0})
-        g.setCanvas(R.cloudBlurCanvas);g.draw(R.floor,0,0)
-        R.cloudBlur:send('direction',{0,2/600})
-        g.setCanvas(R.floor);g.draw(R.cloudBlurCanvas,0,0)
-        g.setShader();g.setBlendMode('alpha')
         for i=1,math.min(6,2+math.floor(n/2)) do
             local p={x=Arena.width*(i%2==0 and .68 or .32),y=145+math.floor((i-1)/2)*145+(n%3-1)*15,rx=39,ry=28,seed=i*1.7+n}
             local safe=true
@@ -530,8 +520,11 @@ function R.drawDarkness()
     R.darkShader=R.darkShader or g.newShader('assets/shaders/abyss-darkness.glsl')
     local exposed=(player.illuminated or 0)>0
     local bx,by=Ocean.lightPosition()
-    local lights={{exposed and player.x+15 or bx or player.x+15,exposed and player.y+12 or by or player.y+12,exposed and Abyss.playerLightRadius() or 52,exposed and (player.circleLight and .8 or .90+.04*math.max(0,(player.charges or 0)-1)) or (bx and .28 or 0)}}
-    if not exposed then lights[#lights+1]={player.x+15,player.y+12,75,.32} end
+    local lights={}
+    if bx then
+        lights[1]={bx,by,exposed and Abyss.playerLightRadius() or 75,
+            exposed and (player.circleLight and .8 or .90+.04*math.max(0,(player.charges or 0)-1)) or .32}
+    end
     if Abyss.encounterActive() then
         lights[#lights+1]={Arena.width/2,300,Arena.width*2,Abyss.isPulling() and .025 or .08}
     end
@@ -609,11 +602,11 @@ function R.drawGround()
     if Campaign.biome==6 or R.custom then
         require('sky_rain').draw(R.rain)
         for _,p in ipairs(R.holes) do
-            g.setColor(.90,.91,.81); R.drawHole(p,1.19)
-            g.setColor(.33,.48,.49); R.drawHole(p,1.08)
+            g.setColor(.91,.95,.96); R.drawHole(p,1.19)
+            g.setColor(.28,.40,.49); R.drawHole(p,1.08)
             -- Receding irregular ledges darken toward the bottom of the chasm.
             for depth=0,10 do
-                local t=depth/10; g.setColor(.18*(1-t)+.02,.31*(1-t)+.045,.32*(1-t)+.055)
+                local t=depth/10; g.setColor(.16*(1-t)+.02,.25*(1-t)+.045,.32*(1-t)+.07)
                 g.push(); g.translate(0,t*7); R.drawHole(p,1-t*.48); g.pop()
             end
         end

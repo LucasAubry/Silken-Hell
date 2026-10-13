@@ -169,7 +169,15 @@ function M.draw()
         g.setColor(c[1],c[2],c[3],(1-t)*.65);g.setLineWidth(2*(1-t)+.5)
         g.circle('line',arrival.x,arrival.y-M.scroll,27+21*(1-(1-t)^3));g.setLineWidth(1)
     end
-    g.setColor(1,1,1);Characters.draw(M.x or 365,(M.y or 210)-M.scroll,64,'down')
+    local markerX,markerY=M.x or 365,(M.y or 210)-M.scroll
+    g.setColor(1,1,1);Characters.draw(markerX,markerY,64,'down',nil,App.selectedWorld)
+    if App.selectedWorld==4 or App.selectedWorld==7 then
+        local bubble=require('breathing_bubble')
+        local x,y,r=bubble.headPosition(markerX,markerY,64,'down')
+        if require('integrated_skins').bubble(Characters.selected()) then
+            if App.selectedWorld==7 then bubble.drawLantern(x,y,r,UI.clock,nil,nil,'down') end
+        else bubble.drawAt(x,y,r,UI.clock,App.selectedWorld==7,nil,nil,nil,'down') end
+    end
     g.setCanvas(previousCanvas);g.pop()
     M.edgeShader=M.edgeShader or g.newShader([[
         vec4 effect(vec4 color,Image image,vec2 uv,vec2 screen) {

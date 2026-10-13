@@ -256,7 +256,7 @@ function C.drawTear(overlay)
             return vec4(mix(base,vec3(1.),highlight),p.a*color.a);
         }]])
         g.setShader(C.biomeTearShader);g.setColor(tint)
-        if not require('paradise_ink').tear(x,y,objet.larme.size) then g.draw(objet.larme.img,x,y,0,objet.larme.size) end
+        if not require('paradise_ink').tear(x,y,objet.larme.size) then require('art_filter').drawSource(objet.larme.img,x,y,0,objet.larme.size) end
         g.setShader(previous);g.pop()
     end
     g.setColor(1,1,1)

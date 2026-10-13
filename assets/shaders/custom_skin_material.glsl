@@ -1,6 +1,14 @@
+extern bool brownBody;
 vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
     vec4 p=Texel(image,uv);
     vec3 pigment=p.rgb/max(p.a,.00001);
+    // Darken only Ambre's tan shell, retaining ivory spikes, gold and blue eyes.
+    if (brownBody) {
+        float tan=smoothstep(.10,.17,pigment.r-pigment.g)
+            *smoothstep(.08,.14,pigment.g-pigment.b)
+            *smoothstep(.40,.55,pigment.b/max(pigment.g,.001));
+        pigment*=mix(vec3(1.),vec3(.90,.83,.75),tan);
+    }
     // Keep authored glasses, silk and eye colors; soften the surface highlights.
     float light=dot(pigment,vec3(.299,.587,.114));
     vec3 ink=(pigment-vec3(.30))*1.04+vec3(.30);

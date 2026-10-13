@@ -1,0 +1,55 @@
+{
+  "mode": "Built-in ImageGen, transparent PNG edits",
+  "sheetCorrections": [
+    {
+      "name": "aureole",
+      "path": "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/integrated/aureole.png",
+      "prompt": "Edit this existing three-cell spider sprite sheet precisely, maintaining the same 3:1 canvas, transparent background, all cell positions, pixel grid, colors, scale and silhouettes except requested fixes. LEFT is front, CENTER is back, RIGHT is left profile. Reverse BOTH gold body emblems in the BACK view by rotating each emblem 180 degrees IN PLACE. The central long stem that pointed downward must now point UP, and the two gold diagonal branches must point downward/outward instead of upward/outward. Keep emblem locations unchanged. Do NOT rotate the spider itself. In this sheet the BACK view is ONLY the CENTER cell. Preserve LEFT and RIGHT emblems exactly. Also correct the wings ONLY in CENTER and RIGHT cells. CENTER/back view: draw two ivory feather wings folded over the surface of the LOWER large abdomen, in FRONT of the abdomen so they occlude it. Their roots attach near the junction of the two body segments; the folded feather tips point down along the abdomen. Remove the old wings sticking upward behind the body. RIGHT/profile view: show TWO distinct wings, one near wing resting on/over the abdomen and one far wing visibly projecting behind its upper far edge. Both attach naturally to the abdomen. Do not let one hide the other entirely. Leave LEFT/front cell exactly unchanged. No added text, no borders, no extra cells. Hard-edged pixel art, not smooth illustration."
+    },
+    {
+      "name": "ambre",
+      "path": "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/integrated/ambre.png",
+      "prompt": "Edit this existing three-cell spider sprite sheet precisely, maintaining the same 3:1 canvas, transparent background, all cell positions, pixel grid, colors, scale and silhouettes except requested fixes. LEFT is front, CENTER is back, RIGHT is left profile. Reverse BOTH gold body emblems in the BACK view by rotating each emblem 180 degrees IN PLACE. The central long stem that pointed downward must now point UP, and the two gold diagonal branches must point downward/outward instead of upward/outward. Keep emblem locations unchanged. Do NOT rotate the spider itself. In this sheet the BACK view is ONLY the CENTER cell. Preserve LEFT and RIGHT emblems exactly. Also correct leg counts in CENTER/back and RIGHT/profile cells. CENTER must have FOUR separated jointed walking legs on LEFT and FOUR on RIGHT, exactly eight total, with visible gaps and distinct gold-tipped feet. RIGHT profile must show FOUR separate near-side walking legs with four distinct feet, plus natural far-side hints; do not mistake mouth fangs for legs. Keep all current brown colors and ivory spikes. Leave LEFT/front cell exactly unchanged. No added text, no borders, no extra cells. Hard-edged pixel art, not smooth illustration."
+    },
+    {
+      "name": "braise",
+      "path": "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/integrated/braise.png",
+      "prompt": "Edit this existing three-cell spider sprite sheet precisely, maintaining the same 3:1 canvas, transparent background, all cell positions, pixel grid, colors, scale and silhouettes except requested fixes. LEFT is front, CENTER is back, RIGHT is left profile. Reverse BOTH gold body emblems in the BACK view by rotating each emblem 180 degrees IN PLACE. The central long stem that pointed downward must now point UP, and the two gold diagonal branches must point downward/outward instead of upward/outward. Keep emblem locations unchanged. Do NOT rotate the spider itself. In this sheet the BACK view is ONLY the CENTER cell. Preserve LEFT and RIGHT emblems exactly. No added text, no borders, no extra cells. Hard-edged pixel art, not smooth illustration."
+    },
+    {
+      "name": "cendre",
+      "path": "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/integrated/cendre.png",
+      "prompt": "Edit this existing three-cell spider sprite sheet precisely, maintaining the same 3:1 canvas, transparent background, all cell positions, pixel grid, colors, scale and silhouettes except requested fixes. LEFT is front, CENTER is back, RIGHT is left profile. Reverse BOTH gold body emblems in the BACK view by rotating each emblem 180 degrees IN PLACE. The central long stem that pointed downward must now point UP, and the two gold diagonal branches must point downward/outward instead of upward/outward. Keep emblem locations unchanged. Do NOT rotate the spider itself. In this sheet the BACK view is ONLY the CENTER cell. Preserve LEFT and RIGHT emblems exactly. No added text, no borders, no extra cells. Hard-edged pixel art, not smooth illustration."
+    },
+    {
+      "name": "ecume",
+      "path": "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/integrated/ecume.png",
+      "prompt": "Edit this existing three-cell spider sprite sheet precisely, maintaining the same 3:1 canvas, transparent background, all cell positions, pixel grid, colors, scale and silhouettes except requested fixes. LEFT is front, CENTER is back, RIGHT is left profile. Reverse BOTH gold body emblems in the BACK view by rotating each emblem 180 degrees IN PLACE. The central long stem that pointed downward must now point UP, and the two gold diagonal branches must point downward/outward instead of upward/outward. Keep emblem locations unchanged. Do NOT rotate the spider itself. In this sheet the BACK view is ONLY the CENTER cell. Preserve LEFT and RIGHT emblems exactly. No added text, no borders, no extra cells. Hard-edged pixel art, not smooth illustration."
+    },
+    {
+      "name": "corail",
+      "path": "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/integrated/corail.png",
+      "prompt": "Edit this existing three-cell spider sprite sheet precisely, maintaining the same 3:1 canvas, transparent background, all cell positions, pixel grid, colors, scale and silhouettes except requested fixes. LEFT is front, CENTER is back, RIGHT is left profile. Reverse BOTH gold body emblems in the BACK view by rotating each emblem 180 degrees IN PLACE. The central long stem that pointed downward must now point UP, and the two gold diagonal branches must point downward/outward instead of upward/outward. Keep emblem locations unchanged. Do NOT rotate the spider itself. In this sheet the BACK view is ONLY the CENTER cell. Preserve LEFT and RIGHT emblems exactly. No added text, no borders, no extra cells. Hard-edged pixel art, not smooth illustration."
+    },
+    {
+      "name": "commun",
+      "path": "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/commun/up.png",
+      "prompt": "Precise edit of this existing single BACK-view pixel-art spider PNG. Reverse BOTH gold body emblems in the BACK view by rotating each emblem 180 degrees IN PLACE. The central long stem that pointed downward must now point UP, and the two gold diagonal branches must point downward/outward instead of upward/outward. Keep emblem locations unchanged. Do NOT rotate the spider itself. Preserve every other part: body pose, exact pixel grid, shape, eight legs, silhouette, colors, transparency, canvas size and placement. Do not add eyes or accessories.  This is a minimal gold motif orientation correction only, not a redraw of the spider."
+    },
+    {
+      "name": "maxance",
+      "path": "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/maxance/up.png",
+      "prompt": "Precise edit of this existing single BACK-view pixel-art spider PNG. Reverse BOTH gold body emblems in the BACK view by rotating each emblem 180 degrees IN PLACE. The central long stem that pointed downward must now point UP, and the two gold diagonal branches must point downward/outward instead of upward/outward. Keep emblem locations unchanged. Do NOT rotate the spider itself. Preserve every other part: body pose, exact pixel grid, shape, eight legs, silhouette, colors, transparency, canvas size and placement. Do not add eyes or accessories. Keep the wooden splint/bandage on the same leg exactly intact. This is a minimal gold motif orientation correction only, not a redraw of the spider."
+    }
+  ],
+  "earthLegCorrections": [
+    {
+      "pose": "up",
+      "prompt": "Edit the FIRST image into the brown spiked Earth spider skin shown in SECOND reference. Single full BACK-view spider on transparent background, same 4:3 canvas and pose as FIRST reference. CRITICAL: retain all EIGHT walking legs from FIRST reference, FOUR distinct jointed legs on each side, with visible gaps, especially the bottom fourth leg pair. Recolor white body and legs warm ochre brown matching SECOND reference, keep gold leg tips, add ivory conical spikes around abdomen rim matching Earth skin. Reverse the two gold emblems 180 degrees in place: long central stem points UP and branches extend downward/outward as in middle cell of SECOND reference. No eyes visible from back. Preserve first image's coarse pixel-art grid, chunky square pixels and black outline. One complete sprite only, no sprite sheet, no labels. Eight walking legs is the highest priority."
+    },
+    {
+      "pose": "profil",
+      "prompt": "Edit the FIRST image into the brown spiked Earth spider skin shown in SECOND reference. Single full left-facing PROFILE-view spider on transparent background, same 4:3 canvas and exact pose as FIRST reference. CRITICAL: retain EVERY walking leg from FIRST reference, with FOUR distinctly separated near-side walking legs and feet, plus the far-side leg visible behind the head. Mouth fangs do not count. Copy FIRST reference leg geometry exactly. Recolor white body and legs warm ochre brown matching SECOND reference, keep gold tips and gold body markings, add ivory conical spikes around large abdomen rim matching Earth skin. Preserve the blue eye, FIRST image's coarse pixel-art grid, chunky square pixels and black outline. One complete sprite only, no sheet, no labels. Four visible near-side walking legs is the highest priority."
+    }
+  ]
+}

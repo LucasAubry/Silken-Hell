@@ -3,22 +3,25 @@ function draw_mob(m, pivotX, pivotY)
     local img = m.img
     if not img then return end
 
-    local w, h = img:getWidth(), img:getHeight()
+    local filter=require('art_filter')
+    local w, h = filter.sourceSize(img)
     local ox = pivotX or w / 2
     local oy = pivotY or h / 2
 
     local float = require('mobs.shared.floating').offset(m)
 
-    Art.shadow(img,m.x,m.y+float,m.rotation or 0,m.size,m.size,ox,oy)
+    local sx,sy=filter.sourceScale(img,m.size)
+    local ax,ay=ox*img:getWidth()/w,oy*img:getHeight()/h
+    Art.shadow(img,m.x,m.y+float,m.rotation or 0,sx,sy,ax,ay)
     love.graphics.draw(
         img,
         m.x,
         m.y + float,
         m.rotation or 0,
-        m.size,
-        m.size,
-        ox,
-        oy
+        sx,
+        sy,
+        ax,
+        ay
     )
 end
 

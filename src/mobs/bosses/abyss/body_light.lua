@@ -26,7 +26,8 @@ function L.apply(a,b)
  L.shader:send('spriteRect',{x/iw,y/ih,w/iw,h/ih})
  L.shader:send('pose',{b.x,b.y,b.w,b.h});L.shader:send('angle',b.angle or 0)
  L.shader:send('clock',a.clock);L.shader:send('baseLight',b.part=='head' and .41 or b.part=='tail' and .34 or b.part==a.webPartIds[#a.webPartIds] and .24 or .14)
- L.shader:send('playerLight',{player.x+15,player.y+12})
+ local lx,ly=Ocean.lightPosition()
+ L.shader:send('playerLight',{lx or -10000,ly or -10000})
  local best,dist
  for _,p in ipairs(a.returnShots)do if p.lightning then local d=(p.x-b.x)^2+(p.y-b.y)^2;if not dist or d<dist then best,dist=p,d end end end
  L.shader:send('boltLight',best and {best.x,best.y,.65,0} or {0,0,0,0})

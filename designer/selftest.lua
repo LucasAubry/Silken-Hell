@@ -8,6 +8,19 @@ function T.run(M,state,select,apply,preview)
     -- Shared sprite rendering must not require the game's Art global.
     assert(_G.Art==nil)
     for _,layout in pairs(M.defaults.levels) do select(layout.world,layout.level);love.draw() end
+    if os.getenv('SILKEN_PIXEL_ART_TEST')=='1' then
+        select(5,9)
+        local tick=0
+        state.testUpdate=function()
+            tick=tick+1
+            if tick==2 then love.graphics.captureScreenshot('designer-pixel-art.png') end
+            if tick==4 then
+                print('PASS editor pixel art: all 66 layouts render without game globals')
+                love.event.quit()
+            end
+        end
+        return
+    end
     for n=1,10 do
         local found=false; for _,e in ipairs(M.defaults.levels['2:'..n].entities) do if e.kind=='magma_spawner' then found=true end end
         assert(found,'Flaques Enfer importées dans l’éditeur')

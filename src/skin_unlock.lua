@@ -31,7 +31,9 @@ end
 function R.test()
  if not R.seen then R.init() end
  -- Private generator: previewing never advances the game's random sequence.
- return R.open(Characters.baseIndices[R.random:random(6,Characters.baseCount)],true)
+ local rewards={}
+ for _,index in ipairs(Characters.baseIndices) do if index>5 then rewards[#rewards+1]=index end end
+ return R.open(rewards[R.random:random(#rewards)],true)
 end
 function R.close(equip)
  local a=R.active;if not a or a.time<3.25 then return false end

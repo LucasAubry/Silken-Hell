@@ -17,6 +17,7 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
     float patches=.5+.5*sin(angle*2.+curl*.8);
     float wisp=1.-smoothstep(0.,.095,abs(r-edge-.095-.028*folds));
     float fade=1.-smoothstep(.84,1.,r);
-    float light=(ribbon*(.12+.56*patches)+veil*.19+wisp*patches*.14)*fade;
-    return vec4(.76,.045,.035,light)*color;
+    float core=1.-smoothstep(.025,.09,abs(r-edge));
+    float light=clamp(core*.72+ribbon*(.32+.48*patches)+veil*.30+wisp*patches*.22,0.,1.)*fade;
+    return vec4(1.,.10,.055,light)*color;
 }

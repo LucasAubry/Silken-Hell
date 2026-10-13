@@ -79,11 +79,12 @@ function S.reward(a,done,x,y,size)
    vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel) {
     vec4 p=Texel(image,uv);
     float alpha=step(.12,p.a);
-    return vec4(vec3(.48,.50,.53)*alpha,alpha)*color;
+    return vec4(0.,0.,0.,alpha)*color;
    }
   ]])
   g.setShader(S.lockedShader);g.setBlendMode('alpha','premultiplied')
   g.draw(S.lockedCanvas,x,y,0,1,1,448,448)
+  require('locked_art').question(x,y,size)
  end
  g.pop()
 end

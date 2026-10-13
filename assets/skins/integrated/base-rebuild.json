@@ -1,0 +1,109 @@
+{
+  "mode": "Built-in ImageGen",
+  "sources": {
+    "ambre_down": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-b7d4f854-d5a3-44ed-9b77-e032e37209af.png",
+    "ambre_up": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-650a37ef-4442-4398-b721-d30b290fd5a7.png",
+    "ambre_profil": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-604acdcd-cb19-4228-9fd7-f5027681b4e1.png",
+    "braise_down": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-65327fe3-2e63-44a7-aea9-52d8f4f861e1.png",
+    "braise_up": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-9344fa3c-71ed-4a0b-9f19-b1f36f087047.png",
+    "braise_profil": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-ff8e21ad-e44d-42de-be51-46cbb9ddb5d2.png",
+    "cendre_down": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-2e4b6120-c0b6-4030-ae42-04fc818e7a73.png",
+    "cendre_up": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-867c1fca-dd01-418e-90f3-38a2c2d87226.png",
+    "cendre_profil": "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-b0c961d9-302a-467d-b9da-8f789ae8d3c8.png"
+  },
+  "edits": [
+    {
+      "name": "ambre_down",
+      "prompt": "Use case: precise-object-edit. Edit this exact base pixel-art spider, front view. Preserve its body/head shapes, original gold emblems, blue eyes, all eight legs, pose and coarse pixel grid. Recolor only ivory body and legs to LIGHT TAN BROWN (sand/caramel, highlights #dab17a, midtone #bc8b55, shadows #805636), not dark brown. Add EXACTLY EIGHT small ivory conical spikes to the rim of the UPPER round abdomen: four on its left rim and four symmetrically on its right rim, at clock positions 7:30, 8:45, 10:00, 11:15 and 12:45, 2:00, 3:15, 4:30. No spike at exact top or bottom. Count exactly FOUR per side, eight total. They radiate outward in the abdomen plane in a ring. No spikes on head or legs. Each spike about 8% abdomen diameter; all same size. Keep original base sprite proportions, no redesign. One complete front sprite centered on transparent 1448x1086 canvas, no clipping, no text."
+    },
+    {
+      "name": "braise_down",
+      "prompt": "Use case: precise-object-edit. Edit this exact base pixel-art spider, front view. Preserve its body/head shapes, original gold emblems, blue eyes, all eight legs, exact pose and coarse pixel grid. Recolor only ivory body and legs to vivid ORANGE with warm RED shadows, retaining gold markings. Add exactly TWO short curved demon horns, orange tips with deep red roots. Horns are a symmetrical pair rooted on the upper-left and upper-right forehead of the LOWER HEAD segment, just above/outside the two eyes, pointing upward and slightly outward. Horn length around one third of head height; thick enough to read small. NO horns on the upper abdomen, no crown, no extra spikes. Keep original base sprite proportions, no redesign. One complete front sprite centered on transparent 1448x1086 canvas, no clipping, no text."
+    },
+    {
+      "name": "cendre_down",
+      "prompt": "Use case: precise-object-edit. Edit this exact base pixel-art spider, front view. Preserve its body/head shapes, original gold emblems, blue eyes, all eight legs, exact pose and coarse pixel grid. Recolor only ivory body and legs to vivid RED with burnt ORANGE highlights, retaining gold markings. Add exactly TWO short curved demon horns, bright orange tips with deep red roots. Horns are a symmetrical pair rooted on the upper-left and upper-right forehead of the LOWER HEAD segment, just above/outside the two eyes, pointing upward and slightly outward. Horn length around one third of head height; thick enough to read small. NO horns on the upper abdomen, no crown, no extra spikes. Keep original base sprite proportions, no redesign. One complete front sprite centered on transparent 1448x1086 canvas, no clipping, no text."
+    },
+    {
+      "name": "ambre_up",
+      "refs": [
+        "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/commun/up.png",
+        "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-b7d4f854-d5a3-44ed-9b77-e032e37209af.png"
+      ],
+      "prompt": "Use case: precise-object-edit. IMAGE1 is the exact BACK BASE SPRITE edit target; IMAGE2 is authoritative NEW front skin design and palette. Recolor IMAGE1 to match IMAGE2 exactly and add its accessories consistently in this view. Preserve IMAGE1 silhouette, body proportions, gold emblems and their orientation, eight-legged anatomy, coarse square pixel style, blue eye where visible. The abdomen is the LOWER segment in this back view. Add precisely eight ivory spikes in a ring on its rim, FOUR LEFT and FOUR RIGHT, matching image2's physical ring rotated180degrees. No spikes on the UPPER head. Eight equal small cones, four evenly spaced along each lateral semicircle, none at exact top/bottom.  This is the SAME character seen from another angle, not a redesign. Preserve base pose and canvas. Output one complete back sprite on transparent 1448x1086 canvas, no clipping, no text."
+    },
+    {
+      "name": "ambre_profil",
+      "refs": [
+        "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/commun/profil.png",
+        "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-b7d4f854-d5a3-44ed-9b77-e032e37209af.png"
+      ],
+      "prompt": "Use case: precise-object-edit. IMAGE1 is the exact LEFT-PROFILE BASE SPRITE edit target; IMAGE2 is authoritative NEW front skin design and palette. Recolor IMAGE1 to match IMAGE2 exactly and add its accessories consistently in this view. Preserve IMAGE1 silhouette, body proportions, gold emblems and their orientation, eight-legged anatomy, coarse square pixel style, blue eye where visible. Add precisely EIGHT small ivory spikes in an elliptical ring on the UPPER-RIGHT ABDOMEN only. Four along its far rim (upper-left edge), four along its near rim (lower-right edge). The four far-side cones and four near-side cones should all be distinguishable, maintaining the same symmetric ring of eight from image2 in this diagonal projection. No extra spike, no spike on head. Same size as image2; no crown or horns. Preserve FOUR distinct walking legs on the visible near side plus visible far legs, no missing leg. This is the SAME character seen from another angle, not a redesign. Preserve base pose and canvas. Output one complete left-profile sprite on transparent 1448x1086 canvas, no clipping, no text."
+    },
+    {
+      "name": "braise_up",
+      "refs": [
+        "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/commun/up.png",
+        "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-65327fe3-2e63-44a7-aea9-52d8f4f861e1.png"
+      ],
+      "prompt": "Use case: precise-object-edit. IMAGE1 is the exact BACK BASE SPRITE edit target; IMAGE2 is authoritative NEW front skin design and palette. Recolor IMAGE1 to match IMAGE2 exactly and add its accessories consistently in this view. Preserve IMAGE1 silhouette, body proportions, gold emblems and their orientation, eight-legged anatomy, coarse square pixel style, blue eye where visible. Place exactly TWO horns on the UPPER HEAD segment, at corresponding left/right forehead locations. Root them on the far upper portion of the head: same pair as image2 seen from behind, pointing upward and slightly outward. Do not put them on the LOWER abdomen. Both horns visible, same length, curve, thickness, colors and separation as image2. No eyes on this back view.  This is the SAME character seen from another angle, not a redesign. Preserve base pose and canvas. Output one complete back sprite on transparent 1448x1086 canvas, no clipping, no text."
+    },
+    {
+      "name": "braise_profil",
+      "refs": [
+        "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/commun/profil.png",
+        "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-65327fe3-2e63-44a7-aea9-52d8f4f861e1.png"
+      ],
+      "prompt": "Use case: precise-object-edit. IMAGE1 is the exact LEFT-PROFILE BASE SPRITE edit target; IMAGE2 is authoritative NEW front skin design and palette. Recolor IMAGE1 to match IMAGE2 exactly and add its accessories consistently in this view. Preserve IMAGE1 silhouette, body proportions, gold emblems and their orientation, eight-legged anatomy, coarse square pixel style, blue eye where visible. Place exactly TWO horns on the LOWER-LEFT HEAD, corresponding to image2's two forehead attachment points above the eye. Both must be clearly visible: far horn rooted on far upper-left forehead edge, near horn rooted on nearer right forehead edge, diagonally offset by perspective but matching length, curve and orientation. Horns stand upward, slightly outward, same size and colors as image2; never on upper-right abdomen. Preserve FOUR distinct walking legs on the visible near side plus visible far legs, no missing leg. This is the SAME character seen from another angle, not a redesign. Preserve base pose and canvas. Output one complete left-profile sprite on transparent 1448x1086 canvas, no clipping, no text."
+    },
+    {
+      "name": "cendre_up",
+      "refs": [
+        "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/commun/up.png",
+        "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-2e4b6120-c0b6-4030-ae42-04fc818e7a73.png"
+      ],
+      "prompt": "Use case: precise-object-edit. IMAGE1 is the exact BACK BASE SPRITE edit target; IMAGE2 is authoritative NEW front skin design and palette. Recolor IMAGE1 to match IMAGE2 exactly and add its accessories consistently in this view. Preserve IMAGE1 silhouette, body proportions, gold emblems and their orientation, eight-legged anatomy, coarse square pixel style, blue eye where visible. Place exactly TWO horns on the UPPER HEAD segment, at corresponding left/right forehead locations. Root them on the far upper portion of the head: same pair as image2 seen from behind, pointing upward and slightly outward. Do not put them on the LOWER abdomen. Both horns visible, same length, curve, thickness, colors and separation as image2. No eyes on this back view.  This is the SAME character seen from another angle, not a redesign. Preserve base pose and canvas. Output one complete back sprite on transparent 1448x1086 canvas, no clipping, no text."
+    },
+    {
+      "name": "cendre_profil",
+      "refs": [
+        "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/commun/profil.png",
+        "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-2e4b6120-c0b6-4030-ae42-04fc818e7a73.png"
+      ],
+      "prompt": "Use case: precise-object-edit. IMAGE1 is the exact LEFT-PROFILE BASE SPRITE edit target; IMAGE2 is authoritative NEW front skin design and palette. Recolor IMAGE1 to match IMAGE2 exactly and add its accessories consistently in this view. Preserve IMAGE1 silhouette, body proportions, gold emblems and their orientation, eight-legged anatomy, coarse square pixel style, blue eye where visible. Place exactly TWO horns on the LOWER-LEFT HEAD, corresponding to image2's two forehead attachment points above the eye. Both must be clearly visible: far horn rooted on far upper-left forehead edge, near horn rooted on nearer right forehead edge, diagonally offset by perspective but matching length, curve and orientation. Horns stand upward, slightly outward, same size and colors as image2; never on upper-right abdomen. Preserve FOUR distinct walking legs on the visible near side plus visible far legs, no missing leg. This is the SAME character seen from another angle, not a redesign. Preserve base pose and canvas. Output one complete left-profile sprite on transparent 1448x1086 canvas, no clipping, no text."
+    },
+    {
+      "name": "ambre_profil_fixed",
+      "refs": [
+        "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-9998761b-0f40-49f4-bf78-f7e786cfee71.png"
+      ],
+      "prompt": "Precise minimal edit of this pixel sprite: REMOVE the tiny extra white spike at the TOP-RIGHT rim of the abdomen, around x980 y85. There are nine spikes currently; remove ONLY this tiny ninth spike so exactly eight remain (four along upper-left rim and four along lower-right rim). Fill its former area with the adjacent brown/outline pixels. Also rotate the abdomen's central gold emblem 45 degrees CLOCKWISE to follow the abdomen diagonal axis, so it points diagonally down-left like the existing HEAD emblem. Preserve everything else exactly: eight remaining spike shapes and positions, tan palette, eye, body, legs, coarse pixels, transparent canvas."
+    },
+    {
+      "name": "braise_up_fixed",
+      "refs": [
+        "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-664b0e8a-4b05-400e-b549-ebea94c245ef.png"
+      ],
+      "prompt": "Precise minimal edit. Rotate ONLY the gold symbol on the UPPER HEAD by180degrees so its long central stem points UP and two short arms point DOWN, same orientation as the symbol on the LOWER ABDOMEN. Preserve absolutely everything else: two horns, their position shape and size, orange/red colors, legs, body, transparent background and pixel style. Do not rotate body or horns."
+    },
+    {
+      "name": "cendre_up_fixed",
+      "ref": "exec-606f19bc-3f8b-4bf9-af79-bd0cf6d742f7.png",
+      "prompt": "Minimal pixel-art edit. Rotate ONLY the gold emblem on the UPPER HEAD by180degrees: long thin central stem points UP, short side arms point DOWN, matching the gold emblem on LOWER ABDOMEN. Keep both horns and all other pixels unchanged, including colors, body, legs, transparency."
+    },
+    {
+      "name": "braise_profil_fixed",
+      "ref": "exec-83ad2f5d-0fba-4b94-b16e-199023d8458c.png",
+      "prompt": "Minimal pixel-art edit. Rotate ONLY the gold emblem on the UPPER-RIGHT ABDOMEN 45degrees CLOCKWISE: its long stem should point diagonally DOWN-LEFT, its top toward UP-RIGHT, just like the diagonal gold emblem on the HEAD. Keep two horns, their placement, body, head, legs, orange/red colors, proportions, pixel style and transparency unchanged."
+    },
+    {
+      "name": "cendre_profil_fixed",
+      "ref": "exec-938694f6-530b-467d-9ac2-3eb168dc9cf6.png",
+      "prompt": "Minimal pixel-art edit. Rotate ONLY the gold emblem on the UPPER-RIGHT ABDOMEN 45degrees CLOCKWISE: its long stem should point diagonally DOWN-LEFT, its top toward UP-RIGHT, aligned to the abdomen diagonal axis. Keep the head emblem, both horns, their placement, body, head, legs, red/orange colors, proportions, pixel style and transparency unchanged."
+    },
+    {
+      "name": "cendre_up_final",
+      "prompt": "Replace upper head gold symbol with upward-pointing symbol from the orange back-view sprite, preserving red palette and all other pixels."
+    }
+  ]
+}

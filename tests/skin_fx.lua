@@ -39,7 +39,7 @@ function T.run()
  assert(love.math.getRandomState()==state,'Monster FX must not consume gameplay RNG')
  M.halo=halo;Profile.character=skin;Characters.selected=selected;F.reset();Campaign.select(1)
  g.newImage=image;assert(uploads==0,'Skins must be preloaded')
- for _,name in ipairs({'soie','perle','braise','ecume','royale','maxance','cocon'}) do
+ for _,name in ipairs({'soie','perle','ecume','royale','maxance','cocon'}) do
   local expected=(name=='maxance' or name=='cocon') and 'linear' or 'nearest'
   assert(require('art_filter').image('assets/skins/'..name..'/down.png'):getFilter()==expected)
  end

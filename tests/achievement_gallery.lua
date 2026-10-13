@@ -74,11 +74,11 @@ function T.run()
  -- The left number counts acquired achievements, never the selected page.
  profile('partial');before=progress();local counterCalls=0
  UI.rawText=function(text,x,y,font,...)
-  if x==165 and y==329 then assert(text=='3/15','Left counter remains acquired / total');counterCalls=counterCalls+1 end
+  if x==165 and y==329 then assert(text=='2/15','Left counter remains acquired / total');counterCalls=counterCalls+1 end
   return rawText(text,x,y,font,...)
  end
  for i=1,#Achievements.list do
-  S.index=i;S.open();draw();earned,total=S.count();assert(earned==3 and total==15,'Legacy flags are not extra achievements')
+  S.index=i;S.open();draw();earned,total=S.count();assert(earned==2 and total==15,'Legacy flags are not extra achievements')
  end
  UI.rawText=rawText;assert(counterCalls==15);assert(progress()==before)
 
@@ -102,26 +102,26 @@ function T.run()
  S.reward(Achievements.list[byId.flawless_all],true,600,350,328)
  Characters.portrait=portrait;assert(coconCalls==1,'The flawless achievement displays its Cocon reward')
 
- -- Opaque pixels in every locked reward share one grey, hiding all inner color and texture.
+ -- Locked rewards are pure black, with a readable question mark at their center.
  local canvas=g.newCanvas(500,500,{dpiscale=1})
  for _,id in ipairs({'gillou','flawless_all','story_all','heartbreak'})do
   g.push('all');g.setCanvas(canvas);g.origin();g.setScissor();g.clear(0,0,0,0)
   S.reward(Achievements.list[byId[id]],false,250,250,328);g.pop()
-  local pixels=canvas:newImageData();local first;local opaque=0
+  local pixels=canvas:newImageData();local opaque,question=0,0
   for y=0,499,3 do for x=0,499,3 do
    local r,b,c,a=pixels:getPixel(x,y)
-   if a>.99 then
-    opaque=opaque+1;first=first or {r,b,c}
-    assert(math.max(r,b,c)-math.min(r,b,c)<.1 and math.min(r,b,c)>.2,'Locked shapes are grey, without black motifs')
-    assert(math.abs(r-first[1])<.01 and math.abs(b-first[2])<.01 and math.abs(c-first[3])<.01,
-     'Locked rewards expose only their silhouette, without internal shading')
+   if math.abs(x-250)<40 and math.abs(y-250)<55 then
+    if a>.5 and math.min(r,b,c)>.5 then question=question+1 end
+   elseif a>.99 then
+     opaque=opaque+1
+     assert(math.max(r,b,c)<.01,'Locked silhouettes are black without internal shading')
    end
   end end
-  assert(opaque>20,'Each locked reward has a visible silhouette');pixels:release()
+  assert(opaque>20 and question>5,string.format('Locked reward %s: black=%d question=%d',id,opaque,question));pixels:release()
  end
  canvas:release()
 
- Graphics.effects=true;UI.clock=10;S.index=byId.story_first;S.open();local previous=S.current();S.step(1)
+ Graphics.effects=true;UI.clock=10;S.index=byId.worlds_all;S.open();local previous=S.current();S.step(1)
  assert(S.outgoing.achievement==previous and S.dropOffset()<0,'Changing selection starts a fall from above')
  local initial=S.dropOffset();UI.clock=10.2
  assert(S.dropOffset()>initial and S.dropOffset()<0,'Incoming reward falls toward its display position')
@@ -136,22 +136,22 @@ function T.run()
  S.step(-1);assert(S.dropOffset()==0,'Reduced effects show the previous reward immediately')
  Graphics.effects=effects
 
- -- The menu contains only trophy slots; a locked slot stays empty and each slot opens its own achievement.
+ -- Trophy slots show both acquired art and locked silhouettes and open their achievement.
  local slots=M.slots();assert(#slots==3,'Only the three trophy achievements have display cases')
  local thumbnail=M.thumbnail
  for _,kind in ipairs({'empty','partial','full'})do
   profile(kind);local shown={};UI.buttons={};App.state='menu'
   M.thumbnail=function(a)
-   assert(Achievements.unlocked(a) and a.trophy,'Menu never renders a locked trophy or other reward')
+   assert(a.trophy,'Menu slots contain trophies only')
    shown[#shown+1]=a.id
    local result=thumbnail(a);local min,mag=result.image:getFilter()
-   assert(min=='linear' and mag=='linear' and result.image:getMipmapFilter()=='linear',
-    'Small menu trophies average source pixels so details remain recognizable')
+   assert(min=='nearest' and mag=='nearest',
+    'Menu trophies retain the same crisp pixel edges as the gallery')
    return result
   end
   M.draw();M.thumbnail=thumbnail
-  assert(#shown==({empty=0,partial=1,full=3})[kind],'Cases fill only when their trophies are acquired')
-  if kind=='partial' then assert(shown[1]=='story_first')end
+  assert(#shown==3,'Every trophy is shown, with a silhouette while locked')
+  if kind=='full' then assert(Achievements.unlocked(Achievements.list[byId.worlds_all])) end
   assert(#UI.buttons==3)
   for i,b in ipairs(UI.buttons)do
    assert(b.trophyId==slots[i].achievement.id and b.y+b.h<496,'Trophy cases sit above Play')
@@ -174,8 +174,8 @@ function T.run()
   {id='flawless_all',name='locked-cocon',profile='empty'},
   {id='story_all',name='locked-trophy',profile='empty'},
   {id='hardcore',name='locked-logo',profile='empty'},
-  {id='story_first',name='partial-count',profile='partial'},
-  {id='story_first',name='story-first'},
+  {id='worlds_all',name='partial-count',profile='partial'},
+  {id='worlds_all',name='all-worlds'},
   {id='story_all',name='story-all'},
   {id='flawless_all',name='flawless'},
   {id='gillou',name='gillou'},
@@ -185,8 +185,8 @@ function T.run()
   {id='top1',name='champion'},
   {id='top1',name='champion-reduced',reduced=true},
   {id='heartbreak',name='tears'},
-  {id='story_first',name='fall-early',age=.14},
-  {id='story_first',name='fall-late',age=.34},
+  {id='worlds_all',name='fall-early',age=.14},
+  {id='worlds_all',name='fall-late',age=.34},
   {id='story_all',name='rise-early',age=.14,direction=-1},
   {id='story_all',name='rise-late',age=.34,direction=-1},
   {name='menu-empty',menu=true,profile='empty'},
@@ -203,7 +203,7 @@ function T.run()
   Graphics.effects=effects
   if shot.reduced then Graphics.effects=false elseif shot.age then Graphics.effects=true end
   profile(shot.profile or 'full');earned,total=S.count()
-  assert(earned==({empty=0,partial=3,full=15})[shot.profile or 'full'] and total==15)
+  assert(earned==({empty=0,partial=2,full=15})[shot.profile or 'full'] and total==15)
   if shot.menu then App.state='menu';UI.pressed=nil;UI.menuArrival=0
   else
    S.index=assert(byId[shot.id]);S.open()
@@ -221,7 +221,7 @@ function T.run()
      local x=math.floor((w-1200*scale)/2+xx*scale)
      local y=math.floor((h-750*scale)/2+yy*scale)
      local r,green,b=data:getPixel(x,y)
-     if math.abs(r-.48)<.015 and math.abs(green-.50)<.015 and math.abs(b-.53)<.015 then opaque=opaque+1 end
+     if math.max(r,green,b)<.01 then opaque=opaque+1 end
     end end
     assert(opaque>20,'The upper half of a locked trophy remains visible inside the window clip')
    end

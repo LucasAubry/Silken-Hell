@@ -232,7 +232,7 @@ function R.draw(a)
  end
  for _,p in ipairs(a.returnShards)do
   g.setColor(.65,.9,1,.17);g.circle('fill',p.x,p.y,17)
-  g.setColor(.85,.95,1,math.min(1,p.life));Art.draw('skeleton_spine',p.x,p.y,20,p.angle+p.age,11)
+  g.setColor(.85,.95,1,math.min(1,p.life));Art.drawBoneProjectile('skeleton_spine',p.x,p.y,20,p.angle+p.age,11)
  end
  g.pop()
 end

@@ -60,7 +60,7 @@ function G.draw()
    float highlight=smoothstep(.88,1.,min(p.r,min(p.g,p.b)))*.45;
    return vec4(mix(base,vec3(1.),highlight),p.a*color.a);
   }]])
-  g.setShader(G.tearShader);g.setColor(tint);g.draw(objet.larme.img,G.tx-15,G.ty-20,0,objet.larme.size)
+  g.setShader(G.tearShader);g.setColor(tint);require('art_filter').drawSource(objet.larme.img,G.tx-15,G.ty-20,0,objet.larme.size)
  end
  g.pop()
 end

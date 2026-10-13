@@ -1,0 +1,62 @@
+{
+  "mode": "Built-in ImageGen",
+  "canonical": "Back-view wing and spike placement retained as the anatomical reference.",
+  "hellSprite": "User-supplied sprite copied unchanged to cendre_profil.png.",
+  "edits": [
+    {
+      "name": "aureole_down",
+      "refs": [
+        "aureole"
+      ],
+      "prompt": "Precise pixel-art pose consistency edit. Reference is three views of one angel spider; the MIDDLE BACK VIEW is the authoritative wing placement. Make ONLY ONE FRONT-view complete spider based on the LEFT view, transparent 4:3 canvas. REMOVE the tall raised wings completely. Instead, wings are FOLDED AGAINST THE ABDOMEN exactly like the middle back reference: roots at the neck junction between upper abdomen and lower head, one on each lower side of the upper abdomen; feather tips run UP along the upper abdomen toward its rear end. The same two compact ivory feather wings lie ON TOP of the surface at the left and right edges of the upper abdomen, partially covering it, with the golden central motif left visible. This is the 180-degree turned version of the middle reference wing arrangement, NOT outstretched wings. Keep the head and eyes clear, keep all eight walking legs, gold markings, white body and chunky pixel grid. One spider only, no sheet or text."
+    },
+    {
+      "name": "aureole_profil",
+      "refs": [
+        "aureole_profil",
+        "aureole"
+      ],
+      "prompt": "Precise object edit. IMAGE1 is the profile spider to edit. IMAGE2 middle/BACK view defines the canonical wing placement. Replace IMAGE1's two oversized raised wings with the SAME TWO COMPACT FOLDED WINGS from IMAGE2 middle. Anatomical anchor: both wing ROOTS are at the FRONT base of the large abdomen, at the neck just behind the eye-bearing head, not at the rear tip of the abdomen. Both wings extend from those roots diagonally UP-RIGHT along the abdomen toward its rear, lying flush against its sides. Near wing overlays the LOWER/near face of the abdomen; far wing is visible along the UPPER/far edge. The two matching feather shapes remain distinct. Wing tips stop at the rear rim of the abdomen; no big feathers project outside it, no raised/outstretched wings. Keep original profile body, head, gold markings, eye, all legs and pixel grid unchanged. Transparent background. Single complete profile spider, 4:3 canvas."
+    },
+    {
+      "name": "ambre_down",
+      "refs": [
+        "ambre_down",
+        "ambre_up"
+      ],
+      "prompt": "Precise pixel-art anatomical consistency edit. IMAGE1 FRONT spider is edit target. IMAGE2 BACK spider defines EXACT canonical spike placement. Change ONLY the spikes on IMAGE1 upper abdomen: same EIGHT small ivory spikes, same modest size and spacing as IMAGE2. Four along the LEFT side rim and four along the RIGHT side rim of the abdomen, arranged in two lateral rows from near neck to near rear. DO NOT put any spikes on the top/rearmost edge; remove the two tall top spikes and restore smooth brown rear rim. Instead distribute all four per side along the left/right edges. No crown of spikes, no spikes pointing straight up, no spikes on the head. When this spider turns around, those exact same two side rows correspond to IMAGE2's lower abdomen side rows. Preserve every other pixel-art feature, four walking legs each side, blue eyes, gold motifs, body dimensions and transparent 4:3 canvas. One complete sprite."
+    },
+    {
+      "name": "ambre_profil",
+      "refs": [
+        "ambre_profil",
+        "ambre_up"
+      ],
+      "prompt": "Precise pixel-art anatomical consistency edit. IMAGE1 left-PROFILE spider is edit target. IMAGE2 BACK spider is authoritative spike placement: exactly two longitudinal rows of FOUR SMALL ivory spikes, one row on each side of the abdomen. Replace IMAGE1's large radial crown of spikes with those same TWO PARALLEL ROWS along the abdomen sides in perspective. Four near-side spikes over the lower-facing surface of the upper-right abdomen, four far-side spikes just visible along the upper far-facing edge. Each row runs from neck (lower-left abdomen) toward rear (upper-right abdomen). All spikes are small and evenly spaced, same size as IMAGE2. NO extra spike at the rear tip, NO head spikes, NO spikes arranged like a ring or a crown. Keep the warm brown spider, gold markings, blue eye, all FOUR near-side walking legs and original pose/body proportions. Transparent 4:3 canvas, same coarse square-pixel grid. One complete spider."
+    }
+  ],
+  "refinements": [
+    {
+      "name": "aureole_down",
+      "refs": [
+        "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-1418d59d-5c6b-4e0b-af87-f44abd306fd8.png"
+      ],
+      "prompt": "Minimal edit of this sprite: rotate ONLY EACH OF THE TWO FEATHER WINGS 180 degrees IN PLACE, leaving their same left and right positions on the upper abdomen. After rotation, each wing's narrow attachment/root is at its BOTTOM near the neck (y about 480), and its longer pointed feather tips point UP toward top of abdomen (y about 130). This is essential because the spider's head is at the bottom. Do not rotate the body or markings. Keep the two folded wings lying tightly against the upper abdomen's side surfaces, never raised, never extending beyond its rim. Preserve exactly the pose, legs, eyes, gold markings, colors, coarse pixels and transparent canvas."
+    },
+    {
+      "name": "aureole_profil",
+      "refs": [
+        "/Users/lucasaubry/Desktop/games/Silken-Hell/assets/skins/commun/profil.png"
+      ],
+      "prompt": "Edit this existing left-profile spider minimally, adding two SMALL folded ivory feather wings integrated ON the surface of the upper-right large abdomen. Treat wings like feather patches lying flat on the abdomen, not like appendages extending out. NEAR wing: root at abdomen's lower-left base near neck (around x580 y460), feathers extend toward upper-right ending at x1000 y200, staying INSIDE abdomen outline. FAR wing: root at x490 y300, feathers run along upper-left edge toward x800 y70, only a thin strip visible. Exactly TWO slim feathered shapes, roughly parallel, same anatomical roots and length. No wing behind the rear tip of the abdomen, no upright wings, no feather pixels outside the original spider silhouette. Keep head/eye, all legs, body proportions, pixel size and transparent canvas unchanged. Central gold marking stays visible between wings. One full spider only."
+    },
+    {
+      "name": "ambre_profil",
+      "refs": [
+        "/Users/lucasaubry/.codex/generated_images/01a13470-3343-78a1-b71b-ed5f39393194/exec-21c084f1-693a-47f4-9759-10c0be3ed245.png"
+      ],
+      "prompt": "Precise edit: reorganize ONLY the eight ivory spikes on the upper-right abdomen of this brown spider into two straight parallel diagonal rows of FOUR. Remove all existing spikes first, restoring brown. Place four small near-side spikes with roots approximately at (630,440),(780,375),(930,310),(1080,245), and four far-side spikes at (520,285),(660,220),(800,155),(940,90). These are two side rows running from neck bottom-left to rear upper-right, NOT a radial ring or crown. Each spike same small size, ivory tip with tiny gold base. No extra spike at rightmost/rear rim, none on head. Preserve all legs, blue eye, gold motifs, brown body proportions, chunky pixel style, transparent 1448x1086 canvas."
+    }
+  ],
+  "finalWingStyle": "Precise style correction, keep exact wing POSITIONS from IMAGE1. The two thin feather outlines on the abdomen must become two actual small thick folded angel WINGS, matching the dimensional ivory feathers and dark outlines in IMAGE2 middle/back pose. Each wing is a compact cluster of THREE broad overlapping ivory feathers with warm gray shading and a strong dark gray/black pixel border. Keep both wings attached at their current lower-left roots near the neck, tips upper-right, flat along abdomen sides. Do not move their roots, do not raise wings, do not put wings behind abdomen. They may project just a few pixels past the side edge to read as real wings, but their tips stop at the abdomen rear rim. Keep gold motif visible between them. Preserve all other body/head/leg pixels, eye and transparent 4:3 canvas. Same chunky pixel scale as body."
+}

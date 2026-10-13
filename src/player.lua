@@ -59,7 +59,7 @@ local function drawPlayer(direction)
         }]])
         g.setColor(1,1,1);g.setShader(player.chargeShader)
     end
-    Characters.draw(player.x+15,player.y+8,Characters.playerWidth,direction,player)
+    Characters.draw(player.x+15,player.y+8,Characters.playerWidth,direction,player,Campaign.biome)
     g.setShader(previousShader)
     love.graphics.setColor(1,1,1)
 end
@@ -70,7 +70,7 @@ end
 
 local function drawBeacon()
     if Abyss and Abyss.playerHidden() then return end
-    if Campaign.biome==7 then Ocean.drawBubble(true) end
+    if Campaign.biome==4 or Campaign.biome==7 then Ocean.drawBubble() end
 end
 function draw_player_beacon()
     require('render_motion').draw(player,drawBeacon)

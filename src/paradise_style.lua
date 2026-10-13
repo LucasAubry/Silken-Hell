@@ -1,5 +1,5 @@
 -- The Paradise palette is a render treatment of the original artwork.
-local S={enabled=true,tear={1,.84,.46},kinds={border=1,nest=2,bird=3,black_feather=3,ring=4}}
+local S={enabled=true,tear={1,.84,.46},kinds={border=1,nest=2,bird=3,black_feather=3,ring=4,cloud=5}}
 local g=love.graphics
 local rect,step={0,0,0,0},{0,0}
 function S.active()
@@ -7,10 +7,21 @@ function S.active()
 end
 function S.load()
     S.shader=S.shader or g.newShader('assets/shaders/paradise_material.glsl')
+    S.skyShader=S.skyShader or g.newShader('assets/shaders/sky_material.glsl')
     require('sky_lightning').load()
 end
 function S.bind(frame,kind)
     local previous=g.getShader()
+    -- Sky recoloring samples only the source pixel: retain crisp sprites and smooth projectiles.
+    if S.active() and Campaign.biome==6 then
+        if previous and previous~=S.skyShader then return previous end
+        S.load()
+        local material=type(kind)=='number' and kind or S.kinds[kind] or 0
+        if S.skyMaterial~=material then S.skyMaterial=material;S.skyShader:send('material_kind',material) end
+        g.setShader(S.skyShader)
+        return previous
+    end
+    if require('art_filter').pixelArt[require('prism_material').paths[frame.image]] then return previous end
     -- Attack flashes, white boss feathers and the collectible retain their own material.
     if not S.active() or previous and previous~=S.shader then return previous end
     S.load()
