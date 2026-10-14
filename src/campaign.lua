@@ -40,6 +40,7 @@ function C.positions(n)
     return points
 end
 function C.reset(options)
+    require('retry_wait').reset()
     require('boss_liberation').reset()
     shader_effect_timer=0;shake_timer=0;cameraShakeX=0;cameraShakeY=0;ghost_timer=0
     Aftermath.reset()
@@ -51,7 +52,7 @@ function C.reset(options)
     BossFX.reset()
     if Bosses then Bosses.reset() end
     local previousSide=C.lastSide
-    load_mob(); ghosts={}; just_loaded=false; larme_timer=0; larme_float_timer=0
+    load_mob(); Realms.schools={}; ghosts={}; just_loaded=false; larme_timer=0; larme_float_timer=0
     larme_interval=world==2 and (n==8 and 1.25 or 2.6) or 1.5
     player.speed=1; player.original_speed=1; player.is_frozen=false; player.freeze_timer=0; player.reset=false
     player.lastMoveX=0; player.lastMoveY=1

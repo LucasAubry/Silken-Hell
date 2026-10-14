@@ -3,10 +3,10 @@ local S={}
 function S.migrate(layout)
     if type(layout)=='table' and type(layout.entities)=='table' then
         for _,e in ipairs(layout.entities) do if e.kind=='boss' and e.type=='hellserpent' then e.type='wasp' end end
-        if (layout.biome or layout.world)==6 then
+        if (layout.biome or layout.world)==6 or (layout.biome or layout.world)==2 then
             for i=#layout.entities,1,-1 do
                 local e=layout.entities[i]
-                if e.kind=='hole' and not e.points then table.remove(layout.entities,i) end
+                if (e.kind=='hole' and (layout.biome or layout.world)==6 or e.kind=='lava' and (layout.biome or layout.world)==2) and not e.points then table.remove(layout.entities,i) end
             end
         end
     end
@@ -35,15 +35,15 @@ function S.validate(l)
         for _,key in ipairs({'w','h','rx','ry','radius'}) do if e[key] and e[key]<1 then return false,'Les dimensions doivent être positives.' end end
         if e.kind=='wall' and (not e.w or not e.h) then return false,'Dimensions du mur manquantes.' end
         if e.points~=nil then
-            if e.kind~='hole' or type(e.points)~='table' or #e.points<2 or #e.points>512 or #e.points%2~=0 then return false,'Dessin de trou invalide.' end
+            if (e.kind~='hole' and e.kind~='lava') or type(e.points)~='table' or #e.points<2 or #e.points>512 or #e.points%2~=0 then return false,'Dessin de zone invalide.' end
             local count=0
             for i,v in pairs(e.points) do
                 count=count+1
-                if type(i)~='number' or i%1~=0 or i<1 or i>#e.points or type(v)~='number' or v~=v or math.abs(v)>4000 then return false,'Point du trou invalide.' end
+                if type(i)~='number' or i%1~=0 or i<1 or i>#e.points or type(v)~='number' or v~=v or math.abs(v)>4000 then return false,'Point de zone invalide.' end
                 local coordinate=v+(i%2==1 and e.x or e.y)
-                if coordinate<0 or coordinate>(i%2==1 and l.width or 600) then return false,'Le dessin du trou sort du terrain.' end
+                if coordinate<0 or coordinate>(i%2==1 and l.width or 600) then return false,'Le dessin de zone sort du terrain.' end
             end
-            if count~=#e.points then return false,'Dessin de trou incomplet.' end
+            if count~=#e.points then return false,'Dessin de zone incomplet.' end
             if not e.radius or e.radius<4 or e.radius>120 then return false,'Taille du pinceau entre 4 et 120.' end
         end
         if e.customName~=nil and (type(e.customName)~='string' or #e.customName>60) then return false,'Nom de créature invalide.' end

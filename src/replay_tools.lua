@@ -1,12 +1,15 @@
 -- Spectator-only replay transport. Playback never switches into a playable ghost.
 local T={}
-local json=require 'json'
+local function copy(value)
+ if type(value)~='table' then return value end
+ local result={};for k,v in pairs(value) do result[k]=copy(v) end;return result
+end
 function T.install(R)
  R.speeds={.25,.5,1,2,4,8}
  function R.beforeLevelReset()
   if not R.playing or not R.rng then return end
   if R.levelStates and not R.levelStates[player.level] then
-   R.levelStates[player.level]={rng=R.rng:getState(),starts=json.decode(json.encode(Campaign.starts)),side=Campaign.lastSide}
+   R.levelStates[player.level]={rng=R.rng:getState(),starts=copy(Campaign.starts),side=Campaign.lastSide}
   end
  end
  function R.changeSpeed(delta,wrap)

@@ -12,14 +12,19 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('flag', help='Test selector, e.g. SILKEN_ABYSS_INTRO_TEST')
     parser.add_argument('--editor', action='store_true')
+    parser.add_argument('--reuse-package', action='store_true',
+                        help='Test the last packaged archive without rebuilding it.')
     args = parser.parse_args()
     if sys.platform != 'darwin':
         parser.error('This launcher is for macOS.')
     if not args.flag.startswith('SILKEN_') or not args.flag.endswith('_TEST'):
         parser.error('Expected a SILKEN_*_TEST selector.')
     root = Path(__file__).resolve().parents[1]
-    subprocess.run([sys.executable, str(root / 'tools/package.py')], check=True)
     cache = Path.home() / 'Library/Application Support/Silken Hell'
+    if not args.reuse_package:
+        subprocess.run([sys.executable, str(root / 'tools/package.py')], check=True)
+    elif not (cache / 'Silken Hell.love').is_file():
+        parser.error('No packaged archive exists; run without --reuse-package first.')
     runtime = cache / 'runtime/love.app'
     if not runtime.exists():
         runtime = Path('/Applications/love.app')

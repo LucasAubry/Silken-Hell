@@ -65,15 +65,19 @@ function T.run()
  level(7,10);assert(Bestiary.levelIds.skeleton_fish and not Bestiary.levelIds.merle,'Level transition clears previous boss')
  Bestiary.openLevel();assert(Bestiary.entries[UI.bestSelected].id=='skeleton_fish')
  level(3,1);Bestiary.openLevel();assert(Bestiary.entries[UI.bestSelected].id=='final_spider')
- local button=UI.button;local info,hardcore=false,false
+ local button,iconButton=UI.button,UI.iconButton;local info,hardcore=false,false
  UI.button=function(label,x,y,w,h,run,...)
   if label=='i' then info=run==Bestiary.openLevel end
   if label=='Hardcore' then hardcore=true end
   return button(label,x,y,w,h,run,...)
  end
+ UI.iconButton=function(x,y,icon,run,...)
+  if icon=='info' then info=run==Bestiary.openLevel end
+  return iconButton(x,y,icon,run,...)
+ end
  App.state='playing';UI.gameHud();assert(info and not hardcore,'Queen HUD exposes only the level info button')
  info=false;level(1,10);UI.gameHud();assert(info and not hardcore,'Standard boss HUD exposes only the level info button')
- UI.button=button
+ UI.button,UI.iconButton=button,iconButton
  local text,raw=UI.text,UI.rawText
  UI.text=function(value,x,y,font,...)assert(font~='small' and font~='tiny','Settings text remains readable');return text(value,x,y,font,...)end
  UI.rawText=function(value,x,y,font,...)assert(font~='small' and font~='tiny','Settings buttons stay body-sized');return raw(value,x,y,font,...)end

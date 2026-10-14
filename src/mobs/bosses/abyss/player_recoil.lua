@@ -1,9 +1,10 @@
 local K={}
+local Fish=require('mobs.bosses.abyss.charged_fish')
 function K.clear(a,x,y,time)
  if Arena.blocked(x,y,30,24)then return false end
  for _,f in ipairs(a.chargedFish or {})do
-  local travel=math.max(0,(time or 0)-math.max(0,f.delay or 0))*300
-  local fx,fy=f.x+math.cos(f.angle)*travel,f.y+math.sin(f.angle)*travel
+  local travel=math.max(0,(time or 0)-math.max(0,f.delay or 0))*Fish.speed(a.fishCharge,f.yellow)
+  local fx,fy=Fish.project(f,travel)
   if (x+15-fx)^2+(y+12-fy)^2<65^2 then return false end
  end
  return true

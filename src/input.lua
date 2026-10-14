@@ -1,16 +1,39 @@
 -- SDL gamepad mappings also accept the virtual gamepad exposed by Steam Input.
 local PadControls=require('pad_controls')
+local ControllerSetup=require('controller_setup')
+local ControllerUSB=require('controller_usb')
 local I={active=false,index=1,repeatAt=0,deadzone=.2}
 function I.add(j)
-    if j:isGamepad() and not I.pad then I.pad=j end
+    if j:isConnected() and ControllerSetup.recognize(j) and (not I.pad or not I.pad:isConnected()) then I.pad=j;I.axisHeld={} end
 end
-function I.load() for _,j in ipairs(love.joystick.getJoysticks()) do I.add(j) end end
+function I.scan(exclude)
+    I.devices={};I.scanAt=1
+    ControllerUSB.scan(love.joystick.getJoysticks())
+    if I.pad and not I.pad:isConnected() then
+        I.pad=nil;I.active=false;I.axisHeld={};I.cancelBinding()
+        if App.state=='playing' then App.state='pause' end
+    end
+    for _,j in ipairs(love.joystick.getJoysticks()) do
+        if j~=exclude and j:isConnected() then I.devices[#I.devices+1]=j;I.add(j) end
+    end
+    if not I.device or not I.device:isConnected() or I.device==exclude then I.device=I.pad or I.devices[1] end
+end
+function I.detect() ControllerUSB.retry();I.scan() end
+function I.load() ControllerSetup.load();I.scan() end
 function I.remove(j)
-    if j~=I.pad then return end
-    I.pad=nil;I.active=false;I.cancelBinding();I.load()
-    if App.state=='playing' then App.state='pause' end
+    if ControllerSetup.wizard and ControllerSetup.wizard.pad==j then ControllerSetup.cancel();ControllerSetup.error='Manette déconnectée' end
+    if j==I.pad then
+        I.pad=nil;I.active=false;I.axisHeld={};I.cancelBinding()
+        if App.state=='playing' then App.state='pause' end
+    end
+    I.scan(j)
 end
-function I.use(j) if j:isGamepad() then I.pad=j;I.active=true end end
+function I.use(j)
+    if j:isConnected() and j:isGamepad() then
+        if I.pad~=j then I.axisHeld={} end
+        I.pad=j;I.device=j;I.active=true
+    end
+end
 function I.axes()
     local j=I.pad;if not j or not j:isConnected() then return 0,0 end
     local x,y=j:getGamepadAxis('leftx'),j:getGamepadAxis('lefty')
@@ -60,6 +83,7 @@ function I.padAction(binding)
     return false
 end
 function I.axis(j,axis,value)
+    if ControllerSetup.busy() then return end
     if math.abs(value)>.3 then I.use(j) end
     if I.pad~=j then return end
     if UI.binding then
@@ -119,6 +143,11 @@ function I.navigate(dx,dy)
     if best then I.index=best end
 end
 function I.update(dt)
+    ControllerUSB.update()
+    ControllerSetup.update(dt)
+    I.scanAt=(I.scanAt or 0)-dt
+    if I.scanAt<=0 or I.pad and not I.pad:isConnected() then I.scan() end
+    if ControllerSetup.busy() then return end
     if I.state~=App.state then I.state=App.state;I.index=1;I.repeatAt=0 end
     if UI.binding then return end
     local x,y=I.axes();if math.abs(x)+math.abs(y)>.3 then I.active=true end
@@ -148,6 +177,7 @@ function I.update(dt)
     else I.repeatAt=0 end
 end
 function I.press(j,b)
+    if ControllerSetup.busy() then return end
     I.use(j);if I.pad~=j then return end
     if UI.binding then
         if UI.bindingDevice=='pad' then I.bind(b) elseif b=='b' then I.cancelBinding() end

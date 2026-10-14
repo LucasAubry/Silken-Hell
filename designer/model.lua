@@ -79,6 +79,6 @@ function M.apply()
     return true,exported and 'Appliqué au jeu. Recharge ce niveau pour voir les changements.' or 'Appliqué au jeu ; export dans le projet indisponible.'
 end
 function M.restore()
-    M.checkpoint(); M.layout=require('layout_schema').splitAbyss(M.clone(M.workshop and require('workshop_maps').blank(M.world) or M.defaults.levels[M.key()])); M.selected=nil; M.persist()
+    M.checkpoint(); M.layout=require('layout_schema').splitAbyss(require('layout_schema').migrate(M.clone(M.workshop and require('workshop_maps').blank(M.world) or M.defaults.levels[M.key()]))); M.selected=nil; M.persist()
 end
 return M

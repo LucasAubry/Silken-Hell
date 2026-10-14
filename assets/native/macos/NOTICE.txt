@@ -1,0 +1,24 @@
+Silken Hell macOS USB controller backend
+
+SDL 3.4.18 (zlib license, SDL-LICENSE.txt)
+https://github.com/libsdl-org/SDL/releases/tag/release-3.4.18
+
+libusb 1.0.30 (LGPL 2.1 or later, libusb-COPYING.txt)
+Complete unmodified source included: libusb-1.0.30.tar.bz2
+https://github.com/libusb/libusb/releases/tag/v1.0.30
+
+These libraries are built from unmodified upstream source. libusb is linked
+dynamically and may be replaced with a compatible build. The game extracts
+both libraries into its save directory under native-input/<build-hash>/.
+Replacing libusb there is allowed; the game does not overwrite existing files.
+Rebuild both universal macOS libraries with tools/build_controller_macos.py.
+Exact source URLs and SHA-256 checksums: tools/desktop_dependencies.json.
+No Steam library is included or required.
+
+To rebuild libusb alone on macOS, extract the source archive, then run:
+CFLAGS="-O2 -arch arm64 -arch x86_64 -mmacosx-version-min=11.0" \
+LDFLAGS="-O2 -arch arm64 -arch x86_64 -mmacosx-version-min=11.0" \
+./configure --enable-shared --disable-static
+make -j4
+The replacement library is libusb/.libs/libusb-1.0.0.dylib.
+Install it in the native-input build folder beside libSDL3.0.dylib.

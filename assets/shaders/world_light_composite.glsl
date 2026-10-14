@@ -5,6 +5,7 @@ extern float scatter;
 extern float softHighlights;
 vec4 effect(vec4 color, Image texture, vec2 uv, vec2 pixel) {
     vec4 surface=Texel(texture,uv);
+    if(max(surface.r,max(surface.g,surface.b))<.001) return surface*color;
     // Filter only the low resolution light map; keep the illustrated scene crisp.
     vec3 light=Texel(lightMap,uv).rgb*0.4;
     light+=Texel(lightMap,uv+vec2(lightStep.x,0.0)).rgb*0.15;

@@ -14,8 +14,8 @@ for pattern in ('main.lua', 'conf.lua', 'custom_levels.json', 'src/**/*.lua', 'a
                 'tests/*.lua', 'tests/*.json', 'designer/*.lua', 'designer/*.json', 'designer/*.png'):
     for path in root.glob(pattern):
         if (path.is_file() and not any(part.startswith('.') or part == '__pycache__' for part in path.relative_to(root).parts)
-                and (path.suffix in ('.lua', '.glsl', '.ttf', '.otf', '.png', '.json', '.svg', '.mp3')
-                     or path.relative_to(root).as_posix() == 'assets/fonts/OFL.txt')
+                and (path.suffix in ('.lua', '.glsl', '.ttf', '.otf', '.png', '.json', '.svg', '.mp3', '.dylib')
+                     or path.relative_to(root).as_posix() in ('assets/fonts/OFL.txt', 'assets/controllers/gamecontrollerdb.txt', 'assets/controllers/LICENSE.txt', 'assets/native/macos/SDL-LICENSE.txt', 'assets/native/macos/libusb-COPYING.txt', 'assets/native/macos/NOTICE.txt', 'assets/native/macos/libusb-1.0.30.tar.bz2'))
                 and 'branding' not in path.relative_to(root).parts
                 and 'prompt' not in path.name.lower()
                 and not re.search(r' \d+\.[^.]+$', path.name) and path.suffix not in ('.tmp', '.updated', '.pyc', '.log')):

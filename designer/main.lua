@@ -57,10 +57,13 @@ local function inside(mx,my)
     local x,y=point(mx,my); return x>=0 and x<=M.layout.width and y>=0 and y<=600
 end
 local function snapped(v) return state.snap and math.floor(v/10+.5)*10 or math.floor(v+.5) end
+local function brush(e) return e and (e.kind=='hole' or e.kind=='lava') end
 local function entity(e,ghost)
     local c=catalog(e); g.setColor(1,1,1,ghost and .45 or 1)
     if e.type=='larva' then Art.drawLarva(e.x,e.y,22,0,state.clock);return end
     if e.kind=='wall' then g.push();g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180);g.translate(-e.x,-e.y);g.setColor(.29,.31,.33,ghost and .5 or 1); g.rectangle('fill',e.x-e.w/2,e.y-e.h/2,e.w,e.h); g.setColor(.65,.64,.56); g.rectangle('line',e.x-e.w/2,e.y-e.h/2,e.w,e.h);g.pop()
+    elseif e.kind=='lava' and e.points then
+        require('lava_zones').draw(e,state.clock,ghost and .5 or 1)
     elseif e.kind=='hole' then
         if e.points then
             local holes=require('ground_holes')
@@ -94,7 +97,7 @@ local function entity(e,ghost)
         g.setColor(color.accent); g.setLineWidth(2)
         local w,h=e.w and e.w+8 or e.type=='skeleton_head' and 178 or 70,e.h and e.h+8 or e.type=='skeleton_head' and 158 or 70
         g.push();g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180)
-        if e.kind=='hole' and e.points then
+        if brush(e) and e.points then
             local x0,y0,x1,y1=require('ground_holes').bounds(e);g.rectangle('line',x0-4,y0-4,x1-x0+8,y1-y0+8,4)
         else g.rectangle('line',-w/2,-h/2,w,h,4) end
         g.pop(); g.setLineWidth(1)
@@ -189,7 +192,7 @@ function love.draw()
     button(state.all and 'Tous les biomes' or 'Ce biome',14,280,220,30,function() state.all=not state.all; state.scroll=0 end,state.all)
     local palette={}
     for _,c in ipairs(C) do
-        local cat=c.kind=='boss' and 'Boss' or c.kind=='mob' and (c.type=='piege' or c.type=='scie') and 'Pièges' or c.kind=='mob' and 'Mobs' or (c.kind=='magma_spawner' or c.kind=='lava' or c.kind=='vent' or c.kind=='tornado') and 'Pièges' or 'Terrain'
+        local cat=c.kind=='boss' and 'Boss' or c.kind=='mob' and (c.type=='piege' or c.type=='scie') and 'Pièges' or c.kind=='mob' and 'Mobs' or (c.kind=='magma_spawner'  or c.kind=='vent' or c.kind=='tornado') and 'Pièges' or 'Terrain'
         if cat==state.category and (state.all or c.world==0 or c.world==M.world) then palette[#palette+1]=c end
     end
     local max=math.max(1,math.floor((h-386)/68)); state.scroll=math.min(state.scroll,math.max(0,#palette-max))
@@ -197,7 +200,7 @@ function love.draw()
         local y=324+(i-1)*68
         button('',14,y,220,60,function() state.tool=c; M.selected=nil; state.input=nil end,state.tool==c)
         if c.type=='larva' then Art.drawLarva(45,y+29,22,0,state.clock) elseif c.art then g.setColor(1,1,1); local a=Art.images[c.art]; local width=math.min(42,44*a.w/a.h); Art.draw(c.art,45,y+29,width) end
-        text(c.name,77,y+((M.workshop or M.devMode or c.kind=='hole') and 20 or 8),c.kind=='hole' and 16 or 12,nil,145); if not M.workshop and not M.devMode and c.kind~='hole' then text(c.kind=='boss' and 'Rencontre' or c.kind=='mob' and 'Créature' or 'Placement',77,y+36,12,color.muted) end
+        text(c.name,77,y+((M.workshop or M.devMode or brush(c)) and 20 or 8),brush(c) and 16 or 12,nil,145); if not M.workshop and not M.devMode and not brush(c) then text(c.kind=='boss' and 'Rencontre' or c.kind=='mob' and 'Créature' or 'Placement',77,y+36,12,color.muted) end
     end end
     if not M.workshop and not M.devMode then text('Molette : parcourir la liste',20,h-54,12,color.muted) end
     local x,y,scale=bounds(); state.canvas={x=x,y=y,s=scale}
@@ -212,7 +215,7 @@ function love.draw()
     if state.stroke then entity(state.stroke,true) end
     if state.tool then local mx,my=love.mouse.getPosition(); local px,py=point(mx,my)
         if inside(mx,my) then
-            if state.tool.kind=='hole' then g.setColor(color.accent);g.circle('line',px,py,state.brush)
+            if brush(state.tool) then g.setColor(color.accent);g.circle('line',px,py,state.brush)
             else local ghost=M.clone(state.tool); ghost.x=snapped(px); ghost.y=snapped(py); entity(ghost,true) end
         end
     end
@@ -245,7 +248,7 @@ function love.draw()
         button('Supprimer',right+108,yy,99,34,M.delete)
     else
         text(state.tool and state.tool.name or 'Aucun objet sélectionné',right,212,18,nil,208)
-        if state.tool and state.tool.kind=='hole' then
+        if state.tool and brush(state.tool) then
             text('Taille : '..state.brush*2,right,268,16)
             button('−',right,308,98,36,function() state.brush=math.max(4,state.brush-4) end)
             button('+',right+108,308,98,36,function() state.brush=math.min(120,state.brush+4) end)
@@ -272,8 +275,8 @@ function love.mousepressed(mx,my,button)
     state.input=nil; love.keyboard.setTextInput(false)
     local x,y=point(mx,my)
     if button==2 then state.tool=nil;state.stroke=nil end
-    if state.tool and state.tool.kind=='hole' and button==1 then
-        M.selected=nil;state.stroke={kind='hole',x=x,y=y,radius=state.brush,points={0,0}};return
+    if state.tool and brush(state.tool) and button==1 then
+        M.selected=nil;state.stroke={kind=state.tool.kind,x=x,y=y,radius=state.brush,points={0,0}};return
     end
     if state.tool and button==1 then M.add(state.tool,snapped(x),snapped(y));state.status=require('workshop_access').warning(state.tool,M.world) or ''; return end
     M.selected=nil
@@ -286,8 +289,8 @@ function love.mousepressed(mx,my,button)
             dx,dy=math.cos(a)*dx+math.sin(a)*dy,-math.sin(a)*dx+math.cos(a)*dy
             rx,ry=math.max(12,e.w/2),math.max(12,e.h/2)
         elseif e.type=='skeleton_head' then rx,ry=85,75 end
-        local hit=e.kind=='hole' and e.points and require('ground_holes').contains(e,x,y)
-            or not (e.kind=='hole' and e.points) and math.abs(dx)<=rx and math.abs(dy)<=ry
+        local hit=brush(e) and e.points and require('ground_holes').contains(e,x,y)
+            or not (brush(e) and e.points) and math.abs(dx)<=rx and math.abs(dy)<=ry
         if hit then M.selected=e; M.checkpoint(); state.drag={dx=x-e.x,dy=y-e.y}; break end
     end
 end
@@ -312,7 +315,7 @@ function love.mousereleased(mx,my,button)
         love.mousemoved(mx,my)
         local points={};local e=state.stroke
         for i=1,#e.points,2 do points[i]=e.x+e.points[i];points[i+1]=e.y+e.points[i+1] end
-        local hole=require('ground_holes').stroke(points,e.radius)
+        local hole=require('ground_holes').stroke(points,e.radius,e.kind)
         M.add(hole,hole.x,hole.y);M.selected=nil;state.stroke=nil;state.status='';return
     end
     if state.drag then M.persist();state.drag=nil end

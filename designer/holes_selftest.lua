@@ -26,12 +26,30 @@ function T.run(M,state,select)
  M.project=love.filesystem.getSaveDirectory();M.save=M.project;M.filename='hole-test-levels.json'
  local ok,msg=M.apply();assert(ok,msg)
  local saved=require('json').decode(love.filesystem.read(M.filename));assert(M.validate(saved.levels['6:1']))
+ select(2,1);state.category='Terrain';love.draw()
+ for _,item in ipairs(M.layout.entities) do assert(item.kind~='lava','Old puddles are absent from the editor') end
+ for _,entry in ipairs(catalog) do if entry.kind=='lava' then state.tool=entry end end
+ assert(state.tool and state.tool.points,'Lava uses the same brush tool')
+ view=state.canvas;local count=#M.layout.entities
+ x,y=point(200,180);love.mousepressed(x,y,1)
+ for _,p in ipairs({{440,180},{440,380},{200,380},{200,180}}) do x,y=point(p[1],p[2]);love.mousemoved(x,y) end
+ love.draw();love.mousereleased(x,y,1)
+ local zone=M.layout.entities[#M.layout.entities]
+ assert(zone.kind=='lava' and require('ground_holes').contains(zone,320,280),'Lava contour fills its unpainted centre')
+ assert(M.validate(M.layout));M.undo(false);assert(#M.layout.entities==count)
+ M.undo(true);zone=M.layout.entities[#M.layout.entities];assert(zone.points,'Redo retains the lava contour')
+ state.tool=nil;x,y=point(320,280);love.mousepressed(x,y,1);assert(M.selected==zone,'Filled interior can be selected')
+ x,y=point(340,300);love.mousemoved(x,y);love.mousereleased(x,y,1)
+ assert(require('ground_holes').contains(zone,340,300),'Lava can be moved as one zone')
+ ok,msg=M.apply();assert(ok,msg)
+ saved=require('json').decode(love.filesystem.read(M.filename));assert(M.validate(saved.levels['2:1']))
+ local last=saved.levels['2:1'].entities[#M.layout.entities];assert(last.kind=='lava' and last.points,'Saved level retains lava brush points')
  M.project,M.save=oldProject,oldSave
  local tick=0
  state.testUpdate=function()
   tick=tick+1
-  if tick==2 then love.graphics.captureScreenshot('drawn-holes-editor.png') end
-  if tick==4 then print('PASS editor holes: drawing, selection, moving, undo/redo, draft and level saving');love.event.quit() end
+  if tick==2 then love.graphics.captureScreenshot('drawn-lava-editor.png') end
+  if tick==4 then print('PASS editor holes and lava: drawing, selection, moving, undo/redo, draft and level saving');love.event.quit() end
  end
 end
 return T

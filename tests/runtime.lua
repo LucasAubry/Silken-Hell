@@ -9,6 +9,16 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_REPLAY_CROSS_PROCESS_TEST')=='1' then require('tests.replay_revision').run();return end
+    if os.getenv('SILKEN_REPLAY_WORLD_TEST')=='1' then require('tests.replay_world').run();return end
+    if os.getenv('SILKEN_CONTROLLER_HARDWARE_TEST')=='1' then require('tests.controller_hardware').run();return end
+    if os.getenv('SILKEN_CONTROLLER_DETECTION_TEST')=='1' then require('tests.controller_detection').run();return end
+    if os.getenv('SILKEN_VICTORY_NAVIGATION_TEST')=='1' then require('tests.victory_navigation').run();return end
+    if os.getenv('SILKEN_ABYSS_CHARGE_PRESSURE_TEST')=='1' then require('tests.abyss_charge_pressure').run();return end
+    if os.getenv('SILKEN_ABYSS_CHARGE_VISIBILITY_TEST')=='1' then require('tests.abyss_charge_visibility').run();return end
+    if os.getenv('SILKEN_RETRY_WAIT_TEST')=='1' then require('tests.retry_wait').run();return end
+    if os.getenv('SILKEN_TORNADO_DIRECTION_TEST')=='1' then require('tests.tornado_direction').run();return end
+    if os.getenv('SILKEN_TERRAIN_ZONES_TEST')=='1' then require('tests.terrain_zones').run();return end
     if os.getenv('SILKEN_STORM_GROUNDING_TEST')=='1' then require('tests.storm_grounding').run();return end
     if os.getenv('SILKEN_BIOME_RADIANCE_TEST')=='1' then require('tests.biome_radiance').run();return end
     if os.getenv('SILKEN_WORLD_LIGHTING_TEST')=='1' then require('tests.world_lighting').run();return end

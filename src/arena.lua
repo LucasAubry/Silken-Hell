@@ -12,7 +12,8 @@ function A.blocked(x,y,w,h,walls)
         if math.abs(dx)<w/2+math.abs(c)*r.w/2+math.abs(s)*r.h/2
             and math.abs(dy)<h/2+math.abs(s)*r.w/2+math.abs(c)*r.h/2
             and math.abs(dx*c+dy*s)<r.w/2+math.abs(c)*w/2+math.abs(s)*h/2
-            and math.abs(-dx*s+dy*c)<r.h/2+math.abs(s)*w/2+math.abs(c)*h/2 then return true end
+            and math.abs(-dx*s+dy*c)<r.h/2+math.abs(s)*w/2+math.abs(c)*h/2
+            and not (Hazards and Hazards.openEdge(r,x,y,w,h)) then return true end
     end
     return false
 end
@@ -101,7 +102,10 @@ function A.reconcile()
         if m.type=='piege' or m.capture then box(m.x-40,m.y-40,80,80)
         elseif m.type=='scie' then box(m.x-90,m.y-90,180,180) end
     end
-    for _,p in ipairs(Hazards.lava) do box(p.x-p.rx-12,p.y-p.ry-12,p.rx*2+24,p.ry*2+24) end
+    for _,p in ipairs(Hazards.lava) do
+        if p.points then local x0,y0,x1,y1=require('ground_holes').bounds(p);box(p.x+x0-12,p.y+y0-12,x1-x0+24,y1-y0+24)
+        else box(p.x-p.rx-12,p.y-p.ry-12,p.rx*2+24,p.ry*2+24) end
+    end
     local candidates=A.interior; A.interior={}
     while #A.walls>4 do table.remove(A.walls) end
     for _,r in ipairs(candidates) do

@@ -10,7 +10,11 @@ function T.run()
  for i=1,1800 do if App.state=='playing' then Replay.update(1/60,App.simulate) end end
  assert(App.state=='victory' and Replay.last,'Complete recorded run')
  local original=V.run;local data=json.decode(json.encode(Replay.last));original.replayData=data
- UI.buttons={};V.draw();UI.buttons[2].run();assert(App.state=='rankings');UI.backRankings();assert(App.state=='victory' and V.run==original)
+ for _,scope in ipairs({'global','country','local'}) do
+  original.rankScope=scope;UI.buttons={};V.draw();UI.buttons[2].run();assert(App.state=='rankings');UI.backRankings()
+  assert(App.state=='victory' and V.run==original and original.rankScope==scope,'Rank category survives the leaderboard round trip')
+ end
+ original.rankScope='global'
  UI.buttons={};V.draw();UI.buttons[2].run();love.keypressed('escape');assert(App.state=='victory')
  assert(Replay.play(data));for i=1,1800 do if Replay.playing then Replay.update(1/60,App.simulate) end end
  assert(not Replay.playing and App.state=='victory' and V.run==original,'Replay completion restores original result')
@@ -18,7 +22,7 @@ function T.run()
  App.state='rankings';UI.boardReturn=nil;assert(Replay.play(data));Replay.stop();assert(App.state=='rankings');UI.backRankings();assert(App.state=='menu','Normal rankings keep normal return')
  local text=UI.text;local seen={};UI.text=function(s,...) seen[s]=true;return text(s,...) end
  App.state='victory';V.run=original;UI.buttons={};V.draw();UI.text=text
- assert(seen['Niveau 1'] and seen['Le Merle noir'] and not seen['CHAQUE SECONDE COMPTE'])
+ assert(seen['Niveau 1'] and seen[Campaign.titles[original.biome][10]] and not seen['CHAQUE SECONDE COMPTE'])
  local frame=0;love.focus=function() end
  love.update=function(dt)
   frame=frame+1;UI.clock=2+frame*.1

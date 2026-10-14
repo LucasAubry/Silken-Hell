@@ -66,12 +66,36 @@ function B.edge(length,biome,seed)
  end
  tint(p[3],.45);g.line(0,21,length,21)
 end
+function B.paint(canvas,zones)
+ local g=love.graphics;local H=require('ground_holes');local cuts={};local key={Arena.width,canvas:getDPIScale()}
+ for _,zone in ipairs(zones or {}) do if zone.points then
+  local x0,y0,x1,y1=H.bounds(zone)
+  if zone.x+x0<44 or zone.x+x1>Arena.width-44 or zone.y+y0<44 or zone.y+y1>556 then
+   cuts[#cuts+1]=zone;key[#key+1]=H.geometry(zone).signature;key[#key+1]=zone.x;key[#key+1]=zone.y
+  end
+ end end
+ g.push('all');g.setShader();g.setColor(1,1,1)
+ if #cuts>0 then
+  key=table.concat(key,':')
+  if B.cutKey~=key then
+   B.cutKey=key
+   if B.cutMask then B.cutMask:release() end
+   B.cutMask=g.newCanvas(Arena.width,600,{dpiscale=canvas:getDPIScale()})
+   g.push('all');g.setCanvas(B.cutMask);g.origin();g.setScissor();g.clear(0,0,0,0)
+   for _,zone in ipairs(cuts) do H.draw(zone,1.19) end
+   g.pop()
+  end
+  B.cutShader=B.cutShader or g.newShader('assets/shaders/terrain_edge_cut.glsl')
+  B.cutShader:send('cutMask',B.cutMask);g.setShader(B.cutShader)
+ end
+ g.draw(canvas);g.pop()
+end
 function B.skyVoid()
  local g=love.graphics;local w=Arena.width
  local target=g.getCanvas();local density=target and target:getDPIScale() or 1
  local key=w..':'..density
  if B.skyKey==key then
-  g.push('all');g.setShader();g.setColor(1,1,1);g.draw(B.skyCanvas);g.pop();return
+  B.paint(B.skyCanvas,Realms.holes);return
  end
  B.skyKey=key;if B.skyCanvas then B.skyCanvas:release() end
  B.skyCanvas=g.newCanvas(w,600,{dpiscale=density});B.skyCanvas:setFilter('linear','linear')
@@ -94,7 +118,7 @@ function B.skyVoid()
   g.push();g.translate(w,0);g.rotate(math.pi/2);edge(600,depth,4);g.pop()
  end
  g.setCanvas(target);g.pop()
- g.push('all');g.setShader();g.setColor(1,1,1);g.draw(B.skyCanvas);g.pop()
+ B.paint(B.skyCanvas,Realms.holes)
 end
 function B.draw()
  if Campaign.biome==6 and not Secret.inArena() then B.skyVoid();return end
@@ -123,6 +147,6 @@ function B.draw()
   end
   g.setCanvas(old);g.pop()
  end
- g.push('all');g.setShader();g.setColor(1,1,1);g.draw(B.canvas);g.pop()
+ B.paint(B.canvas,biome==2 and Hazards.lava or nil)
 end
 return B

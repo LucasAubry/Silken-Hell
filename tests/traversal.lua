@@ -25,13 +25,15 @@ function T.run()
     assert(mole.speed>=130,'Taupe plus rapide à la surface')
     level(5,10); Realms.spawnMole(200,200); assert(mobs[1].speed==140,'Taupes du boss accélérées')
     Hedgehog.fire(); assert(#Hedgehog.projectiles==12)
+    local savedInput=Replay.input;Replay.input={0,0,false}
     level(6,1); local t=Realms.tornadoes[1]
     player.x=t.x-15; player.y=t.y-12; player.lastMoveX=1; player.lastMoveY=0
     Realms.updateTraversal(.01); assert(player.whirl,'Tornade attrape le joueur')
     local x=player.x; App.move(.1); assert(player.x==x,'Déplacement contrôlé pendant le tourbillon')
     Realms.updateTraversal(.2); assert(player.whirl and player.x~=x,'Rotation du joueur')
     Realms.updateTraversal(.5); assert(not player.whirl and player.throw,'Projection après rotation')
-    local y=player.y; x=player.x; Realms.updateTraversal(.34); assert(math.abs(player.x-x)<1 and player.y>y+70 and player.reset,'Projection violente jusqu’au rebord')
+    local y=player.y; x=player.x; Realms.updateTraversal(1.5); assert(math.abs(player.y-y)<1 and player.x>x+70 and player.reset,'Sans nouvelle direction, projection dans la direction d’entrée jusqu’au rebord')
+    Replay.input=savedInput
     level(1,10); player.x=70; player.y=540; local old=Raven.fire; local count=0
     Raven.fire=function() count=count+1 end
     for _=1,40 do Raven.update(.1) end

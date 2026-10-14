@@ -13,7 +13,8 @@ local function pulse(time,seed)
 end
 function L.collect()
  L.lights={}
- if not Graphics.effects or App.state=='playing' and Abyss.playerHidden() then return L.lights end
+ -- All Abyss levels keep their original lights, particles and darkness contrast.
+ if not Graphics.effects or App.state=='playing' and (Campaign.biome==7 or Abyss.playerHidden() or Abyss.encounterActive()) then return L.lights end
  if App.state=='bossWorld' or Secret.inArena() then
   require('biome_radiance').sources(add,UI.clock);return L.lights
  end
@@ -28,6 +29,10 @@ function L.collect()
  end
  local function storm(boss)
   if not boss.active or boss.defeated then return end
+  for _,p in ipairs(boss.pickups or {}) do
+   if not p.invalid and p.cooldown<=0 then add(p.x,p.y,80,.35,blue) end
+  end
+  if (boss.charges or 0)>0 then add(player.x+15,player.y+12,75+boss.charges*30,.20*boss.charges,blue) end
   for _,p in ipairs(boss.strikes or {}) do
    if p.age>=0 and p.age<.85 then add(p.x,p.y,80,p.age/.85*.22,gold)
    elseif p.age>=.85 and Campaign.biome~=6 then add(p.x,p.y,330,math.max(0,1-(p.age-.85)/.5)*.8,gold) end

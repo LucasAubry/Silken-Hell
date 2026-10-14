@@ -22,7 +22,7 @@ end
 
 
 local function drawPlayer(direction)
-    if Abyss and Abyss.playerHidden() then return end
+    if Abyss and (Abyss.playerHidden() or Abyss.playerVisibility()==0) then return end
     if player.abyssHeld then
         local s=player.abyssHeld.swallowed; local scale=math.max(0,1-(s and s.time or 0)/.25)
         love.graphics.setColor(.5,.9,1,scale); Characters.draw(player.x+15,player.y+8,Characters.playerWidth*scale,direction)
@@ -50,17 +50,10 @@ local function drawPlayer(direction)
         love.graphics.setColor(.42,1,.32)
     else love.graphics.setColor(1,1,1) end
     local g=love.graphics
-    local previousShader=g.getShader()
-    if (player.charges or 0)>0 and Abyss and Abyss.encounterActive() then
-        player.chargeShader=player.chargeShader or g.newShader([[vec4 effect(vec4 color, Image image, vec2 uv, vec2 px) {
-            vec4 tex=Texel(image,uv);
-            float light=dot(tex.rgb,vec3(.299,.587,.114));
-            return vec4(vec3(.12,.65,1.0)*(.25+light*.95),tex.a)*color;
-        }]])
-        g.setColor(1,1,1);g.setShader(player.chargeShader)
-    end
+    local r,green,b,alpha=g.getColor()
+    local visibility=Abyss.playerVisibility()
+    g.setColor(r*visibility,green*visibility,b*visibility,alpha)
     Characters.draw(player.x+15,player.y+8,Characters.playerWidth,direction,player,Campaign.biome)
-    g.setShader(previousShader)
     love.graphics.setColor(1,1,1)
 end
 
@@ -70,6 +63,11 @@ end
 
 local function drawBeacon()
     if Abyss and Abyss.playerHidden() then return end
+    if Abyss.encounterActive() then
+        local x,y,r=Ocean.bubblePosition()
+        if x then Ocean.drawLantern(x,y,r,Ocean.clock,nil,nil,direction) end
+        return
+    end
     if Campaign.biome==4 or Campaign.biome==7 then Ocean.drawBubble() end
 end
 function draw_player_beacon()

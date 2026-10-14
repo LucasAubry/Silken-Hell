@@ -53,7 +53,6 @@ function R.spawn(w,n)
     end
 end
 function R.reset(w,n)
-    R.bossFloorReady=false
     R.custom=false; R.world=w; R.level=n; R.clock=0; R.tunnels={}; R.tornadoes={}; player.whirl=nil; player.throw=nil; player.skyWhirl=nil; player.skyThrow=nil; player.tunnelLock=false; player.tunnelTravel=nil; R.fireflies={};R.starPrevious=nil; R.wind={x=0,y=0,time=0,stage=0,tx=0,ty=0}; R.clouds={}; R.rain={}; R.rainClock=.25; R.current={}
     R.electricTrails={}; R.bolts={}; R.eggs={}; R.larvae={}; R.holes={}; R.rainSites={}; R.rainWave=0; R.vents={}; R.lightning={}; R.lightningClock=.35; player.illuminated=0
     require('sky_lightning').reset()
@@ -96,7 +95,6 @@ function R.reset(w,n)
         -- Bake the Paradise-style cloud material once; actors remain crisp above it.
         R.cloudShader=R.cloudShader or g.newShader('assets/shaders/sky_floor.glsl')
         R.cloudShader:send('floorSize',{Arena.width,600})
-        R.cloudShader:send('bossArena',false)
         g.setShader(R.cloudShader);g.setColor(1,1,1)
         g.draw(UI.pixel,0,0,0,Arena.width,600);g.setShader()
         for row=1,4 do for col=1,6 do
@@ -156,6 +154,12 @@ function R.updateTraversal(dt)
         for _,t in ipairs(R.tornadoes) do t.cooldown=math.max(0,t.cooldown-dt) end
         if player.whirl then
             local w=player.whirl; w.time=w.time-dt; local a=R.clock*18
+            -- Aim remains controllable throughout the spin, including its last frame.
+            local dx,dy=Input.move();local length=math.sqrt(dx*dx+dy*dy)
+            if length>.001 then
+                w.dx,w.dy=dx/length,dy/length
+                player.lastMoveX,player.lastMoveY=w.dx,w.dy
+            end
             player.x=w.tornado.x+math.cos(a)*15-15; player.y=w.tornado.y+math.sin(a)*10-12
             if w.time<=0 then
                 player.whirl=nil; player.throw={vx=w.dx*1050,vy=w.dy*1050,time=1.5}
@@ -174,8 +178,10 @@ function R.updateTraversal(dt)
             for _,t in ipairs(R.tornadoes) do
                 if t.cooldown==0 and (player.x+15-t.x)^2+(player.y+12-t.y)^2<32^2 then
                     local dx,dy=player.lastMoveX or 0,player.lastMoveY or 1
-                    local d=math.max(.001,math.sqrt(dx*dx+dy*dy))
-                    player.whirl={tornado=t,time=.65,dx=-dy/d,dy=dx/d}; player.dashing=false; break
+                    local d=math.sqrt(dx*dx+dy*dy)
+                    if d<.001 then dx,dy,d=0,1,1 end
+                    -- Entry heading is the fallback until the player aims during the spin.
+                    player.whirl={tornado=t,time=.65,dx=dx/d,dy=dy/d}; player.dashing=false; break
                 end
             end
         end
@@ -224,22 +230,8 @@ function R.skyBossPresent()
     for _,item in ipairs(Bosses.items) do if item.kind=='storm' then return true end end
     return false
 end
-function R.floorTexture()
-    if Campaign.biome~=6 or not R.skyBossPresent() then return R.floor end
-    if not R.bossFloorReady then
-        local g=love.graphics;local density=R.floor:getDPIScale()
-        if not R.bossFloor or R.bossFloor:getWidth()~=Arena.width or math.abs(R.bossFloor:getDPIScale()-density)>.001 then
-            if R.bossFloor then R.bossFloor:release() end
-            R.bossFloor=g.newCanvas(Arena.width,600,{dpiscale=density})
-        end
-        g.push('all');g.setCanvas(R.bossFloor);g.origin();g.setScissor();g.clear()
-        R.cloudShader:send('floorSize',{Arena.width,600});R.cloudShader:send('bossArena',true)
-        g.setShader(R.cloudShader);g.setColor(1,1,1);g.draw(UI.pixel,0,0,0,Arena.width,600)
-        R.cloudShader:send('bossArena',false);g.pop()
-        R.bossFloorReady=true
-    end
-    return R.bossFloor
-end
+-- Cloud material restored from 335e89f; painted holes retain their edge cuts.
+function R.floorTexture() return R.floor end
 function R.skyBossActive()
     if Storm.active and not Storm.defeated then return true end
     for _,item in ipairs(Bosses.items) do if item.kind=='storm' and not item.boss.defeated then return true end end
@@ -535,7 +527,13 @@ function R.drawDarkness()
     local exposed=(player.illuminated or 0)>0
     local bx,by=Ocean.lightPosition()
     local lights={}
-    if bx then
+    if Abyss.encounterActive() and not Abyss.playerHidden() then
+        if bx then lights[#lights+1]={bx,by,38,.26} end
+        if (player.charges or 0)>0 then
+            local dx,dy=require('render_motion').offset(player)
+            lights[#lights+1]={player.x+15+dx,player.y+12+dy,Abyss.playerLightRadius(),1.4*Abyss.playerBrightness()}
+        end
+    elseif bx then
         lights[1]={bx,by,exposed and Abyss.playerLightRadius() or 75,
             exposed and (player.circleLight and .8 or .90+.04*math.max(0,(player.charges or 0)-1)) or .32}
     end

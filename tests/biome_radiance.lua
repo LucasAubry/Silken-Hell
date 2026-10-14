@@ -14,7 +14,7 @@ function T.run()
   assert(g.getCanvas()==nil,'Light passes must restore canvas state')
   return rendered:newImageData()
  end
- for _,world in ipairs({1,2,3,4,5,6,7,9}) do
+ for _,world in ipairs({1,2,3,4,5,6,9}) do
   App.practice=world==3 and 2 or world==9 and 1 or 5;App.singleLevel=true;App.start(world);require('run_start').active=false
   UI.clock=4;Realms.clock=4
   Graphics.quality=2;Graphics.effects=false
@@ -35,6 +35,17 @@ function T.run()
   UI.clock=12;local data=draw();data:release()
   print('PASS biome '..world..': visible lights, three quality levels, animation and simulation isolation')
  end
+ -- Restore the pre-radiance renderer in every Abyss level, not just the boss.
+ for level=1,10 do
+  App.practice=level;App.start(7);Graphics.effects=true
+  local scene=g.newCanvas(Arena.width,600)
+  for quality=1,3 do
+   Graphics.quality=quality
+   assert(not B.active(),'Abyss uses only its original decorative effects')
+   assert(apply(scene)==scene and #L.lights==0,'Abyss scene bypasses all new light compositing')
+  end
+  local data=draw();data:encode('png','legacy-abyss-'..level..'.png');data:release();scene:release()
+ end
  App.practice=5;App.start(7);Graphics.effects=true
  local black=g.newCanvas(Arena.width,600)
  g.push('all');g.setCanvas(black);g.clear(0,0,0,1);g.pop()
@@ -43,10 +54,27 @@ function T.run()
  local hidden=Abyss.playerHidden;Abyss.playerHidden=function()return true end
  assert(apply(black)==black and #L.lights==0,'Hidden Abyss phases must bypass decorative light')
  Abyss.playerHidden=hidden;black:release()
+ -- New decorative passes must not recolor the boss's original charge lighting.
+ App.practice=10;App.start(7);Graphics.effects=true
+ Abyss.playerHidden=function()return false end
+ local scene=g.newCanvas(Arena.width,600)
+ for _,quality in ipairs({1,2,3}) do
+  Graphics.quality=quality
+  assert(Abyss.encounterActive() and not B.active(),'Abyss boss keeps its original lighting')
+  assert(apply(scene)==scene and #L.lights==0,'Boss scene bypasses decorative compositing')
+ end
+ Abyss.defeated=true
+ assert(not B.active() and apply(scene)==scene,'Original Abyss lighting remains after the boss is defeated')
+ Abyss.defeated=false
+ App.practice=5;App.start(6)
+ Bosses.load({{type='skeleton_fish',x=200,y=300,skeletonStage=10}},{},{})
+ assert(Abyss.encounterActive() and not B.active() and apply(scene)==scene,'Custom Abyss encounters also keep their original lighting')
+ Bosses.reset();scene:release();Abyss.playerHidden=hidden
+ print('PASS visible Abyss bosses bypass decorative light at every quality, including custom encounters')
  for _,world in ipairs(Worlds.order) do Profile.completed[world]=true end
  Secret.open(false);love.draw();local hall=rendered:newImageData();hall:encode('png','radiance-sanctuary.png');hall:release()
  assert(B.biome()==8 and #L.lights==2,'Sanctuary lobby receives its own lights without stale gameplay sources')
  L.apply=apply;Graphics.quality=2
- print('PASS all biomes, Sanctuary, hidden Abyss phases and preserved darkness');love.event.quit()
+ print('PASS other biomes and Sanctuary lighting; original Abyss rendering across all ten levels, three qualities, boss defeat and custom encounters');love.event.quit()
 end
 return T

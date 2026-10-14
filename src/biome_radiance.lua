@@ -5,7 +5,8 @@ B.palettes={
 }
 function B.biome()return (App.state=='bossWorld' or Secret.inArena()) and 8 or Campaign.biome end
 function B.active()
- return Graphics.effects and B.palettes[B.biome()]~=nil and not (App.state=='playing' and Abyss.playerHidden())
+ return Graphics.effects and B.palettes[B.biome()]~=nil
+  and not (App.state=='playing' and (Campaign.biome==7 or Abyss.playerHidden() or Abyss.encounterActive()))
 end
 function B.sources(add,time)
  local biome=B.biome();local tint=B.palettes[biome]
@@ -55,6 +56,19 @@ function B.motes()
  if not B.active() then return end
  local g=love.graphics;local biome=B.biome();local t=UI.clock;local tint=B.palettes[biome]
  g.push('all');g.setShader();g.setBlendMode('add')
+ -- Preserve the Sky motes from the 335e89f presentation as well as its floor.
+ if biome==6 then
+  for i=1,(Graphics.quality==1 and 18 or 34) do
+   local x=(i*137.31+math.sin(t*.16+i*2.4)*20+t*2)%Arena.width
+   local y=(i*79.73-t*2.5)%600
+   local alpha=.10+(.5+.5*math.sin(t*.7+i*1.7))^2*.30;local size=.7+i%3*.3
+   g.setColor(tint[1],tint[2],tint[3],alpha);g.circle('fill',x,y,size)
+   if i%3==0 then for ring=3,1,-1 do
+    g.setColor(tint[1],tint[2],tint[3],alpha*.045);g.circle('fill',x,y,ring*2+size)
+   end end
+  end
+  g.pop();return
+ end
  if not B.halo then
   local vertices={{0,0,0,0,1,1,1,1}}
   for i=0,32 do local a=i*math.pi/16;vertices[#vertices+1]={math.cos(a),math.sin(a),0,0,1,1,1,0} end
@@ -62,7 +76,7 @@ function B.motes()
  end
  local count=Graphics.quality==1 and 42 or Graphics.quality==3 and 120 or 88
  local rise=biome==2 and 19 or biome==4 and 9 or biome==7 and 1.5 or 3.5
- local drift=biome==6 and 17 or biome==3 and 5 or 2
+ local drift=biome==3 and 5 or 2
  -- Decorative motion uses no gameplay RNG. Abyss motes are drawn beneath darkness.
  for i=1,count do
   local depth=.55+(i%7)/7

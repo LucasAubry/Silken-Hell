@@ -9,9 +9,11 @@ shake_timer = 0
 
 function draw_shadow_dash()
     if Abyss and Abyss.playerHidden() then return end
+    local visibility=Abyss and Abyss.playerVisibility() or 1
+    if visibility==0 then return end
     for _,ghost in ipairs(ghosts) do
         local tint=Characters.effectColor()
-        love.graphics.setColor(tint[1],tint[2],tint[3],ghost.alpha*0.6)
+        love.graphics.setColor(tint[1]*visibility,tint[2]*visibility,tint[3]*visibility,ghost.alpha*0.6)
         Characters.draw(ghost.x+15,ghost.y+8,Characters.playerWidth,ghost.direction)
     end
     love.graphics.setColor(1,1,1)

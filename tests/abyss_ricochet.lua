@@ -84,7 +84,7 @@ function T.run()
  local sides={};for _,f in ipairs(Abyss.chargedFish)do sides[f.side]=true end
  for i=1,4 do assert(sides[i],'Attackers arrive from every wall')end
  assert(F.visibility({x=0,y=0},500,500)==0 and F.visibility({x=490,y=500},500,500)==1,'Only eyes are shown until the fish is close')
- F.trigger(Abyss);F.trigger(Abyss);assert(#Abyss.chargedFish==10,'Repeated lightning never stacks overlapping schools')
+ F.trigger(Abyss);F.trigger(Abyss);assert(#Abyss.chargedFish==12,'Third charge adds two yellow fish without stacking red schools')
  local first=Abyss.chargedFish
  Abyss.chargedFish={};F.trigger(Abyss)
  for i,f in ipairs(Abyss.chargedFish)do

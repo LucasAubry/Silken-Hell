@@ -1,12 +1,11 @@
 local FX=require 'mobs.bosses.encounter_fx'
 local S={active=false,playerFeatherRadius=17}
 local Rain=require 'sky_rain'
+local Conductors=require 'mobs.bosses.storm.conductors'
 local STRIKE_RADIUS=22
 local BODY_SIZE=150
 local BODY_RADIUS=34
 local STRIKE_WARNING=.85
-local PUSH_SPEED=1050
-local PUSH_DRAG=1.8
 local function distance(x,y,tx,ty) return math.sqrt((tx-x)^2+(ty-y)^2) end
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 function S.speed() return (3000+2200*(1-S.hp/S.maxHp))*(S.movementRate or 1) end
@@ -16,22 +15,19 @@ function S.reset(active)
  S.active=active;S.name='Merle noir';S.hp=10;S.maxHp=10;S.defeated=false;S.electric=false
  S.x=Arena.width*.5;S.y=150;S.dir='down';S.clock=0;S.flash=0;S.hitGrace=0;S.chargeTime=0;S.charges=0
  S.projectiles={};S.strikes={};S.trails={};S.holes={};S.rain={};S.rainClock=1.4;S.rainWave=0;S.tornado=nil;S.pattern=0;S.pass=0;S.round=0;S.featherSalvos=0
- S.vx=0;S.vy=0;S.patrolClock=0;S.poseAge=1;S.boltsRemaining=0;S.volleyClock=0;S.fallSide=nil;S.pushLock=0;S.target=nil;S.groundPulse=nil
+ S.vx=0;S.vy=0;S.patrolClock=0;S.poseAge=1;S.boltsRemaining=0;S.volleyClock=0;S.fallSide=nil
+ Conductors.reset(S)
  S.nest={x=Arena.width-105,y=115};S.setPhase('orbit')
 end
 function S.setPhase(phase)
  S.phase=phase;S.phaseAge=0;S.hidden=false
  if phase=='orbit' or phase=='lightning' then
-  S.phase='orbit';S.phaseTime=math.huge;S.shot=.7;S.bolt=.65;S.burst=0;S.salvos=0;S.round=S.round+1;S.boltsRemaining=0;S.fallSide=nil;S.target=nil
- elseif phase=='grounded' then
-  S.phaseTime=3.2;S.vx=0;S.vy=0;S.pushLock=0;S.boltsRemaining=0
- elseif phase=='knocked' then
-  S.phaseTime=1.5;S.pushLock=.22;S.boltsRemaining=0
+  S.phase='orbit';S.phaseTime=math.huge;S.shot=.7;S.bolt=.65;S.burst=0;S.salvos=0;S.round=S.round+1;S.boltsRemaining=0;S.fallSide=nil
  elseif phase=='leave' then S.phaseTime=.22;S.fromX=S.x;S.fromY=S.y;S.pass=0;S.vx=0;S.vy=0
  elseif phase=='flightTell' then
   S.phaseTime=.60-.16*(1-S.hp/S.maxHp);S.hidden=true;S.pass=S.pass+1
   local px,py=clamp(player.x+15,38,Arena.width-38),clamp(player.y+12,35,565)
-  -- Return from the fall edge and lock the player's lane during the beak warning.
+  -- Retaliate from the grounded rod's edge; lock the lane during the beak warning.
   local dx=(px-Arena.width*.5)/(Arena.width*.5-38);local dy=(py-300)/265
   local mode=S.fallSide or (math.abs(dx)>math.abs(dy) and (dx<0 and 0 or 1) or (dy<=0 and 2 or 3))
   if mode==0 then S.startX=-110;S.endX=Arena.width+110;S.startY=py;S.endY=py;S.dir='right'
@@ -58,7 +54,7 @@ function S.fire()
  local middle=math.floor(count/2)
  local offset=(S.burst-middle)*.16
  local rage=1-S.hp/S.maxHp
- local a=aim+offset;local speed=(255+110*rage)*1.3
+ local a=aim+offset;local speed=(255+110*rage)*1.3*(1+S.charges*.12)
  S.projectiles[#S.projectiles+1]={x=S.x+math.cos(a)*45,y=S.y+math.sin(a)*45,vx=math.cos(a)*speed,vy=math.sin(a)*speed,life=4.5,age=0}
  S.burst=S.burst+1
  if S.burst>=count then S.burst=0;S.salvos=S.salvos+1;S.featherSalvos=S.featherSalvos+1;S.shot=.95-.60*rage else S.shot=.26-.17*rage end
@@ -101,53 +97,6 @@ function S.targetSafe(x,y)
  end
  return true
 end
-function S.placeTarget()
- if S.phase~='orbit' then return end
- if S.target and S.targetSafe(S.target.x,S.target.y) then return end
- S.target=nil
- -- Predictable positions reward routing; fall back to a safe grid in custom arenas.
- local sites={{.5,300},{.28,300},{.72,300},{.5,430},{.5,170},{.28,430},{.72,170},{.72,430}}
- for i=1,88 do
-  local site=sites[(S.round+i-2)%#sites+1]
-  local x,y=Arena.width*site[1],site[2]
-  if i>#sites then local n=i-#sites-1;x=80+(n%10)*(Arena.width-160)/9;y=90+math.floor(n/10)*60 end
-  if S.targetSafe(x,y) and distance(x,y,player.x+15,player.y+12)>65 then
-   S.target={x=x,y=y};return
-  end
- end
-end
-function S.land()
- if S.phase~='orbit' then return false end
- S.setPhase('grounded');S.flash=.25;S.target=nil;S.strikes={}
- BossFX.burst(S.x,S.y,{.65,.9,1},1.8)
- return true
-end
-function S.push()
- if S.phase~='grounded' and S.phase~='knocked' or S.pushLock>0 then return false end
- local px,py=require('collision_shapes').center()
- local dx,dy=S.x-px,S.y-py;local d=distance(0,0,dx,dy)
- if d<.01 then dx,dy=player.lastMoveX or 0,player.lastMoveY or -1;d=distance(0,0,dx,dy) end
- if d<.01 then dx,dy,d=0,-1,1 end
- S.setPhase('knocked');S.vx=dx/d*PUSH_SPEED;S.vy=dy/d*PUSH_SPEED
- S.dir=Art.direction(S.vx,S.vy,S.dir)
- BossFX.burst(S.x,S.y,{.75,.9,1},.8)
- return true
-end
-function S.overVoid()
- return S.x<=40 or S.x>=Arena.width-40 or S.y<=38 or S.y>=562 or Realms.fallAt(S.x,S.y)
-end
-function S.fall()
- if S.phase~='knocked' or not S.overVoid() then return false end
- -- Interior holes return the bird from the closest edge too.
- local sides={S.x,Arena.width-S.x,S.y,600-S.y};local nearest=1
- for i=2,4 do if sides[i]<sides[nearest] then nearest=i end end
- S.fallSide=nearest-1
- S.hp=math.max(0,S.hp-1);S.flash=.3;S.electric=S.hp<=S.maxHp*.5
- BossFX.burst(S.x,S.y,{.65,.9,1},3)
- S.projectiles={};S.strikes={};S.boltsRemaining=0;S.vx=0;S.vy=0
- if S.hp==0 then S.finish() else S.setPhase('flightTell') end
- return true
-end
 function S.finish()
  require('boss_liberation').start(S,'storm',function()
   S.defeated=true;S.projectiles={};S.strikes={};S.trails={};S.holes={};S.rain={}
@@ -163,28 +112,22 @@ function S.contact()
 
  if not S.active or S.defeated or player.reset or player.abyssHeld then return end
  if S.holeAt(player.x+15,player.y+12) then Hazards.kill('storm');if player.reset then player.falling=true end;return end
- if S.phase=='orbit' then
-  S.placeTarget()
-  if S.target and require('collision_shapes').touchCircle('storm_target',S.target.x,S.target.y,29) then
-   S.groundPulse={x=S.target.x,y=S.target.y,life=.4};S.land()
-  end
- end
- if S.phase=='grounded' or S.phase=='knocked' then
-  if require('collision_shapes').touchCircle('storm',S.x,S.y,BODY_RADIUS+7) then S.push() end
- elseif not S.hidden and S.phase~='leave' and S.phase~='return' and require('collision_shapes').touchCircle('storm',S.x,S.y,BODY_RADIUS) then Hazards.kill('storm') end
+ Conductors.contact(S)
+ if not S.defeated and not S.hidden and S.phase~='leave' and S.phase~='return'
+  and require('collision_shapes').touchCircle('storm',S.x,S.y,BODY_RADIUS) then Hazards.kill('storm') end
 end
 function S.updateTornado() end
 function S.update(dt)
 
  if not S.active or S.defeated or player.reset then return end
- S.pushLock=math.max(0,S.pushLock-dt)
- if S.groundPulse then S.groundPulse.life=S.groundPulse.life-dt;if S.groundPulse.life<=0 then S.groundPulse=nil end end
+ Conductors.update(S,dt)
+ if player.reset or S.defeated then return end
  S.clock=S.clock+dt;S.flash=math.max(0,S.flash-dt);S.hitGrace=math.max(0,S.hitGrace-dt)
  local oldDir=S.dir
  S.poseAge=(S.poseAge or 1)+dt
  S.phaseAge=S.phaseAge+dt;S.phaseTime=S.phaseTime-dt
  if S.phaseTime<=0 and S.phase~='flight' then
-  local nextPhase={grounded='return',knocked='grounded',orbit='leave',leave='flightTell',flightTell='flight',['return']='orbit'}
+  local nextPhase={orbit='leave',leave='flightTell',flightTell='flight',['return']='orbit'}
   S.setPhase(nextPhase[S.phase] or 'orbit')
  end
  if S.phase=='flight' then
@@ -193,17 +136,6 @@ function S.update(dt)
   for i=1,steps do S.x=ox+(tx-ox)*i/steps;S.y=oy+(ty-oy)*i/steps;S.contact();if player.reset or S.defeated then return end end
   S.trails[#S.trails+1]={x=S.x,y=S.y,life=.13,dir=S.dir}
   if S.phaseTime<=0 then S.setPhase('return') end
- elseif S.phase=='knocked' then
-  -- Sweep through narrow holes and walls even when a frame is long.
-  local steps=math.max(1,math.ceil(PUSH_SPEED*dt/5));local step=dt/steps
-  for _=1,steps do
-   local decay=math.exp(-PUSH_DRAG*step)
-   local x=S.x+S.vx*(1-decay)/PUSH_DRAG;local y=S.y+S.vy*(1-decay)/PUSH_DRAG
-   if Arena.blocked(x-20,y-20,40,40,Arena.interior) then S.setPhase('grounded');break end
-   S.x,S.y=x,y;S.vx=S.vx*decay;S.vy=S.vy*decay
-   if S.fall() then break end
-  end
-  if S.defeated then return end
  elseif S.phase=='leave' then
   local t=math.min(1,S.phaseAge/.22)
   S.x=S.fromX;S.y=S.fromY+(-120-S.fromY)*t;S.dir='up'
@@ -225,7 +157,7 @@ function S.update(dt)
   local horizontal=S.dir=='left' or S.dir=='right'
   if math.abs(S.vx)>math.abs(S.vy)*(horizontal and .7 or 1.4) then S.dir=S.vx<0 and 'left' or 'right'
   elseif math.abs(S.vy)>math.abs(S.vx)*(horizontal and 1.4 or .7) then S.dir=S.vy<0 and 'up' or 'down' end
-  S.shot=S.shot-dt*(S.attackRate or 1);S.bolt=S.bolt-dt*(S.attackRate or 1)
+  S.shot=S.shot-dt*(S.attackRate or 1);S.bolt=S.bolt-dt*(S.attackRate or 1)*(1+S.charges*.45)
   if S.shot<=0 then S.fire() end
   if S.boltsRemaining>0 then
    S.volleyClock=S.volleyClock-dt*(S.attackRate or 1)
@@ -265,46 +197,24 @@ end
 function S.resize(r)
  for _,key in ipairs({'x','fromX','returnX','startX','endX','vx'}) do if S[key] then S[key]=S[key]*r end end
  S.nest.x=S.nest.x*r
- if S.target then S.target.x=S.target.x*r end
- if S.groundPulse then S.groundPulse.x=S.groundPulse.x*r end
- for _,list in ipairs({S.projectiles,S.strikes,S.trails,S.holes,S.rain}) do for _,p in ipairs(list) do p.x=p.x*r;p.boltPoints=nil end end
+ if S.discharge then S.discharge.x=S.discharge.x*r;S.discharge.tx=S.discharge.tx*r end
+ for _,list in ipairs({S.projectiles,S.strikes,S.trails,S.holes,S.rain,S.pickups,S.rods}) do for _,p in ipairs(list) do p.x=p.x*r;p.boltPoints=nil end end
 end
 local function sprite(dir)
- if (S.phase=='grounded' or S.phase=='knocked') and Art.images['merle_'..dir] then return 'merle_'..dir end
  local key='merle_flight_'..dir
  if dir=='right' then key='merle_flight' end
  return Art.images[key] and key or 'merle_'..dir
 end
 local function bird(dir,x,y)
  local key=sprite(dir);local a=Art.images[key];local scale=BODY_SIZE/math.max(a.w,a.h)
- local flap=(S.phase=='grounded' or S.phase=='knocked') and 0 or math.sin(S.clock*14)*.025
+ local flap=math.sin(S.clock*14)*.025
  Art.draw(key,x,y,a.w*scale*(1+flap),0,a.h*scale*(1-flap))
 end
 function S.drawGround()
 
  if not S.active or S.defeated then return end
  local g=love.graphics;g.push('all')
- if S.target and S.phase=='orbit' then
-  local p=S.target;local pulse=.75+.25*math.sin(S.clock*4)
-  g.setColor(.3,.85,1,.12*pulse);g.circle('fill',p.x,p.y,36)
-  g.setColor(.025,.10,.16,.65);g.circle('fill',p.x,p.y,22)
-  g.setColor(.75,.96,1,.9);g.setLineWidth(2);g.circle('line',p.x,p.y,22)
-  g.setColor(.4,.82,1,.8);g.setLineWidth(1);g.circle('line',p.x,p.y,28)
-  g.setColor(.85,1,1,pulse)
-  g.polygon('fill',p.x,p.y-11,p.x+8,p.y,p.x,p.y+11,p.x-8,p.y)
-  for i=0,3 do local a=i*math.pi/2+S.clock*.5
-   g.circle('fill',p.x+math.cos(a)*28,p.y+math.sin(a)*28,2.5)
-  end
- end
- if S.groundPulse then
-  local p=S.groundPulse;local fade=p.life/.4
-  g.setColor(.6,.9,1,fade*.75);g.setLineWidth(2)
-  g.line(p.x,p.y,S.x,S.y);g.circle('line',p.x,p.y,22+(1-fade)*55)
- end
- if S.phase=='grounded' or S.phase=='knocked' then
-  g.setColor(.65,.88,1,.18);g.ellipse('fill',S.x,S.y,42,18)
-  g.setColor(.8,.96,1,.85);g.setLineWidth(2);g.ellipse('line',S.x,S.y,42,18)
- end
+ Conductors.draw(S)
  for _,p in ipairs(S.strikes) do if p.age>=0 then
   if Campaign.biome==6 then
    local light=require('sky_lightning')

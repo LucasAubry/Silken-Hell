@@ -421,12 +421,18 @@ end
 function A.playerBrightness()
     if A.playerHidden() then return 0 end
     local charge=math.max(0,player.charges or 0)
-    return math.sqrt(charge/(charge+3))
+    -- Distinct first three levels, then keep growing toward full brightness.
+    return .26*math.min(charge,3)+.22*(1-math.exp(-math.max(0,charge-3)*.4))
+end
+function A.playerVisibility()
+    if not A.encounterActive() then return 1 end
+    if A.playerHidden() then return 0 end
+    return .22+.78*A.playerBrightness()
 end
 function A.playerLightRadius()
     if A.playerHidden() then return 0 end
     local charges=math.max(0,player.charges or 0)
-    if charges>0 then return 320+85*(math.min(3,charges)-1) end
+    if charges>0 then return 190+120*charges end
     return player.circleLight and 240 or A.encounterActive() and 100 or 150
 end
 function A.gazeDirection(b)
@@ -549,6 +555,16 @@ function A.drawLights()
             g.setColor(.3,.75,1,.14); g.circle('fill',x,y,4)
             g.setColor(.65,.9,1,.8); g.circle('fill',x,y,1.4)
         end end
+        -- The broad light pool grows separately from the close charge outline.
+        if A.boss and (player.charges or 0)>0 and not A.playerHidden() then
+            local brightness=A.playerBrightness()
+            require('abyss_charge_light').draw(player.x+15,player.y+12,player.charges,brightness,A.clock)
+            g.setColor(.35,.9,1,.38*brightness); g.ellipse('fill',player.x+15,player.y+12,35,27)
+            g.setColor(.75,1,1,.95*brightness); g.setLineWidth(2); g.ellipse('line',player.x+15,player.y+12,31,24); g.setLineWidth(1)
+            for i=1,8 do local a=i*math.pi/4+A.clock; g.setColor(.5,.9,1,.8*brightness)
+                g.circle('fill',player.x+15+math.cos(a)*29,player.y+12+math.sin(a)*20,1.5)
+            end
+        end
     end
     for _,p in ipairs(A.ejected) do
         local t=p.age/.4; g.setColor(.4,.8,1,(1-t)*.6)

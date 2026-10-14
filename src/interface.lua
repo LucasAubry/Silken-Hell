@@ -105,7 +105,7 @@ function U.button(label,x,y,w,h,callback,disabled,primary,sound,raw,tint)
         end
     end
     local translated=raw and label or L.render(label)
-    if App.state=='workshop' or App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements' then translated=U.ellipsize(translated,'body',w-24) end
+    if App.state=='workshop' or App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements' or App.state=='victory' then translated=U.ellipsize(translated,'body',w-24) end
     local font=U.fonts.body:getWidth(translated)>w-24 and 'small' or 'body'
     local scale=math.min(1,(w-24)/math.max(1,U.fonts[font]:getWidth(translated)))
     g.push();g.translate(x+w/2,y+h/2);g.scale(scale,scale)
@@ -382,11 +382,37 @@ function U.settings()
         local function device(value) Input.cancelBinding();U.bindingTab=value;U.bindingPage=1 end
         U.button('Clavier',310,222,280,38,function() device('keyboard') end,false,not pad)
         U.button('Manette',610,222,280,38,function() device('pad') end,false,pad)
+        local setup=require('controller_setup')
+        if pad then
+            local selected=Input.device or Input.pad
+            U.button(selected and selected:getName() or 'Aucune manette',310,274,390,38,function()
+                Input.cancelBinding();Input.scan();local devices=Input.devices;local index=0
+                for n,j in ipairs(devices) do if j==Input.device then index=n end end
+                Input.device=devices[index%math.max(1,#devices)+1]
+                if Input.device and Input.device:isGamepad() then Input.pad=Input.device;Input.axisHeld={} end
+            end,setup.wizard~=nil,false,nil,true)
+            U.button('Détecter',720,274,170,38,function() setup.error=nil;Input.detect() end,setup.wizard~=nil)
+            if setup.wizard then
+                local w=setup.wizard;local step=setup.steps[w.index]
+                U.text(w.index..' / '..#setup.steps,310,350,'body',gold,580,'center')
+                U.text(setup.error or (w.release and 'Relâche la commande' or step[2]),310,405,'body',white,580,'center')
+                U.button('Annuler',310,535,280,42,setup.cancel)
+                U.button('Passer',610,535,280,42,setup.skip,not step[3] or setup.error~=nil)
+                return
+            end
+            if not selected or not selected:isGamepad() then
+                U.text(setup.error or (selected and 'Configuration nécessaire' or 'Aucune manette détectée'),310,395,'body',white,580,'center')
+                U.button('Configurer',310,470,580,44,function() setup.begin(selected) end,not selected)
+                U.button('Retour',310,666,580,40,function() Input.cancelBinding();App.state=U.returnTo or 'menu' end,false,true)
+                return
+            end
+        end
         local rows={{'up','Monter'},{'down','Descendre'},{'left','Gauche'},{'right','Droite'},{'dash',Profile.speedMode=='slow' and 'Ralentir' or 'Accélérer'},{'pause','Pause / reprendre'},{'restartLevel','Rejouer le niveau'},{'restartWorld','Recommencer le monde'},{'nextWorld','Monde suivant'},{'previousWorld','Monde précédent'},{'replaySlower','Replay : ralentir'},{'replayFaster','Replay : accélérer'}}
         if pad then rows[#rows+1]={'bestiary','Bestiaire'} end
         local page=U.bindingPage or 1
-        for i=1,7 do local row=rows[(page-1)*7+i]
-            if row then local action=row[1];local y=279+(i-1)*43
+        local perPage=pad and 6 or 7
+        for i=1,perPage do local row=rows[(page-1)*perPage+i]
+            if row then local action=row[1];local y=(pad and 323 or 279)+(i-1)*(pad and 41 or 43)
                 U.rawText(U.ellipsize(T(row[2]),'body',310),310,y+11,'body')
                 local label=pad and require('pad_controls').label(Profile.padBindings[action]) or Input.label(Profile.keys[action])
                 U.button(U.binding==action and '…' or label,640,y,250,37,function() Input.beginBinding(action,pad and 'pad' or 'keyboard') end)
@@ -396,9 +422,10 @@ function U.settings()
             U.button('Annuler',310,590,280,40,Input.cancelBinding)
             if pad then U.button('Effacer',610,590,280,40,function() Input.bind('none') end) end
         else
-            U.button('←',310,590,100,40,function() U.bindingPage=page-1 end,page==1)
-            U.text(page..' / '..math.ceil(#rows/7),470,601,'body',gold,260,'center')
-            U.button('→',790,590,100,40,function() U.bindingPage=page+1 end,page==math.ceil(#rows/7))
+            U.button('←',310,590,pad and 70 or 100,40,function() U.bindingPage=page-1 end,page==1)
+            U.text(page..' / '..math.ceil(#rows/perPage),pad and 390 or 470,601,'body',gold,pad and 90 or 260,'center')
+            U.button('→',pad and 490 or 790,590,pad and 70 or 100,40,function() U.bindingPage=page+1 end,page==math.ceil(#rows/perPage))
+            if pad then U.button('Configurer',610,590,280,40,function() setup.begin(Input.device or Input.pad) end) end
         end
     else
         U.button(Profile.speedMode=='slow' and 'Touche vitesse : ralentir' or 'Touche vitesse : accélérer',310,247,580,44,function() Profile.speedMode=Profile.speedMode=='slow' and 'accelerate' or 'slow';Profile.save() end)

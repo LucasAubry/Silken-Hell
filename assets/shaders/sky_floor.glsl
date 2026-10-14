@@ -1,5 +1,4 @@
 extern vec2 floorSize;
-extern bool bossArena;
 // The same continuous, softly grained material as Paradise, shaped into cloud banks.
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise(vec2 p){
@@ -27,12 +26,6 @@ vec4 effect(vec4 color,Image tex,vec2 uv,vec2 screen){
  cloud+=vec3(.75,.79,.80)*clamp(light*2.8,-.08,.08);
  cloud+=vec3(.07,.075,.065)*rim*smoothstep(-.012,.025,light);
  vec3 base=mix(sky,cloud,smoothstep(.27,.47,field));
- if(bossArena) {
-  // Crisp cloud shelves make the combat floor readable without a soft veil.
-  base=mix(vec3(.43,.56,.65),vec3(.62,.73,.80),smoothstep(.337,.343,field));
-  base=mix(base,vec3(.76,.84,.88),smoothstep(.437,.443,field));
-  base=mix(base,vec3(.89,.93,.94),smoothstep(.537,.543,field));
- }
  base+=(noise(p*350.)-.5)*.012;
  float vignette=1.-.10*length((uv-.5)*1.4);
  return vec4(base*vignette,1.)*color;

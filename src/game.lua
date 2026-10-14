@@ -199,6 +199,7 @@ function App.respawn()
     if resumeQueen and queen.active then
         queen.engaged=true;queen.phase='webs';queen.phaseTime=0;queen.shot=.65;queen.contactGrace=.35
     end
+    require('retry_wait').begin()
 end
 function App.resolveDeath()
     if not player.reset then return false end
@@ -228,7 +229,6 @@ function love.update(dt)
     Audio.update(Profile,App.selectedWorld==2 and App.state~='credits')
     if App.state=='credits' then Ending.updateCredits(dt);return end
     if App.state=='bossWorld' then Secret.update(dt);return end
-    if Replay.playing and not Replay.ghost and Replay.compatibility and (App.state=='victory' or App.state=='customVictory') then App.state='playing' end
     if App.state~='playing' then
         RunStart.suspend()
         if App.state=='victory' or App.state=='customVictory' then Psyche.update(dt) end
@@ -239,11 +239,11 @@ function love.update(dt)
     Replay.update(dt,App.simulate)
     Story.updateWall(dt)
     GameFeedback.update(dt)
-    if Replay.playing and not Replay.ghost and Replay.compatibility and (App.state=='victory' or App.state=='customVictory') then App.state='playing' end
 end
 function App.simulate(dt)
     require('render_motion').capture()
     Psyche.update(dt)
+    if require('retry_wait').update(dt) then return end
     local liberation=require('boss_liberation')
     if liberation.busy() then liberation.update(dt);return end
 
@@ -335,6 +335,7 @@ local function refreshSceneResolution()
     App.scenePixelDensity=density
 end
 function love.draw()
+    require('retry_wait').beginDraw()
     local sceneCanvas=gameCanvas
     love.graphics.clear(0.013,0.025,0.035)
     if App.state=='playing' then
@@ -434,6 +435,7 @@ function love.draw()
         love.graphics.captureScreenshot(function(data) data:encode('png',path) end)
     end
     Graphics.pace()
+    require('retry_wait').endDraw()
 end
 function love.mousepressed(x,y,button)
     Input.active=false
@@ -457,6 +459,10 @@ function love.textinput(text)
 end
 function love.keypressed(key,scancode,isrepeat)
     Input.active=false
+    if require('controller_setup').wizard then
+        if key=='escape' then require('controller_setup').cancel() end
+        return
+    end
     if key=='escape' and not isrepeat then Audio.play('back') end
     if App.state=='bossWorld' and Secret.key(key,isrepeat) then return end
     if key=='escape' and App.state=='victory' and require('podium_celebration').closePreview() then return end
@@ -574,7 +580,7 @@ function love.wheelmoved(_,y)
         UI.storyOffset=math.max(0,math.min(UI.storyLimit or math.huge,(UI.storyOffset or 0)-y*35))
     end
 end
-function love.quit() if App.preview then love.filesystem.remove('preview-heartbeat.txt') end; Online.quit() end
+function love.quit() require('controller_usb').quit();if App.preview then love.filesystem.remove('preview-heartbeat.txt') end; Online.quit() end
 
 function love.resize(w,h)
     require('render_motion').reset()
@@ -608,7 +614,7 @@ function love.resize(w,h)
         for _,list in ipairs({Raven.eggs,Raven.projectiles,Raven.nests}) do for _,p in ipairs(list) do p.x=p.x*ratio end end
         for _,m in ipairs(Raven.chicks) do m.cx=m.cx*ratio; m.x=m.x*ratio end
     end
-    for _,p in ipairs(Hazards.lava) do p.x=p.x*ratio end
+    for _,p in ipairs(Hazards.lava) do require('ground_holes').resize(p,ratio) end
     if Wasp.active then Wasp.resize(ratio) end
     if not custom then Arena.reconcile() end
     if Hedgehog.active then
@@ -628,7 +634,7 @@ function love.resize(w,h)
         Realms.reset(Campaign.biome,(Campaign.world==3 or Worlds.isSecret(Campaign.world)) and 10 or player.level); Realms.custom=custom
         Realms.wind=wind; Realms.rain=rain; Realms.clock=clock; Realms.bolts=bolts; Realms.eggs=eggs; Realms.larvae=larvae
         if custom then
-            for key,list in pairs(zones) do for _,p in ipairs(list) do p.x=p.x*ratio end; Realms[key]=list end
+            for key,list in pairs(zones) do for _,p in ipairs(list) do require('ground_holes').resize(p,ratio) end; Realms[key]=list end
         end
         if Abyss.active then
             Abyss.resize(ratio)

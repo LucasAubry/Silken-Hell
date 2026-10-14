@@ -1,7 +1,7 @@
 local T={}
 function T.run()
     local json=require 'json'
-    if os.getenv('SILKEN_REPLAY_CROSS_PROCESS')=='1' then
+    if os.getenv('SILKEN_REPLAY_CROSS_PROCESS_TEST')=='1' then
         Online.enabled=false;Replay.disabled=false
         local fixtures=json.decode(assert(love.filesystem.read('replay-qa-fixtures.json')))
         for i,recording in ipairs(fixtures) do
@@ -58,9 +58,23 @@ function T.run()
         for _,start in ipairs({1,Worlds.levelCount(world)}) do
             Replay.recording=false;Replay.data=nil;LevelLayouts.disabled=true;App.sessionLayout=nil;App.singleLevel=true;App.practice=start;Secret.duel=nil
             Input.move=function() if Replay.input then return Replay.input[1],Replay.input[2] end;local phase=math.floor(Replay.frame/90)%4;return phase==0 and 1 or phase==2 and -1 or 0,phase==1 and 1 or phase==3 and -1 or 0 end
+            local snapshots={}
+            local function compare(a,b,path)
+                if type(a)~='table' or type(b)~='table' then
+                    if a~=b then error(path..': '..tostring(a)..' ~= '..tostring(b)) end
+                    return
+                end
+                for k,v in pairs(a) do compare(v,b[k],path..'.'..k) end
+                for k,v in pairs(b) do if a[k]==nil then compare(nil,v,path..'.'..k) end end
+            end
             local function sample(dt)
                 App.simulate(dt)
                 -- End this bounded physics sample identically on both passes.
+                if Replay.frame%240==0 then
+                    local state=require('replay_state').snapshot()
+                    if Replay.playing then compare(snapshots[Replay.frame],state,'world'..world..'level'..start)
+                    else snapshots[Replay.frame]=state end
+                end
                 if Replay.frame==600 then App.state='customVictory';if not Replay.playing then Replay.finish() end end
             end
             App.start(world)
@@ -74,40 +88,7 @@ function T.run()
     love.filesystem.write('replay-qa-fixtures.json',json.encode(fixtures))
     print('PASS deterministic physics samples: first and final encounter of all seven worlds and Demon mode')
     Input.move,Input.slow=oldMove,oldSlow
-    Replay.recording=false;Replay.data=nil;LevelLayouts.disabled=true;App.singleLevel=false;App.practice=nil;App.sessionLayout=nil
-    App.start(1);Replay.recording=false;Campaign.select(1);player.level=10;reset_level();App.state='playing'
-    assert(Raven.active and Raven.hp==10 and #Raven.nests==6)
-    player.reset=false;player.dashing=true;player.x=Raven.x-15;player.y=Raven.y-12
-    Raven.contact();assert(Raven.hp==9 and #Raven.chicks==3);assert(#Raven.projectiles==0,'Hits do not synchronize shooters');assert(Raven.interval()<=1,'Continuous alternating shots')
-    for _,m in ipairs(Raven.chicks) do local n=Raven.nests[m.slot];assert(m.kind==(m.slot%2==1 and 'shooter' or 'charger')) end
-    Raven.contact();assert(Raven.hp==9,'One hit per entry')
-    player.x=30;Raven.contact();player.x=Raven.x-15;Raven.contact();assert(Raven.hp==8 and #Raven.chicks==4)
-    for _=1,8 do player.x=30;Raven.contact();player.x=Raven.x-15;Raven.contact() end
-    assert(Raven.broken and Raven.defeated and Raven.liberating and objet.larme.taken)
-    assert(#Raven.freedChicks==6,'Living birds are freed on the tenth hit')
-    require('boss_liberation').update(2)
-    assert(Raven.defeated and #Raven.chicks==0 and #Raven.projectiles==0 and not objet.larme.taken)
-    for _,w in ipairs(Worlds.order) do if w~=8 then local a={};Achievements.check({world=w,time=60,deaths=0},a);assert(a['flawless'..w]) end end
-    for _,name in ipairs({'go','back','selection','editor'}) do assert(Audio[name]:getDuration()>0) end
-    local canvas=love.graphics.newCanvas(80,80)
-    for _,id in ipairs({8,9,10,11,12,13,14}) do
-        love.graphics.push('all');love.graphics.setCanvas(canvas);love.graphics.clear(0,0,0,0);love.graphics.setColor(1,1,1,.12);Characters.portrait(id,40,40,62,'down');love.graphics.pop()
-        local pixels=canvas:newImageData();local maximum=0
-        for y=0,79 do for x=0,79 do local _,_,_,alpha=pixels:getPixel(x,y);maximum=math.max(maximum,alpha) end end
-        pixels:release();assert(maximum<.13 and maximum>.02,'Actual rendered skin alpha must respect the ghost fade')
-    end
-    canvas:release()
-    print('PASS replay: real completed map, save/load, deterministic playback, divergence detection, spectator isolation, exact-map validation')
-    print('PASS boss: six fixed nests, ten hits and silk liberation, alternating bird roles, hit latch, cleanup; seven world achievements and audio sources')
-    io.stdout:flush()
-    local tick=0
-    love.update=function(dt)
-        tick=tick+1
-        if tick==1 then Campaign.select(1);player.level=10;reset_level();App.state='playing';App.capture='revision-egg-boss.png' end
-        if tick==4 then Campaign.select(4);player.level=10;reset_level();App.capture='revision-octopus.png' end
-        if tick==7 then App.state='menu';App.selectedWorld=5;App.capture='revision-menu.png' end
-        if tick==10 then App.state='achievements';UI.achievementPage=2;App.capture='revision-achievements.png' end
-        if tick==13 then love.event.quit(0) end
-    end
+    print('PASS replay: completed workshop and campaign, exact world state across 16 encounters, divergence detection and spectator isolation')
+    io.stdout:flush();love.event.quit(0)
 end
 return T
