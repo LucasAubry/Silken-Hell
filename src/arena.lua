@@ -239,7 +239,7 @@ function A.drawFloor(hell)
     local g=love.graphics
     if Campaign.world==3 then BiomeFloor.draw(3,A.width,600,UI.clock)
     elseif Campaign.biome==6 then
-        g.setColor(1,1,1); g.draw(Realms.floor,0,0)
+        g.setColor(1,1,1); g.draw(Realms.floorTexture(),0,0)
     else BiomeFloor.draw(Campaign.biome,A.width,600,UI.clock) end
 end
 function A.drawWall(r,hell)

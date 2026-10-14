@@ -21,7 +21,7 @@ function B.sources(add,time)
  elseif biome==5 then
   for i=1,3 do add(Arena.width*(.12+i*.22),95+i%2*90,230,.40+.025*math.sin(time*.7+i),tint) end
  elseif biome==1 then
-  add(Arena.width*.25,100,300,.40,tint);add(Arena.width*.78,380,260,.30,{.42,.72,1})
+  add(Arena.width*.25,100,300,.40,tint);add(Arena.width*.78,380,260,.30,{1,.90,.68})
  elseif biome==2 then
   add(Arena.width*.12,550,220,.26+.04*math.sin(time*.65),tint)
   add(Arena.width*.88,70,180,.23,{.85,.12,.38})
@@ -54,29 +54,41 @@ end
 function B.motes()
  if not B.active() then return end
  local g=love.graphics;local biome=B.biome();local t=UI.clock;local tint=B.palettes[biome]
- if biome==7 then return end -- Existing plankton already respects encounter visibility.
  g.push('all');g.setShader();g.setBlendMode('add')
- local count=Graphics.quality==1 and 18 or 34
+ if not B.halo then
+  local vertices={{0,0,0,0,1,1,1,1}}
+  for i=0,32 do local a=i*math.pi/16;vertices[#vertices+1]={math.cos(a),math.sin(a),0,0,1,1,1,0} end
+  B.halo=g.newMesh(vertices,'fan','static')
+ end
+ local count=Graphics.quality==1 and 42 or Graphics.quality==3 and 120 or 88
+ local rise=biome==2 and 19 or biome==4 and 9 or biome==7 and 1.5 or 3.5
+ local drift=biome==6 and 17 or biome==3 and 5 or 2
+ -- Decorative motion uses no gameplay RNG. Abyss motes are drawn beneath darkness.
  for i=1,count do
-  local x=(i*137.31+math.sin(t*.16+i*2.4)*20+t*2)%Arena.width
-  local y=(i*79.73-t*(biome==4 and 6 or 2.5))%600
+  local depth=.55+(i%7)/7
+  local x=(i*137.31+math.sin(t*.16+i*2.4)*(biome==3 and 32 or 20)+t*drift*depth)%Arena.width
+  local y=(i*79.73-t*rise*depth+math.sin(t*.3+i)*7)%600
   local pulse=(.5+.5*math.sin(t*.7+i*1.7))^2
-  local alpha=.10+pulse*.30;local size=.7+i%3*.3
-  if biome==3 and i%3==0 then g.setColor(1,.50,.71,alpha) else g.setColor(tint[1],tint[2],tint[3],alpha) end
-  g.circle('fill',x,y,size)
+  local edge=math.min(1,x/20,(Arena.width-x)/20,y/20,(600-y)/20)
+  local alpha=(.12+pulse*.36)*edge*(biome==7 and .55 or 1);local size=(.65+i%3*.3)*depth
+  local r,green,b=tint[1],tint[2],tint[3]
+  if biome==3 and i%3==0 then r,green,b=1,.50,.71
+  elseif biome==4 and i%5==0 then r,green,b=.60,.48,1
+  elseif biome==1 and i%4==0 then r,green,b=1,.94,.77 end
+  g.setColor(r,green,b,alpha)
+  if biome==4 and i%4==0 then
+   g.setLineWidth(.6);g.circle('line',x,y,size+1)
+  elseif biome==2 and i%3==0 then
+   g.setLineWidth(.8);g.line(x,y,x+.5,y+size*2.5)
+  else
+   g.circle('fill',x,y,size)
+  end
   if i%3==0 then
-   for ring=3,1,-1 do
-    g.setColor(tint[1],tint[2],tint[3],alpha*.045)
-    g.circle('fill',x,y,ring*2+size)
-   end
+   g.setColor(r,green,b,alpha*.20)
+   g.draw(B.halo,x,y,0,5+size*2,5+size*2)
   end
  end
  if biome==3 then
-  if not B.halo then
-   local vertices={{0,0,0,0,1,1,1,1}}
-   for i=0,32 do local a=i*math.pi/16;vertices[#vertices+1]={math.cos(a),math.sin(a),0,0,1,1,1,0} end
-   B.halo=g.newMesh(vertices,'fan','static')
-  end
   for i=1,3 do
    local x,y,c=B.wispPosition(i,t);local glow=.65+.15*math.sin(t*1.3+i)
    g.setColor(c[1],c[2],c[3],glow*.22);g.draw(B.halo,x,y,0,23,23)

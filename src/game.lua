@@ -370,7 +370,7 @@ function love.draw()
     elseif App.state=='bossWorld' then
         refreshSceneResolution()
         sceneCanvas=gameCanvas
-        love.graphics.setCanvas(gameCanvas);love.graphics.origin();love.graphics.clear();Prism.beginScene(gameCanvas);Secret.drawWorld();Prism.endScene();love.graphics.setCanvas()
+        love.graphics.setCanvas(gameCanvas);love.graphics.origin();love.graphics.clear();Prism.beginScene(gameCanvas);Secret.drawWorld();require('biome_radiance').motes();Prism.endScene();love.graphics.setCanvas()
         sceneCanvas=require('world_lighting').apply(gameCanvas)
     end
     local w,h=love.graphics.getDimensions()
@@ -381,7 +381,7 @@ function love.draw()
         -- when letterboxing or camera shake actually exposes it.
         if x>.5 or y>.5 or shakeX~=0 or shakeY~=0 then
             if App.state=='playing' and Campaign.world==6 then
-                local backdrop=Realms.floor
+                local backdrop=Realms.floorTexture()
                 local fill=math.max(w/backdrop:getWidth(),h/backdrop:getHeight())
                 love.graphics.setColor(1,1,1)
                 love.graphics.draw(backdrop,(w-backdrop:getWidth()*fill)/2,(h-backdrop:getHeight()*fill)/2,0,fill,fill)

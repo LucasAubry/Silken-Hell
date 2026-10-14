@@ -12,18 +12,13 @@ float fbm(vec2 p) {
  return v;
 }
 vec3 champagneMarble(vec2 p) {
-    float field=fbm(p*3.5);
-    float stone=fbm(p*14.0);
-    vec2 center=vec2(dimensions.x/dimensions.y*.5,.5);
-    float distanceToCenter=length((p-center)*vec2(.72,1.0));
-    float edge=smoothstep(.14,.68,distanceToCenter);
-    vec3 ivory=mix(vec3(.69,.75,.76),vec3(.90,.89,.79),field);
-    vec3 dusk=mix(vec3(.24,.34,.46),vec3(.46,.52,.62),stone);
-    vec3 c=mix(ivory,dusk,edge*.70);
-    float vein=abs(sin(p.x*7.0-p.y*4.0+fbm(p*3.0)*10.0));
-    float gold=pow(1.0-vein,38.0)*smoothstep(.40,.66,field);
-    c=mix(c,vec3(.82,.67,.36),gold*.28);
-    c+=(stone-.5)*.035+(noise(p*350.0)-.5)*.009;
+    // Original marble contours from the reference, gently lifted toward ivory.
+    float terrain=fbm(p*7.0);
+    float marble=pow(abs(sin(p.x*8.0+p.y*5.0+fbm(p*4.0)*13.0)),18.0);
+    vec3 c=mix(vec3(.735,.653,.528),vec3(.940,.870,.736),terrain);
+    float veins=smoothstep(.78,.99,marble);
+    c=mix(c,vec3(.97,.947,.888),veins*.34);
+    c+=(noise(p*350.0)-.5)*.012;
     return c;
 }
 vec2 cells(vec2 p) {

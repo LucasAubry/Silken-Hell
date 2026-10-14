@@ -13,7 +13,7 @@ local palettes={
 local function rand(i,k) local n=math.sin(i*127.1+k*311.7)*43758.5453;return n-math.floor(n) end
 local function tint(c,a,m) love.graphics.setColor(c[1]*(m or 1),c[2]*(m or 1),c[3]*(m or 1),a or 1) end
 function B.edge(length,biome,seed)
- if biome==1 then return require('paradise_scenery').edge(length) end
+ if biome==1 then return require('paradise_ink').edge(length) end
  if biome==5 then
   local g=love.graphics;g.push('all');g.setColor(1,1,1)
   local count=math.ceil(length/110);local span=length/count

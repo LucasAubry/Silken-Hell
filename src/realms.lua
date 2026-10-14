@@ -53,6 +53,7 @@ function R.spawn(w,n)
     end
 end
 function R.reset(w,n)
+    R.bossFloorReady=false
     R.custom=false; R.world=w; R.level=n; R.clock=0; R.tunnels={}; R.tornadoes={}; player.whirl=nil; player.throw=nil; player.skyWhirl=nil; player.skyThrow=nil; player.tunnelLock=false; player.tunnelTravel=nil; R.fireflies={};R.starPrevious=nil; R.wind={x=0,y=0,time=0,stage=0,tx=0,ty=0}; R.clouds={}; R.rain={}; R.rainClock=.25; R.current={}
     R.electricTrails={}; R.bolts={}; R.eggs={}; R.larvae={}; R.holes={}; R.rainSites={}; R.rainWave=0; R.vents={}; R.lightning={}; R.lightningClock=.35; player.illuminated=0
     require('sky_lightning').reset()
@@ -95,6 +96,7 @@ function R.reset(w,n)
         -- Bake the Paradise-style cloud material once; actors remain crisp above it.
         R.cloudShader=R.cloudShader or g.newShader('assets/shaders/sky_floor.glsl')
         R.cloudShader:send('floorSize',{Arena.width,600})
+        R.cloudShader:send('bossArena',false)
         g.setShader(R.cloudShader);g.setColor(1,1,1)
         g.draw(UI.pixel,0,0,0,Arena.width,600);g.setShader()
         for row=1,4 do for col=1,6 do
@@ -221,6 +223,22 @@ function R.skyBossPresent()
     if Storm.active then return true end
     for _,item in ipairs(Bosses.items) do if item.kind=='storm' then return true end end
     return false
+end
+function R.floorTexture()
+    if Campaign.biome~=6 or not R.skyBossPresent() then return R.floor end
+    if not R.bossFloorReady then
+        local g=love.graphics;local density=R.floor:getDPIScale()
+        if not R.bossFloor or R.bossFloor:getWidth()~=Arena.width or math.abs(R.bossFloor:getDPIScale()-density)>.001 then
+            if R.bossFloor then R.bossFloor:release() end
+            R.bossFloor=g.newCanvas(Arena.width,600,{dpiscale=density})
+        end
+        g.push('all');g.setCanvas(R.bossFloor);g.origin();g.setScissor();g.clear()
+        R.cloudShader:send('floorSize',{Arena.width,600});R.cloudShader:send('bossArena',true)
+        g.setShader(R.cloudShader);g.setColor(1,1,1);g.draw(UI.pixel,0,0,0,Arena.width,600)
+        R.cloudShader:send('bossArena',false);g.pop()
+        R.bossFloorReady=true
+    end
+    return R.bossFloor
 end
 function R.skyBossActive()
     if Storm.active and not Storm.defeated then return true end

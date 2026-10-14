@@ -218,7 +218,6 @@ function C.draw()
     if Secret.inArena() then require('sanctuary_scene').arena(App.hardcore or Worlds.isSecret(C.world))
     else Arena.drawFloor(hell);if C.world==3 then Meadow.draw() end end
     require('ocean_scenery').draw()
-    require('paradise_scenery').draw()
     C.drawCircles(); Abyss.drawSites()
     if hell and not Secret.inArena() then
         for i=1,32 do

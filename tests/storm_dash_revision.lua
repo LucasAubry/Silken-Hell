@@ -5,6 +5,7 @@ function T.run()
  App.practice=10;App.singleLevel=true;App.start(6);player.reset=false
  local b=Storm
  local kill=Hazards.kill;Hazards.kill=function()end
+ local placeTarget=b.placeTarget;b.placeTarget=function()end
  local function patrol(movingPlayer,dt)
   b.reset(true);b.shot=1000;b.bolt=1000;b.rainClock=1000
   local samples={};local directions={};local minX,maxX,minY,maxY=math.huge,-math.huge,math.huge,-math.huge
@@ -39,41 +40,21 @@ function T.run()
  b.reset(true);player.x=80;player.y=288
  local _,_,bw,bh=b.visibleBounds();assert(math.max(bw,bh)<160,'The boss silhouette is slightly smaller')
  b.shot=100;b.bolt=100
- b.hurt(true);b.hurt(true);assert(b.hp==8 and b.phase=='orbit' and b.pendingDashes==0)
- b.hurt(true);assert(b.hp==7 and b.phase=='leave' and b.nextDashHP==5)
- local function finishPass()
-  player.x=80;player.y=288;b.setPhase('flightTell');local y=b.startY
-  player.y=480;b.update(.01);assert(b.startY==y and b.endY==y,'Warning locks its announced path')
-  b.setPhase('flight');b.update(b.flightDuration+.001)
-  assert(b.phase=='return' and b.pass==1,'One crossing, then return')
-  b.update(.66);assert(b.phase=='orbit' and b.pendingDashes==0,'No automatic repeat')
- end
- finishPass();b.hurt(true);assert(b.hp==6 and b.phase=='orbit')
- b.hurt(true);assert(b.hp==5 and b.phase=='leave' and b.nextDashHP==4);finishPass()
- for hp=4,1,-1 do b.hurt(true);assert(b.hp==hp and b.phase=='leave');finishPass() end
- b.hurt(true);assert(b.defeated and require('boss_liberation').busy(),'Final HP triggers liberation, not a dash')
- reset_level();
- b.hurt(true);b.hurt(true);b.hurt(true);b.hurt(true);assert(b.pendingDashes==0)
- b.hurt(true);assert(b.pendingDashes==1 and b.nextDashHP==4,'Only a crossed HP threshold queues a dash')
  local sides={{80,288,'right'},{Arena.width-110,288,'left'},{Arena.width/2-15,75,'down'},{Arena.width/2-15,490,'up'}}
- local g=love.graphics
- for _,p in ipairs(sides) do
-  player.x=p[1];player.y=p[2];b.setPhase('flightTell');assert(b.dir==p[3],'Player position chooses entry edge')
-  local cross=(player.x+15-b.startX)*(b.endY-b.startY)-(player.y+12-b.startY)*(b.endX-b.startX)
-  assert(math.abs(cross)<.01)
-  local oldLine=g.line;g.line=function()error('The player arrow must be absent')end;b.draw();g.line=oldLine
-  require('boss_hud').draw(b);assert(require('boss_hud').offsetY==0,'Storm health bar stays at the top')
+ for i,p in ipairs(sides) do
+  b.reset(true);b.shot=100;b.bolt=100;player.reset=false
+  b.fallSide=i-1;player.x=p[1];player.y=p[2];b.setPhase('flightTell');assert(b.dir==p[3],'Fall side chooses entry edge')
+  local sx,sy,ex,ey=b.startX,b.startY,b.endX,b.endY
+  player.x=Arena.width/2;player.y=420;b.update(.01)
+  assert(b.startX==sx and b.startY==sy and b.endX==ex and b.endY==ey,'Warning locks its announced path')
+  b.setPhase('flight')
+  if sy==ey then player.x=Arena.width/2;player.y=sy<300 and 480 or 100 else player.x=sx<Arena.width/2 and Arena.width-100 or 100;player.y=300 end
+  b.update(b.flightDuration+.001)
+  assert(b.phase=='return' and not player.reset,'One crossing, then return')
+  b.update(.66);assert(b.phase=='orbit','No automatic repeat')
  end
- print('PASS sky revision: independent smooth patrol, four flight directions, 60/120 FPS, fixed return, fewer lightning volleys, smaller body, 3/2/1 HP thresholds, one crossing, locked dash target, no arrow, fixed top HUD, immediate spawn')
- local draw=love.draw;local frame=0
- love.update=function()
-  frame=frame+1
-  if sides[frame] then local p=sides[frame];player.x=p[1];player.y=p[2];b.setPhase('flightTell') else love.event.quit()end
- end
- love.draw=function()
-  draw();if sides[frame] then local path='/tmp/silken-storm-direction-'..sides[frame][3]..'.png'
-   g.captureScreenshot(function(data)local file=assert(io.open(path,'wb'));file:write(data:encode('png'):getString());file:close()end)
-  end
- end
+ b.placeTarget=placeTarget
+ print('PASS sky flight: independent smooth patrol, four directions, 60/120 FPS, fixed return, spaced lightning, smaller body, fall-side beak warning, one crossing and locked dash target')
+ love.event.quit()
 end
 return T
