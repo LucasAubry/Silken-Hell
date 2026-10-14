@@ -234,6 +234,7 @@ function love.update(dt)
         if App.state=='victory' or App.state=='customVictory' then Psyche.update(dt) end
         Replay.accumulator=0;return
     end
+    if Replay.recovery then Replay.update(dt,App.simulate);return end
     dt=RunStart.advance(dt)
     if dt<=0 then Replay.accumulator=0;return end
     Replay.update(dt,App.simulate)
@@ -335,6 +336,12 @@ local function refreshSceneResolution()
     App.scenePixelDensity=density
 end
 function love.draw()
+    if Replay.recovery then require('replay_recovery').draw(Replay);return end
+    if Replay.legacy then
+        local ok,err=xpcall(Replay.legacy.draw,debug.traceback)
+        if not ok then require('retry_wait').endDraw();love.graphics.reset();Replay.fail(err) end
+        return
+    end
     require('retry_wait').beginDraw()
     local sceneCanvas=gameCanvas
     love.graphics.clear(0.013,0.025,0.035)
@@ -528,7 +535,7 @@ end
 function love.focus(focused)
     if focused and App.state=='workshop' then Workshop.reloadLocal() end
     Audio.focus(focused)
-    if not focused and App.state=='playing' then if Replay.playing then Replay.paused=true else App.state='pause' end end
+    if not focused and App.state=='playing' then if Replay.playing then if not Replay.recovery then Replay.paused=true end else App.state='pause' end end
 end
 
 function App.practiceLevel(world,n)

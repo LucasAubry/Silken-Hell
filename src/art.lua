@@ -206,6 +206,7 @@ function A.drawAnemone(x,y,width,height,time)
     require('anemone_art').draw(A.images.electric_anemone,x,y,width,height,time)
 end
 function A.draw(key,x,y,width,angle,height)
+    if key:match('^gull_') then return require('sky_art').bird(key:match('gull_(%a+)'),x,y,width,(UI and UI.clock) or 0) end
     if key=='electric_anemone' then
         local a=A.images[key]
         local h=height or width*a.h/a.w;local time=(UI and UI.clock) or love.timer.getTime()
@@ -245,6 +246,7 @@ function A.direction(dx,dy,previous)
     return dy>0 and 'down' or 'up'
 end
 function A.drawFacing(name,dir,x,y,size)
+    if name=='gull' then return require('sky_art').bird(dir,x,y,size,(UI and UI.clock) or 0) end
     local key=name..'_'..(dir or 'down');local servants=require('servant_art')
     if not servants.variant(key) and require('paradise_ink').facing(name,dir,x,y,size) then return end
     local a=assert(servants.image(key),key)

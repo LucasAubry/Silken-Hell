@@ -56,13 +56,13 @@ function B.motes()
  if not B.active() then return end
  local g=love.graphics;local biome=B.biome();local t=UI.clock;local tint=B.palettes[biome]
  g.push('all');g.setShader();g.setBlendMode('add')
- -- Preserve the Sky motes from the 335e89f presentation as well as its floor.
+ -- Pale dust and tiny gilt flakes follow the carved Sky terraces.
  if biome==6 then
   for i=1,(Graphics.quality==1 and 18 or 34) do
    local x=(i*137.31+math.sin(t*.16+i*2.4)*20+t*2)%Arena.width
    local y=(i*79.73-t*2.5)%600
    local alpha=.10+(.5+.5*math.sin(t*.7+i*1.7))^2*.30;local size=.7+i%3*.3
-   g.setColor(tint[1],tint[2],tint[3],alpha);g.circle('fill',x,y,size)
+   g.setColor(i%3==0 and .94 or tint[1],i%3==0 and .82 or tint[2],i%3==0 and .49 or tint[3],alpha);g.polygon('fill',x,y-size*2,x+size,y,x,y+size*2,x-size,y)
    if i%3==0 then for ring=3,1,-1 do
     g.setColor(tint[1],tint[2],tint[3],alpha*.045);g.circle('fill',x,y,ring*2+size)
    end end

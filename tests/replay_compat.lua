@@ -4,9 +4,11 @@ function T.run()
  local json=require 'json'
  local data={version=1,build=string.rep('a',64),world=1,seed=123,width=960,height=600,skin=1,startLevel=7,single=true,hardcore=false,completed=true,frames=12,deaths=2,time=.2,layouts={},inputs={{12,0,0,0}},checks={{12,7,32000,30000,2,true}}}
  local before=App.state;local stats=json.encode(Profile.stats)
- for _,version in ipairs({1,2,999}) do
+ assert(Replay.play(data) and Replay.recovery,'Unknown builds start automatic restoration')
+ Replay.key('escape');assert(not Replay.playing and not Replay.recovery,'Restoration can be cancelled')
+ for _,version in ipairs({2,999}) do
   data.version=version;assert(Replay.validate(data));assert(not Replay.play(data))
-  assert(not Replay.playing and App.state==before and Replay.status:find('ancienne version'),'Unknown engines never simulate an approximate world')
+  assert(not Replay.playing and Replay.status:find('Format'),'Unknown data formats cannot be interpreted')
  end
  data.version=1;data.build=Replay.build();assert(Replay.play(data))
  -- Regression for the actual crash log: starting at level 7 leaves holes in starts.
@@ -22,7 +24,7 @@ function T.run()
  assert(not Replay.playing and Replay.status:find('différente'),'Current-build corruption is detected')
  data.inputs={{1,0,0,0}};assert(not Replay.validate(data));data.inputs={{12,0,0,0}}
  data.session=true;assert(not Replay.validate(data),'Missing session map rejected')
- print('PASS replay safety: obsolete engine rejected, sparse level starts, protected playback errors, diagnostic, RNG restoration, progress isolation and malformed recording rejection')
+ print('PASS replay safety: historical restoration and cancellation, unknown format rejected, sparse level starts, protected playback errors, diagnostic, RNG restoration, progress isolation and malformed recording rejection')
  love.event.quit()
 end
 return T

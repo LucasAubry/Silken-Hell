@@ -97,6 +97,7 @@ function R.reset(w,n)
         R.cloudShader:send('floorSize',{Arena.width,600})
         g.setShader(R.cloudShader);g.setColor(1,1,1)
         g.draw(UI.pixel,0,0,0,Arena.width,600);g.setShader()
+        require('sky_art').floor()
         for row=1,4 do for col=1,6 do
             R.rainSites[#R.rainSites+1]={x=Arena.width*(.12+(col-1)*.15),y=95+(row-1)*130,phase=(row+col+n)%3}
         end end
@@ -351,24 +352,7 @@ function R.updateElectricTrails(dt)
 end
 function R.drawWind(width,height)
     if Campaign.biome~=6 then return end
-    width=width or Arena.width;height=height or 600
-    local w=R.wind;local strength=math.sqrt(w.x*w.x+w.y*w.y)
-    require('sky_rain').ambient(width,height,R.clock,w)
-    local dx,dy=1,-.08
-    if strength>=4 then dx,dy=w.x/strength,w.y/strength end
-    local g=love.graphics;g.push('all');g.setShader()
-    local count=math.floor(width*height/(Graphics.quality==1 and 50000 or 30000))
-    for i=1,count do
-        local age=(R.clock*(.18+strength*.001)+i*.173)%1
-        local x=(i*137.31+R.clock*dx*(80+strength))%width
-        local y=(i*79.73+R.clock*dy*(80+strength)+math.sin(i+R.clock)*8)%height
-        local length=12+strength*.07;local alpha=math.sin(age*math.pi)*(.11+math.min(1,strength/150)*.05)
-        g.setColor(.18,.32,.35,alpha*.4);g.setLineWidth(1.4)
-        g.line(x-dx*length,y-dy*length,x-dx*length*.5-dy*3,y-dy*length*.5+dx*3,x,y)
-        g.setColor(.89,.94,.88,alpha);g.setLineWidth(.7)
-        g.line(x-dx*length,y-dy*length,x-dx*length*.5-dy*3,y-dy*length*.5+dx*3,x,y)
-    end
-    g.pop()
+    require('sky_art').wind(width or Arena.width,height or 600,R.clock,R.wind)
 end
 function R.speed()
     return 1
@@ -592,11 +576,7 @@ function R.drawGround()
     for _,t in ipairs(R.tunnels) do
         EarthMound.draw(t.x,t.y)
     end
-    for _,t in ipairs(R.tornadoes) do
-        g.setColor(1,1,1,.7); Art.draw('cloud_snare',t.x,t.y,90,R.clock*3.8)
-        g.setColor(1,1,1,.85); Art.draw('cloud_snare',t.x,t.y-13,62,-R.clock*5.4)
-        g.setColor(1,1,1); Art.draw('cloud_snare',t.x,t.y-23,37,R.clock*7)
-    end
+    for _,t in ipairs(R.tornadoes) do require('sky_art').tornado(t,R.clock) end
     if Campaign.biome==4 or Campaign.biome==7 or R.custom then
         for _,c in ipairs(R.current) do
             g.setColor(.2,.75,.85,.18)
@@ -614,8 +594,8 @@ function R.drawGround()
     if Campaign.biome==6 or R.custom then
         require('sky_rain').draw(R.rain)
         for _,p in ipairs(R.holes) do
-            g.setColor(.91,.95,.96); R.drawHole(p,1.19)
-            g.setColor(.28,.40,.49); R.drawHole(p,1.08)
+            g.setColor(.66,.76,.71); R.drawHole(p,1.19)
+            g.setColor(.18,.32,.38); R.drawHole(p,1.08)
             -- Receding irregular ledges darken toward the bottom of the chasm.
             for depth=0,10 do
                 local t=depth/10; g.setColor(.16*(1-t)+.02,.25*(1-t)+.045,.32*(1-t)+.07)

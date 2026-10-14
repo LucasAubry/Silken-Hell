@@ -60,6 +60,9 @@ local function snapped(v) return state.snap and math.floor(v/10+.5)*10 or math.f
 local function brush(e) return e and (e.kind=='hole' or e.kind=='lava') end
 local function entity(e,ghost)
     local c=catalog(e); g.setColor(1,1,1,ghost and .45 or 1)
+    if e.type=='storm' then require('sky_art').bird('down',e.x,e.y,105,state.clock,true);return end
+    if e.kind=='tornado' then require('sky_art').tornado({x=e.x,y=e.y,cooldown=0},state.clock);return end
+    if e.type=='gull' then require('sky_art').bird(e.dir or 'down',e.x,e.y,60,state.clock,false,e.electric);return end
     if e.type=='larva' then Art.drawLarva(e.x,e.y,22,0,state.clock);return end
     if e.kind=='wall' then g.push();g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180);g.translate(-e.x,-e.y);g.setColor(.29,.31,.33,ghost and .5 or 1); g.rectangle('fill',e.x-e.w/2,e.y-e.h/2,e.w,e.h); g.setColor(.65,.64,.56); g.rectangle('line',e.x-e.w/2,e.y-e.h/2,e.w,e.h);g.pop()
     elseif e.kind=='lava' and e.points then

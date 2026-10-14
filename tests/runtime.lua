@@ -9,6 +9,9 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_REPLAY_AUDIT_TEST')=='1' then require('tests.replay_audit').run();return end
+    if os.getenv('SILKEN_SKY_OVERHAUL_TEST')=='1' then require('tests.sky_overhaul').run();return end
+    if os.getenv('SILKEN_REPLAY_HISTORY_TEST')=='1' then require('tests.replay_history').run();return end
     if os.getenv('SILKEN_REPLAY_CROSS_PROCESS_TEST')=='1' then require('tests.replay_revision').run();return end
     if os.getenv('SILKEN_REPLAY_WORLD_TEST')=='1' then require('tests.replay_world').run();return end
     if os.getenv('SILKEN_CONTROLLER_HARDWARE_TEST')=='1' then require('tests.controller_hardware').run();return end

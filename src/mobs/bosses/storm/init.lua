@@ -206,9 +206,7 @@ local function sprite(dir)
  return Art.images[key] and key or 'merle_'..dir
 end
 local function bird(dir,x,y)
- local key=sprite(dir);local a=Art.images[key];local scale=BODY_SIZE/math.max(a.w,a.h)
- local flap=math.sin(S.clock*14)*.025
- Art.draw(key,x,y,a.w*scale*(1+flap),0,a.h*scale*(1-flap))
+ require('sky_art').bird(dir,x,y,BODY_SIZE,S.clock,true,S.electric)
 end
 function S.drawGround()
 
@@ -245,20 +243,21 @@ function S.drawGround()
  g.pop()
 end
 function S.previewPose()
- local a=Art.images[sprite(S.dir)];local scale=BODY_SIZE/math.max(a.w,a.h);local w,h=a.w*scale,a.h*scale
+ local tip=BODY_SIZE*44/110
  local x,y=S.x,S.y;local cx,cy,cw,ch
- if S.dir=='right' then x=52-w/2;y=y-h*.27;cx,cy,cw,ch=22,S.y-24,32,48
- elseif S.dir=='left' then x=Arena.width-52+w/2;y=y-h*.27;cx,cy,cw,ch=Arena.width-54,S.y-24,32,48
- elseif S.dir=='down' then y=52-h/2;cx,cy,cw,ch=x-24,22,48,32
- else y=548+h/2;cx,cy,cw,ch=x-24,546,48,32 end
+ if S.dir=='right' then x=45-tip;cx,cy,cw,ch=22,S.y-24,32,48
+ elseif S.dir=='left' then x=Arena.width-45+tip;cx,cy,cw,ch=Arena.width-54,S.y-24,32,48
+ elseif S.dir=='down' then y=45-tip;cx,cy,cw,ch=x-24,22,48,32
+ else y=555+tip;cx,cy,cw,ch=x-24,546,48,32 end
  return x,y,cx,cy,cw,ch
 end
 function S.visibleBounds()
  if not S.active or S.defeated then return end
  if S.phase=='flightTell' then local _,_,x,y,w,h=S.previewPose();return x,y,w,h end
  if S.hidden then return end
- local a=Art.images[sprite(S.dir)];local scale=(BODY_SIZE+5)/math.max(a.w,a.h)
- return S.x-a.w*scale/2,S.y-a.h*scale/2,a.w*scale,a.h*scale
+ local side=S.dir=='left' or S.dir=='right'
+ local w,h=BODY_SIZE*(side and .8 or 1.1),BODY_SIZE*(side and 1.1 or .8)
+ return S.x-w/2,S.y-h/2,w,h
 end
 function S.draw()
 
@@ -281,7 +280,7 @@ function S.draw()
  for _,p in ipairs(S.projectiles) do
   local angle=math.atan2(p.vy,p.vx);local dx,dy=math.cos(angle),math.sin(angle)
   g.setColor(.3,.65,1,.18);g.setLineWidth(2);g.line(p.x-dx*24,p.y-dy*24,p.x,p.y)
-  g.setColor(1,1,1);Art.draw('black_feather',p.x,p.y,32,angle)
+  g.setColor(1,1,1);require('sky_art').feather(p.x,p.y,angle,32)
  end
  g.pop()
 end

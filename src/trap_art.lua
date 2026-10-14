@@ -1,6 +1,7 @@
 -- The catalogue and gameplay share the same PNG frames and biome material.
 local T={}
 function T.draw(kind,x,y,size,biome,active,angle)
+ if biome==6 then return require('sky_art').trap(kind,x,y,size,active,angle) end
  local g=love.graphics;local art=require('paradise_ink')
  local key=kind=='scie' and 'wheel' or active and 'trap_closed' or 'trap_open'
  g.push('all');g.setColor(1,1,1)

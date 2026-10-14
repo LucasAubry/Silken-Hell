@@ -21,11 +21,12 @@ function T.install(R)
  function R.levels()
   local result={};if not R.data then return result end
   local first=R.data.startLevel;local last=R.data.single and first or R.data.checks[#R.data.checks][2]
+  if R.playbackEnd then for _,check in ipairs(R.data.checks) do if check[1]<=R.playbackEnd then last=check[2] end end end
   for n=first,last do result[#result+1]=n end;return result
  end
  function R.seekLevel(n)
   local valid=false;for _,v in ipairs(R.levels()) do if v==n then valid=true end end;if not valid then return false end
-  local data,saved,paused,speed=R.data,R.saved,R.paused,R.speed
+  local data,saved,paused,speed=R.sourceData or R.data,R.saved,R.paused,R.speed
   if not R.play(data) then return false end
   R.saved=saved or R.saved;R.speed=speed
   R.job={level=n,restorePaused=paused};R.paused=false
@@ -38,10 +39,11 @@ function T.install(R)
   return false
  end
  function R.endPlayback()
-  if R.job then R.stop('Ce niveau est absent de cet enregistrement.') else R.stop('Lecture terminée.') end
+  if R.job then R.stop('Ce niveau est absent de cet enregistrement.') else R.stop(R.playbackEnd and 'Fin de la partie restaurée.' or 'Lecture terminée.') end
  end
  function R.drawGhost() end
  function R.key(key)
+  if R.recovery then if key=='escape' then R.stop() end;return end
   local k=Profile.keys
   if key=='escape' then R.stop()
   elseif key==k.pause or key=='space' then if not R.job then R.paused=not R.paused end
@@ -58,11 +60,12 @@ function T.install(R)
    U.text('Recherche du niveau '..R.job.level..' · '..math.floor(R.frame/R.data.frames*100)..' %',180,671,'body',nil,840,'center')
    return
   end
-  U.text('NIVEAU',180,674,'small');local levels=R.levels()
+  U.text('NIVEAU',180,674,'body');local levels=R.levels()
   for i,n in ipairs(levels) do local target=n;U.button(tostring(n),250+(i-1)*50,664,45,32,function() R.seekLevel(target) end,false,player.level==n) end
   U.button('Recommencer',815,664,200,32,function() R.seekLevel(player.level) end)
-  local label=R.paused and 'Spectateur · PAUSE' or 'Spectateur'
-  U.text(label..'   |   '..Input.label(k.pause)..' : pause   '..Input.label(k.replaySlower)..' / '..Input.label(k.replayFaster)..' : vitesse   '..Input.label(k.restartLevel)..' : rejouer',180,708,'small',nil,840,'center')
+  local label=R.playbackEnd and 'Lecture partielle · '..math.floor(R.playbackEnd/60)..' s restaurées sur '..math.floor(R.data.frames/60)..' s' or 'Spectateur'
+  if R.paused then label=label..' · PAUSE' end
+  U.text(label,180,708,'body',nil,840,'center')
  end
 end
 return T

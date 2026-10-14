@@ -109,8 +109,8 @@ function B.skyVoid()
  end
  for layer=0,12 do
   local t=math.max(0,(layer-1)/11);local depth=38-layer*2.5
-  if layer==0 then g.setColor(.91,.95,.96)
-  elseif layer==1 then g.setColor(.28,.40,.49)
+  if layer==0 then g.setColor(.66,.76,.71)
+  elseif layer==1 then g.setColor(.18,.32,.38)
   else g.setColor(.16*(1-t)+.02,.25*(1-t)+.045,.32*(1-t)+.07) end
   edge(w,depth,1)
   g.push();g.translate(w,600);g.rotate(math.pi);edge(w,depth,2);g.pop()

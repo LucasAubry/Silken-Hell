@@ -49,9 +49,11 @@ function R.begin(world)
         local seed=love.math.random(1,2147483646)
         R.data={version=1,build=R.build(),world=world,seed=seed,width=Arena.width,height=600,skin=Characters.selected(),effects=require('skin_effects').snapshot(),startLevel=player.level,single=not not App.singleLevel,hardcore=not not App.hardcore,layouts=json.decode(json.encode(layouts)),session=App.sessionLayout~=nil,states={},duel=Secret.duel and {kind=Secret.duel.kind,name=Secret.duel.name,time=0} or nil,inputs={},checks={},frames=0,startedAt=os.time()}
     end
+    if not R.playing then require('replay_engine').remember(R.data.build) end
     R.rng=love.math.newRandomGenerator(R.data.seed);R.recording=not R.playing;R.enter()
 end
 function R.checkpoint()
+    if R.legacy then return R.legacy.checkpoint() end
     return {R.frame,player.level,math.floor(player.x*100+.5),math.floor(player.y*100+.5),player.death,App.state=='victory' or App.state=='customVictory' or (App.state=='credits' and Ending.completed)}
 end
 function R.finish(score) R.pendingFinish=true;R.pendingScore=score end
@@ -65,18 +67,20 @@ function R.saveFinished()
     R.recording=false;R.pendingFinish=nil;R.pendingScore=nil
 end
 function R.update(dt,tick)
+    if R.recovery and not R.recovery.running then require('replay_recovery').update(R);return end
+    if R.legacy then tick=R.legacy.tick end
     if R.ghost then R.updateGhost(dt,tick);return end
     if R.disabled then tick(dt);return end
     if not R.playing and not R.recording then tick(math.min(dt,.05));return end
-    if R.playing and R.paused then return end
-    if R.job then R.accumulator=R.step*240 else R.accumulator=R.accumulator+math.min(dt,.25)*(R.playing and R.speed or 1) end
-    local deadline=R.job and love.timer.getTime()+.012
+    if R.playing and R.paused and not R.recovery then return end
+    if R.job or R.recovery then R.accumulator=R.step*240 else R.accumulator=R.accumulator+math.min(dt,.25)*(R.playing and R.speed or 1) end
+    local deadline=(R.job or R.recovery) and love.timer.getTime()+.012
     local limit=0
-    while R.accumulator>=R.step and App.state=='playing' and limit<(R.job and 240 or 32) and (not deadline or love.timer.getTime()<deadline) do
+    while R.accumulator>=R.step and App.state=='playing' and limit<((R.job or R.recovery) and 240 or 32) and (not deadline or love.timer.getTime()<deadline) do
         R.accumulator=R.accumulator-R.step;limit=limit+1
         local x,y,slow
         if R.playing then
-            if R.frame>=R.data.frames then R.endPlayback();break end
+            if R.frame>=(R.playbackEnd or R.data.frames) then R.endPlayback();break end
             if R.eventLeft<=0 then local e=R.data.inputs[R.eventIndex];if not e then R.stop('Replay incomplet.');break end;R.event=e;R.eventLeft=e[1];R.eventIndex=R.eventIndex+1 end
             x,y,slow=R.event[2],R.event[3],R.event[4]==1;R.eventLeft=R.eventLeft-1
         else
@@ -91,10 +95,13 @@ function R.update(dt,tick)
             if expected and expected[1]==R.frame then
                 local actual=R.checkpoint()
                 if expected[2]~=actual[2] or expected[3]~=actual[3] or expected[4]~=actual[4] or expected[5]~=actual[5] or expected[6]~=actual[6] then
+                    R.lastMismatch={expected=expected,actual=actual}
                     R.stop('Lecture arrêtée : simulation différente de la run enregistrée.');break
                 end
-                if R.data.states and R.data.states[R.checkIndex]~=require('replay_state').hash() then
-                    R.stop('Lecture arrêtée : objets différents de la run enregistrée.');break
+                if R.data.states then
+                    local ok,hash=pcall(function() return R.legacy and R.legacy.stateHash() or require('replay_state').hash() end)
+                    if not ok then R.fail(hash);break end
+                    if R.data.states[R.checkIndex]~=hash then R.stop('Lecture arrêtée : objets différents de la run enregistrée.');break end
                 end
                 R.checkIndex=R.checkIndex+1
             end
@@ -102,7 +109,7 @@ function R.update(dt,tick)
                 R.stop('Lecture arrêtée : fin prématurée de la simulation.');break
             end
             if R.afterFrame() then break end
-            if R.frame>=R.data.frames then R.endPlayback();break end
+            if R.frame>=(R.playbackEnd or R.data.frames) then R.endPlayback();break end
         elseif R.frame%240==0 or R.pendingFinish then
             R.data.checks[#R.data.checks+1]=R.checkpoint()
             R.data.states[#R.data.states+1]=require('replay_state').hash()
@@ -146,23 +153,41 @@ function R.validate(data)
     for _,layout in pairs(data.layouts) do if not LayoutSchema.validate(layout) then return false,'Carte de replay invalide.' end end
     return true
 end
-function R.play(data)
-    local ok,why=R.validate(data);if not ok then R.status=why;return false end
-    if data.version~=R.version or data.build~=R.build() then
-        R.status='Replay d’une ancienne version : lecture indisponible.';return false
-    end
-    R.job=nil;R.ghost=nil;R.ghostRetry=nil;R.levelStates={}
+function R.saveContext()
+    if R.saved then return end
     R.saved={character=Profile.character,achievements=json.decode(json.encode(Profile.achievements)),selected=App.selectedWorld,
         returnTo=App.state=='victory' and 'victory' or App.state=='topRecords' and 'topRecords' or 'rankings',
         victory=(App.state=='victory' or UI.boardReturn=='victory') and require('victory_screen').run or nil}
-    R.recording=false;R.playing=true;R.compatibility=false;R.data=data;R.speed=1;R.paused=false
+end
+function R.play(data,choice)
+    local ok,why=R.validate(data);if not ok then R.status=why;return false end
+    if data.version~=R.version then R.status='Format de replay inconnu.';return false end
+    if not choice and data.build~=R.build() then
+        if R.verified and R.verified.id==R.hash(data) then choice=R.verified.choice
+        else return require('replay_recovery').start(R,data) end
+    end
+    local engine=choice and choice.engine
+    if R.legacy then R.legacy.close();R.legacy=nil end
+    R.job=nil;R.ghost=nil;R.ghostRetry=nil;R.levelStates={}
+    R.saveContext()
+    R.recording=false;R.playing=true;R.compatibility=false;R.sourceData=data;R.data=json.decode(json.encode(data));data=R.data;R.playbackEnd=choice and choice.untilFrame;R.speed=1;R.paused=false
     Secret.duel=data.duel and {kind=data.duel.kind,name=data.duel.name,time=0} or nil;App.sessionLayout=data.session and data.layouts[data.world..':'..data.startLevel] or nil;App.hardcore=data.hardcore==true;App.singleLevel=data.single;App.practice=data.startLevel;App.workshopMap=nil;App.preview=false
-    local started,err=xpcall(function() App.start(data.world) end,debug.traceback)
+    R.lastMismatch=nil;R.frame=0;R.checkIndex=1
+    local started,err=xpcall(function()
+        if engine then
+            R.legacy=require('replay_engine').create(engine,R)
+            Arena.width=data.width;Campaign.select(data.world)
+            R.legacy.start(choice.session==true)
+        else App.start(data.world) end
+    end,debug.traceback)
     if not started then R.fail(err);return false end
     R.status='';return true
 end
 function R.stop(message)
     R.leave()
+    if R.legacy then R.legacy.close();R.legacy=nil end
+    if R.recovery and R.recovery.running then R.recovery.result=message or 'Interrompu';R.accumulator=0;App.state='playing';return end
+    R.recovery=nil;R.playbackEnd=nil;R.sourceData=nil
     R.job=nil;R.ghost=nil;R.ghostRetry=nil
     R.playing=false;R.compatibility=false;R.recording=false;R.input=nil;R.accumulator=0;R.paused=false
     local saved=R.saved
