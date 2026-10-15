@@ -24,7 +24,6 @@ vec4 effect(vec4 color, Image tex, vec2 uv, vec2 pixel) {
             c+=vec3(.99,.89,.71)*cloud*.20;
             c+=vec3(.99,.90,.75)*exp(-r*2.8)*.08;
         }
-        if (biome==6.0) c+=vec3(.23,.28,.33)*smoothstep(-.2,.8,mist);
     } else if (biome==6.0) {
         // Open sky currents: elongated, drifting spirals instead of a circular halo.
         vec2 wind=vec2(p.x*.72,p.y*1.4+sin(p.x*1.7+time*.12)*.22);
@@ -33,8 +32,11 @@ vec4 effect(vec4 color, Image tex, vec2 uv, vec2 pixel) {
         float spiral=atan(wind.y+.3,wind.x-.6)+length(wind-vec2(.6,-.3))*5.0-time*.14;
         float curls=pow(max(0.0,cos(spiral*3.0)),24.0)*exp(-length(wind-vec2(.6,-.3))*1.5);
         float cloud=smoothstep(-.25,.85,sin(flow*5.0)+sin(wind.x*4.0-time*.09)*.3);
-        c=deep*.24+fog*cloud*.22;
-        c+=accent*(ribbons*.18+curls*.28)+vec3(.79,.90,1.0)*cloud*.09;
+        // Match the blue air and pearly clouds of biome_floor.glsl.
+        vec3 air=mix(vec3(.10,.23,.38),vec3(.24,.42,.59),mist*.5+.5);
+        vec3 vapor=mix(vec3(.37,.53,.68),vec3(.78,.87,.93),cloud);
+        c=mix(air,vapor,cloud);
+        c+=accent*(ribbons*.18+curls*.28);
     } else if (biome==8.0) {
         float gate=exp(-abs(length(p*vec2(.8,1.15))-.58)*55.0);
         float arc=pow(max(0.0,cos(a*12.0+time*.06)),24.0)*exp(-abs(r-.74)*35.0);
