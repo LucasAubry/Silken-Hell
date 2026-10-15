@@ -26,7 +26,7 @@ function T.run()
     if os.getenv('SILKEN_ABYSS_CHARGE_VISIBILITY_TEST')=='1' then require('tests.abyss_charge_visibility').run();return end
     if os.getenv('SILKEN_RETRY_WAIT_TEST')=='1' then require('tests.retry_wait').run();return end
     if os.getenv('SILKEN_TORNADO_DIRECTION_TEST')=='1' then require('tests.tornado_direction').run();return end
-    if os.getenv('SILKEN_TERRAIN_ZONES_TEST')=='1' then require('tests.terrain_zones').run();return end
+    if os.getenv('SILKEN_TERRAIN_ZONES_TEST')=='1' or os.getenv('SILKEN_LAVA_STYLE_TEST')=='1' then require('tests.terrain_zones').run();return end
     if os.getenv('SILKEN_STORM_GROUNDING_TEST')=='1' then require('tests.storm_grounding').run();return end
     if os.getenv('SILKEN_BIOME_RADIANCE_TEST')=='1' then require('tests.biome_radiance').run();return end
     if os.getenv('SILKEN_WORLD_LIGHTING_TEST')=='1' then require('tests.world_lighting').run();return end

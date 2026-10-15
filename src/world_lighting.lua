@@ -125,7 +125,7 @@ function L.apply(scene)
  local ambient=({[1]=.91,[2]=.91,[3]=.87,[4]=.88,[5]=.88,[6]=.91,[7]=1,[8]=.97})[biome] or .97
  L.composite:send('ambient',ambient)
  L.composite:send('scatter',biome==7 and 0 or biome==4 and .06 or biome==8 and .016 or .035)
- L.composite:send('softHighlights',biome~=7 and require('biome_radiance').active() and 1 or 0)
+ L.composite:send('softHighlights',biome~=7 and biome~=2 and require('biome_radiance').active() and 1 or 0)
  g.setShader(L.composite);g.draw(scene);g.pop()
  return L.output
 end

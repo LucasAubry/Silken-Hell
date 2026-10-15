@@ -1,7 +1,7 @@
 local B={}
 B.palettes={
  [1]={1,.80,.42},[3]={.79,.89,.40},[4]={.12,.78,1},[5]={.95,.76,.40},[6]={.72,.86,1},
- [2]={1,.18,.10},[7]={.15,.46,1},[8]={.57,.46,1},
+ [2]={1,.25,.055},[7]={.15,.46,1},[8]={.57,.46,1},
 }
 function B.biome()return (App.state=='bossWorld' or Secret.inArena()) and 8 or Campaign.biome end
 function B.active()
@@ -28,8 +28,8 @@ function B.sources(add,time)
  elseif biome==1 then
   add(Arena.width*.25,100,300,.40,tint);add(Arena.width*.78,380,260,.30,{1,.90,.68})
  elseif biome==2 then
-  add(Arena.width*.48,380,300,.40+.025*math.sin(time*.65),tint)
-  add(Arena.width*.79,170,200,.24,{.70,.20,.07})
+  add(Arena.width*.12,550,220,.26+.04*math.sin(time*.65),tint)
+  add(Arena.width*.88,70,180,.23,{.85,.12,.38})
  elseif biome==7 then
   -- Color only existing revealed surfaces; this light never removes darkness.
   add(Arena.width*.20,100,220,.16,tint);add(Arena.width*.82,480,180,.13,{.43,.18,.83})
@@ -78,7 +78,6 @@ function B.motes()
   local alpha=(.12+pulse*.36)*edge*(biome==7 and .55 or 1);local size=(.65+i%3*.3)*depth
   local r,green,b=tint[1],tint[2],tint[3]
   if biome==3 and i%3==0 then r,green,b=.91,.95,.57
-  elseif biome==2 and i%3==0 then r,green,b=1,.70,.28
   elseif biome==4 and i%5==0 then r,green,b=.60,.48,1
   elseif biome==1 and i%4==0 then r,green,b=1,.94,.77 end
   g.setColor(r,green,b,alpha)

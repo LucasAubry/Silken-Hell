@@ -1,5 +1,7 @@
 local T={}
 function T.run()
+ local lavaOnly=os.getenv('SILKEN_LAVA_STYLE_TEST')=='1'
+ local worlds=lavaOnly and {2} or {2,6}
  io.stdout:setvbuf('no');love.focus=function()end
  Online.enabled=false;Replay.disabled=true;Replay.playing=false;Profile.save=function()end;Bestiary.save=function()end
  LevelLayouts.disabled=true;App.singleLevel=true;App.practice=1
@@ -68,7 +70,9 @@ function T.run()
   pixels:encode('png','terrain-border-'..world..'.png');pixels:release();canvas:release()
  end
  border(2,lava)
- local hole=json.decode(json.encode(lava));hole.kind='hole';border(6,hole)
+ if not lavaOnly then
+  local hole=json.decode(json.encode(lava));hole.kind='hole';border(6,hole)
+ end
  -- Both materials sit below the perimeter. Lava crossing any map edge must
  -- leave masonry intact; it also stays below placed/rotated walls.
  local rim=g.newCanvas(960,600,{dpiscale=1})
@@ -76,7 +80,7 @@ function T.run()
   g.push('all');g.setCanvas(rim);g.origin();g.setScissor();g.setShader();g.clear()
   Campaign.draw();g.pop();return rim:newImageData()
  end
- for _,world in ipairs({2,6}) do
+ for _,world in ipairs(worlds) do
   App.start(world);Arena.width=960;Realms.holes={};Hazards.lava={}
   local kind=world==2 and 'lava' or 'hole';local near=world==2 and 0 or 35
   local inset=world==2 and 10 or 30
@@ -151,7 +155,7 @@ function T.run()
  target:release()
  local light=require('world_lighting');local apply=light.apply;local rendered
  light.apply=function(scene)rendered=apply(scene);return rendered end
- for _,world in ipairs({2,6}) do
+ for _,world in ipairs(worlds) do
   local zone=json.decode(json.encode(lava));zone.kind=world==2 and 'lava' or 'hole'
   local demo=layout(world,zone)
   demo.entities[#demo.entities+1]=H.stroke({355,170,400,135,455,142,500,180,485,230,440,255,385,238,355,180},22,zone.kind)
@@ -174,7 +178,11 @@ function T.run()
   player.reset=false;love.draw();local data=rendered:newImageData();data:encode('png','terrain-zones-'..world..'.png');data:release()
  end
  light.apply=apply
- print('PASS drawn terrain: painted lava ignition, dry-ground exclusion, carried fire, flames above lava, no legacy lava puddles, closed and self-crossing fills, lethal lava, snapshots, resizing, walls above lava crossing all four edges, walls above nearby holes, straight and rotated walls, preserved sky openings, seamless materials, cache reuse and stable simulation')
+ if lavaOnly then
+  print('PASS lava style: ignition, dry-ground exclusion, contact, closed fills, walls above lava, seamless material, cache reuse, stable simulation and full-scene rendering')
+ else
+  print('PASS drawn terrain: painted lava ignition, dry-ground exclusion, carried fire, flames above lava, no legacy lava puddles, closed and self-crossing fills, lethal lava, snapshots, resizing, walls above lava crossing all four edges, walls above nearby holes, straight and rotated walls, preserved sky openings, seamless materials, cache reuse and stable simulation')
+ end
  love.event.quit()
 end
 return T

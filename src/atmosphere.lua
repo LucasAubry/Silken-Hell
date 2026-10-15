@@ -2,7 +2,7 @@
 local A={lights={},dimensions={0,600},traveler={0,0}}
 for i=1,8 do A.lights[i]={0,0,1,0} end
 local palettes={
-    [1]={1,.86,.48},[2]={1,.12,.08},[3]={1,.36,.45},
+    [1]={1,.86,.48},[2]={1,.23,.055},[3]={1,.36,.45},
     [4]={.22,.8,1},[5]={.95,.76,.40},[6]={.72,.86,1}
 }
 local function glow(x,y,r,color,alpha)

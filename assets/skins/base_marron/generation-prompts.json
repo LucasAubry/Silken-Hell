@@ -14,7 +14,12 @@
   },
   "currentRevision": {
     "branch": "new-deccors",
-    "prompts": "assets/skins/base_marron/simplified-prompts.json",
-    "description": "Trois poses simplifiées à contours encrés et aplats, sans texture granuleuse. Seule l’araignée du test artistique est conservée dans New deccors."
+    "description": "Ancien modèle marron en pixel art, exporté du matériau Soie du jeu sans retouche.",
+    "sources": {
+      "down": "assets/araignee_marron_base.png",
+      "up": "assets/araignee_marron_base_dos.png",
+      "profil": "assets/araignee_marron_base_profil.png"
+    },
+    "exporter": "tests/export_base_skin.lua"
   }
 }

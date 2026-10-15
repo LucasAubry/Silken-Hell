@@ -28,23 +28,25 @@ vec4 effect(vec4 color,Image tex,vec2 uv,vec2 pixel){
   vec3 rim=mix(vec3(.12,.105,.085),vec3(.42,.36,.27),light)*(.8+grain*.2);
   c=mix(rim,vec3(.006,.008,.012),smoothstep(-1.,12.,d));
  }else{
-  // Crimson molten folds share the ground's flowing strata and charcoal lip.
-  c=mix(vec3(.060,.012,.025),vec3(.29,.045,.060),light)*(.8+stone*.3);
+  // Crisp charcoal banks and a limited ember palette match the pixel sprites.
+  alpha=smoothstep(-7.5,-6.7,edge);
+  float rimLight=floor(light*3.)/3.;
+  c=mix(vec3(.045,.020,.018),vec3(.24,.10,.055),rimLight);
   if(edge>-2.){
    vec2 q=p*.016+vec2(clock*.013,-clock*.018);
    vec2 warp=vec2(noise(q)+noise(q*2.03+7.3)*.5,
                   noise(q+vec2(13.2,7.8))+noise(q*2.03+19.)*.5);
    float strata=q.y*5.8+q.x*2.3+warp.x*9.0+warp.y*4.0;
    float fold=.5+.5*sin(strata);
-   float ribbon=pow(fold,3.0);
-   float heat=noise(q*2.+warp);
-   vec3 crust=mix(vec3(.32,.018,.035),vec3(.67,.055,.060),heat);
-   vec3 melt=mix(vec3(.88,.075,.055),vec3(1.,.32,.19),ribbon);
-   float bank=smoothstep(-2.,6.,edge);
-   float shore=exp(-max(0.,edge)*.25)*.30;
-   c=mix(c,mix(crust,melt,clamp(.30+ribbon*.70+shore,0.,1.)),bank);
-   c+=vec3(.065,.020,.012)*cos(strata)*ribbon*bank;
-   c+=vec3(.018,.007,.009)*(grain-.5)*bank;
+   float ribbon=smoothstep(.48,.53,fold);
+   float hot=smoothstep(.91,.94,fold);
+   float crust=smoothstep(.55,.59,noise(q*3.+warp))*(1.-ribbon);
+   vec3 melt=mix(vec3(.64,.075,.025),vec3(.94,.24,.035),ribbon);
+   melt=mix(melt,vec3(1.,.61,.12),hot*.80);
+   melt=mix(melt,vec3(.19,.055,.025),crust*.85);
+   // Keep a narrow ink edge instead of the old broad blurred shoreline.
+   float bank=smoothstep(.0,1.4,edge);
+   c=mix(c,melt,bank);
   }
  }
  return vec4(c,alpha)*color;

@@ -94,30 +94,14 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
    c+=vec3(.075,.050,.025)*tufts;
    c+=vec3(.055,.035,.020)*pigment;
   }
- } else if(biome==2.0) {
-  // Renaissance's soft pigment washes, with scorched islands instead of moss.
-  vec2 ground=p+vec2(8.7,3.2);
-  vec2 flow=ground+vec2(fbm(ground*2.0),fbm(ground*2.0+19.0))*.36;
-  float pigment=fbm(flow*18.0)-.5;
-  float scorch=smoothstep(.25,.76,fbm(ground*4.5));
-  vec2 position=pixel/dimensions;
-  vec2 warm=(position-vec2(.38,.40))*vec2(2.8,2.3);
-  vec2 reflected=(position-vec2(.76,.72))*vec2(3.8,3.1);
-  float emberLight=exp(-dot(warm,warm))*.78+exp(-dot(reflected,reflected))*.42;
-  c=mix(vec3(.075,.033,.038),vec3(.38,.095,.065),scorch);
-  c=mix(c,vec3(.62,.19,.095),emberLight*(.24+scorch*.48));
-  // Broken soot flecks and matte ash replace the meadow's directional grass.
-  float cinders=pow(noise(flow*vec2(76.0,83.0)),4.0);
-  float ash=smoothstep(.54,.76,fbm(flow*11.0));
-  c=mix(c,vec3(.24,.16,.145),ash*.20);
-  c+=vec3(.065,.027,.018)*cinders;
-  c+=vec3(.055,.027,.022)*pigment;
- } else if(biome==8.0) {
+ } else if(biome==2.0 || biome==8.0) {
   float fissure=1.0-smoothstep(.009,.045,cells(p*8.0+terrain).y);
   c=mix(vec3(.055,.028,.030),vec3(.14,.075,.062),terrain)+(grain-.5)*.025;
-  c=mix(c,vec3(.085,.075,.085),.3);
-  c+=vec3(.62,.65,.70)*fissure*(.65+.10*sin(clock*.6+p.x*4.0));
-  c+=vec3(.11,.12,.15)*pow(max(0.0,sin(p.x*5.0+terrain*1.5)),12.0);
+  if(biome==8.0) {
+    c=mix(c,vec3(.085,.075,.085),.3);
+    c+=vec3(.62,.65,.70)*fissure*(.65+.10*sin(clock*.6+p.x*4.0));
+    c+=vec3(.11,.12,.15)*pow(max(0.0,sin(p.x*5.0+terrain*1.5)),12.0);
+  } else c+=vec3(.34,.055,.007)*fissure*(.65+.15*sin(clock*.8+p.x*4.0));
  } else if(biome==1.0) {
   c=champagneMarble(p);
   c+=vec3(.027,.024,.018)*pow(noise(p*8.0+clock*.009),3.0);

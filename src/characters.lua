@@ -173,7 +173,7 @@ function C.portrait(index,x,y,size,dir,locked,walk,marineOverlay)
     local key=C.model(dir,index)
     local a=Art.images[key];local pose=dir=='right' and 'left' or dir
     if index==1 then
-        -- Soie's painted PNGs already contain their brown body and amber eyes.
+        -- Soie's exported pixel sprites already contain their brown body and amber eyes.
         g.setShader()
         if locked then require('locked_art').bind() end
     elseif C.customSprites[index] or index==12 then
