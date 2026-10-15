@@ -23,7 +23,6 @@ local function paradiseBase(cache)
     return cache.paradise
 end
 function B.draw(world,width,height,time)
-    if world==6 then return end
     local g=love.graphics
     B.shader=B.shader or g.newShader('assets/shaders/biome_floor.glsl')
     -- Only the background is downsampled; actors, walls, lights and UI retain

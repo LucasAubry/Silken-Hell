@@ -50,6 +50,7 @@ vec4 effect(vec4 color,Image texture,vec2 uv,vec2 pixel) {
     float edge=length((p-.5)*vec2(1.0,.8));
     shade+=smoothstep(.3,.7,edge)*.09;
     if(biome==5.0) shade=.055+(1.0-transmission)*.035+depth*.02+smoothstep(.3,.7,edge)*.035;
+    if(biome==2.0) shade=.10+(1.0-transmission)*.05+depth*.02+smoothstep(.3,.7,edge)*.06;
     float caustic=0.0;
     if(biome==4.0) {
         float wave=sin(p.x*59.0+p.y*26.0+sin(p.y*39.0-clock*.6)*1.8+clock*.4);

@@ -49,17 +49,7 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
    c+=vec3(.065,.14,.13)*shaft*(1.0-pixel.y/dimensions.y*.55)+vec3(.14,.22,.18)*glimmer*.3;
   }
   if(biome==7.0) c=mix(vec3(.009,.018,.035),vec3(.035,.085,.12),terrain)+vec3(.035,.07,.09)*caustic*.17;
- } else if(biome==5.0) {
-  // Matte packed earth: broken clods and fine grit, without flowing veins.
-  float soil=fbm(p*18.0);
-  float patches=fbm(p*3.5);
-  float clods=noise(p*65.0+vec2(terrain*2.0));
-  float grit=smoothstep(.68,.88,noise(p*90.0+23.0));
-  c=mix(vec3(.12,.055,.023),vec3(.29,.15,.065),soil*.75+patches*.25);
-  c+=vec3(.036,.023,.011)*(clods-.5);
-  c+=vec3(.024,.015,.006)*grit;
-  c+=(grain-.5)*.014;
- } else if(biome==3.0) {
+ } else if(biome==3.0 || biome==5.0 || biome==6.0) {
   vec2 flow=p+vec2(fbm(p*2.0),fbm(p*2.0+19.0))*.36;
   float pigment=fbm(flow*18.0)-.5;
   float meadow=fbm(p*4.5);
@@ -73,14 +63,26 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   float tufts=pow(noise(flow*vec2(110.0,55.0)),4.0);
   c+=vec3(.075,.085,.025)*tufts;
   c+=vec3(.045,.055,.025)*pigment;
- } else if(biome==2.0 || biome==8.0) {
+ } else if(biome==2.0) {
+  // Broad fractured volcanic plates, cut by thin dark seams and red heat.
+  vec2 rock=p*7.8+vec2(fbm(p*3.1),fbm(p*3.1+17.))*.60;
+  vec2 fracture=cells(rock);
+  float seam=1.-smoothstep(.012,.055,fracture.y);
+  float bevel=smoothstep(.018,.09,fracture.y);
+  float layers=sin(p.x*52.+p.y*34.+fbm(p*10.)*5.);
+  float grit=noise(p*185.);
+  c=mix(vec3(.18,.012,.025),vec3(.47,.045,.055),fbm(p*12.));
+  c*=.78+bevel*.22;
+  c+=vec3(.055,.008,.012)*layers+vec3(.025,.009,.012)*(grit-.5);
+  c=mix(c,vec3(.045,.006,.014),seam*.82);
+  float heat=exp(-fracture.y*65.)*smoothstep(.42,.73,noise(p*9.));
+  c+=vec3(.34,.025,.012)*heat*(.85+.15*sin(clock*.7+p.y*9.));
+ } else if(biome==8.0) {
   float fissure=1.0-smoothstep(.009,.045,cells(p*8.0+terrain).y);
   c=mix(vec3(.055,.028,.030),vec3(.14,.075,.062),terrain)+(grain-.5)*.025;
-  if(biome==8.0) {
-    c=mix(c,vec3(.085,.075,.085),.3);
-    c+=vec3(.62,.65,.70)*fissure*(.65+.10*sin(clock*.6+p.x*4.0));
-    c+=vec3(.11,.12,.15)*pow(max(0.0,sin(p.x*5.0+terrain*1.5)),12.0);
-  } else c+=vec3(.34,.055,.007)*fissure*(.65+.15*sin(clock*.8+p.x*4.0));
+  c=mix(c,vec3(.085,.075,.085),.3);
+  c+=vec3(.62,.65,.70)*fissure*(.65+.10*sin(clock*.6+p.x*4.0));
+  c+=vec3(.11,.12,.15)*pow(max(0.0,sin(p.x*5.0+terrain*1.5)),12.0);
  } else if(biome==1.0) {
   c=champagneMarble(p);
   c+=vec3(.027,.024,.018)*pow(noise(p*8.0+clock*.009),3.0);

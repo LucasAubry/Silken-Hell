@@ -1,7 +1,7 @@
 local B={}
 B.palettes={
- [1]={1,.80,.42},[3]={.79,.89,.40},[4]={.12,.78,1},[5]={1,.61,.24},[6]={.62,.82,1},
- [2]={1,.25,.055},[7]={.15,.46,1},[8]={.57,.46,1},
+ [1]={1,.80,.42},[3]={.79,.89,.40},[4]={.12,.78,1},[5]={.95,.76,.40},[6]={.72,.86,1},
+ [2]={1,.18,.10},[7]={.15,.46,1},[8]={.57,.46,1},
 }
 function B.biome()return (App.state=='bossWorld' or Secret.inArena()) and 8 or Campaign.biome end
 function B.active()
@@ -20,12 +20,16 @@ function B.sources(add,time)
   add(Arena.width*.79,430,200,.24,{.35,.53,.34})
   for i=1,3 do local x,y,c=B.wispPosition(i,time);add(x,y,100,.45,c) end
  elseif biome==5 then
-  for i=1,3 do add(Arena.width*(.12+i*.22),95+i%2*90,230,.40+.025*math.sin(time*.7+i),tint) end
+  add(Arena.width*.48,220,300,.40,tint)
+  add(Arena.width*.79,430,200,.24,{.58,.39,.20})
+ elseif biome==6 then
+  add(Arena.width*.48,220,300,.40,tint)
+  add(Arena.width*.79,430,200,.24,{.39,.58,.78})
  elseif biome==1 then
   add(Arena.width*.25,100,300,.40,tint);add(Arena.width*.78,380,260,.30,{1,.90,.68})
  elseif biome==2 then
-  add(Arena.width*.12,550,220,.26+.04*math.sin(time*.65),tint)
-  add(Arena.width*.88,70,180,.23,{.85,.12,.38})
+  add(Arena.width*.48,380,300,.40+.025*math.sin(time*.65),tint)
+  add(Arena.width*.79,170,200,.24,{.70,.20,.07})
  elseif biome==7 then
   -- Color only existing revealed surfaces; this light never removes darkness.
   add(Arena.width*.20,100,220,.16,tint);add(Arena.width*.82,480,180,.13,{.43,.18,.83})
@@ -56,19 +60,6 @@ function B.motes()
  if not B.active() then return end
  local g=love.graphics;local biome=B.biome();local t=UI.clock;local tint=B.palettes[biome]
  g.push('all');g.setShader();g.setBlendMode('add')
- -- Pale dust and tiny gilt flakes follow the carved Sky terraces.
- if biome==6 then
-  for i=1,(Graphics.quality==1 and 18 or 34) do
-   local x=(i*137.31+math.sin(t*.16+i*2.4)*20+t*2)%Arena.width
-   local y=(i*79.73-t*2.5)%600
-   local alpha=.10+(.5+.5*math.sin(t*.7+i*1.7))^2*.30;local size=.7+i%3*.3
-   g.setColor(i%3==0 and .94 or tint[1],i%3==0 and .82 or tint[2],i%3==0 and .49 or tint[3],alpha);g.polygon('fill',x,y-size*2,x+size,y,x,y+size*2,x-size,y)
-   if i%3==0 then for ring=3,1,-1 do
-    g.setColor(tint[1],tint[2],tint[3],alpha*.045);g.circle('fill',x,y,ring*2+size)
-   end end
-  end
-  g.pop();return
- end
  if not B.halo then
   local vertices={{0,0,0,0,1,1,1,1}}
   for i=0,32 do local a=i*math.pi/16;vertices[#vertices+1]={math.cos(a),math.sin(a),0,0,1,1,1,0} end
@@ -87,6 +78,7 @@ function B.motes()
   local alpha=(.12+pulse*.36)*edge*(biome==7 and .55 or 1);local size=(.65+i%3*.3)*depth
   local r,green,b=tint[1],tint[2],tint[3]
   if biome==3 and i%3==0 then r,green,b=.91,.95,.57
+  elseif biome==2 and i%3==0 then r,green,b=1,.70,.28
   elseif biome==4 and i%5==0 then r,green,b=.60,.48,1
   elseif biome==1 and i%4==0 then r,green,b=1,.94,.77 end
   g.setColor(r,green,b,alpha)

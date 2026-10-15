@@ -224,7 +224,7 @@ function C.draw()
         for i=1,32 do
             local x=(i*79+math.sin(larme_float_timer+i)*14)%(Arena.width-50)+25
             local y=(i*47-larme_float_timer*(12+i%9))%570+15
-            g.setColor(1,0.08+i%3*0.025,0.08,0.35); g.circle('fill',x,y,1+i%2)
+            g.setColor(1,.38+i%3*.12,.10,0.35); g.circle('fill',x,y,1+i%2)
         end
     end
     Hazards.draw(); Realms.drawGround(); Ocean.drawGround(); Octopus.drawGround(); Raven.drawGround(); Wasp.drawGround(); Storm.drawGround(); Bosses.drawGround(); Arena.drawWalls(hell)
