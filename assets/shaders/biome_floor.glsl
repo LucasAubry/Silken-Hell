@@ -63,6 +63,13 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   float tufts=pow(noise(flow*vec2(110.0,55.0)),4.0);
   c+=vec3(.075,.085,.025)*tufts;
   c+=vec3(.045,.055,.025)*pigment;
+  if(biome==5.0) {
+   // Renaissance's exact painted pattern, recolored in warm earth browns.
+   c=mix(vec3(.10,.055,.035),vec3(.32,.18,.09),canopy);
+   c=mix(c,vec3(.58,.40,.23),clearing*(.24+canopy*.48));
+   c+=vec3(.075,.050,.025)*tufts;
+   c+=vec3(.055,.035,.020)*pigment;
+  }
  } else if(biome==2.0) {
   // Broad fractured volcanic plates, cut by thin dark seams and red heat.
   vec2 rock=p*7.8+vec2(fbm(p*3.1),fbm(p*3.1+17.))*.60;
