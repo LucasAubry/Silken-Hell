@@ -11,5 +11,10 @@
     "source": "codex-clipboard-a45ef438-23e0-49fb-986c-bc8f0f3ab850.png",
     "note": "Profil fourni et choisi par Lucas ; remplace le profil précédent sans retouche. Droite obtenue par miroir en jeu.",
     "sha256": "2d5a805a052a155d6164180e0ed9b4b0cf7b604ce87aea2565763811da2a4cb1"
+  },
+  "currentRevision": {
+    "branch": "new-deccors",
+    "prompts": "assets/skins/base_marron/simplified-prompts.json",
+    "description": "Trois poses simplifiées à contours encrés et aplats, sans texture granuleuse. Seule l’araignée du test artistique est conservée dans New deccors."
   }
 }
