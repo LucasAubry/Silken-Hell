@@ -26,6 +26,7 @@ function B.edge(length,biome,seed)
   if not image then image=require('art_filter').image('assets/environments/ink/wall-'..biome..'.png');B.images[biome]=image end
   local iw,ih=image:getDimensions();local scale=22/ih;local tile=iw*scale
   g.push('all');g.setColor(1,1,1)
+  if biome==3 then g.setColor(.57,.72,.54) end
   for x=0,length-1,tile do
    local width=math.min(tile,length-x);local q=g.newQuad(0,0,width/scale,ih,iw,ih)
    g.draw(image,q,x,0,0,scale,scale);q:release()

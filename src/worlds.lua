@@ -1,7 +1,7 @@
 -- Stable IDs preserve saved scores; display/progression follow this separate order.
 local W={order={1,6,5,4,7,2,3},names={'Paradis','Enfer','Renaissance','Océan','Terre','Ciel','Abysse'}}
 W.palette={
- [3]={floor={.08,.36,.06},ink={.3,.75,.16},tear={.85,1,.5}},
+ [3]={floor={.12,.23,.18},ink={.43,.56,.23},tear={.83,.92,.47}},
  [1]={floor={.84,.78,.60},ink={.65,.48,.24},tear={1,1,1}},
  [2]={floor={.13,.03,.04},ink={.58,.08,.05},tear={1,.12,.1}},
  [4]={floor={.025,.16,.23},ink={.04,.43,.47},tear={.32,.94,1}},

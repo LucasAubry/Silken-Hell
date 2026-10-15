@@ -63,10 +63,16 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   vec2 flow=p+vec2(fbm(p*2.0),fbm(p*2.0+19.0))*.36;
   float pigment=fbm(flow*18.0)-.5;
   float meadow=fbm(p*4.5);
-  c=mix(vec3(.19,.36,.22),vec3(.43,.59,.30),meadow);
+  // Mossy greens, cool forest shadows and a yellow-green clearing.
+  vec2 position=pixel/dimensions;
+  float clearing=exp(-dot((position-vec2(.52,.46))*vec2(2.4,2.0),
+                         (position-vec2(.52,.46))*vec2(2.4,2.0)));
+  float canopy=smoothstep(.25,.76,meadow);
+  c=mix(vec3(.065,.145,.15),vec3(.30,.43,.18),canopy);
+  c=mix(c,vec3(.56,.66,.28),clearing*(.24+canopy*.48));
   float tufts=pow(noise(flow*vec2(110.0,55.0)),4.0);
-  c+=vec3(.06,.075,.025)*tufts;
-  c+=vec3(.045,.055,.02)*pigment;
+  c+=vec3(.075,.085,.025)*tufts;
+  c+=vec3(.045,.055,.025)*pigment;
  } else if(biome==2.0 || biome==8.0) {
   float fissure=1.0-smoothstep(.009,.045,cells(p*8.0+terrain).y);
   c=mix(vec3(.055,.028,.030),vec3(.14,.075,.062),terrain)+(grain-.5)*.025;

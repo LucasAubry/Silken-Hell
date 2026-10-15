@@ -23,7 +23,7 @@ vec4 effect(vec4 color, Image tex, vec2 uv, vec2 pixel) {
  float strength=.48;
  if(biome==1.0) { tint=vec3(1.0,.82,.50);strength=.62; }
  if(biome==2.0) { tint=vec3(1.0,.22,.035);strength=.25; }
- if(biome==3.0) { tint=vec3(.71,1.0,.48);strength=.54; }
+ if(biome==3.0) { tint=vec3(.81,.91,.43);strength=.54; }
  if(biome==4.0) { tint=vec3(.18,.82,1.0);strength=.70; }
  if(biome==5.0) { tint=vec3(1.0,.62,.25);strength=.72; }
  if(biome==6.0) { tint=vec3(.68,.86,1.0);strength=.42; }

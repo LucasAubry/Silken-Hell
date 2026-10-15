@@ -1,6 +1,6 @@
 local B={}
 B.palettes={
- [1]={1,.80,.42},[3]={.66,1,.50},[4]={.12,.78,1},[5]={1,.61,.24},[6]={.62,.82,1},
+ [1]={1,.80,.42},[3]={.79,.89,.40},[4]={.12,.78,1},[5]={1,.61,.24},[6]={.62,.82,1},
  [2]={1,.25,.055},[7]={.15,.46,1},[8]={.57,.46,1},
 }
 function B.biome()return (App.state=='bossWorld' or Secret.inArena()) and 8 or Campaign.biome end
@@ -16,8 +16,8 @@ function B.sources(add,time)
    add(x,y,115,.40+.07*math.sin(time*.8+i),i%2==0 and {.62,.22,.88} or tint)
   end
  elseif biome==3 then
-  add(Arena.width*.22,150,240,.35,tint)
-  add(Arena.width*.79,430,200,.34,{1,.40,.62})
+  add(Arena.width*.48,220,300,.40,tint)
+  add(Arena.width*.79,430,200,.24,{.35,.53,.34})
   for i=1,3 do local x,y,c=B.wispPosition(i,time);add(x,y,100,.45,c) end
  elseif biome==5 then
   for i=1,3 do add(Arena.width*(.12+i*.22),95+i%2*90,230,.40+.025*math.sin(time*.7+i),tint) end
@@ -43,7 +43,7 @@ function B.wispPosition(i,time)
  local sites={{.09,130},{.88,460},{.63,545}}
  local site=sites[i]
  return Arena.width*site[1]+math.sin(time*.35+i*2)*13,site[2]+math.cos(time*.28+i)*9,
-  i==2 and {1,.40,.67} or {.40,1,.67}
+  i==2 and {.63,.78,.32} or {.84,.92,.46}
 end
 function B.drawMap()
  if not B.active() then return end
@@ -86,7 +86,7 @@ function B.motes()
   local edge=math.min(1,x/20,(Arena.width-x)/20,y/20,(600-y)/20)
   local alpha=(.12+pulse*.36)*edge*(biome==7 and .55 or 1);local size=(.65+i%3*.3)*depth
   local r,green,b=tint[1],tint[2],tint[3]
-  if biome==3 and i%3==0 then r,green,b=1,.50,.71
+  if biome==3 and i%3==0 then r,green,b=.91,.95,.57
   elseif biome==4 and i%5==0 then r,green,b=.60,.48,1
   elseif biome==1 and i%4==0 then r,green,b=1,.94,.77 end
   g.setColor(r,green,b,alpha)
@@ -107,7 +107,7 @@ function B.motes()
    local x,y,c=B.wispPosition(i,t);local glow=.65+.15*math.sin(t*1.3+i)
    g.setColor(c[1],c[2],c[3],glow*.22);g.draw(B.halo,x,y,0,23,23)
    g.setColor(c[1],c[2],c[3],glow*.5);g.draw(B.halo,x,y,0,7,7)
-   g.setColor(.82,1,.88,glow);g.circle('fill',x,y,1.5)
+   g.setColor(.93,.97,.64,glow);g.circle('fill',x,y,1.5)
   end
  end
  g.pop()
