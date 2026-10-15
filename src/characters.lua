@@ -136,7 +136,7 @@ function C.portrait(index,x,y,size,dir,locked,walk,marineOverlay)
     end
     -- Resolve tiny leaderboard portraits from the complete eye artwork, rather
     -- than letting nearest-neighbour sampling select only their dark pupils.
-    if size<=32 and not walk then
+    if size<=32 and not walk and (C.crowned[index] or index)~=1 then
         C.smallPortraits=C.smallPortraits or {}
         local cacheKey=index..':'..dir..':'..tostring(locked)..':'..tostring(marineOverlay)
         local canvas=C.smallPortraits[cacheKey]
