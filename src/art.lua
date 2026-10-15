@@ -206,6 +206,7 @@ function A.drawAnemone(x,y,width,height,time)
     require('anemone_art').draw(A.images.electric_anemone,x,y,width,height,time)
 end
 function A.draw(key,x,y,width,angle,height)
+    if key=='earth_tunnel' or key=='earth_mound' then return require('earth_mound').draw(x,y,width,height,angle,true) end
     if key=='electric_anemone' then
         local a=A.images[key]
         local h=height or width*a.h/a.w;local time=(UI and UI.clock) or love.timer.getTime()

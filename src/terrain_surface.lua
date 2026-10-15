@@ -84,34 +84,37 @@ function S.field(zones,kind)
  end
  return entry
 end
-local function shader(field,kind,time)
+local function shader(field,kind,time,biome)
  local g=love.graphics
  S.shader=S.shader or g.newShader('assets/shaders/terrain_surface.glsl')
  S.shader:send('material',kind=='lava' and 1 or 0)
+ S.shader:send('biome',biome)
  S.shader:send('clock',time or 0);S.shader:send('worldOrigin',{field.x,field.y})
  S.shader:send('worldSize',{field.w,field.h});S.shader:send('sampleStep',{1/field.image:getWidth(),1/field.image:getHeight()})
  return S.shader
 end
-local function bake(field)
- if field.surface then return field.surface end
+local function bake(field,biome)
+ if field.surface and field.surfaceBiome==biome then return field.surface end
+ if field.surface then field.surface:release() end
+ field.surfaceBiome=biome
  local g=love.graphics
  field.surface=g.newCanvas(math.ceil(field.w),math.ceil(field.h),{dpiscale=1})
  field.surface:setFilter('linear','linear')
  g.push('all');g.setCanvas(field.surface);g.origin();g.setScissor();g.clear(0,0,0,0)
- g.setBlendMode('alpha');g.setShader(shader(field,'hole',0));g.setColor(1,1,1)
+ g.setBlendMode('alpha');g.setShader(shader(field,'hole',0,biome));g.setColor(1,1,1)
  g.draw(field.image,0,0,0,field.step,field.step);g.pop()
  return field.surface
 end
-local function drawSurface(zones,kind,time,alpha)
+local function drawSurface(zones,kind,time,alpha,biome)
  local field=S.field(zones,kind);if not field then return end
  local g=love.graphics;g.push('all')
  -- Stone lips never animate: shade once, then composite a single texture.
  if kind~='lava' then
-  local image=bake(field)
+  local image=bake(field,biome)
   g.setShader();g.setBlendMode('alpha','premultiplied')
   local a=alpha or 1;g.setColor(a,a,a,a);g.draw(image,field.x,field.y)
  else
-  g.setShader(shader(field,kind,time));g.setColor(1,1,1,alpha or 1)
+  g.setShader(shader(field,kind,time,biome));g.setColor(1,1,1,alpha or 1)
   g.draw(field.image,field.x,field.y,0,field.step,field.step)
  end
  g.pop()
@@ -128,8 +131,10 @@ local function analytic(x,y,w,h,step,signedDistance)
  local image=love.graphics.newImage(data);data:release();image:setFilter('linear','linear')
  return {x=x,y=y,w=iw*step,h=ih*step,step=step,image=image}
 end
-local function transientHole(p,alpha)
- local g=love.graphics;local image=S.transient[p]
+local function transientHole(p,alpha,biome)
+ local g=love.graphics;local cached=S.transient[p]
+ if cached and cached.biome~=biome then cached.image:release();cached=nil end
+ local image=cached and cached.image
  if not image then
   local field=analytic(p.x-64,p.y-56,128,112,1,function(x,y)
    x,y=(x-64)/22,(y-56)/17.16
@@ -137,21 +142,22 @@ local function transientHole(p,alpha)
    local radius=1+.22*math.sin(angle*3+seed)+.13*math.sin(angle*7-seed)
    return (radius-math.sqrt(x*x+y*y))*17.16
   end)
-  image=bake(field);field.image:release();S.transient[p]=image
+  image=bake(field,biome);field.image:release();S.transient[p]={image=image,biome=biome}
  end
  g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied')
  local a=alpha or 1;g.setColor(a,a,a,a)
  g.draw(image,p.x,p.y,0,p.rx/22,p.ry/17.16,64,56);g.pop()
 end
-function S.draw(zones,kind,time,alpha)
- if kind~='hole' then return drawSurface(zones,kind,time,alpha) end
+function S.draw(zones,kind,time,alpha,biome)
+ biome=biome or (Campaign and Campaign.biome) or 2
+ if kind~='hole' then return drawSurface(zones,kind,time,alpha,biome) end
  local fixed={}
  for _,p in ipairs(zones) do
   -- Lightning craters shrink every simulation tick. Never include their radius
   -- in the expensive distance field of the hand-painted, stationary terrain.
-  if p.temporary and not p.points then transientHole(p,alpha)
+  if p.temporary and not p.points then transientHole(p,alpha,biome)
   else fixed[#fixed+1]=p end
  end
- drawSurface(fixed,kind,time,alpha)
+ drawSurface(fixed,kind,time,alpha,biome)
 end
 return S

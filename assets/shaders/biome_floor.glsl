@@ -73,7 +73,27 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   vec3 vapor=mix(vec3(.37,.53,.68),vec3(.78,.87,.93),top);
   vapor+=vec3(.025,.030,.035)*(noise(sky*7.0)-.5);
   c=mix(air,vapor,cloud);
- } else if(biome==3.0 || biome==5.0) {
+ } else if(biome==5.0) {
+  // The meadow's broad, softly blended relief becomes dry underground soil.
+  // Warped sediment, compact clods and mineral grains replace grassy streaks.
+  vec2 soil=p+vec2(fbm(p*3.1+7.0),fbm(p*3.1+31.0))*.27;
+  float bed=fbm(soil*5.5);
+  float clods=fbm(soil*24.0);
+  vec2 position=pixel/dimensions;
+  vec2 center=(position-vec2(.51,.48))*vec2(2.4,2.0);
+  float clearing=exp(-dot(center,center));
+  c=mix(vec3(.105,.062,.035),vec3(.38,.245,.135),smoothstep(.22,.77,bed));
+  c=mix(c,vec3(.49,.335,.195),clearing*(.20+bed*.39));
+  float sediment=sin(soil.x*21.0+soil.y*34.0+fbm(soil*7.0)*18.0)*.5+.5;
+  c+=vec3(.040,.028,.015)*(sediment-.5);
+  c+=vec3(.10,.073,.043)*(clods-.5);
+  vec2 crust=cells(soil*16.0);
+  float cracks=(1.0-smoothstep(.006,.035,crust.y))*smoothstep(.48,.68,clods);
+  c*=1.0-cracks*.24;
+  float grit=pow(noise(soil*vec2(190.0,175.0)),7.0);
+  c+=vec3(.15,.115,.075)*grit;
+  c+=(grain-.5)*.024;
+ } else if(biome==3.0) {
   vec2 flow=p+vec2(fbm(p*2.0),fbm(p*2.0+19.0))*.36;
   float pigment=fbm(flow*18.0)-.5;
   float meadow=fbm(p*4.5);
@@ -87,13 +107,6 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   float tufts=pow(noise(flow*vec2(110.0,55.0)),4.0);
   c+=vec3(.075,.085,.025)*tufts;
   c+=vec3(.045,.055,.025)*pigment;
-  if(biome==5.0) {
-   // Renaissance's exact painted pattern, recolored in warm earth browns.
-   c=mix(vec3(.10,.055,.035),vec3(.32,.18,.09),canopy);
-   c=mix(c,vec3(.58,.40,.23),clearing*(.24+canopy*.48));
-   c+=vec3(.075,.050,.025)*tufts;
-   c+=vec3(.055,.035,.020)*pigment;
-  }
  } else if(biome==2.0 || biome==8.0) {
   float fissure=1.0-smoothstep(.009,.045,cells(p*8.0+terrain).y);
   c=mix(vec3(.055,.028,.030),vec3(.14,.075,.062),terrain)+(grain-.5)*.025;

@@ -63,9 +63,9 @@ local function entity(e,ghost,terrainDrawn)
     elseif e.kind=='tornado' then
         require('tornado_art').draw(Art,e.x,e.y,state.clock,94,ghost and .45 or 1)
     elseif e.kind=='lava' and e.points then
-        if not terrainDrawn then require('lava_zones').draw(e,state.clock,ghost and .5 or 1) end
+        if not terrainDrawn then require('lava_zones').draw(e,state.clock,ghost and .5 or 1,M.world) end
     elseif e.kind=='hole' then
-        if not terrainDrawn then require('terrain_surface').draw({e},'hole',state.clock,ghost and .5 or 1) end
+        if not terrainDrawn then require('terrain_surface').draw({e},'hole',state.clock,ghost and .5 or 1,M.world) end
     elseif e.kind=='rain' then g.setColor(.25,.6,1,.8); for i=-1,1 do g.line(e.x+i*8,e.y-18,e.x+i*8-5,e.y+7) end
     elseif e.kind=='current' then g.setColor(.2,.85,1,.2); g.ellipse('fill',e.x,e.y,e.rx,e.ry); text(e.dx==1 and '>' or '<',e.x-6,e.y-9,18)
     elseif c.art and Art.images[c.art] then
@@ -218,8 +218,8 @@ function love.draw()
             if e.kind=='hole' then holes[#holes+1]=e elseif e.kind=='lava' and e.points then lava[#lava+1]=e end
         end
     end
-    require('terrain_surface').draw(holes,'hole',state.clock)
-    require('lava_zones').drawAll(lava,state.clock)
+    require('terrain_surface').draw(holes,'hole',state.clock,1,M.world)
+    require('lava_zones').drawAll(lava,state.clock,1,M.world)
     if moving then require('brush_preview').draw(moving) end
     if state.stroke then require('brush_preview').draw(state.stroke) end
     for _,e in ipairs(M.layout.entities) do if e.kind~='mob' and e.kind~='boss' and e.kind~='spawn' then entity(e,false,true) end end
