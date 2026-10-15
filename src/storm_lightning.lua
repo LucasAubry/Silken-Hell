@@ -1,7 +1,7 @@
--- Light scatters inside the cloud floor along persistent branching discharges.
+-- Shared encounter light follows persistent branching discharges.
 local L={origin={0,0},size={0,600},events={},life=2.4}
 function L.load()
- L.shader=L.shader or love.graphics.newShader('assets/shaders/sky_cloud_light.glsl')
+ L.shader=L.shader or love.graphics.newShader('assets/shaders/storm_ground_light.glsl')
 end
 function L.reset() L.events={} end
 function L.trigger(x,y,seed)
@@ -24,7 +24,6 @@ function L.draw(x,y,age,life,seed)
  L.shader:send('reach',L.reach(age))
  L.shader:send('fade',math.min(1,(life-age)/math.min(.75,life*.45)))
  L.shader:send('seed',(seed or x+y)%31)
- L.shader:send('cloudFloor',Realms and Realms.floor or UI.pixel)
  L.shader:send('age',age)
  g.push('all');g.setShader(L.shader);g.setColor(1,1,1);g.setBlendMode('add')
  -- The shader uses logical world coordinates, including scaled render canvases.

@@ -453,12 +453,8 @@ function U.worlds() WorldMap.draw() end
 function U.bestiaryIcon(entry,x,y,size)
     g.setColor(1,1,1)
     if entry.electric or entry.id=='electric_gull' then g.setColor(1,.88,.15) end
-    if entry.id=='storm' then
-        require('sky_art').bird('down',x,y,size,U.clock,true)
-    elseif entry.id=='gull' or entry.id=='electric_gull' then
-        require('sky_art').bird('down',x,y,size,U.clock,false,entry.electric or entry.id=='electric_gull')
-    elseif entry.id=='cloud_snare' then
-        g.push('all');g.translate(x,y+size*.3);g.scale(size/90);require('sky_art').tornado({x=0,y=0,cooldown=0},U.clock);g.pop()
+    if entry.id=='cloud_snare' then
+        require('tornado_art').draw(Art,x,y,U.clock,size)
     elseif entry.trapKind then
         require('trap_art').draw(entry.trapKind,x,y,size,entry.world,false)
     elseif entry.id=='earth_tunnel' then

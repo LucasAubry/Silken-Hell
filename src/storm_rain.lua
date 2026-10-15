@@ -26,7 +26,7 @@ function R.draw(drops)
  local g=love.graphics;g.push('all');g.setShader()
  for _,p in ipairs(drops) do
   if Campaign.biome==6 then
-   local light=require('sky_lightning')
+   local light=require('storm_lightning')
    if p.age<R.impact then light.warning(p.x,p.y,math.max(0,p.age/R.impact),R.rx,R.ry)
    end
   else
@@ -51,28 +51,6 @@ function R.draw(drops)
     g.line(p.x+math.cos(angle)*5,p.y+math.sin(angle)*3,p.x+math.cos(angle)*radius,p.y+math.sin(angle)*radius*.5)
    end
   end
-  end
- end
- g.pop()
-end
-function R.ambient(width,height,time,wind)
- local g=love.graphics;g.push('all');g.setShader();g.setBlendMode('alpha')
- local count=math.floor(width*height/(Graphics.quality==1 and 32000 or 20000))
- local slant=18+(wind and wind.x or 0)*.3
- for i=1,count do
-  local layer=i%3;local speed=310+layer*95
-  local x=(i*137.31+time*slant*(1+layer*.2))%width
-  local y=(i*79.73+time*speed)%height;local length=3+layer*2
-  g.setLineWidth(layer==2 and 1 or .6)
-  g.setColor(.1,.22,.32,.04+layer*.015);g.line(x-slant/speed*length,y-length,x,y)
-  g.setColor(.74,.86,.93,.07+layer*.025);g.line(x+1-slant/speed*length,y-length,x+1,y)
- end
- -- Quiet ground splashes are distributed everywhere, not only on lethal sites.
- for i=1,math.floor(count/5) do
-  local age=(time*1.35+i*.173)%1
-  if age<.32 then
-   local x=(i*173.1)%width;local y=(i*97.7)%height;local t=age/.32
-   g.setColor(.71,.84,.92,(1-t)*.10);g.setLineWidth(.6);g.ellipse('line',x,y,1+t*4,.5+t*1.4)
   end
  end
  g.pop()

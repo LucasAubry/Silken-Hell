@@ -5,8 +5,7 @@ function B.update(dt)
     for i=#B.trails,1,-1 do local p=B.trails[i]; p.life=p.life-dt; if p.life<=0 then table.remove(B.trails,i) end end
     for _,m in ipairs(mobs) do
         if not m.ground and m.type~='piege' and m.type~='scie' and not m.abyssHeld and not m.spent and not m.is_frozen and not Realms.underground(m) then
-            local inLava=false
-            for _,p in ipairs(Hazards.lava) do if Hazards.inEllipse(m.x,m.y,p,0) then inLava=true; break end end
+            local inLava=Hazards.inLava(m.x,m.y)
             m.burnTime=inLava and 5 or math.max(0,(m.burnTime or 0)-dt)
             if m.burnTime>0 then
                 m.burnTrail=(m.burnTrail or 0)-dt

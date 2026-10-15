@@ -26,6 +26,7 @@ function C.install()
 end
 function C.select(world) C.world=world; C.biome=Worlds.biome(world,player and player.level or 1); levels=C.data[world] end
 function C.positions(n)
+    if C.biome==6 then return {} end
     if C.biome==1 then
         local points={}
         for _,p in ipairs(C.original[n].larme_position) do
@@ -57,7 +58,7 @@ function C.reset(options)
     player.speed=1; player.original_speed=1; player.is_frozen=false; player.freeze_timer=0; player.reset=false
     player.lastMoveX=0; player.lastMoveY=1
     player.hitBox_width=30; player.hitBox_height=24; player.hitBox_offset_x=0; player.hitBox_offset_y=0
-    local boss=n==10 and (world<=2 or world==5 or world==4 or world==7 or world==6)
+    local boss=n==10 and (world<=2 or world==5 or world==4 or world==7 or (world==6 and Secret.inArena()))
     player.x=Arena.width/2-15; player.y=boss and 505 or (world==1 and Arena.height/2-12 or 265)
     local level={player_position={x=player.x,y=player.y},larme_position=C.positions(n),aureole_position={x=0,y=0}}
     if boss then level.larme_position={{x=Arena.width/2-15,y=280}} end
@@ -85,7 +86,7 @@ function C.reset(options)
         local a=math.atan2(first.y+20-300,first.x+15-Arena.width/2)
         C.lastSide=math.floor((a+math.pi/4)%(2*math.pi)/(math.pi/2))+1
     end
-    objet.larme.abyssHeld=nil; objet.larme.taken=boss; objet.larme_dropped=true
+    objet.larme.abyssHeld=nil; objet.larme.taken=boss or world==6; objet.larme_dropped=true
     if not boss and C.world~=3 and C.world~=8 then
         if world>=4 then Realms.spawn(world,n)
         elseif world==2 then C.spawnHell(n) else
@@ -218,6 +219,7 @@ function C.draw()
     local g=love.graphics; local hell=C.biome==2
     if Secret.inArena() then require('sanctuary_scene').arena(App.hardcore or Worlds.isSecret(C.world))
     else Arena.drawFloor(hell);if C.world==3 then Meadow.draw() end end
+    Hazards.drawFloor()
     require('ocean_scenery').draw()
     C.drawCircles(); Abyss.drawSites()
     if hell and not Secret.inArena() then
@@ -288,7 +290,7 @@ function C.updateTear(dt)
             if m.dir=='up' then dy=-1 elseif m.dir=='left' then dx,dy=-1,0 elseif m.dir=='right' then dx,dy=1,0 end
             objet.larme.x=m.x-15-dx*36; objet.larme.y=m.y-20-dy*36
         end
-    elseif not Bosses.hud().active and not (Abyss and Abyss.active and Abyss.open) and not Raven.active and not Wasp.active and not Hedgehog.active and not Octopus.active and not Storm.active and not (Abyss and Abyss.boss) then select_tp_larme(dt) end
+    elseif #levels[player.level].larme_position>0 and not Bosses.hud().active and not (Abyss and Abyss.active and Abyss.open) and not Raven.active and not Wasp.active and not Hedgehog.active and not Octopus.active and not Storm.active and not (Abyss and Abyss.boss) then select_tp_larme(dt) end
 end
 function C.canCollect()
     local queen=require('final_spider')

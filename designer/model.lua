@@ -28,6 +28,7 @@ function M.select(world,level)
     M.world=world; M.level=M.workshop and 1 or level; M.history={}; M.future={}; M.selected=nil
     local key=M.key()
     M.layout=require('layout_schema').splitAbyss(require('layout_schema').migrate(M.clone(M.drafts[key] or M.applied.levels[key] or (M.workshop and require('workshop_maps').blank(world) or assert(M.defaults.levels[key])))))
+    if not M.workshop and world==6 then require('sky').prepare(M.layout) end
 end
 function M.persist()
     M.drafts[M.key()]=M.clone(M.layout); M.dirty[M.key()]=true

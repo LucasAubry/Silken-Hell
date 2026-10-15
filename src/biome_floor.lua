@@ -45,7 +45,8 @@ function B.draw(world,width,height,time)
     end
     B.surfaces[#B.surfaces+1]=cache;B.cache=cache
     local hz=Graphics and Graphics.backgroundHz() or 60
-    local tick=(world==5 or world==4 and Graphics and not Graphics.effects) and 0 or math.floor((time or 0)*hz)
+    -- The painted infernal ground stays cached; atmosphere and embers animate above it.
+    local tick=(world==2 or world==5 or world==4 and Graphics and not Graphics.effects) and 0 or math.floor((time or 0)*hz)
     if cache.tick~=tick or cache.world~=world then
         local base=world==1 and paradiseBase(cache)
         local previous=g.getCanvas();g.push('all');g.setCanvas(cache.canvas);g.origin();g.setScissor();g.clear();g.setColor(1,1,1)

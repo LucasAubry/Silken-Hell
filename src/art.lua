@@ -171,7 +171,7 @@ function A.load()
     A.add('ocean_coral_wall','assets/environments/ocean/coral-wall.png')
     for _,pose in ipairs({'down','up','profil'}) do
         A.add('player_skin_'..pose,'assets/skins/commun/'..pose..'.png')
-        for _,skin in ipairs({'maxance','cocon'}) do
+        for _,skin in ipairs({'base_marron','maxance','cocon'}) do
             A.add('player_skin_'..skin..'_'..pose,'assets/skins/'..skin..'/'..pose..'.png')
         end
     end
@@ -195,7 +195,7 @@ function A.load()
     for _,name in ipairs({'cloud_snare','ink_splatter'}) do A.add(name,'assets/sprites/'..name..'.png') end
     A.add('skull','assets/textures/hud/death.png'); A.add('clock','assets/textures/hud/time.png')
     A.add('catalog_ange','assets/monstres/paradis/ange/ange_down.png'); A.add('catalog_snake','assets/monstres/paradis/serpent/snake_down.png'); A.add('catalog_trap','assets/monstres/paradis/pieges/piege.png')
-    A.add('original','assets/skins/soie/down.png')
+    A.add('original','assets/skins/base_marron/down.png')
     A.add('earth_tunnel','assets/monstres/terre/taupe/earth_tunnel.png')
     for _,key in ipairs({'skeleton_head','skeleton_open','skeleton_rib','skeleton_spine','skeleton_tail','abyss_fish'}) do A.add(key,'assets/sprites/'..key..'.png') end
     for _,pose in ipairs({'open','closed','dead'}) do A.add('crab_'..pose,'assets/sprites/crab_'..pose..'.png') end
@@ -206,7 +206,6 @@ function A.drawAnemone(x,y,width,height,time)
     require('anemone_art').draw(A.images.electric_anemone,x,y,width,height,time)
 end
 function A.draw(key,x,y,width,angle,height)
-    if key:match('^gull_') then return require('sky_art').bird(key:match('gull_(%a+)'),x,y,width,(UI and UI.clock) or 0) end
     if key=='electric_anemone' then
         local a=A.images[key]
         local h=height or width*a.h/a.w;local time=(UI and UI.clock) or love.timer.getTime()
@@ -217,10 +216,13 @@ function A.draw(key,x,y,width,angle,height)
     if not servants.variant(key) and require('paradise_ink').art(key,x,y,width,angle,height) then return end
     local a=assert(servants.image(key),key)
     local sx=width/a.w; local sy=height and height/a.h or sx
+    if key=='wheel' or key=='wall' or key=='nest' or key=='magma_nest' or key=='final_web_shot' or key=='final_egg' or key:match('^final_egg_crack') then
+        return require('sprite_relief').draw(a,x,y,width,angle,height)
+    end
     if creature(key) then A.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2) end
     local previous=love.graphics.getShader()
-    if key=='black_feather' or key:match('^merle_') or key=='cloud_snare' and Campaign and Campaign.biome==6 then
-        require('paradise_style').bind(a,key=='cloud_snare' and 'cloud' or 'bird')
+    if key=='black_feather' or key:match('^merle_') then
+        require('paradise_style').bind(a,'bird')
     end
     love.graphics.draw(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
     love.graphics.setShader(previous)
@@ -246,14 +248,13 @@ function A.direction(dx,dy,previous)
     return dy>0 and 'down' or 'up'
 end
 function A.drawFacing(name,dir,x,y,size)
-    if name=='gull' then return require('sky_art').bird(dir,x,y,size,(UI and UI.clock) or 0) end
     local key=name..'_'..(dir or 'down');local servants=require('servant_art')
     if not servants.variant(key) and require('paradise_ink').facing(name,dir,x,y,size) then return end
     local a=assert(servants.image(key),key)
     local scale=size/math.max(a.w,a.h)
     if not name:find('spider') then A.shadow(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2) end
     local previous=love.graphics.getShader()
-    if name=='merle' or name=='gull' and Campaign and Campaign.biome==6 then require('paradise_style').bind(a,'bird') end
+    if name=='merle' then require('paradise_style').bind(a,'bird') end
     love.graphics.draw(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
     love.graphics.setShader(previous)
     require('servant_art').web(a,a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)

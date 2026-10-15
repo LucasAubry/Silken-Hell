@@ -31,14 +31,7 @@ local function backdrop()
     if state.background then state.background:release() end
     state.background=g.newCanvas(M.layout.width,600)
     g.push('all'); g.setCanvas(state.background); g.origin(); g.clear(.25,.35,.45)
-    if M.world==6 then
-        if state.sky then
-            state.skyShader=state.skyShader or g.newShader('assets/shaders/sky_floor.glsl')
-            state.skyShader:send('floorSize',{M.layout.width,600})
-            g.setShader(state.skyShader);g.setColor(1,1,1)
-            g.draw(state.sky,0,0,0,M.layout.width/state.sky:getWidth(),600/state.sky:getHeight());g.setShader()
-        else for i=1,140 do g.setColor(.8,.87,.94,.5); g.ellipse('fill',(i*137)%M.layout.width,(i*89)%600,55,33) end end
-    else Biome.draw(M.world,M.layout.width,600,0) end
+    Biome.draw(M.world,M.layout.width,600,0)
     g.setCanvas(); g.pop()
 end
 local function select(w,n)
@@ -58,21 +51,21 @@ local function inside(mx,my)
 end
 local function snapped(v) return state.snap and math.floor(v/10+.5)*10 or math.floor(v+.5) end
 local function brush(e) return e and (e.kind=='hole' or e.kind=='lava') end
-local function entity(e,ghost)
+local function entity(e,ghost,terrainDrawn)
     local c=catalog(e); g.setColor(1,1,1,ghost and .45 or 1)
-    if e.type=='storm' then require('sky_art').bird('down',e.x,e.y,105,state.clock,true);return end
-    if e.kind=='tornado' then require('sky_art').tornado({x=e.x,y=e.y,cooldown=0},state.clock);return end
-    if e.type=='gull' then require('sky_art').bird(e.dir or 'down',e.x,e.y,60,state.clock,false,e.electric);return end
+    if e.kind=='mob' and (e.type=='piege' or e.type=='scie') then require('trap_art').draw(e.type,e.x,e.y,e.type=='scie' and 60 or 52,M.world,false,state.clock);return end
+    if e.kind=='wall' and M.world==5 then
+        g.push('all');g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180)
+        require('earth_rocks').wall({x=-e.w/2,y=-e.h/2,w=e.w,h=e.h});g.pop();return
+    end
     if e.type=='larva' then Art.drawLarva(e.x,e.y,22,0,state.clock);return end
     if e.kind=='wall' then g.push();g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180);g.translate(-e.x,-e.y);g.setColor(.29,.31,.33,ghost and .5 or 1); g.rectangle('fill',e.x-e.w/2,e.y-e.h/2,e.w,e.h); g.setColor(.65,.64,.56); g.rectangle('line',e.x-e.w/2,e.y-e.h/2,e.w,e.h);g.pop()
+    elseif e.kind=='tornado' then
+        require('tornado_art').draw(Art,e.x,e.y,state.clock,94,ghost and .45 or 1)
     elseif e.kind=='lava' and e.points then
-        require('lava_zones').draw(e,state.clock,ghost and .5 or 1)
+        if not terrainDrawn then require('lava_zones').draw(e,state.clock,ghost and .5 or 1) end
     elseif e.kind=='hole' then
-        if e.points then
-            local holes=require('ground_holes')
-            g.setColor(.68,.79,.85,ghost and .5 or 1);holes.draw(e,1.06)
-            g.setColor(.025,.04,.08,ghost and .5 or 1);holes.draw(e)
-        else g.setColor(.025,.04,.08);g.ellipse('fill',e.x,e.y,e.rx,e.ry);g.setColor(.5,.65,.8);g.ellipse('line',e.x,e.y,e.rx,e.ry) end
+        if not terrainDrawn then require('terrain_surface').draw({e},'hole',state.clock,ghost and .5 or 1) end
     elseif e.kind=='rain' then g.setColor(.25,.6,1,.8); for i=-1,1 do g.line(e.x+i*8,e.y-18,e.x+i*8-5,e.y+7) end
     elseif e.kind=='current' then g.setColor(.2,.85,1,.2); g.ellipse('fill',e.x,e.y,e.rx,e.ry); text(e.dx==1 and '>' or '<',e.x-6,e.y-9,18)
     elseif c.art and Art.images[c.art] then
@@ -127,15 +120,13 @@ local function preview()
 
 end
 local function loadArt()
-    local paths={original='assets/skins/soie/down.png',tear_ring='assets/textures/aureole.png',catalog_ange='assets/monstres/paradis/ange/ange_down.png',catalog_snake='assets/monstres/paradis/serpent/snake_down.png',catalog_trap='assets/monstres/paradis/pieges/piege.png'}
+    local paths={original='assets/skins/base_marron/down.png',tear_ring='assets/textures/aureole.png',catalog_ange='assets/monstres/paradis/ange/ange_down.png',catalog_snake='assets/monstres/paradis/serpent/snake_down.png',catalog_trap='assets/monstres/paradis/pieges/piege.png'}
     for _,c in ipairs(C) do if c.art and not Art.images[c.art] then
         local path=paths[c.art] or 'assets/sprites/'..c.art..'.png'
         if not love.filesystem.getInfo(require('asset_paths').resolve(path)) then path='assets/sprites/directional/'..c.art..'.png' end
         Art.add(c.art,path)
     end end
     for _,key in ipairs({'skeleton_spine','skeleton_rib','skeleton_tail'}) do Art.add(key,'assets/sprites/'..key..'.png') end
-    local sky=love.filesystem.getInfo('designer/sky_floor.png') and 'designer/sky_floor.png' or 'sky_floor.png'
-    if love.filesystem.getInfo(sky) then state.sky=require('art_filter').image(sky) end
 end
 function love.load()
     local source=love.filesystem.getSource():gsub('\\','/')
@@ -168,7 +159,7 @@ function love.load()
     if ok and type(templates)=='table' then for _,t in ipairs(templates) do if t.kind=='mob' or t.kind=='boss' then C[#C+1]=t end end end
     state.templates=ok and type(templates)=='table' and templates or {}
     state.editorSound=love.audio.newSource('assets/audio/effects/editeur start.mp3','static');state.editorSound:setVolume(.65);state.editorSound:play()
-    if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require(os.getenv('SILKEN_GROUND_HOLES_TEST')=='1' and 'holes_selftest' or M.projects and 'project_selftest' or M.workshop and 'workshop_selftest' or 'selftest').run(M,state,select,apply,preview) end
+    if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require(os.getenv('SILKEN_EDITOR_DRAWING_TEST')=='1' and 'drawing_selftest' or os.getenv('SILKEN_GROUND_HOLES_TEST')=='1' and 'holes_selftest' or M.projects and 'project_selftest' or M.workshop and 'workshop_selftest' or 'selftest').run(M,state,select,apply,preview) end
 end
 function love.draw()
     if not M then return end
@@ -210,12 +201,29 @@ function love.draw()
     if M.workshop then text(require('workshop_access').biomeNotice,270,148,16,color.muted,w-520) end
     text(Worlds.names[M.world]..(M.workshop and '' or ' / '..string.format('%02d',M.level)),270,174,18)
     if not M.workshop and not M.devMode then text(#M.layout.entities..' objets  ·  '..(M.dirty[M.key()] and 'Brouillon' or 'Version enregistrée'),w-575,178,12,color.muted) end
-    g.push('all'); g.setScissor(x,y,M.layout.width*scale,600*scale); g.translate(x,y); g.scale(scale)
+    -- Render into a map-sized target: even effects which temporarily reset
+    -- the scissor cannot paint into the space around the level.
+    if not state.mapCanvas or state.mapCanvas:getWidth()~=M.layout.width then
+        if state.mapCanvas then state.mapCanvas:release() end
+        state.mapCanvas=g.newCanvas(M.layout.width,600,{dpiscale=1})
+        state.mapCanvas:setFilter('linear','linear')
+    end
+    g.push('all');g.setCanvas(state.mapCanvas);g.origin();g.setScissor();g.setShader();g.clear(0,0,0,0)
     g.setColor(1,1,1); g.draw(state.background)
     if state.grid then g.setColor(1,1,1,.09); for xx=0,M.layout.width,40 do g.line(xx,0,xx,600) end; for yy=0,600,40 do g.line(0,yy,M.layout.width,yy) end end
-    for _,e in ipairs(M.layout.entities) do if e.kind~='mob' and e.kind~='boss' and e.kind~='spawn' then entity(e) end end
+    local holes,lava={},{}
+    local moving=state.drag and M.selected and brush(M.selected) and M.selected.points and M.selected
+    for _,e in ipairs(M.layout.entities) do
+        if e~=moving then
+            if e.kind=='hole' then holes[#holes+1]=e elseif e.kind=='lava' and e.points then lava[#lava+1]=e end
+        end
+    end
+    require('terrain_surface').draw(holes,'hole',state.clock)
+    require('lava_zones').drawAll(lava,state.clock)
+    if moving then require('brush_preview').draw(moving) end
+    if state.stroke then require('brush_preview').draw(state.stroke) end
+    for _,e in ipairs(M.layout.entities) do if e.kind~='mob' and e.kind~='boss' and e.kind~='spawn' then entity(e,false,true) end end
     for _,e in ipairs(M.layout.entities) do if e.kind=='mob' or e.kind=='boss' or e.kind=='spawn' then entity(e) end end
-    if state.stroke then entity(state.stroke,true) end
     if state.tool then local mx,my=love.mouse.getPosition(); local px,py=point(mx,my)
         if inside(mx,my) then
             if brush(state.tool) then g.setColor(color.accent);g.circle('line',px,py,state.brush)
@@ -223,6 +231,8 @@ function love.draw()
         end
     end
     g.pop()
+    g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1)
+    g.draw(state.mapCanvas,x,y,0,scale,scale);g.pop()
     g.setColor(color.line); g.rectangle('line',x,y,M.layout.width*scale,600*scale)
     local right=w-227; text('PROPRIÉTÉS',right,180,12,color.muted)
     local e=M.selected

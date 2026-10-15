@@ -24,7 +24,7 @@ function T.run()
   local pixels=scene:newImageData();pixels:encode('png','sky-overhaul/level-'..level..'.png');pixels:release()
  end
  lighting.apply=apply
- -- Every direction must reveal the new beak inside the original warning lane.
+ -- Every direction must reveal the beak inside the original warning lane.
  local warning=g.newCanvas(Arena.width,600,{dpiscale=1})
  Storm.phase='flightTell';Storm.hidden=true;Storm.trails={};Storm.projectiles={}
  for _,dir in ipairs({'left','right','up','down'}) do
@@ -40,7 +40,7 @@ function T.run()
   pixels:release()
  end
  warning:release()
- print('PASS sky overhaul: normal birds, electrified birds, steering tornado, boss, lightning and three captures; stable simulation and RNG')
+ print('PASS restored Sky: normal birds, electrified birds, steering tornado, boss, lightning and three captures; stable simulation and RNG')
  love.event.quit()
 end
 return T

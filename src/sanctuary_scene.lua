@@ -55,7 +55,7 @@ function R.boss(p,x,y)
   sprite(p,x+210,y);g.pop()
  else sprite(p,x,y) end
 end
-function R.hall(demon)
+local function hallGeometry()
  local g=love.graphics;local w=Arena.width
  g.setColor(.009,.014,.022);g.rectangle('fill',0,0,w,600)
  -- Tall stone arches, recessed alcoves and a perspective processional floor.
@@ -68,6 +68,24 @@ function R.hall(demon)
  g.setColor(.10,.14,.17,.27);g.setLineWidth(1)
  for i=0,12 do g.line(w/2+(i-6)*22,350,(i-2)*w/8,600) end
  for i=1,7 do local y=350+(i/7)^1.8*250;g.line(0,y,w,y) end
+end
+
+-- Bake the distant architecture once; characters, thrones and labels stay crisp.
+function R.hall(demon)
+ local g=love.graphics;local w=Arena.width
+ if R.hallWidth~=w then
+  if R.hallCanvas then R.hallCanvas:release() end
+  R.hallWidth=w;R.hallCanvas=g.newCanvas(w,600);R.hallCanvas:setFilter('linear','linear')
+  local raw=g.newCanvas(w,600);local temp=g.newCanvas(w,600)
+  local previous=g.getCanvas();g.push('all');g.origin();g.setScissor();g.setShader()
+  g.setCanvas(raw);g.clear();hallGeometry()
+  R.blurShader=R.blurShader or g.newShader('assets/shaders/soft_background.glsl')
+  g.setShader(R.blurShader);g.setColor(1,1,1);g.setBlendMode('replace','premultiplied')
+  g.setCanvas(temp);g.clear();R.blurShader:send('stepUV',{1.35/w,0});g.draw(raw)
+  g.setCanvas(R.hallCanvas);g.clear();R.blurShader:send('stepUV',{0,1.35/600});g.draw(temp)
+  g.setCanvas(previous);g.pop();raw:release();temp:release()
+ end
+ g.push('all');g.setShader();g.setColor(1,1,1);g.draw(R.hallCanvas);g.pop()
  R.fog(false,demon)
 end
 -- Static veins: stable between encounters and independent of gameplay RNG.

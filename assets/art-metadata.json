@@ -331,11 +331,11 @@
     "h": 969
   },
   "assets/monstres/ciel/merle_noir/cloud_snare.png": {
-    "w": 992,
-    "x": 156,
-    "y": 158,
-    "fileSize": 636276,
-    "h": 944
+    "w": 1120,
+    "x": 97,
+    "y": 43,
+    "fileSize": 977364,
+    "h": 1149
   },
   "assets/monstres/abysse/poisson_lanterne/lanternfish_right.png": {
     "w": 840,
@@ -387,11 +387,11 @@
     "fileSize": 1024122
   },
   "assets/monstres/enfer/larve/magma_nest.png": {
-    "w": 1052,
-    "x": 241,
-    "y": 170,
-    "fileSize": 1157145,
-    "h": 729
+    "w": 1184,
+    "x": 149,
+    "y": 141,
+    "fileSize": 1008792,
+    "h": 815
   },
   "assets/monstres/abysse/pieuvre/abyss_octopus.png": {
     "w": 1034,
@@ -584,25 +584,25 @@
     "fileSize": 980929
   },
   "assets/monstres/ciel/oiseau/gull_up.png": {
-    "w": 1319,
-    "x": 109,
-    "y": 136,
-    "fileSize": 1111999,
-    "h": 757
+    "w": 573,
+    "x": 27,
+    "y": 161,
+    "fileSize": 232341,
+    "h": 394
   },
   "assets/monstres/ciel/oiseau/gull_down.png": {
-    "w": 1412,
-    "x": 62,
-    "y": 135,
-    "fileSize": 1209613,
-    "h": 771
+    "w": 576,
+    "x": 26,
+    "y": 190,
+    "fileSize": 244076,
+    "h": 371
   },
   "assets/monstres/ciel/oiseau/gull_left.png": {
-    "w": 809,
-    "x": 385,
-    "y": 68,
-    "fileSize": 1024482,
-    "h": 903
+    "w": 501,
+    "x": 78,
+    "y": 67,
+    "fileSize": 196048,
+    "h": 424
   },
   "assets/skins/royale/down.png": {
     "x": 45,
@@ -612,11 +612,11 @@
     "fileSize": 988980
   },
   "assets/monstres/ciel/oiseau/gull_right.png": {
-    "w": 808,
-    "x": 369,
-    "y": 41,
-    "fileSize": 1022623,
-    "h": 940
+    "w": 501,
+    "x": 48,
+    "y": 67,
+    "fileSize": 197705,
+    "h": 424
   },
   "assets/skins/royale/profil.png": {
     "w": 1147,

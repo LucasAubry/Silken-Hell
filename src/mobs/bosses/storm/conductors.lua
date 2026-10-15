@@ -42,7 +42,7 @@ function C.discharge(s,p)
  s.charges=0;s.overload=0;p.cooldown=3
  s.projectiles={};s.strikes={};s.boltsRemaining=0
  BossFX.burst(s.x,s.y,{.5,.85,1},2)
- if Campaign.biome==6 then require('sky_lightning').trigger(s.x,s.y,s.round) end
+ if Campaign.biome==6 then require('storm_lightning').trigger(s.x,s.y,s.round) end
  if s.hp==0 then s.finish() else
   s.fallSide=p.x<Arena.width*.5 and 0 or 1;s.setPhase('flightTell')
  end
@@ -72,7 +72,7 @@ function C.update(s,dt)
  if s.charges==3 then
   s.overload=math.max(0,s.overload-dt)
   if s.overload<=0 then
-   if Campaign.biome==6 then require('sky_lightning').trigger(player.x+15,player.y+12,s.round) end
+   if Campaign.biome==6 then require('storm_lightning').trigger(player.x+15,player.y+12,s.round) end
    Hazards.kill('lightning')
   end
  end

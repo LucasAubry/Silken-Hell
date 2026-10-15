@@ -4,13 +4,14 @@
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         NSString *project = [NSBundle.mainBundle.bundlePath stringByDeletingLastPathComponent];
-        NSString *script = [project stringByAppendingPathComponent:@"Lancer Silken Hell.command"];
+        NSString *scriptName = [NSBundle.mainBundle objectForInfoDictionaryKey:@"SilkenLaunchScript"] ?: @"Lancer Silken Hell.command";
+        NSString *script = [project stringByAppendingPathComponent:scriptName];
         NSFileManager *fm = NSFileManager.defaultManager;
         if (![fm fileExistsAtPath:script]) {
             [NSApplication sharedApplication];
             NSAlert *alert = [[NSAlert alloc] init];
             alert.messageText = @"Installation de Silken Hell manquante";
-            alert.informativeText = @"Place ce bouton dans le dossier du projet, à côté de « Lancer Silken Hell.command ».";
+            alert.informativeText = [NSString stringWithFormat:@"Place ce bouton dans le dossier du projet, à côté de « %@ ».", scriptName];
             [alert addButtonWithTitle:@"OK"];
             [NSApp activateIgnoringOtherApps:YES];
             [alert runModal];

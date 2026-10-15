@@ -12,6 +12,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('flag', help='Test selector, e.g. SILKEN_ABYSS_INTRO_TEST')
     parser.add_argument('--editor', action='store_true')
+    parser.add_argument('--archive', type=Path,
+                        help='Test this already-built edition without rebuilding it.')
     parser.add_argument('--reuse-package', action='store_true',
                         help='Test the last packaged archive without rebuilding it.')
     args = parser.parse_args()
@@ -21,7 +23,10 @@ def main():
         parser.error('Expected a SILKEN_*_TEST selector.')
     root = Path(__file__).resolve().parents[1]
     cache = Path.home() / 'Library/Application Support/Silken Hell'
-    if not args.reuse_package:
+    if args.archive:
+        if not args.archive.is_file():
+            parser.error('The requested edition archive does not exist.')
+    elif not args.reuse_package:
         subprocess.run([sys.executable, str(root / 'tools/package.py')], check=True)
     elif not (cache / 'Silken Hell.love').is_file():
         parser.error('No packaged archive exists; run without --reuse-package first.')
@@ -34,7 +39,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='test-', dir=cache) as folder:
         folder = Path(folder)
         archive = folder / 'test.love'
-        shutil.copyfile(cache / 'Silken Hell.love', archive)
+        shutil.copyfile(args.archive or cache / 'Silken Hell.love', archive)
         stdout, stderr = folder / 'stdout.log', folder / 'stderr.log'
         mode = 'SILKEN_DESIGNER_TEST' if args.editor else 'SILKEN_TEST'
         command = ['open', '-g', '-j', '-n', '-W', '-a', str(runtime),

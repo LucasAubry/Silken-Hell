@@ -1,6 +1,6 @@
 local FX=require 'mobs.bosses.encounter_fx'
 local S={active=false,playerFeatherRadius=17}
-local Rain=require 'sky_rain'
+local Rain=require 'storm_rain'
 local Conductors=require 'mobs.bosses.storm.conductors'
 local STRIKE_RADIUS=22
 local BODY_SIZE=150
@@ -168,7 +168,7 @@ function S.update(dt)
  for i=#S.strikes,1,-1 do local p=S.strikes[i];local previous=p.age;p.age=p.age+dt
   if p.age>=STRIKE_WARNING and not p.struck then
    p.struck=true
-   if Campaign.biome==6 then require('sky_lightning').trigger(p.x,p.y,p.seed) else BossFX.burst(p.x,p.y,{.65,.8,1},1) end
+   if Campaign.biome==6 then require('storm_lightning').trigger(p.x,p.y,p.seed) else BossFX.burst(p.x,p.y,{.65,.8,1},1) end
    S.holes[#S.holes+1]={x=p.x,y=p.y,age=0,r=STRIKE_RADIUS,seed=p.seed}
   end
   if p.age>=STRIKE_WARNING and previous<1.2 then
@@ -206,7 +206,9 @@ local function sprite(dir)
  return Art.images[key] and key or 'merle_'..dir
 end
 local function bird(dir,x,y)
- require('sky_art').bird(dir,x,y,BODY_SIZE,S.clock,true,S.electric)
+ local key=sprite(dir);local a=Art.images[key];local scale=BODY_SIZE/math.max(a.w,a.h)
+ local flap=math.sin(S.clock*14)*.025
+ Art.draw(key,x,y,a.w*scale*(1+flap),0,a.h*scale*(1-flap))
 end
 function S.drawGround()
 
@@ -215,7 +217,7 @@ function S.drawGround()
  Conductors.draw(S)
  for _,p in ipairs(S.strikes) do if p.age>=0 then
   if Campaign.biome==6 then
-   local light=require('sky_lightning')
+   local light=require('storm_lightning')
    if p.age<.85 then light.warning(p.x,p.y,p.age/.85,STRIKE_RADIUS,STRIKE_RADIUS)
    end
   elseif p.age<.85 then
@@ -243,21 +245,20 @@ function S.drawGround()
  g.pop()
 end
 function S.previewPose()
- local tip=BODY_SIZE*44/110
+ local a=Art.images[sprite(S.dir)];local scale=BODY_SIZE/math.max(a.w,a.h);local w,h=a.w*scale,a.h*scale
  local x,y=S.x,S.y;local cx,cy,cw,ch
- if S.dir=='right' then x=45-tip;cx,cy,cw,ch=22,S.y-24,32,48
- elseif S.dir=='left' then x=Arena.width-45+tip;cx,cy,cw,ch=Arena.width-54,S.y-24,32,48
- elseif S.dir=='down' then y=45-tip;cx,cy,cw,ch=x-24,22,48,32
- else y=555+tip;cx,cy,cw,ch=x-24,546,48,32 end
+ if S.dir=='right' then x=52-w/2;y=y-h*.27;cx,cy,cw,ch=22,S.y-24,32,48
+ elseif S.dir=='left' then x=Arena.width-52+w/2;y=y-h*.27;cx,cy,cw,ch=Arena.width-54,S.y-24,32,48
+ elseif S.dir=='down' then y=52-h/2;cx,cy,cw,ch=x-24,22,48,32
+ else y=548+h/2;cx,cy,cw,ch=x-24,546,48,32 end
  return x,y,cx,cy,cw,ch
 end
 function S.visibleBounds()
  if not S.active or S.defeated then return end
  if S.phase=='flightTell' then local _,_,x,y,w,h=S.previewPose();return x,y,w,h end
  if S.hidden then return end
- local side=S.dir=='left' or S.dir=='right'
- local w,h=BODY_SIZE*(side and .8 or 1.1),BODY_SIZE*(side and 1.1 or .8)
- return S.x-w/2,S.y-h/2,w,h
+ local a=Art.images[sprite(S.dir)];local scale=(BODY_SIZE+5)/math.max(a.w,a.h)
+ return S.x-a.w*scale/2,S.y-a.h*scale/2,a.w*scale,a.h*scale
 end
 function S.draw()
 
@@ -280,7 +281,7 @@ function S.draw()
  for _,p in ipairs(S.projectiles) do
   local angle=math.atan2(p.vy,p.vx);local dx,dy=math.cos(angle),math.sin(angle)
   g.setColor(.3,.65,1,.18);g.setLineWidth(2);g.line(p.x-dx*24,p.y-dy*24,p.x,p.y)
-  g.setColor(1,1,1);require('sky_art').feather(p.x,p.y,angle,32)
+  g.setColor(1,1,1);Art.draw('black_feather',p.x,p.y,32,angle)
  end
  g.pop()
 end

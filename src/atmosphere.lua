@@ -56,7 +56,7 @@ function A.draw()
     if Campaign.world==3 then return end
     if Graphics and not Graphics.effects then return end
     local world=Campaign.world==3 and 3 or Campaign.biome
-    if world==7 then return end -- Abyss light also drives gameplay and keeps its own renderer.
+    if world==6 or world==7 then return end -- Abyss light also drives gameplay and keeps its own renderer.
     local g=love.graphics; local t=UI.clock; local c=palettes[world] or palettes[1]
     g.push('all'); g.setShader(); g.setColor(1,1,1)
     local settings=A.settings(world,player.level)
@@ -94,11 +94,11 @@ function A.draw()
     end
     g.setBlendMode('add')
     -- Bounded, deterministic motes: no growing particle arrays or per-frame random state.
-    local count=(world==1 or world==5 or world==6) and 0 or world==4 and 28 or 76
+    local count=(world==1 or world==5) and 0 or world==4 and 28 or 76
     for i=1,count do
         local seed=i*2.39996323+settings.seed
         local speed=world==2 and 17 or world==4 and 7 or 3
-        local x=(i*137.31+settings.seed*23+math.sin(t*.17+seed)*15+t*(world==6 and 9 or 1.5))%Arena.width
+        local x=(i*137.31+settings.seed*23+math.sin(t*.17+seed)*15+t*1.5)%Arena.width
         local y=(i*79.73+settings.seed*47-t*speed+math.sin(t*.23+seed)*8)%600
         local pulse=.3+.7*(.5+.5*math.sin(seed+t*.8))
         local alpha=(world==1 and .28 or .48)*pulse

@@ -154,15 +154,24 @@ function F.trap(target)
  if target==player then F.snare=2.1;F.escapeTaps={} else target.webbed=true end
  local p=target==player and playerPoint() or target;F.chargeX=p.x;F.chargeY=p.y
 end
+function F.pressure()
+ return F.hp<=4 and 3 or F.hp<=8 and 2 or 1
+end
+function F.shotInterval() return ({.55,.49,.44})[F.pressure()] end
 function F.shoot()
  local p=playerPoint();local angle=math.atan2(p.y-F.y,p.x-F.x)
  F.angle=angle-math.pi/2
  F.volley=(F.volley or 0)+1
- local count=({1,2,1,3})[(F.volley-1)%4+1]
+ local stage=F.pressure()
+ local pattern=stage==1 and {1,2,1,3} or stage==2 and {2,3,1,3} or {3,2,3,4}
+ local count=pattern[(F.volley-1)%4+1]
+ local speed=460+(stage-1)*25
+ -- Alternating fans leave a side to dodge instead of tracking after launch.
+ local sweep=stage>1 and (F.volley%2==0 and .055 or -.055) or 0
  for i=1,count do
-  local a=angle+(i-(count+1)/2)*.19
+  local a=angle+sweep+(i-(count+1)/2)*.20
   local dx,dy=math.cos(a),math.sin(a)
-  F.webs[#F.webs+1]={x=F.x+dx*23,y=F.y+dy*23,vx=dx*460,vy=dy*460}
+  F.webs[#F.webs+1]={x=F.x+dx*23,y=F.y+dy*23,vx=dx*speed,vy=dy*speed,age=0}
  end
 end
 function F.wallWeb(x,y)
@@ -172,7 +181,7 @@ end
 function F.updateWebs(dt)
  if grieving() then return end
  local p=playerPoint()
- for i=#F.webs,1,-1 do local w=F.webs[i];local xx,yy=w.x+w.vx*dt,w.y+w.vy*dt
+ for i=#F.webs,1,-1 do local w=F.webs[i];w.age=(w.age or 0)+dt;local xx,yy=w.x+w.vx*dt,w.y+w.vy*dt
   local victim,first=nil,2
   for _,b in ipairs(F.babies) do if not b.dead and not b.webbed then local hit,t=segment(w.x,w.y,xx,yy,b,19);if hit and t<first then victim=b;first=t end end end
   local hit,t=segment(w.x,w.y,xx,yy,p,21);if hit and t<first and F.webGrace<=0 then victim=player end
@@ -283,17 +292,17 @@ local function updateBehavior(dt)
   if F.phaseTime>=.65+F.batch*.34 and F.batch<8 then F.layEgg() end
   if F.batch>=8 or F.phaseTime>4.5 then F.phase='webs';F.phaseTime=0;F.shot=.5 end
  else
-  if F.phaseTime>6 and #F.babies+#F.eggs<29 then
+  if F.phaseTime>6-(F.pressure()-1)*.5 and #F.babies+#F.eggs<29 then
    F.phase='lay';F.phaseTime=0;F.wave=F.wave+1;F.batch=0
    if F.carried<8 then F.carried=24 end
    Escape.beginLay(F)
   else
    F.shot=F.shot-dt
-   if F.shot<=0 then F.shoot();F.shot=.5 end
+   if F.shot<=0 then F.shoot();F.shot=F.shotInterval() end
    local webbed;for _,b in ipairs(F.babies) do if b.webbed and not b.dead then webbed=b;break end end
    if webbed then F.trap(webbed)
    else
-    towards(F,Arena.width*.5+math.sin(F.clock*.5)*Arena.width*.18,175+math.cos(F.clock*.65)*45,90*F.surge,dt)
+    towards(F,Arena.width*.5+math.sin(F.clock*.5)*Arena.width*.18,175+math.cos(F.clock*.65)*45,(100+(F.pressure()-1)*10)*F.surge,dt)
     -- Keep aiming at the player while strafing between web shots.
     F.angle=math.atan2(p.y-F.y,p.x-F.x)-math.pi/2
    end
@@ -391,7 +400,12 @@ function F.draw()
  g.push();g.translate(F.x,F.y-F.jumpHeight);g.scale(1+pulse*.045+breath,1-pulse*.045-breath*.55)
  F.spider(0,0,62,'queen',facing,F)
  ArtSet.clutch(0,0,62,F.carried,facing);F.drawGriefTear(facing);g.pop()
- for _,w in ipairs(F.webs) do g.setColor(1,1,1);ArtSet.draw('web_shot',w.x,w.y,32,math.atan2(w.vy,w.vx)) end
+ for _,w in ipairs(F.webs) do
+  local a=math.atan2(w.vy,w.vx);local dx,dy=math.cos(a),math.sin(a)
+  g.setShader();g.setColor(.18,.24,.12,.3);g.setLineWidth(4);g.line(w.x-dx*17+2,w.y-dy*17+5,w.x+2,w.y+5)
+  g.setColor(.88,.94,.73,.7);g.setLineWidth(1.2);g.line(w.x-dx*17,w.y-dy*17,w.x,w.y)
+  g.setColor(1,1,1);ArtSet.draw('web_shot',w.x,w.y,32,a)
+ end
  Escape.draw(F)
  if F.gate then
   local x=Arena.width*.5;g.setColor(1,1,1);ArtSet.draw('web_gate',x,50,104,0,125)

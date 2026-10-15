@@ -1,6 +1,5 @@
 extern vec2 origin;
 extern vec2 floorSize;
-extern Image cloudFloor;
 extern number reach;
 extern number fade;
 extern number seed;
@@ -23,8 +22,8 @@ vec4 effect(vec4 color, Image tex, vec2 uv, vec2 screen) {
   float endcap=max(max(-along,along-reach),0.);
   d=min(d,length(vec2(cross,endcap)));
  }
- // Broad, irregular scattering through the cloud material, without a drawn core.
- float density=dot(Texel(cloudFloor,uv).rgb,vec3(.299,.587,.114));
+ // Broad scattering on the encounter floor, without a drawn core.
+ float density=noise(world*.019+7.);
  float width=mix(65.,230.,cloud);
  float scattered=exp(-d*d/width)*.19+exp(-d*d/(width*3.))* .085;
  float transmission=mix(.55,1.15,smoothstep(.35,.8,density));

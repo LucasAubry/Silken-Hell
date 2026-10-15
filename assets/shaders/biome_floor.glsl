@@ -31,6 +31,19 @@ vec2 cells(vec2 p) {
  }
  return vec2(sqrt(first),sqrt(second)-sqrt(first));
 }
+float cloudPuffs(vec2 p) {
+ vec2 base=floor(p),f=fract(p);
+ float mass=0.0;
+ // Overlapping rounded lobes, with no stretched grass-like grain.
+ for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++) {
+  vec2 cell=vec2(float(x),float(y)),id=base+cell;
+  vec2 center=vec2(.22)+vec2(hash(id),hash(id+vec2(31,73)))*.56;
+  vec2 d=(cell+center-f)*vec2(1.0,1.18);
+  float radius=.30+hash(id+vec2(14,5))*.20;
+  mass+=exp(-dot(d,d)/(radius*radius))*(.75+hash(id+19.)*.35);
+ }
+ return mass;
+}
 vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
  vec2 p=pixel/dimensions.y;
  float grain=noise(p*350.0), terrain=fbm(p*7.0);
@@ -49,7 +62,18 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
    c+=vec3(.065,.14,.13)*shaft*(1.0-pixel.y/dimensions.y*.55)+vec3(.14,.22,.18)*glimmer*.3;
   }
   if(biome==7.0) c=mix(vec3(.009,.018,.035),vec3(.035,.085,.12),terrain)+vec3(.035,.07,.09)*caustic*.17;
- } else if(biome==3.0 || biome==5.0 || biome==6.0) {
+ } else if(biome==6.0) {
+  // Soft cloud banks drift across blue gaps; rounded tops catch pearly light.
+  vec2 drift=vec2(clock*.009,-clock*.003);
+  vec2 sky=p*3.8+drift;
+  float mass=cloudPuffs(sky)+cloudPuffs(sky*1.85+vec2(7.4,3.1))*.24;
+  float cloud=smoothstep(.23,.86,mass);
+  float top=clamp((cloudPuffs(sky+vec2(-.07,.13))-cloudPuffs(sky-vec2(-.07,.13)))*1.8+.5,0.0,1.0);
+  vec3 air=mix(vec3(.10,.23,.38),vec3(.24,.42,.59),terrain);
+  vec3 vapor=mix(vec3(.37,.53,.68),vec3(.78,.87,.93),top);
+  vapor+=vec3(.025,.030,.035)*(noise(sky*7.0)-.5);
+  c=mix(air,vapor,cloud);
+ } else if(biome==3.0 || biome==5.0) {
   vec2 flow=p+vec2(fbm(p*2.0),fbm(p*2.0+19.0))*.36;
   float pigment=fbm(flow*18.0)-.5;
   float meadow=fbm(p*4.5);
@@ -71,19 +95,23 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
    c+=vec3(.055,.035,.020)*pigment;
   }
  } else if(biome==2.0) {
-  // Broad fractured volcanic plates, cut by thin dark seams and red heat.
-  vec2 rock=p*7.8+vec2(fbm(p*3.1),fbm(p*3.1+17.))*.60;
-  vec2 fracture=cells(rock);
-  float seam=1.-smoothstep(.012,.055,fracture.y);
-  float bevel=smoothstep(.018,.09,fracture.y);
-  float layers=sin(p.x*52.+p.y*34.+fbm(p*10.)*5.);
-  float grit=noise(p*185.);
-  c=mix(vec3(.18,.012,.025),vec3(.47,.045,.055),fbm(p*12.));
-  c*=.78+bevel*.22;
-  c+=vec3(.055,.008,.012)*layers+vec3(.025,.009,.012)*(grit-.5);
-  c=mix(c,vec3(.045,.006,.014),seam*.82);
-  float heat=exp(-fracture.y*65.)*smoothstep(.42,.73,noise(p*9.));
-  c+=vec3(.34,.025,.012)*heat*(.85+.15*sin(clock*.7+p.y*9.));
+  // Renaissance's soft pigment washes, with scorched islands instead of moss.
+  vec2 ground=p+vec2(8.7,3.2);
+  vec2 flow=ground+vec2(fbm(ground*2.0),fbm(ground*2.0+19.0))*.36;
+  float pigment=fbm(flow*18.0)-.5;
+  float scorch=smoothstep(.25,.76,fbm(ground*4.5));
+  vec2 position=pixel/dimensions;
+  vec2 warm=(position-vec2(.38,.40))*vec2(2.8,2.3);
+  vec2 reflected=(position-vec2(.76,.72))*vec2(3.8,3.1);
+  float emberLight=exp(-dot(warm,warm))*.78+exp(-dot(reflected,reflected))*.42;
+  c=mix(vec3(.075,.033,.038),vec3(.38,.095,.065),scorch);
+  c=mix(c,vec3(.62,.19,.095),emberLight*(.24+scorch*.48));
+  // Broken soot flecks and matte ash replace the meadow's directional grass.
+  float cinders=pow(noise(flow*vec2(76.0,83.0)),4.0);
+  float ash=smoothstep(.54,.76,fbm(flow*11.0));
+  c=mix(c,vec3(.24,.16,.145),ash*.20);
+  c+=vec3(.065,.027,.018)*cinders;
+  c+=vec3(.055,.027,.022)*pigment;
  } else if(biome==8.0) {
   float fissure=1.0-smoothstep(.009,.045,cells(p*8.0+terrain).y);
   c=mix(vec3(.055,.028,.030),vec3(.14,.075,.062),terrain)+(grain-.5)*.025;

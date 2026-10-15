@@ -50,9 +50,19 @@ function E.create(engine,R)
  env._G=env;env.arg={};env.math=copy(math);env.love=copy(host)
  env.love.math=copy(host.math);env.love.filesystem=copy(host.filesystem);env.love.graphics=copy(host.graphics)
  local fs,g=env.love.filesystem,env.love.graphics
- local function imageData(path)
+ local metadata=json.decode(E.source(engine,'assets/art-metadata.json') or E.source(engine,'art-metadata.json') or '{}')
+ E.spriteHistory=E.spriteHistory or json.decode(host.filesystem.read('assets/replay_engines/sprite-history.json') or '{}')
+ local function archivedImage(path)
   local key=engine.images and engine.images[path]
-  return key and host.filesystem.read('assets/replay_engines/images/'..key..'.png')
+  if key then return 'assets/replay_engines/images/'..key..'.png' end
+  local resolved=native('asset_paths').resolve(path)
+  local meta=metadata[path] or metadata[resolved]
+  local versions=E.spriteHistory[resolved]
+  return versions and meta and versions[tostring(meta.fileSize)]
+ end
+ local function imageData(path)
+  local file=archivedImage(path)
+  return file and host.filesystem.read(file)
  end
  local function read(path)return E.source(engine,path) or imageData(path) or host.filesystem.read(path)end
  fs.read=read
@@ -120,12 +130,12 @@ function E.create(engine,R)
  env.UI.fonts=UI.fonts;env.UI.fallbackFonts=UI.fallbackFonts;env.UI.pixel=UI.pixel;env.UI.shader=UI.shader
  env.font_demon=font_demon
  local add=env.Art.add
- local metadata=json.decode(read('assets/art-metadata.json') or read('art-metadata.json') or '{}')
  env.Art.add=function(key,path)
-  local present=Art.images[key]
+  local archived=archivedImage(path)
+  local present=not archived and Art.images[key]
   if not present then
    E.artCache=E.artCache or {}
-   local cacheKey=(engine.images and engine.images[path] or engine.build..path)..':'..key
+   local cacheKey=(archived or engine.build..path)..':'..key
    if not E.artCache[cacheKey] then add(key,path);E.artCache[cacheKey]=env.Art.images[key] end
    env.Art.images[key]=copy(E.artCache[cacheKey]);return
   end

@@ -6,13 +6,8 @@ local function point(i) return 365+math.sin((i-1)*1.35)*115,heights[i] end
 local function camera(i) return math.max(0,math.min(1270,heights[i]-370)) end
 function M.select(n,i)
     if not Worlds.canEnter(n) then return false end
-    M.route=M.route or {}
-    if M.hardcore then
-        local x,y=point(M.target or 1)
-        M.route[#M.route+1]={x=x,y=y,holdCamera=true}
-    end
     M.hardcore=false;UI.boardHardcore=false
-    local x,y=point(i);M.route[#M.route+1]={x=x,y=y}
+    local x,y=point(i);M.route={{x=x,y=y}};M.arrival=nil
     App.selectedWorld=n;UI.boardWorld=n;M.target=i;M.viewIndex=i;M.scrollTarget=camera(i)
     return true
 end
@@ -21,8 +16,8 @@ function M.branch(hardcore,silent)
     if hardcore and not (App.selectedWorld==8 and Worlds.canEnter(8)) and not Hardcore.available(App.selectedWorld) then return false end
     if (M.hardcore==true)==hardcore then return true end
     M.hardcore=hardcore;UI.boardHardcore=hardcore;if not silent then Audio.play('go') end
-    local x,y=point(M.target or 1);M.route=M.route or {}
-    M.route[#M.route+1]={x=x+(hardcore and 165 or 0),y=y}
+    local x,y=point(M.target or 1)
+    M.route={{x=x+(hardcore and 165 or 0),y=y}};M.arrival=nil
     return true
 end
 function M.open()

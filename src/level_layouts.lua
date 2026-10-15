@@ -39,6 +39,7 @@ function L.snapshot()
             put('boss',{x=b.origin.x,y=b.origin.y,skeletonStage=b.skeletonStage,movementRate=b.movementRate,attackRate=b.attackRate},b.headOnly and 'skeleton_head' or 'skeleton_fish')
         else put('boss',b,item.kind) end
     end
+    if Campaign.world==6 then out.skyRevision=1 end
     return out
 end
 function L.read()
@@ -78,6 +79,27 @@ function L.spawn(e)
     if m.type=='scie' then setup_rotor(m) elseif m.type=='spinner' then setup_spinner(m) end
     if m.imgs then m.img=m.imgs.down or m.imgs.up end
     if kind=='ange' or kind=='snake' then require('mobs.shared.floating').hitbox(m) end
+end
+-- Older campaign drafts can omit every tear. Keep Hell completable without
+-- changing authored positions, Workshop maps or the deliberately empty Ciel.
+local function restoreHellTear(tears)
+    if #tears>0 or Campaign.carrier or Campaign.world~=2 or App.sessionLayout or Secret.inArena() then return end
+    local best,distance
+    for y=70,510,20 do for x=60,Arena.width-90,20 do
+        local d=(x+15-Arena.width*.5)^2+(y+20-300)^2
+        local clear=(not distance or d<distance) and not Arena.blocked(x-12,y-10,54,60)
+        if clear then
+            for dy=-10,50,10 do for dx=-12,42,9 do
+                if Hazards.inLava(x+dx,y+dy,0) then clear=false end
+            end end
+        end
+        local fromPlayer=(x-player.x)^2+(y-player.y)^2
+        if clear and fromPlayer>90^2 then
+            for _,m in ipairs(mobs) do if (x+15-m.x)^2+(y+20-m.y)^2<65^2 then clear=false;break end end
+        else clear=false end
+        if clear and (not distance or d<distance) then best={x=x,y=y};distance=d end
+    end end
+    if best then tears[1]=best end
 end
 function L.apply(layout)
     if not layout or type(layout.entities)~='table' then return false end
@@ -126,8 +148,9 @@ function L.apply(layout)
     if abyssBoss then
         for i=#mobs,1,-1 do if mobs[i].type=='light_jelly' or mobs[i].type=='abyss_fish' or mobs[i].type=='lanternfish' then table.remove(mobs,i) end end
     end
+    restoreHellTear(tears)
     local boss=Bosses.alive()
-    objet.larme.taken=boss
+    objet.larme.taken=boss or (#tears==0 and not Campaign.carrier)
     local p=tears[1] or {x=Arena.width/2-15,y=280}; objet.larme.x=p.x; objet.larme.y=p.y; larme_indexes[player.level]=1
     levels[player.level].player_position={x=player.x,y=player.y}
     Arena.navigationVersion=(Arena.navigationVersion or 0)+1
@@ -137,6 +160,10 @@ MobBehaviors.waspling=require('mobs.waspling')
 MobBehaviors.larva=require('mobs.larva')
 MobBehaviors.blackbird_chick=require('mobs.blackbird_chick')
 function L.applyCurrent()
-    return L.apply(L.read()[Campaign.world..':'..player.level])
+    local layout=L.read()[Campaign.world..':'..player.level]
+    if layout and Campaign.world==6 and not App.sessionLayout and not (Replay and Replay.playing) then
+        layout=require('sky').prepare(layout)
+    end
+    return L.apply(layout)
 end
 return L

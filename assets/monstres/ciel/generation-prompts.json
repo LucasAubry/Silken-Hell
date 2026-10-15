@@ -1,0 +1,24 @@
+{
+  "tool": "Built-in image_gen",
+  "spriteSheet": "exec-209f29f6-ddb9-44af-a8ce-56be01f3cdaf.png",
+  "preparation": "Split the gull sheet into four equal quadrants without editing its RGBA pixels. Tornado copied unchanged. Alpha bounds and pixel-art metadata updated.",
+  "assets": [
+    "assets/monstres/ciel/oiseau/gull_down.png",
+    "assets/monstres/ciel/oiseau/gull_up.png",
+    "assets/monstres/ciel/oiseau/gull_left.png",
+    "assets/monstres/ciel/oiseau/gull_right.png",
+    "assets/monstres/ciel/merle_noir/cloud_snare.png"
+  ],
+  "prompts": [
+    "Use case: stylized-concept. Production transparent PNG sprite sheet for Silken Hell, a dark fantasy overhead 2D pixel-art game. References are style references, not objects to copy verbatim. Redesign the seagull enemy as an eerie coastal gull with a compact bone-white body, narrow angular head, charcoal hooked beak, small amber eyes, slate grey wings with black ragged feather tips, subtle weathered feather texture. Match the second reference's bold dark pixel outlines and restrained ivory/grey shaded pixel clusters. Much less majestic eagle, no gold armor, no jewelry, no glowing aura. Exactly four complete isolated sprites in an evenly spaced 2x2 grid, one bird per quadrant centered with ample transparent margin. Top-left: flying toward bottom of screen, wings out, head below body. Top-right: flying toward top of screen, back and tail visible, head above body. Bottom-left: side view flying left, beak at left. Bottom-right: side view flying right, beak at right. Same creature and consistent proportions in all four views; readable at 75 pixels wide in game. Hard pixel art edges, feather clusters and ink-dark outlines, no painterly softness, no smooth vector aesthetic, no 3D. Full transparency including gaps between feathers. No background, no ground shadow, no lettering, no grid lines. Output square PNG.",
+    "Use case: stylized-concept. Asset type: single transparent game sprite for Silken Hell, overhead dark fantasy pixel art. Reference is only for the pixel cluster detail, outline quality and restrained colors. Create ONE wind vortex seen from directly above, an irregular spiral of twisting ivory and desaturated storm-grey cloud ribbons around a small dark transparent central eye. Elegant sharp sweeping wind hooks and torn wisps, an asymmetric spiral with 3 curled arms and smaller trailing fragments, neither a fluffy donut nor a front-view funnel. Bold near-black slate outlines and deep blue-grey creases, off-white highlights, tiny sparse pale blue accents. Slightly menacing hand-drawn pixel-art aesthetic, readable at 90 pixels wide. Designed to rotate in place in a top-down game; central eye exactly centered. Crisp pixel clusters, flat limited palette, no airbrush, no excessive bloom. Isolated centered complete sprite with generous transparent margin. True transparent PNG, transparent central hole and gaps between wisps, no scenery, no cast shadow, no letters or border."
+  ],
+  "edits": [
+    {
+      "asset": "assets/monstres/ciel/merle_noir/cloud_snare.png",
+      "tool": "Built-in image_gen",
+      "generated": "exec-7d9153e0-b393-4661-9b35-3af01d3b3653.png",
+      "prompt": "Use case: precise-object-edit. Edit the supplied Silken Hell tornado sprite. Keep the same overhead three-armed wind spiral, central transparent eye, fragments, pixel-art texture, framing and silhouette. Remove ALL black and near-black ink outlines and black bands, including the dark internal contour lines. Replace those dark regions with medium desaturated blue-grey cloud shading. Use ivory highlights, pale grey-blue ribbons and soft slate-blue midtones, never black or navy. The outer edges must be defined only by their cloud colors, with no dark stroke. Do not add glow, scenery, shadow, text or new objects. Preserve a true transparent background and transparent gaps. This is a usable 2D game PNG asset, not a mockup."
+    }
+  ]
+}

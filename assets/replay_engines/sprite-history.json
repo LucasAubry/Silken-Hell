@@ -1,0 +1,18 @@
+{
+  "assets/monstres/ciel/oiseau/gull_up.png": {
+    "1111999": "assets/replay_engines/replaced/ff352b8447a3640ac33b1397f2e29347c1526e80.png"
+  },
+  "assets/monstres/ciel/oiseau/gull_down.png": {
+    "1209613": "assets/replay_engines/replaced/734985d6f98d3017fc7a3c616baa8993225a892f.png"
+  },
+  "assets/monstres/ciel/oiseau/gull_left.png": {
+    "1024482": "assets/replay_engines/replaced/7ed5062f96f0e92cddaaab1fcda32aac4bcce601.png"
+  },
+  "assets/monstres/ciel/oiseau/gull_right.png": {
+    "1022623": "assets/replay_engines/replaced/59c209cce2daa0c154ffd68bc41ed82db8f89bb2.png"
+  },
+  "assets/monstres/ciel/merle_noir/cloud_snare.png": {
+    "636276": "assets/replay_engines/replaced/f5fe6cf452b4817f85ce244fa0d0e18a7942b888.png",
+    "919954": "assets/replay_engines/replaced/876476c8ecf23109fff31d0983ec332a76abfc49.png"
+  }
+}

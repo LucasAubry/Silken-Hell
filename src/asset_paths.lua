@@ -1,9 +1,10 @@
 -- Asset locations. Old paths remain resolvable for procedural loaders and older tools.
 local paths={
+ ["assets/textures/background_paradie.png"]="assets/environments/paradis/background_paradie.png",
  ["assets/sprites/abyss_fish.png"]="assets/monstres/abysse/poisson/abyss_fish.png",
  ["assets/sprites/abyss_octopus.png"]="assets/monstres/abysse/pieuvre/abyss_octopus.png",
  ["assets/sprites/black_feather.png"]="assets/monstres/ciel/merle_noir/black_feather.png",
- ["assets/sprites/brown-selection.png"]="assets/skins/soie/down.png",
+ ["assets/sprites/brown-selection.png"]="assets/skins/base_marron/down.png",
  ["assets/sprites/cloud_snare.png"]="assets/monstres/ciel/merle_noir/cloud_snare.png",
  ["assets/sprites/crab_closed.png"]="assets/monstres/ocean/crabe/crab_closed.png",
  ["assets/sprites/crab_dead.png"]="assets/monstres/ocean/crabe/crab_dead.png",
@@ -141,9 +142,9 @@ local paths={
  ["texture/mob/snake_left.png"]="assets/monstres/paradis/serpent/snake_left.png",
  ["texture/mob/snake_right.png"]="assets/monstres/paradis/serpent/snake_right.png",
  ["texture/mob/snake_up.png"]="assets/monstres/paradis/serpent/snake_up.png",
- ["texture/spider_down.png"]="assets/skins/soie/down.png",
- ["texture/spider_left.png"]="assets/skins/soie/profil.png",
- ["texture/spider_right.png"]="assets/skins/soie/profil.png",
- ["texture/spider_up.png"]="assets/skins/soie/up.png",
+ ["texture/spider_down.png"]="assets/skins/base_marron/down.png",
+ ["texture/spider_left.png"]="assets/skins/base_marron/profil.png",
+ ["texture/spider_right.png"]="assets/skins/base_marron/profil.png",
+ ["texture/spider_up.png"]="assets/skins/base_marron/up.png",
 }
 return {paths=paths,resolve=function(path) return paths[path] or path end}

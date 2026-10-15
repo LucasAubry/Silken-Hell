@@ -4,6 +4,10 @@ Jeu d’esquive en Lua avec LÖVE 11.5, éditeur de niveaux et classements/Works
 
 ## Lancer le jeu
 
+- **Deux versions sur macOS** : `Silken Hell - Ancienne version.app` lance la version du commit `d26399c`, avant les nouveaux décors Renaissance/Terre. `Silken Hell - New deccors.app` lance les nouveaux fonds et l’araignée marron peinte, depuis la branche `new-deccors`. Les deux boutons sont à la racine du projet et ne changent jamais de branche Git.
+- Les archives sont séparées dans `dist/versions/` et copiées dans des caches distincts hors du Bureau au lancement. Les sauvegardes/progrès du jeu restent partagés. Le bouton habituel `Jouer à Silken Hell.app` continue de lancer la dernière construction locale.
+- Reconstruction des deux versions : `python3 tools/package_versions.py` depuis `new-deccors`. `python3 tools/package.py` met aussi à jour le bouton New deccors sur cette branche et conserve l’ancienne version. Reconstruction des boutons : `python3 tools/build_version_buttons.py`.
+
 - **macOS** : double-cliquer **Jouer à Silken Hell.app** ou **Lancer Silken Hell.command**.
 - **Windows 10/11** : installer [LÖVE 11.5](https://love2d.org), puis ouvrir **Lancer Silken Hell.cmd**. Le lanceur cherche aussi `runtime/love.exe`.
 - **Linux** : installer LÖVE 11.5 et `curl`, puis lancer `./Lancer Silken Hell.sh`. La variable `SILKEN_LOVE` peut désigner un autre exécutable LÖVE.

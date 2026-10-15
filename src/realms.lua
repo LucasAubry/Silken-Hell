@@ -1,5 +1,5 @@
 local EarthMound=require 'earth_mound'
-local R={clouds={},rain={},current={},clock=0,schools={},bolts={},eggs={},larvae={},holes={},rainSites={}}
+local R={rain={},current={},clock=0,schools={},bolts={},eggs={},larvae={},holes={},rainSites={}}
 local function add(kind,x,y,speed,elite)
     if kind=='fish' then
         local school={age=#R.schools*.45,angle=0,members={}}
@@ -45,21 +45,16 @@ function R.spawn(w,n)
         if n>=3 then add('worm',650,120,90) end
         if n>=4 then add('mole',180,470,116) end
         if n>=7 then add('worm',400,100,110) end
-    elseif w==6 then
-        add('gull',110,110+a,122+n*5); add('gull',650,450-a,115+n*5)
-        add('gull',400,100,115+n*4)
-        if n>=4 then add('gull',650,110,135) end
-        if n>=7 then add('gull',160,470,150) end
     end
 end
 function R.reset(w,n)
-    R.custom=false; R.world=w; R.level=n; R.clock=0; R.tunnels={}; R.tornadoes={}; player.whirl=nil; player.throw=nil; player.skyWhirl=nil; player.skyThrow=nil; player.tunnelLock=false; player.tunnelTravel=nil; R.fireflies={};R.starPrevious=nil; R.wind={x=0,y=0,time=0,stage=0,tx=0,ty=0}; R.clouds={}; R.rain={}; R.rainClock=.25; R.current={}
-    R.electricTrails={}; R.bolts={}; R.eggs={}; R.larvae={}; R.holes={}; R.rainSites={}; R.rainWave=0; R.vents={}; R.lightning={}; R.lightningClock=.35; player.illuminated=0
-    require('sky_lightning').reset()
-    if w<4 then return end
+    R.custom=false; R.world=w; R.level=n; R.clock=0; R.tunnels={}; R.tornadoes={}; player.whirl=nil; player.throw=nil; player.skyWhirl=nil; player.skyThrow=nil; player.tunnelLock=false; player.tunnelTravel=nil; R.fireflies={};R.starPrevious=nil; R.rain={}; R.rainClock=.25; R.current={}
+    R.electricTrails={}; R.bolts={}; R.eggs={}; R.larvae={}; R.holes={}; R.rainSites={}; R.rainWave=0; R.vents={}; player.illuminated=0
+    require('storm_lightning').reset()
+    if w<4 or w==6 then return end
     -- Reuse the ocean floor across deaths instead of releasing a GPU canvas
     -- that may still be referenced by the previous frame.
-    local density=w==6 and math.max(1,math.min(3,love.graphics.getPixelHeight()/600)) or 1
+    local density=1
     if not R.floor or R.floor:getWidth()~=Arena.width or math.abs(R.floor:getDPIScale()-density)>.001 then
         R.floor=love.graphics.newCanvas(Arena.width,600,{dpiscale=density})
     end
@@ -88,21 +83,7 @@ function R.reset(w,n)
             g.setColor(.36,.22,.1); g.rectangle('fill',x,y,5+i%5,3)
             if i%4==0 then g.setColor(.11,.065,.035); g.line(x,y,x+7,y+12,x+4,y+21) end
         end
-    else
-        for _,p in ipairs({{.24,220},{.76,405}}) do R.tornadoes[#R.tornadoes+1]={x=Arena.width*p[1],y=p[2],cooldown=0} end
-        g.clear(.045,.105,.125)
-        g.setColor(.43,.57,.60); g.rectangle('fill',28,28,Arena.width-56,544,22)
-        -- Bake the Paradise-style cloud material once; actors remain crisp above it.
-        R.cloudShader=R.cloudShader or g.newShader('assets/shaders/sky_floor.glsl')
-        R.cloudShader:send('floorSize',{Arena.width,600})
-        g.setShader(R.cloudShader);g.setColor(1,1,1)
-        g.draw(UI.pixel,0,0,0,Arena.width,600);g.setShader()
-        require('sky_art').floor()
-        for row=1,4 do for col=1,6 do
-            R.rainSites[#R.rainSites+1]={x=Arena.width*(.12+(col-1)*.15),y=95+(row-1)*130,phase=(row+col+n)%3}
-        end end
     end
-    if w==6 and n==10 then R.holes={}; R.rainSites={}; R.tornadoes={} end
     g.setCanvas(); g.pop()
 end
 function R.makeTunnels()
@@ -151,7 +132,7 @@ function R.updateTraversal(dt)
         for _,m in ipairs(mobs) do if not m.ground and m.type~='piege' then R.traverse(m,dt,false) end end
         for _,m in ipairs(R.larvae) do R.traverse(m,dt,false) end
     end
-    if Campaign.biome==6 or R.custom then
+    if R.custom then
         for _,t in ipairs(R.tornadoes) do t.cooldown=math.max(0,t.cooldown-dt) end
         if player.whirl then
             local w=player.whirl; w.time=w.time-dt; local a=R.clock*18
@@ -192,22 +173,20 @@ function R.update(dt)
     if Campaign.biome<4 and not R.custom then return end
     if Campaign.biome==5 then R.rain={};R.rainSites={} end
     R.clock=R.clock+dt
-    if Campaign.biome==6 then R.updateSkyImpacts(dt) end
+    R.updateImpacts(dt)
     R.updateTraversal(dt)
     if Campaign.biome==5 or R.custom then R.separateEarth() end
     if Abyss.active then Abyss.update(dt) end
-    if Campaign.biome==6 or R.custom then
+    if R.custom then
         R.updateElectricTrails(dt)
-        R.updateLightning(dt)
-        if Campaign.biome==6 then R.updateWind(dt) end
         R.rainClock=R.rainClock-dt
-        if Campaign.biome~=6 and not R.skyBossPresent() and (R.level>=5 or R.custom) and R.rainClock<=0 then
+        if Campaign.biome~=6 and not R.stormPresent() and (R.level>=5 or R.custom) and R.rainClock<=0 then
             R.rainClock=math.max(.55,.95-R.level*.035); R.rainWave=R.rainWave+1
             for _,p in ipairs(R.rainSites) do if p.phase==R.rainWave%3 then
                 R.rain[#R.rain+1]={x=p.x,y=p.y,age=0}
             end end
         end
-        if Campaign.biome==6 then R.rain={} else require('sky_rain').update(R.rain,dt) end
+        require('storm_rain').update(R.rain,dt)
     end
     if Campaign.biome==4 or Campaign.biome==7 or R.custom then
         for _,school in ipairs(R.schools) do
@@ -226,20 +205,18 @@ function R.update(dt)
     R.updateFireflies(dt)
     R.contact()
 end
-function R.skyBossPresent()
+function R.stormPresent()
     if Storm.active then return true end
     for _,item in ipairs(Bosses.items) do if item.kind=='storm' then return true end end
     return false
 end
--- Cloud material restored from 335e89f; painted holes retain their edge cuts.
-function R.floorTexture() return R.floor end
-function R.skyBossActive()
+function R.stormActive()
     if Storm.active and not Storm.defeated then return true end
     for _,item in ipairs(Bosses.items) do if item.kind=='storm' and not item.boss.defeated then return true end end
     return false
 end
-function R.updateSkyImpacts(dt)
-    require('sky_lightning').update(dt)
+function R.updateImpacts(dt)
+    require('storm_lightning').update(dt)
     for i=#R.holes,1,-1 do
         local p=R.holes[i]
         if p.temporary then
@@ -251,29 +228,8 @@ function R.updateSkyImpacts(dt)
     end
 end
 function R.lightningImpact(x,y,seed)
-    require('sky_lightning').trigger(x,y,seed)
+    require('storm_lightning').trigger(x,y,seed)
     R.holes[#R.holes+1]={x=x,y=y,rx=22,ry=17.16,age=0,temporary=true,seed=seed or x+y}
-end
-function R.updateLightning(dt)
-    if R.skyBossActive() then R.lightning={};return end
-    if Aftermath.cleared then R.lightning={};return end
-    if Campaign.biome~=6 then R.lightning={}; return end
-    R.lightningClock=R.lightningClock-dt
-    if R.lightningClock<=0 then
-        R.lightningClock=math.max(1.25,2.5-R.level*.085)+love.math.random()*.35
-        local gulls={}; for _,m in ipairs(mobs) do if m.type=='gull' and not m.dead then gulls[#gulls+1]=m end end
-        if #gulls>0 then local m=gulls[love.math.random(#gulls)]; R.lightning[#R.lightning+1]={x=m.x,y=m.y,age=0,target=m} end
-    end
-    for i=#R.lightning,1,-1 do local p=R.lightning[i]; p.age=p.age+dt
-        if p.age<.8 and p.target then p.x,p.y=p.target.x,p.target.y end
-        if p.age>=.8 and not p.struck then
-            p.struck=true
-            R.lightningImpact(p.x,p.y,p.x+p.y)
-            require('sky_rain').electrify(p.x,p.y,45)
-            if (player.x+15-p.x)^2+(player.y+12-p.y)^2<34^2 then Hazards.kill() end
-        end
-        if p.age>1.15 then table.remove(R.lightning,i) end
-    end
 end
 function R.separateEarth()
     for pass=1,8 do
@@ -292,25 +248,6 @@ function R.separateEarth()
             end
         end
     end
-end
-function R.updateWind(dt)
-    if R.skyBossActive() then R.wind.x=0;R.wind.y=0;return end
-    local w=R.wind; w.time=w.time-dt
-    if w.time<=0 then
-        w.stage=w.stage+1
-        local strength=({45,115,0,75,150,0})[(w.stage-1)%6+1]
-        local angle=love.math.random()*math.pi*2
-        w.tx,w.ty=math.cos(angle)*strength,math.sin(angle)*strength
-        w.time=3+love.math.random()*3
-    end
-    local blend=1-math.exp(-dt*1.7)
-    if w.tx==0 and w.ty==0 then w.x,w.y=0,0
-    else w.x=w.x+(w.tx-w.x)*blend; w.y=w.y+(w.ty-w.y)*blend end
-    if not player.is_frozen and not player.reset and not player.whirl then Arena.move(player,w.x*dt,w.y*dt) end
-    for _,m in ipairs(mobs) do if not m.ground and m.type~='piege' and not m.is_frozen then
-        Arena.move(m,w.x*dt*.85,w.y*dt*.85)
-        if m.type=='gull' then R.containGull(m) end
-    end end
 end
 function R.containGull(m)
     local lo,hi,top,bottom=48,Arena.width-48,48,552
@@ -350,18 +287,13 @@ function R.updateElectricTrails(dt)
         elseif R.trailTouches(p,player.x+15,player.y+12) then Hazards.kill() end
     end
 end
-function R.drawWind(width,height)
-    if Campaign.biome~=6 then return end
-    require('sky_art').wind(width or Arena.width,height or 600,R.clock,R.wind)
-end
 function R.speed()
     return 1
 end
 function R.fallAt(x,y)
-    if Campaign.biome~=6 and not R.custom then return false end
+    if not R.custom and not R.stormActive() then return false end
     if Storm.holeAt and Storm.holeAt(x,y) then return true end
     for _,item in ipairs(Bosses.items) do if item.kind=='storm' and item.boss.holeAt(x,y) then return true end end
-    if Campaign.biome==6 and (x<=40 or x>=Arena.width-40 or y<=38 or y>=562) then return true end
     for _,p in ipairs(R.holes) do
         if p.points then
             if require('ground_holes').contains(p,x,y) then return true end
@@ -568,15 +500,12 @@ function R.drawGround()
         g.setColor(1,.94,.35,.95*alpha); g.setLineWidth(1.5); g.line(p.x,p.y,mx+j,my-j,p.tx,p.ty)
     end
     g.setLineWidth(1)
-    if Campaign.biome==6 then require('sky_lightning').drawAll() end
-    for _,p in ipairs(R.lightning or {}) do
-        if p.age<.8 then require('sky_lightning').warning(p.x,p.y,p.age/.8,30,15) end
-    end
+    require('storm_lightning').drawAll()
     g.setLineWidth(1)
     for _,t in ipairs(R.tunnels) do
         EarthMound.draw(t.x,t.y)
     end
-    for _,t in ipairs(R.tornadoes) do require('sky_art').tornado(t,R.clock) end
+    for _,t in ipairs(R.tornadoes) do require('tornado_art').draw(Art,t.x,t.y,R.clock,94) end
     if Campaign.biome==4 or Campaign.biome==7 or R.custom then
         for _,c in ipairs(R.current) do
             g.setColor(.2,.75,.85,.18)
@@ -591,17 +520,9 @@ function R.drawGround()
             g.setColor(1,1,1); Art.drawAnemone(p.x,p.y,p.rx*2+14,p.ry*2+24,R.clock)
         end
     end
-    if Campaign.biome==6 or R.custom then
-        require('sky_rain').draw(R.rain)
-        for _,p in ipairs(R.holes) do
-            g.setColor(.66,.76,.71); R.drawHole(p,1.19)
-            g.setColor(.18,.32,.38); R.drawHole(p,1.08)
-            -- Receding irregular ledges darken toward the bottom of the chasm.
-            for depth=0,10 do
-                local t=depth/10; g.setColor(.16*(1-t)+.02,.25*(1-t)+.045,.32*(1-t)+.07)
-                g.push(); g.translate(0,t*7); R.drawHole(p,1-t*.48); g.pop()
-            end
-        end
+    if R.custom then
+        require('storm_rain').draw(R.rain)
+        require('terrain_surface').draw(R.holes,'hole',R.clock)
     end
     -- Pulse warnings and digging tracks stay below all creatures.
     for _,m in ipairs(mobs) do
@@ -646,16 +567,7 @@ function R.drawWall(r)
             (horizontal and r.h or r.w)+4)
         return
     end
-    if w==5 then
-        local horizontal=r.w>=r.h;local length=horizontal and r.w or r.h;local thickness=horizontal and r.h or r.w
-        local count=math.max(1,math.ceil(length/math.max(40,thickness*3)));local span=length/count
-        for i=1,count do
-            local x=horizontal and r.x+(i-.5)*span or r.x+r.w/2
-            local y=horizontal and r.y+r.h/2 or r.y+(i-.5)*span
-            g.setColor(1,1,1);Art.draw('cave_wall',x,y,span+3,horizontal and 0 or math.pi/2,thickness)
-        end
-        return
-    end
+    if w==5 then return require('earth_rocks').wall(r) end
     if w==4 or w==7 then
         local c=w==4 and {.36,.78,.72} or {.34,.4,.7};g.setColor(c)
         local horizontal=r.w>=r.h

@@ -2,9 +2,8 @@ local A={}
 local ambienceFiles={
     [2]='assets/audio/ambience/hell-fire.mp3',
     [3]='assets/audio/ambience/renaissance-birds.mp3',
-    [6]='assets/audio/ambience/sky-rain.mp3',
 }
-local ambienceVolumes={[6]=.1}
+local ambienceVolumes={}
 local eventFiles={
     notice='assets/audio/effects/progression/notice.mp3',
     inkStep='assets/audio/effects/ocean/ink-step.mp3',

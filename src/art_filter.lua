@@ -5,6 +5,7 @@ function F.binaryAlpha(path)
  return path and ((F.pixelArt[path] and F.pixelArt[path].binaryAlpha) or path:match('^assets/skins/commun/') or path:match('^assets/skins/integrated/') or path:match('^assets/skins/accessoires/') or path:match('^assets/skins/maxance/') or path:match('^assets/skins/cocon/'))~=nil
 end
 function F.mode(path)
+ if path and path:match('^assets/skins/base_marron/') then return 'linear' end
  if F.pixelArt[path] or F.binaryAlpha(path) then return 'nearest' end
  return path and (path:match('^assets/skins/') or path:match('^assets/ui/achievements/')) and 'nearest' or 'linear'
 end

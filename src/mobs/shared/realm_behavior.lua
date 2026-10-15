@@ -29,10 +29,6 @@ local function update(m,dt)
     if dangerous and isTouching(player,m) then Hazards.kill() end
 end
 local function draw(m)
-    if m.type=='gull' then
-        require('sky_art').bird(m.dir,m.x,m.y,m.elite and 95 or 75,m.age,false,m.electric,math.floor(m.speed or 0))
-        return
-    end
     local phase,amount=R.molePhase(m.age)
     if m.type=='gull' and m.electric then
         local g=love.graphics; g.setColor(1,.78,.05,.18); g.circle('fill',m.x,m.y,30)

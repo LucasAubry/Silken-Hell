@@ -388,18 +388,13 @@ function love.draw()
         -- The arena normally covers the desktop. Render its backdrop only
         -- when letterboxing or camera shake actually exposes it.
         if x>.5 or y>.5 or shakeX~=0 or shakeY~=0 then
-            if App.state=='playing' and Campaign.world==6 then
-                local backdrop=Realms.floorTexture()
-                local fill=math.max(w/backdrop:getWidth(),h/backdrop:getHeight())
-                love.graphics.setColor(1,1,1)
-                love.graphics.draw(backdrop,(w-backdrop:getWidth()*fill)/2,(h-backdrop:getHeight()*fill)/2,0,fill,fill)
-            else BiomeFloor.draw(App.state=='bossWorld' and 8 or (Campaign.world==3 and 3 or Campaign.biome),w,h,UI.clock) end
+            BiomeFloor.draw(App.state=='bossWorld' and 8 or (Campaign.world==3 and 3 or Campaign.biome),w,h,UI.clock)
         end
         love.graphics.setColor(1,1,1)
         local psychedelic=App.state=='playing' and Psyche.bind()
         if not psychedelic and Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
         love.graphics.draw(sceneCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale); love.graphics.setShader()
-        if App.state=='playing' then Realms.drawWind(w,h); Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
+        if App.state=='playing' then Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
     elseif App.state=='skinUnlock' then
         love.graphics.clear(.008,.015,.027)
     elseif App.state=='credits' then
@@ -635,11 +630,11 @@ function love.resize(w,h)
     end
     for _,b in ipairs(Ocean.bubbles) do b.x=b.x*ratio end
     if Campaign.biome>=4 or custom then
-        local wind=Realms.wind; local illuminated=player.illuminated; local lightning=Realms.lightning; local lightningClock=Realms.lightningClock
+        local illuminated=player.illuminated
         local rain,clock,bolts,eggs,larvae=Realms.rain,Realms.clock,Realms.bolts,Realms.eggs,Realms.larvae
         for _,list in ipairs({rain,bolts,eggs,larvae}) do for _,p in ipairs(list) do p.x=p.x*ratio end end
         Realms.reset(Campaign.biome,(Campaign.world==3 or Worlds.isSecret(Campaign.world)) and 10 or player.level); Realms.custom=custom
-        Realms.wind=wind; Realms.rain=rain; Realms.clock=clock; Realms.bolts=bolts; Realms.eggs=eggs; Realms.larvae=larvae
+        Realms.rain=rain; Realms.clock=clock; Realms.bolts=bolts; Realms.eggs=eggs; Realms.larvae=larvae
         if custom then
             for key,list in pairs(zones) do for _,p in ipairs(list) do require('ground_holes').resize(p,ratio) end; Realms[key]=list end
         end
@@ -647,7 +642,7 @@ function love.resize(w,h)
             Abyss.resize(ratio)
         end
         Ocean.relayout()
-        player.illuminated=illuminated; Realms.lightning=lightning; Realms.lightningClock=lightningClock
+        player.illuminated=illuminated
         if Abyss.giant then Abyss.buildBones() end
     end
     local spit=player.abyssSpit; if spit then spit.fromX=spit.fromX*ratio; spit.toX=spit.toX*ratio end

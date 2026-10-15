@@ -8,6 +8,39 @@ function T.run(M,state,select,apply,preview)
     -- Shared sprite rendering must not require the game's Art global.
     assert(_G.Art==nil)
     for _,layout in pairs(M.defaults.levels) do select(layout.world,layout.level);love.draw() end
+    if os.getenv('SILKEN_TERRAIN_ART_TEST')=='1' then
+        local H=require('ground_holes');local tick=0
+        local function scene(world)
+            select(world,1);state.grid=false
+            local kind=world==6 and 'hole' or 'lava'
+            M.layout.entities={
+                H.stroke({90,190,165,135,260,160,295,230,230,300,130,285,90,200},24,kind),
+                H.stroke({240,255,310,320,395,300,465,350},27,kind),
+                {kind='spawn',x=610,y=450},
+            }
+            if world==6 then
+                M.layout.entities[#M.layout.entities+1]={kind='mob',type='gull',x=600,y=200}
+                M.layout.entities[#M.layout.entities+1]={kind='tornado',x=700,y=330}
+            else
+                M.layout.entities[#M.layout.entities+1]={kind='wall',x=190,y=205,w=150,h=26}
+                M.layout.entities[#M.layout.entities+1]={kind='wall',x=390,y=310,w=26,h=100,rotation=30}
+            end
+            state.stroke=H.stroke({65,440,130,410,200,440,260,420},18,kind)
+            love.draw()
+        end
+        state.testUpdate=function()
+            tick=tick+1
+            if tick==1 then scene(2) end
+            if tick==2 then love.graphics.captureScreenshot('designer-terrain-lava.png') end
+            if tick==3 then scene(6) end
+            if tick==4 then love.graphics.captureScreenshot('designer-terrain-hole.png') end
+            if tick==5 then
+                print('PASS editor terrain: 66 layouts, joined brush strokes, live brush preview, lava, holes, gulls and tornadoes without game globals')
+                love.event.quit()
+            end
+        end
+        return
+    end
     if os.getenv('SILKEN_PIXEL_ART_TEST')=='1' then
         select(5,9)
         local tick=0

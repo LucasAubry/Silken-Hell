@@ -13,7 +13,7 @@ local function pulse(time,seed)
 end
 function L.collect()
  L.lights={}
- -- All Abyss levels keep their original lights, particles and darkness contrast.
+ -- Abyss lighting also controls gameplay visibility and keeps its own renderer.
  if not Graphics.effects or App.state=='playing' and (Campaign.biome==7 or Abyss.playerHidden() or Abyss.encounterActive()) then return L.lights end
  if App.state=='bossWorld' or Secret.inArena() then
   require('biome_radiance').sources(add,UI.clock);return L.lights
@@ -24,7 +24,7 @@ function L.collect()
   add(p.x,p.y,110+(p.power or 3)*25,math.max(0,1-p.age/.4)^2*.95,p.color)
  end
  for _,p in ipairs(Magma.bursts or {}) do add(p.x,p.y,190,math.max(0,1-p.age/.38),fire) end
- for _,p in ipairs(require('sky_lightning').events) do
+ for _,p in ipairs(require('storm_lightning').events) do
   add(p.x,p.y,430,math.max(0,1-p.age/.55)*.85,{.65,.79,1})
  end
  local function storm(boss)

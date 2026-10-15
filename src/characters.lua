@@ -37,7 +37,7 @@ C.silkPalettes[7].iris={1,.94,.06}
 C.silkPalettes[13].markings={1,.34,.08}
 C.silkPalettes[13].iris={1,.49,.15}
 function C.material(index) return C.materials[index] or C.silkPalettes[index] end
-C.customSprites={[14]='maxance',[23]='cocon'}
+C.customSprites={[1]='base_marron',[14]='maxance',[23]='cocon'}
 for index,name in pairs(require('integrated_skins').names) do C.customSprites[index]=name end
 -- Retired Braise ID stays readable in old scores/replays, using Cendre artwork.
 C.customSprites[3]='cendre';C.names[3]='Cendre'
@@ -172,7 +172,11 @@ function C.portrait(index,x,y,size,dir,locked,walk,marineOverlay)
     local g=love.graphics;g.push('all')
     local key=C.model(dir,index)
     local a=Art.images[key];local pose=dir=='right' and 'left' or dir
-    if C.customSprites[index] or index==12 then
+    if index==1 then
+        -- Soie's painted PNGs already contain their brown body and amber eyes.
+        g.setShader()
+        if locked then require('locked_art').bind() end
+    elseif C.customSprites[index] or index==12 then
         -- Keep each custom source and accessories, with the same softened ink finish.
         C.customSkinShader=C.customSkinShader or g.newShader('assets/shaders/custom_skin_material.glsl')
         C.customSkinShader:send('brownBody',index==8)
