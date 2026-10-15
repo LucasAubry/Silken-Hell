@@ -40,6 +40,9 @@ function R.spawn(w,n)
             add('lanternfish',220,240,42); add('lanternfish',570,350,48)
             if n>=5 then add('lanternfish',390,130,46) end
         end
+    elseif w==6 then
+        add('dragonfly',190,160,90);add('mist_moth',580,420,55)
+        if n>=5 then add('dragonfly',600,150,100) end
     elseif w==5 then
         add('worm',120,120+a,78+n*3.5); add('mole',650,450-a,98+n*3.5)
         if n>=3 then add('worm',650,120,90) end
@@ -47,44 +50,20 @@ function R.spawn(w,n)
         if n>=7 then add('worm',400,100,110) end
     end
 end
-function R.reset(w,n)
+function R.reset(w,n,authored)
     R.custom=false; R.world=w; R.level=n; R.clock=0; R.tunnels={}; R.tornadoes={}; player.whirl=nil; player.throw=nil; player.skyWhirl=nil; player.skyThrow=nil; player.tunnelLock=false; player.tunnelTravel=nil; R.fireflies={};R.starPrevious=nil; R.rain={}; R.rainClock=.25; R.current={}
     R.electricTrails={}; R.bolts={}; R.eggs={}; R.larvae={}; R.holes={}; R.rainSites={}; R.rainWave=0; R.vents={}; player.illuminated=0
     require('storm_lightning').reset()
     if w<4 or w==6 then return end
-    -- Reuse the ocean floor across deaths instead of releasing a GPU canvas
-    -- that may still be referenced by the previous frame.
-    local density=1
-    if not R.floor or R.floor:getWidth()~=Arena.width or math.abs(R.floor:getDPIScale()-density)>.001 then
-        R.floor=love.graphics.newCanvas(Arena.width,600,{dpiscale=density})
-    end
-    local g=love.graphics; g.push('all'); g.setCanvas(R.floor); g.clear(Worlds.color(w).floor)
+    -- BiomeFloor owns the visible terrain. The old tile canvas was never drawn,
+    -- yet repainting it at every death synchronized the GPU unnecessarily.
     if w==4 or w==7 then
-        for y=0,600,24 do for x=0,Arena.width,32 do
-            local v=(x*7+y*3)%19/150
-            g.setColor(w==7 and {.035+v*.3,.055+v*.4,.16+v} or {.025,.18+v,.25+v}); g.rectangle('fill',x+2,y+2,28,20)
-        end end
-        for i=1,48 do local x=(i*83)%Arena.width; local y=(i*61)%600
-            g.setColor(w==7 and {.23,.32,.7} or {.09,.4,.33}); g.rectangle('fill',x,y,3,15); g.rectangle('fill',x+3,y+4,3,8)
-            if i%3==0 then g.setColor(.7,.36,.4); g.rectangle('fill',x+7,y+8,6,5) end
-        end
-        for i=1,2 do R.current[i]={x=Arena.width*(i==1 and .28 or .72),y=300,rx=50,ry=200,dx=i==1 and 1 or -1} end
+        if not authored then for i=1,2 do R.current[i]={x=Arena.width*(i==1 and .28 or .72),y=300,rx=50,ry=200,dx=i==1 and 1 or -1} end end
         if w==7 then
             for i=1,190 do R.fireflies[i]={x=32+love.math.random()*(Arena.width-64),y=32+love.math.random()*536,
                 angle=love.math.random()*math.pi*2,turn=love.math.random()*2,radius=.7+love.math.random()*.6,phase=love.math.random()*6} end
         end
-    elseif w==5 then
-        R.makeTunnels()
-        for y=0,600,24 do for x=0,Arena.width,32 do
-            local v=(x*11+y*7)%17/200
-            g.setColor(.19+v,.105+v/2,.055); g.polygon('fill',x+2,y+3,x+29,y,x+30,y+20,x+4,y+22)
-        end end
-        for i=1,75 do local x=(i*139)%Arena.width; local y=(i*47)%600
-            g.setColor(.36,.22,.1); g.rectangle('fill',x,y,5+i%5,3)
-            if i%4==0 then g.setColor(.11,.065,.035); g.line(x,y,x+7,y+12,x+4,y+21) end
-        end
-    end
-    g.setCanvas(); g.pop()
+    elseif w==5 and not authored then R.makeTunnels() end
 end
 function R.makeTunnels()
     for _,p in ipairs({{.2,325},{.8,235}}) do
@@ -173,6 +152,7 @@ function R.update(dt)
     if Campaign.biome<4 and not R.custom then return end
     if Campaign.biome==5 then R.rain={};R.rainSites={} end
     R.clock=R.clock+dt
+    require('sky_weather').update(dt)
     R.updateImpacts(dt)
     R.updateTraversal(dt)
     if Campaign.biome==5 or R.custom then R.separateEarth() end
@@ -291,6 +271,8 @@ function R.speed()
     return 1
 end
 function R.fallAt(x,y)
+    if require('sky_weather').fallAt(x,y) then return true end
+    if require('sky').fallAt(x,y) then return true end
     if not R.custom and not R.stormActive() then return false end
     if Storm.holeAt and Storm.holeAt(x,y) then return true end
     for _,item in ipairs(Bosses.items) do if item.kind=='storm' and item.boss.holeAt(x,y) then return true end end
@@ -332,6 +314,7 @@ function R.molePhase(age)
     else return 'dig',1-(t-4.3)/.7 end
 end
 function R.contact()
+    require('sky_weather').contact()
     if not player.skyThrow and R.fallAt(player.x+15,player.y+12) then Hazards.kill(); if player.reset then player.falling=true end end
     if Campaign.biome==7 or R.custom then for _,p in ipairs(R.vents) do
         if Hazards.inEllipse(player.x+15,player.y+12,p,4) then Hazards.kill() end
@@ -492,6 +475,7 @@ function R.drawDarkness()
 end
 function R.drawGround()
     local g=love.graphics
+    require('sky_weather').drawGround()
     for _,p in ipairs(R.electricTrails or {}) do
         local alpha=math.min(1,p.life/.4)
         local mx,my=(p.x+p.tx)/2,(p.y+p.ty)/2
@@ -610,4 +594,6 @@ MobBehaviors.worm=require('mobs.worm')(R)
 MobBehaviors.lanternfish=require('mobs.lanternfish')(R)
 MobBehaviors.mole=require('mobs.mole')(R)
 MobBehaviors.gull=require('mobs.gull')(R)
+MobBehaviors.dragonfly=require('mobs.sky_insects')
+MobBehaviors.mist_moth=MobBehaviors.dragonfly
 return R

@@ -1,0 +1,17 @@
+{
+  "generator": "built-in image_gen",
+  "references": [
+    "assets/skins/base_marron/down.png",
+    "assets/monstres/ciel/oiseau/gull_down.png"
+  ],
+  "assets": [
+    {
+      "path": "libellule/electric_dragonfly.png",
+      "prompt": "Use case: stylized-concept. Create one transparent PNG game enemy sprite. The two attached images are STRICT STYLE REFERENCES ONLY (the existing player spider and gull from this game): match their chunky visible pixel clusters, near-black stepped outlines, limited shaded color ramps, big readable eyes and retro hand-drawn pixel-art monster aesthetic. NOT soft painterly, NOT vector, NOT 3D, NO smooth gradients. Top-down/front three-quarter view like the reference spider, face/head toward BOTTOM of image, centered whole creature, wings spread, transparent margins on every side. One pose, no sprite sheet, no text, no scenery, no ground shadow, true transparent background. Subject: ELECTRIC DRAGONFLY monster, long slim segmented blue-teal abdomen pointing upward, head at bottom with bright yellow eyes, SIX small angular legs, FOUR long narrow pale cyan insect wings extending left and right, dark blue pixel outlines and angular electric yellow markings on abdomen. Small yellow-white pixel sparks at wing tips, no giant lightning aura. Clearly a dragonfly, not a wasp or spider. Around 80x80 logical pixel-art detail rendered large with visible crisp square pixels, same simple detail level as reference spider."
+    },
+    {
+      "path": "papillon/mist_moth.png",
+      "prompt": "Use case: stylized-concept. Create one transparent PNG game enemy sprite. The two attached images are STRICT STYLE REFERENCES ONLY (the existing player spider and gull from this game): match their chunky visible pixel clusters, near-black stepped outlines, limited shaded color ramps, big readable eyes and retro hand-drawn pixel-art monster aesthetic. NOT soft painterly, NOT vector, NOT 3D, NO smooth gradients. Top-down/front three-quarter view like the reference spider, face/head toward BOTTOM of image, centered whole creature, wings spread, transparent margins on every side. One pose, no sprite sheet, no text, no scenery, no ground shadow, true transparent background. Subject: DARK MIST MOTH monster, short fuzzy charcoal body, head at bottom with two big ice-blue eyes and two short feathery antennae, FOUR wide rounded jagged-edged moth wings, charcoal/navy purple palette with slate gray and pale silver eye markings. Friendly-menacing fantasy bug, readable silhouette. No smoke surrounding sprite, smoke is animated separately in game. Around 80x80 logical pixel-art detail rendered large with visible crisp square pixels, same simple detail level as reference spider."
+    }
+  ]
+}

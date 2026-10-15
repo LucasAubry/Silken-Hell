@@ -27,8 +27,10 @@ local B={seen={},unread={},dirty=false,entries={
  {id='jelly',name='Méduse électrique',art='jelly_down',world=4,text='La Pieuvre a fait de sa peur une arme. Elle s’illumine avant de répandre ses fils électriques : glisse-toi entre eux.'},
  {id='worm',name='Ver des profondeurs',art='worm_down',world=5,text='Le Hérisson lui ordonne de creuser toujours plus loin. Il ondule sous terre, émerge et crache des œufs qui deviennent de petits poursuivants contre les murs.'},
  {id='mole',name='Taupe fouisseuse',art='mole_down',world=5,text='Elle ne te hait pas : elle a peur du Hérisson et de ses fils. Elle se cache sous terre ; une motte trahit l’endroit où elle ose remonter.'},
+ {id='dragonfly',name='Libellule électrique',world=6,text='Elle zigzague autour de vous et laisse une traînée électrique mortelle pendant quelques secondes.'},
+ {id='mist_moth',name='Papillon des brumes',world=6,text='Il répand une épaisse brume sombre qui masque le terrain. Sa silhouette reste visible, mais son contact est mortel.'},
  {id='gull',name='Mouette des vents',art='gull_down',world=6,text='Le Merle lui a confié une larme qu’elle n’a pas le droit de rendre. Elle tourne autour ; la foudre peut la changer en sentinelle électrique.'},
- {id='rain',trap=true,name='Éclair du Ciel',art='rain',world=6,text='Un signe doré annonce la foudre : quitte la zone avant l’impact. Une mouette frappée devient électrique ; sa traînée est dangereuse.'},
+ {id='rain',trap=true,name='Éclair du Ciel',art='rain',world=6,text='Une ombre grise passe sur le sol avant l’impact. Quitte cette zone : la foudre creuse un trou qui reste dangereux jusqu’à la prochaine tentative.'},
  {id='larva',name='Minuscule ver',art='worm_down',world=5,text='Le Hérisson réclame des serviteurs toujours plus jeunes. À peine sorti de son œuf, ce petit ver te poursuit sans comprendre pourquoi.'},
  {id='blackbird_chick',name='Petit merle noir',art='merle_down',world=1,text='L’Œuf les a fait éclore dans une cage de soie. Les oiseaux clairs tirent ; les sombres poursuivent. Quand la coquille cède, leurs liens se brisent ensemble.'}
  ,{id='final_spider',boss=true,name='La Gardienne de la Soie',art='final_queen',world=3,text='Elle tient les gardiens, qui tiennent leurs créatures. Toute cette descente était sa toile. Attire sa charge vers ses enfants : chaque bébé écrasé lui coûte une vie, et les œufs touchés se fissurent.'}
@@ -148,7 +150,7 @@ function B.encounter()
     if Octopus.active then B.discover('octopus') end
     if Abyss.active and Abyss.boss then B.discover('skeleton_fish') end
     if #Hazards.lava>0 then B.discover('lava') end
-    if #Realms.rainSites>0 then B.discover('rain') end
+    if #Realms.rainSites>0 or require('sky_weather').storm then B.discover('rain') end
     if #Realms.tornadoes>0 then B.discover('cloud_snare') end
     if #Realms.tunnels>0 then B.discover('earth_tunnel') end
     B.save()

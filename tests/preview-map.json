@@ -1,0 +1,1 @@
+{"world":2,"level":1,"width":960,"height":600,"entities":[{"kind":"spawn","x":760,"y":470},{"kind":"mob","type":"magma_larva","x":280,"y":300,"has_larme":true}]}

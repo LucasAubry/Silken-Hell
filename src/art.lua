@@ -1,5 +1,15 @@
 -- Transparent PNG assets. Alpha bounds are used as sprite quads, without altering files.
-local A={images={},metadata={}}
+local A={images={},metadata={},pending={}}
+function A.register(key,loader)
+    if not rawget(A.images,key) then A.pending[key]=loader end
+end
+setmetatable(A.images,{__index=function(_,key)
+    local loader=A.pending[key]
+    if not loader then return end
+    A.pending[key]=nil
+    if type(loader)=='function' then A.images[key]=loader() else A.add(key,loader) end
+    return rawget(A.images,key)
+end})
 local cached={}
 local raw=love.filesystem.read('assets/art-metadata.json')
 if raw and os.getenv('SILKEN_EXPORT_ART')~='1' then local ok,data=pcall(require('json').decode,raw); if ok then cached=data end end
@@ -27,6 +37,9 @@ function A.imageData(path)
     return data
 end
 function A.add(key,path)
+    if rawget(A.images,key) then return end
+    if A.defer then A.register(key,path);return end
+    A.pending[key]=nil
     if A.onLoad then A.onLoad() end
     path=require("asset_paths").resolve(path)
     local saved=cached[path]
@@ -166,7 +179,8 @@ function A.drawLarva(x,y,size,angle,time)
     end
     g.pop()
 end
-function A.load()
+function A.load(defer)
+    A.defer=defer
     require('integrated_skins').load(A)
     A.add('ocean_coral_wall','assets/environments/ocean/coral-wall.png')
     for _,pose in ipairs({'down','up','profil'}) do
@@ -201,6 +215,7 @@ function A.load()
     for _,pose in ipairs({'open','closed','dead'}) do A.add('crab_'..pose,'assets/sprites/crab_'..pose..'.png') end
     A.add('electric_anemone','assets/sprites/electric_anemone.png')
     A.add('tear_ring','assets/textures/aureole.png')
+    A.defer=false
 end
 function A.drawAnemone(x,y,width,height,time)
     require('anemone_art').draw(A.images.electric_anemone,x,y,width,height,time)

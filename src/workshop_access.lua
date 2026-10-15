@@ -1,6 +1,6 @@
 local A={}
 function A.id(e)
- if e.kind=='abyss_part' then return 'skeleton_fish' end
+ if e.kind=='abyss_part' or e.kind=='abyss_gate' then return 'skeleton_fish' end
  if e.kind~='mob' and e.kind~='boss' then return end
  if e.type=='skeleton_head' then return 'skeleton_fish' end
  if e.type=='hellserpent' then return 'wasp' end

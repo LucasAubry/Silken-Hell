@@ -39,7 +39,13 @@ function L.snapshot()
             put('boss',{x=b.origin.x,y=b.origin.y,skeletonStage=b.skeletonStage,movementRate=b.movementRate,attackRate=b.attackRate},b.headOnly and 'skeleton_head' or 'skeleton_fish')
         else put('boss',b,item.kind) end
     end
-    if Campaign.world==6 then out.skyRevision=1 end
+    local gate=require('abyss_gate')
+    if gate.active then
+        put('abyss_gate',{x=gate.x,y=gate.y,w=gate.width,h=gate.height})
+        for i=#out.entities,1,-1 do if out.entities[i].kind=='tear' then table.remove(out.entities,i) end end
+        put('tear',{x=gate.tx,y=gate.ty})
+    end
+    if Campaign.world==6 then out.skyRevision=2 end
     return out
 end
 function L.read()
@@ -48,8 +54,12 @@ function L.read()
     if App and App.sessionLayout then local l=App.sessionLayout; return {[l.world..':'..l.level]=l} end
     local data=love.filesystem.read('custom_levels.json')
     if not data then return {} end
+    if data==L.cachedRaw then return L.cachedLevels end
     local ok,obj=pcall(json.decode,data)
-    if ok and type(obj)=='table' and obj.version==1 and type(obj.levels)=='table' then return require("abyss_sequence").migrate(obj).levels end
+    if ok and type(obj)=='table' and obj.version==1 and type(obj.levels)=='table' then
+        L.cachedRaw=data;L.cachedLevels=require("campaign_order").migrate(require("abyss_sequence").migrate(obj)).levels
+        return L.cachedLevels
+    end
     return {}
 end
 function L.spawn(e)
@@ -70,7 +80,7 @@ function L.spawn(e)
         if not school then school={age=0,angle=0,members={}}; Realms.schools[#Realms.schools+1]=school; if e.schoolId then L.schools[e.schoolId]=school end end
         local m={type=kind,x=e.x,y=e.y,speed=e.speed or 100,age=0,school=school,slot=2,dir='down',hitBox_width=24,hitBox_height=24,hitBox_offset_x=-12,hitBox_offset_y=-12}
         m.slot=#school.members+1; school.members[#school.members+1]=m; mobs[#mobs+1]=m
-    elseif kind=='mole' or kind=='worm' or kind=='gull' or kind=='jelly' then
+    elseif kind=='mole' or kind=='worm' or kind=='gull' or kind=='jelly' or kind=='dragonfly' or kind=='mist_moth' then
         Realms.add(kind,e.x,e.y,e.speed or 80,e.elite)
         if kind=='mole' then mobs[#mobs].speed=e.speed or 140 end
     else return end
@@ -104,6 +114,7 @@ end
 function L.apply(layout)
     if not layout or type(layout.entities)~='table' then return false end
     require('layout_schema').migrate(layout)
+    L.activeLayout=layout
     local scale=Arena.width/layout.width; Realms.custom=true; L.schools={}; mobs={}; Campaign.carrier=nil; Realms.schools={}
     Magma.reset(); Burning.reset(); AbyssTerrain.reset()
     Hazards.lava={}; Realms.vents={}; Realms.holes={}; Realms.tunnels={}; Realms.tornadoes={}; Realms.current={}; Realms.rainSites={}
@@ -159,11 +170,12 @@ end
 MobBehaviors.waspling=require('mobs.waspling')
 MobBehaviors.larva=require('mobs.larva')
 MobBehaviors.blackbird_chick=require('mobs.blackbird_chick')
-function L.applyCurrent()
+function L.current()
     local layout=L.read()[Campaign.world..':'..player.level]
     if layout and Campaign.world==6 and not App.sessionLayout and not (Replay and Replay.playing) then
         layout=require('sky').prepare(layout)
     end
-    return L.apply(layout)
+    return layout
 end
+function L.applyCurrent() return L.apply(L.current()) end
 return L

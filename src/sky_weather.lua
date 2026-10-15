@@ -1,0 +1,150 @@
+-- Sky hazards use simulation time only; drawing never changes their state.
+local S={strikes={},holes={},trails={},mist={},clock=0,phaseTime=4,active=false,storm=false,seed=0}
+function S.reset()
+ S.strikes={};S.holes={};S.trails={};S.mist={};S.clock=0;S.phaseTime=4;S.seed=0
+ S.storm=require('sky').openEdges();S.active=S.storm
+ for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' then S.active=true end end
+end
+function S.trail(x,y,tx,ty)
+ local d=math.sqrt((tx-x)^2+(ty-y)^2);if d<.1 then return end
+ S.trails[#S.trails+1]={x=x,y=y,tx=tx,ty=ty,vx=(tx-x)/d,vy=(ty-y)/d,life=2.8,age=0}
+ if #S.trails>440 then table.remove(S.trails,1) end
+end
+function S.fog(x,y)
+ S.mist[#S.mist+1]={x=x,y=y,age=0,life=7,radius=68}
+ if #S.mist>100 then table.remove(S.mist,1) end
+end
+-- Segment against the player rectangle, expanded by the visible electric core.
+local function touches(p)
+ local x0=player.x+(player.hitBox_offset_x or 0)-5
+ local y0=player.y+(player.hitBox_offset_y or 0)-5
+ local x1=x0+(player.hitBox_width or 30)+10
+ local y1=y0+(player.hitBox_height or 24)+10
+ if math.max(p.x,p.tx)<x0 or math.min(p.x,p.tx)>x1 or math.max(p.y,p.ty)<y0 or math.min(p.y,p.ty)>y1 then return false end
+ local lo,hi=0,1
+ for _,axis in ipairs({{p.x,p.tx-p.x,x0,x1},{p.y,p.ty-p.y,y0,y1}}) do
+  local origin,delta,a,b=unpack(axis)
+  if math.abs(delta)<.00001 then if origin<a or origin>b then return false end
+  else
+   local t0,t1=(a-origin)/delta,(b-origin)/delta
+   if t0>t1 then t0,t1=t1,t0 end
+   lo=math.max(lo,t0);hi=math.min(hi,t1);if lo>hi then return false end
+  end
+ end
+ return true
+end
+function S.contact()
+ if not S.active or player.skyThrow or player.tunnelTravel then return end
+ for _,p in ipairs(S.trails) do
+  if p.age>=.22 and touches(p) then Hazards.kill('electric_trail');return end
+ end
+end
+function S.warn(x,y)
+ S.seed=S.seed+1
+ S.strikes[#S.strikes+1]={x=x,y=y,age=0,delay=1.6,seed=S.seed}
+end
+local function choose()
+ S.seed=S.seed+1
+ local spawn=levels[player.level].player_position
+ for i=1,20 do
+  local x,y
+  if i==1 and S.seed%2==0 then x,y=player.x+15,player.y+12
+  else x=85+((S.seed*173+i*131)%(math.max(1,Arena.width-170)));y=85+(S.seed*109+i*97)%430 end
+  local safe=(x-spawn.x-15)^2+(y-spawn.y-12)^2>135^2 and not Arena.blocked(x-48,y-48,96,96)
+  for _,p in ipairs(levels[player.level].larme_position) do if (x-p.x-15)^2+(y-p.y-39)^2<105^2 then safe=false end end
+  for _,p in ipairs(S.holes) do if (x-p.x)^2+(y-p.y)^2<95^2 then safe=false end end
+  if safe then S.warn(x,y);return end
+ end
+end
+function S.update(dt)
+ if not S.active then return end
+ S.clock=S.clock+dt
+ for _,list in ipairs({S.trails,S.mist}) do for i=#list,1,-1 do
+  local p=list[i];p.life=p.life-dt;p.age=(p.age or 0)+dt
+  if p.life<=0 then table.remove(list,i) end
+ end end
+ S.contact()
+ for i=#S.strikes,1,-1 do
+  local p=S.strikes[i];p.age=p.age+dt
+  if p.age>=p.delay and not p.spent then
+   p.spent=true
+   local hole=require('ground_holes').stroke({p.x-5,p.y+2,p.x+4,p.y-3,p.x+6,p.y+3},34);hole.seed=p.seed
+   S.holes[#S.holes+1]=hole
+   BossFX.burst(p.x,p.y,{.78,.88,1},.55)
+   if (player.x+15-p.x)^2+(player.y+12-p.y)^2<42^2 then Hazards.kill('sky_lightning');if player.reset then player.falling=true end end
+  end
+  if p.age>p.delay+.45 then table.remove(S.strikes,i) end
+ end
+ if S.storm and #S.holes<8 then
+  S.phaseTime=S.phaseTime-dt
+  if S.phaseTime<=0 then choose();S.phaseTime=math.max(3.6,6-player.level*.2) end
+ end
+end
+function S.fallAt(x,y)
+ for _,p in ipairs(S.holes) do if require('ground_holes').contains(p,x,y) then return true end end
+ return false
+end
+function S.resize(ratio)
+ for _,list in ipairs({S.strikes,S.trails,S.mist}) do for _,p in ipairs(list) do p.x=p.x*ratio;if p.tx then p.tx=p.tx*ratio end end end
+ for _,p in ipairs(S.trails) do local d=math.sqrt((p.tx-p.x)^2+(p.ty-p.y)^2);p.vx=(p.tx-p.x)/d;p.vy=(p.ty-p.y)/d end
+ for _,p in ipairs(S.holes) do require('ground_holes').resize(p,ratio) end
+ for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' then if m.tx then m.tx=m.tx*ratio end;if m.cx then m.cx=m.cx*ratio end end end
+end
+function S.drawGround()
+ if not S.active then return end
+ local g=love.graphics;g.push('all');g.setShader()
+ require('terrain_surface').draw(S.holes,'hole',S.clock,1,6)
+ for _,p in ipairs(S.trails) do
+  local alpha=math.min(1,p.life/.55)*math.min(1,.3+p.age*3)
+  local dx,dy=p.tx-p.x,p.ty-p.y;local d=math.max(.1,math.sqrt(dx*dx+dy*dy))
+  local bend=math.sin(p.x*.9+p.y*.6+math.floor(S.clock*14))*2.5
+  local mx,my=(p.x+p.tx)*.5-dy/d*bend,(p.y+p.ty)*.5+dx/d*bend
+  g.setLineJoin('bevel')
+  g.setColor(.20,.65,1,.16*alpha);g.setLineWidth(17);g.line(p.x,p.y,mx,my,p.tx,p.ty)
+  g.setColor(.25,.80,1,.7*alpha);g.setLineWidth(6);g.line(p.x,p.y,mx,my,p.tx,p.ty)
+  g.setColor(.94,.98,.65,alpha);g.setLineWidth(2);g.line(p.x,p.y,mx,my,p.tx,p.ty)
+ end
+ g.pop()
+end
+function S.drawAtmosphere()
+ if not S.active then return end
+ local g=love.graphics;g.push('all');g.setShader()
+ S.mistShader=S.mistShader or g.newShader('assets/shaders/sky_mist.glsl')
+ g.setShader(S.mistShader);S.mistShader:send('clock',S.clock)
+ -- One softly feathered, turbulent puff instead of stacked opaque ellipses.
+ S.mistTexture=S.mistTexture or g.newImage(love.image.newImageData(1,1))
+ for _,p in ipairs(S.mist) do
+  local alpha=math.min(1,p.age*2,p.life/1.6)*.32
+  local radius=p.radius*(.65+math.min(p.age/3,1)*.45)
+  local drift=math.sin(p.age*.6+p.x*.02)*9
+  S.mistShader:send('drift',{p.x*.021,p.y*.019})
+  g.setColor(1,1,1,alpha)
+  g.draw(S.mistTexture,p.x+drift-radius,p.y-math.min(p.age*2,12)-radius*.75,0,radius*2,radius*1.5)
+ end
+ g.setShader()
+ -- Their silhouettes remain readable even inside their own mist.
+ for _,m in ipairs(mobs) do if m.type=='mist_moth' and not m.capture and not m.abyssHeld and not m.tunnelTravel then
+  Campaign.drawMob(m)
+ end end
+ for _,p in ipairs(S.strikes) do
+  if not p.spent then
+   local t=p.age/p.delay
+   for j=5,1,-1 do
+    g.setColor(.28,.29,.32,(.055+t*.07));g.ellipse('fill',p.x+(1-t)*35,p.y-4,40+j*5,32+j*4)
+   end
+   g.setColor(.68,.72,.78,t*.12);g.ellipse('fill',p.x,p.y,36,28)
+  else
+   local fade=math.max(0,1-(p.age-p.delay)/.45)
+   for layer=2,1,-1 do
+    g.setColor(layer==2 and .48 or .94,layer==2 and .70 or .98,1,fade*(layer==2 and .35 or 1))
+    g.setLineWidth(layer==2 and 13 or 3)
+    local points={}
+    for i=0,9 do points[#points+1]=p.x+math.sin(i*2.7+p.seed)*((9-i)*2);points[#points+1]=p.y-(9-i)*34 end
+    g.line(points)
+   end
+   g.setColor(.85,.94,1,fade*.45);g.ellipse('fill',p.x,p.y,45,35)
+  end
+ end
+ g.pop()
+end
+return S

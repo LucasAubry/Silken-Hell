@@ -121,9 +121,13 @@ function love.load()
     if os.getenv('SILKEN_TEST')=='1' then love.filesystem.setIdentity('silken-hell-tests')
     elseif os.getenv('SILKEN_ONLINE_TEST')=='1' then love.filesystem.setIdentity('silken-hell-online-tests')
     elseif os.getenv('SILKEN_WORKSHOP_LIVE_TEST')=='1' then love.filesystem.setIdentity('silken-hell-workshop-tests') end
+    App.preview=tonumber(os.getenv('SILKEN_PREVIEW_WORLD'))~=nil or require('platform').flag('--preview')
+    local request=App.preview and PreviewBridge.request()
+    local previewLayout=request and request.layout
+    if previewLayout then App.sessionLayout=previewLayout;App.singleLevel=true;App.custom=true end
     Profile.load();require('app_icon').install();Hardcore.load();Graphics.load(); Input.load(); Bestiary.load(); Audio.load(); Audio.focus(love.window.hasFocus()); UI.load()
     load_level(); load_world(); load_player(); load_objet(); load_mob(); load_particles()
-    local assetStart=love.timer.getTime(); Art.load();preload.load()
+    local assetStart=love.timer.getTime(); Art.load(not not previewLayout);preload.load(previewLayout)
     if os.getenv('SILKEN_EXPORT_ICONS') then require('tools.export_icons').run(os.getenv('SILKEN_EXPORT_ICONS'));return end
     if os.getenv('SILKEN_BENCH')=='1' then print(string.format('ASSET_LOAD_SECONDS=%.3f',love.timer.getTime()-assetStart)) end
     if os.getenv('SILKEN_EXPORT_ART')=='1' then local f=assert(io.open(os.getenv('SILKEN_ART_PATH'),'wb')); f:write(require('json').encode(Art.metadata)); f:close(); love.event.quit(); return end
@@ -131,7 +135,8 @@ function love.load()
     Campaign.install()
     local resetReplayLevel=reset_level
     reset_level=function(options) require('render_motion').reset();Replay.beforeLevelReset();Achievements.enterLevel();return resetReplayLevel(options) end
-    Campaign.select(1);reset_level()
+    Campaign.select(previewLayout and previewLayout.world or 1)
+    if previewLayout then player.level=previewLayout.level;App.state='playing' else reset_level() end
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
     polishShader=love.graphics.newShader('assets/shaders/polish.glsl')
     OldTV.load()
@@ -175,9 +180,10 @@ function App.move(dt)
     player.moveX=dx; player.moveY=dy
     -- Substeps prevent a dash from crossing a thin wall on a slow frame.
     local steps=math.max(1,math.ceil(speed*dt/8))
+    local openEdges=require('sky').openEdges()
     for _=1,steps do
-        local x=math.max(23,math.min(Arena.width-53,player.x+dx*speed*dt/steps))
-        local y=math.max(23,math.min(553,player.y+dy*speed*dt/steps))
+        local x,y=player.x+dx*speed*dt/steps,player.y+dy*speed*dt/steps
+        if not openEdges then x=math.max(23,math.min(Arena.width-53,x));y=math.max(23,math.min(553,y)) end
         if not willCollide(x,player.y) then player.x=x end
         if not willCollide(player.x,y) then player.y=y end
         Hazards.contact();Octopus.contact()
@@ -365,6 +371,7 @@ function love.draw()
         for _,m in ipairs(mobs) do if m~=droppedCarrier and m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
         Renaissance.drawBlasts(); Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false)
         Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
+        require('sky_weather').drawAtmosphere()
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end;require('biome_radiance').motes()
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies(); Realms.drawAnemoneElectric() end
         Abyss.drawLights(); Bosses.drawLights();require('earth_light').draw();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage()
@@ -647,6 +654,7 @@ function love.resize(w,h)
     end
     local spit=player.abyssSpit; if spit then spit.fromX=spit.fromX*ratio; spit.toX=spit.toX*ratio end
     Renaissance.resize(ratio)
+    require('sky_weather').resize(ratio)
     Magma.resize(ratio); Burning.resize(ratio)
     if Storm.active then Storm.resize(ratio) end
     AbyssTerrain.resize(ratio or 1)

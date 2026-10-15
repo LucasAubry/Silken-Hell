@@ -66,13 +66,33 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   // Soft cloud banks drift across blue gaps; rounded tops catch pearly light.
   vec2 drift=vec2(clock*.009,-clock*.003);
   vec2 sky=p*3.8+drift;
-  float mass=cloudPuffs(sky)+cloudPuffs(sky*1.85+vec2(7.4,3.1))*.24;
+  float detail=cloudPuffs(sky*1.85+vec2(7.4,3.1))*.24;
+  float mass=cloudPuffs(sky)+detail;
   float cloud=smoothstep(.23,.86,mass);
   float top=clamp((cloudPuffs(sky+vec2(-.07,.13))-cloudPuffs(sky-vec2(-.07,.13)))*1.8+.5,0.0,1.0);
   vec3 air=mix(vec3(.10,.23,.38),vec3(.24,.42,.59),terrain);
-  vec3 vapor=mix(vec3(.37,.53,.68),vec3(.78,.87,.93),top);
+  // A slower, faint layer stays far below the original drifting cloud banks.
+  float distant=smoothstep(.49,.76,fbm(p*3.1+drift*.35+vec2(3.,8.)));
+  air=mix(air,vec3(.34,.46,.59),distant*.32);
+  vec2 below=sky-vec2(.10,.21);
+  float shadowMass=cloudPuffs(below)+cloudPuffs(below*1.85+vec2(7.4,3.1))*.24;
+  float shadow=smoothstep(.16,.98,shadowMass);
+  air*=1.0-shadow*.43;
+  // The blue-grey underside projects below the white cap, giving it thickness.
+  float lowerMass=cloudPuffs(sky-vec2(.025,.085))+detail;
+  float body=smoothstep(.23,.86,lowerMass);
+  vec3 underside=mix(vec3(.19,.30,.44),vec3(.41,.54,.67),top*.55+.15);
+  air=mix(air,underside,body*.88);
+  float dome=smoothstep(.35,1.10,mass);
+  vec3 vapor=mix(vec3(.28,.42,.58),vec3(.94,.97,1.0),smoothstep(.06,.94,top));
+  vapor+=vec3(.060,.055,.040)*dome*top;
+  vapor*=1.0-(1.0-top)*(1.0-dome)*.16;
   vapor+=vec3(.025,.030,.035)*(noise(sky*7.0)-.5);
   c=mix(air,vapor,cloud);
+  // The former 22-unit perimeter is open sky, matching the falling boundary.
+  float edge=min(min(pixel.x,dimensions.x-pixel.x),min(pixel.y,dimensions.y-pixel.y))*600.0/dimensions.y;
+  vec3 voidColor=mix(vec3(.018,.042,.080),vec3(.065,.13,.22),smoothstep(0.,22.,edge));
+  c=mix(voidColor,c,smoothstep(21.,24.,edge));
  } else if(biome==5.0) {
   // The meadow's broad, softly blended relief becomes dry underground soil.
   // Warped sediment, compact clods and mineral grains replace grassy streaks.

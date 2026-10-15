@@ -28,6 +28,10 @@ function H.contact()
     Storm.contact()
 end
 function H.openEdge(r,x,y,w,h)
+ if require('sky').openEdges() then
+  return (r.w==Arena.width and r.h==22 and (r.y==0 or r.y==578))
+      or (r.h==600 and r.w==22 and (r.x==0 or r.x==Arena.width-22))
+ end
  if Campaign.biome~=2 then return false end
  local px,py=x+w/2,y+h/2
  if r.w==Arena.width and (r.y==0 or r.y==578) then py=r.y==0 and 22 or 578

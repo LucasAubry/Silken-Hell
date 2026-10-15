@@ -1,11 +1,16 @@
 -- Boss servants have authored skins; accumulated silk leaves the body palette intact.
 local S={frames={},current=nil}
-function S.load()
+function S.load(lazy)
+ if S.shader then return end
  local frames=require('json').decode(love.filesystem.read('assets/monstres/serviteurs/frames.json'))
- for key,f in pairs(frames) do
+ local function frame(key)
+  local f=frames[key];if not f then return end
   local image=require('art_filter').image(f.path);local w,h=image:getDimensions()
-  S.frames[key]={image=image,quad=love.graphics.newQuad(f.x,f.y,f.w,f.h,w,h),w=f.w,h=f.h}
+  local value={image=image,quad=love.graphics.newQuad(f.x,f.y,f.w,f.h,w,h),w=f.w,h=f.h}
+  S.frames[key]=value;return value
  end
+ setmetatable(S.frames,{__index=function(_,key)return frame(key)end})
+ if not lazy then for key in pairs(frames) do frame(key) end end
  S.webImage=require('art_filter').image('assets/effects/silk/web.png')
  S.shader=love.graphics.newShader([[
  extern Image silk;extern vec4 bounds;extern float amount;

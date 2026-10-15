@@ -1,7 +1,7 @@
 local C={world=1,names=Worlds.names,data={{},{},{},{},{},{},{}}}
 C.titles={
  {'Le premier souffle','Les veilleurs','La ronde des lames','Le jardin des épines','Les ailes captives','Le silence des serpents','Les quatre gardiens','Le chœur brisé','Les portes du ciel','L’Œuf du Merle'},
- {'La chute','Les braises','Le cercle des damnés','La forge','Les ailes de cendre','Le fleuve noir','Les sept sceaux','La gueule du feu','Le trône vide','Les Guêpes brûlées'}
+ {'La chute','Les braises','Le cercle des damnés','Les sept sceaux','Les ailes de cendre','Le fleuve noir','La forge','La gueule du feu','Le trône vide','Les Guêpes brûlées'}
 }
 C.titles[3]={'La Gardienne de la Soie','Retrouvailles'}
 function C.install()
@@ -47,7 +47,10 @@ function C.reset(options)
     Aftermath.reset()
     AbyssTerrain.reset()
     C.biome=Worlds.biome(C.world,player.level)
+    local layout=LevelLayouts and (C.world~=3 or App.sessionLayout) and C.world~=8 and not Worlds.isSecret(C.world) and LevelLayouts.current()
+    if layout then C.biome=layout.biome or layout.world end
     local world=C.biome; local n=(Worlds.isSecret(C.world) or C.world==8) and (world==3 and 1 or 10) or player.level
+    if world==2 and not layout then n=n==4 and 7 or n==7 and 4 or n end
     if world==7 and n>=6 and n<=8 and not App.sessionLayout then n=n+1 end
     require("mobs.bosses.abyss.arrival").current=nil
     BossFX.reset()
@@ -58,12 +61,12 @@ function C.reset(options)
     player.speed=1; player.original_speed=1; player.is_frozen=false; player.freeze_timer=0; player.reset=false
     player.lastMoveX=0; player.lastMoveY=1
     player.hitBox_width=30; player.hitBox_height=24; player.hitBox_offset_x=0; player.hitBox_offset_y=0
-    local boss=n==10 and (world<=2 or world==5 or world==4 or world==7 or (world==6 and Secret.inArena()))
+    local boss=not layout and n==10 and (world<=2 or world==5 or world==4 or world==7 or (world==6 and Secret.inArena()))
     player.x=Arena.width/2-15; player.y=boss and 505 or (world==1 and Arena.height/2-12 or 265)
-    local level={player_position={x=player.x,y=player.y},larme_position=C.positions(n),aureole_position={x=0,y=0}}
+    local level={player_position={x=player.x,y=player.y},larme_position=layout and {} or C.positions(n),aureole_position={x=0,y=0}}
     if boss then level.larme_position={{x=Arena.width/2-15,y=280}} end
     levels[player.level]=level
-    Arena.build(level.player_position,level.larme_position,boss)
+    Arena.build(level.player_position,level.larme_position,boss,layout~=nil and layout~=false)
     C.starts=C.starts or {{},{},{},{},{},{},{}}
     C.starts[world]=C.starts[world] or {}
     local count=#level.larme_position
@@ -87,7 +90,7 @@ function C.reset(options)
         C.lastSide=math.floor((a+math.pi/4)%(2*math.pi)/(math.pi/2))+1
     end
     objet.larme.abyssHeld=nil; objet.larme.taken=boss or world==6; objet.larme_dropped=true
-    if not boss and C.world~=3 and C.world~=8 then
+    if not layout and not boss and C.world~=3 and C.world~=8 then
         if world>=4 then Realms.spawn(world,n)
         elseif world==2 then C.spawnHell(n) else
             _G['mob_lv'..n]()
@@ -120,13 +123,14 @@ function C.reset(options)
     Hedgehog.reset(boss and world==5)
     Octopus.reset(boss and world==4)
     Storm.reset(boss and world==6)
-    Hazards.reset(world==2,n)
-    Arena.reconcile()
-    Realms.reset(world,n)
+    Hazards.reset(not layout and world==2,n)
+    if not layout then Arena.reconcile() end
+    Realms.reset(world,n,layout)
     Ocean.reset(world)
-    Abyss.reset(world,n)
+    Abyss.reset(layout and 0 or world,n)
     Magma.reset()
-    if LevelLayouts and (C.world~=3 or App.sessionLayout) and C.world~=8 and not Worlds.isSecret(C.world) then LevelLayouts.applyCurrent() end
+    LevelLayouts.activeLayout=nil
+    if layout then LevelLayouts.apply(layout) end
     if C.world==4 and not boss and not App.sessionLayout then require('mobs.crab.runners').spawn(n) end
     if not Realms.custom then C.clearGroundSites(); if world==2 then Magma.populate(n) end end
     if Secret then Secret.configure();if Secret.duel then Secret.duel.time=0;if Secret.duel.kind=='mob' then objet.larme.taken=true end end end
@@ -137,6 +141,7 @@ function C.reset(options)
     Renaissance.reset()
     Ending.reset()
     C.updateTear(0)
+    require('sky_weather').reset()
 
     require('abyss_gate').reset()
     if world==7 and n==10 and not App.sessionLayout then
@@ -206,7 +211,7 @@ function C.drawCircles()
     if (Abyss.boss and not Abyss.defeated) or Bosses.hud().active or Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active then return end
     local g=love.graphics
     for _,p in ipairs(levels[player.level].larme_position) do
-        g.setColor(Worlds.color(C.world).tear)
+        g.setColor(Worlds.color(C.biome).tear)
         if C.biome==5 then g.setColor(.72,.51,.30,.72) end
         if C.biome==7 then g.setColor(.3,.7,1,Abyss.siteVisibility(p.x+15,p.y+39)) end
         local style=require('paradise_style')
@@ -247,8 +252,6 @@ function C.drawTear(overlay)
         local fx=require('tear_fx');g.push('all')
         if C.tearCarried() then g.translate(require('render_motion').offset(C.carrier)) end
         local tint=Worlds.color(C.biome).tear
-        if require('paradise_style').active() then tint=require('paradise_style').tear end
-        if C.biome==5 then tint={.86,.65,.39} end
         fx.draw(x+15,y+20,tint,UI.clock);g.setColor(tint)
         local sx,sy=fx.breath(UI.clock)
         g.translate(x+15,y+20);g.scale(sx,sy);g.translate(-x-15,-y-20)
@@ -280,10 +283,23 @@ end
 function C.drawMob(m)
     require('render_motion').draw(m,drawMob,m)
 end
+function C.dropTear(m)
+    if not m or not m.has_larme or objet.larme_dropped then return false end
+    C.carrier=m;objet.larme_dropped=true
+    objet.larme.taken=false;objet.larme.abyssHeld=nil
+    objet.larme.x=m.x-15;objet.larme.y=m.y-20
+    return true
+end
 function C.updateTear(dt)
     if Ending.active then return end
     if Renaissance.active then Renaissance.syncEgg();return end
     if Aftermath.cleared then Aftermath.centerTear();return end
+    if C.carrier and not objet.larme_dropped and not C.carrier.abyssHeld then
+        local alive=false
+        for _,m in ipairs(mobs) do if m==C.carrier and not m.spent then alive=true;break end end
+        if not alive then for _,m in ipairs(Realms.larvae) do if m==C.carrier and (m.life or 1)>0 then alive=true;break end end end
+        if not alive then C.dropTear(C.carrier) end
+    end
     if C.carrier then
         if not objet.larme_dropped then
             local m=C.carrier; local dx,dy=0,1

@@ -24,6 +24,12 @@ function P.frame(key)
  P.frames[key]=a;return a
 end
 function P.draw(key,x,y,width,angle,height,flip)
+ if key=='wheel' then
+  require('trap_art').draw('scie',x,y,width,nil,false,angle);return
+ end
+ if key=='trap_open' or key=='trap_closed' then
+  require('trap_art').draw('piege',x,y,width,nil,key=='trap_closed');return
+ end
  local a=P.frame(key);local sx=width/a.w;local sy=height and height/a.h or sx
  if key=='wheel' or key=='trap_open' or key=='trap_closed' or key=='nest' then
   require('sprite_relief').draw(a,x,y,width,angle,height);return

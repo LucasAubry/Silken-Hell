@@ -55,7 +55,7 @@ function A.encounterActive()
 end
 -- Reserve the full left column occupied by the giant head, including its tips.
 function A.playerMinX(y)
- local x=23
+ local x=require('sky').openEdges() and -math.huge or 23
  if A.active and A.boss then x=math.max(x,Cycle.playerMinX(A,y)) end
  if Bosses then for _,item in ipairs(Bosses.items) do
   if item.kind=='skeleton_fish' and item.boss.boss then x=math.max(x,Cycle.playerMinX(item.boss,y)) end

@@ -32,6 +32,24 @@ vec4 effect(vec4 color,Image tex,vec2 uv,vec2 pixel){
  vec2 normal=normalize(vec2(field(tex,uv+vec2(sampleStep.x,0))-field(tex,uv-vec2(sampleStep.x,0)),
                             field(tex,uv+vec2(0,sampleStep.y))-field(tex,uv-vec2(0,sampleStep.y)))+vec2(.001));
  float light=clamp(.5+dot(normal,vec2(.4,.8))*.5,0.,1.);
+ // Sky openings expose a deep blue void through thick, torn cloud banks.
+ // Keep the lethal boundary at d=0; billows decorate only the safe outer lip.
+ if(biome==6. && material<.5){
+  float billow=noise(p*.095)*.65+noise(p*.19)*.35;
+  float lip=d+(billow-.5)*5.;
+  float a=smoothstep(-19.,-11.,lip);
+  float crown=exp(-pow((lip+5.)/7.,2.));
+  vec3 cloud=mix(vec3(.24,.40,.59),vec3(.81,.91,.99),light*.65+billow*.35);
+  cloud+=vec3(.13,.12,.09)*crown*light;
+  float thickness=smoothstep(-1.,15.,d);
+  vec3 underside=mix(vec3(.16,.29,.46),vec3(.045,.105,.21),thickness);
+  vec3 sky=mix(cloud,underside,smoothstep(-1.,5.,d));
+  float depth=smoothstep(5.,26.,d);
+  vec3 distant=vec3(.018,.043,.105)+vec3(.035,.075,.12)*noise(p*.025);
+  distant+=vec3(.08,.11,.14)*smoothstep(.65,.90,noise(p*.07+vec2(13.,8.)))*.4;
+  sky=mix(sky,distant,depth);
+  return vec4(sky,a)*color;
+ }
  // Cut edges use the material of the surrounding biome.
  vec3 low=vec3(.085,.043,.033),high=vec3(.29,.16,.105);
  if(biome==5.) {low=vec3(.14,.085,.045);high=vec3(.43,.285,.16);}
