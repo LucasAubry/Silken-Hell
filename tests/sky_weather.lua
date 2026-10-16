@@ -48,11 +48,11 @@ function T.run()
  player.x=285;assert(not W.playerHidden(),'The opening reveals the player and ground')
  reset_level();W.storm=false
  local cloud=mobs[3];local C=require('mobs.wind_bat');local x,y=cloud.x,cloud.y
- cloud.phase='blow';cloud.phaseTime=2;cloud.vx=1;cloud.vy=0;player.x=x+80;player.y=y-12
+ cloud.dx=1;cloud.speed=210;player.x=x+80;player.y=y-12
  local before=player.x;C.update(cloud,.1)
- assert(player.x>before and cloud.x==x and cloud.y==y,'A stationary cloud pushes the player with wind')
- cloud.x=Arena.width-150;cloud.y=300;player.x=Arena.width-40;player.y=288
- C.update(cloud,.3);assert(player.reset and player.falling,'Wind can push the player off the cloud world')
+ assert(player.x==before and cloud.x>x and cloud.y==y,'Bat crosses horizontally without pushing the player')
+ cloud.dx=-1;local right=cloud.x;C.update(cloud,.1);assert(cloud.x<right and cloud.y==y,'Both crossing directions work')
+ cloud.x=Arena.width+47;cloud.dx=1;C.update(cloud,.1);assert(cloud.x<0,'Bat loops after leaving the screen')
  reset_level();W.storm=false;W.trail(250,250,300,250);local count=#W.trails
  W.update(120);assert(#W.trails==count,'Electric paths do not expire even after two minutes')
  W.trail(250,250,300,250);assert(#W.trails==count,'Repeated paths are deduplicated without disappearing')
@@ -90,7 +90,7 @@ function T.run()
   if frames==1 then App.capture='sky-weather-warning.png'
   elseif frames==3 then W.update(.52);App.capture='sky-weather-impact.png'
   elseif frames==5 then W.update(.5);BossFX.update(2);App.capture='sky-weather-hole.png'
-  elseif frames==8 then print('PASS Sky ecosystem: warned fixed strikes, impact and fall deaths, reset, permanent electric trails, dash crossing, hidden player, cleared mist, stationary wind and fall death, uncapped menu/editor, removed gulls and migrated scorpions, zigzag orbit and pursuit, freeze, dense dark mist, resize, editor validation and preserved authored maps');love.event.quit() end
+  elseif frames==8 then print('PASS Sky ecosystem: warned fixed strikes, impact and fall deaths, reset, permanent electric trails, dash crossing, hidden player, cleared mist, horizontal bat crossings, uncapped menu/editor, removed gulls and migrated scorpions, zigzag orbit and pursuit, freeze, dense dark mist, resize, editor validation and preserved authored maps');love.event.quit() end
  end
  local draw=love.draw
  love.draw=function()

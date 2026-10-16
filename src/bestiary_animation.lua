@@ -15,8 +15,14 @@ function A.draw(e,x,y,size,time)
   local walk={walkPhase=t*7,walkMoving=true,enraged=false}
   require('final_art').spider(variant,x,y,size*.85,angle,walk)
   if id=='final_spider' then require('final_art').clutch(x,y,size*.85,24,angle) end
- elseif id=='light_jelly' or id=='octopus' then
-  Art.drawSwimmer(id=='light_jelly' and 'abyss_octopus' or 'octopus_extended_down',x,y,size,math.sin(t*.6)*.12,t)
+ elseif id=='octopus' then
+  require('octopus_preview').draw(x,y,size,t)
+ elseif id=='light_jelly' then
+  Art.drawSwimmer('abyss_octopus',x,y,size,math.sin(t*.6)*.12,t)
+ elseif id=='lava' then
+  A.lava=A.lava or {x=0,y=0,radius=22,points={-20,0,0,-8,22,4,8,12},seed=7}
+  g.translate(x,y);g.scale(size/100)
+  require('lava_zones').draw(A.lava,t,1,2)
  elseif id=='crab' then
   local key=math.floor(t*6)%2==0 and 'crab_open' or 'crab_closed'
   Art.draw(key,x+math.sin(t*2)*size*.035,y,size,math.sin(t)*.08)

@@ -1,4 +1,4 @@
-local H={lava={}}
+local H={lava={},electric={}}
 function H.kill(source)
     if require('boss_liberation').busy() then return end
     if Aftermath and (Aftermath.cleared or Aftermath.ready()) then return end
@@ -7,7 +7,7 @@ function H.kill(source)
 end
 function H.reset(hell,n)
     Burning.reset()
-    H.lava={}; player.venom=0; player.dashing=false; player.falling=false; player.fallTimer=0
+    H.lava={};H.electric={}; player.venom=0; player.dashing=false; player.falling=false; player.fallTimer=0
 
 end
 function H.inEllipse(x,y,p,pad)
@@ -24,6 +24,7 @@ end
 function H.contact()
     Realms.contact(); Abyss.contact(); AbyssTerrain.contact(); Bosses.contact(); Magma.contact(); Burning.contact()
     if H.inLava(player.x+15,player.y+12,5) then H.kill(); return end
+    require('electric_ground').contact(H.electric)
     if Wasp then Wasp.contact() end
     Storm.contact()
 end
@@ -47,6 +48,7 @@ function H.speed()
 end
 function H.drawFloor()
     require('lava_zones').drawAll(H.lava,UI.clock)
+    require('electric_ground').draw(H.electric,Graphics.effects and UI.clock or 0)
 end
 function H.draw()
     Magma.drawGround(); Burning.drawGround()

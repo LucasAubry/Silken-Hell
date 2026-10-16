@@ -177,6 +177,7 @@ function U.background()
         local y=247+math.sin(U.clock*0.9)*7
         if App.state=='menu' then x,y=U.menuPosition() end
         local selected=Characters.menuIndex()
+        y=y+require('winged_anchors').menuOffset(selected,216)
         if U.lastPortrait~=selected then U.portraitChanged=U.clock;U.lastPortrait=selected end
         local t=math.min(1,math.max(0,(U.clock-(U.portraitChanged or U.clock))/.28))
         if Motion.enabled() then y=y-7*math.sin(t*math.pi)*(1-t) end

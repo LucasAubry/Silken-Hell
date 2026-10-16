@@ -232,8 +232,8 @@ function C.selectionPortrait(x,y,size)
     g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied')
     local r,green,b,a=g.getColor();g.setColor(r*a,green*a,b*a,a)
     g.draw(C.menuCache,x,y,0,size/pixels,size/pixels,pixels+4,pixels+4);g.pop()
-    if not locked then effects.front(x,y,size) end
-    if not locked then require('skin_extension').draw(x,y,size,'down',false,true) end
+    if not locked then effects.front(x,y,size,nil,'down',selected) end
+    if not locked then require('skin_extension').draw(x,y,size,'down',false,true,selected) end
 end
 function C.shadow(x,y,size,dir,walk)
     local g=love.graphics
@@ -261,9 +261,9 @@ function C.scorePortrait(score,x,y,size)
     local effects=score.effects or {};local fx=require('skin_effects')
     if effects.gold then fx.behind(x,y,size,'gold') end
     C.portrait(score.skin or 1,x,y,size)
-    if effects.hardcore then fx.front(x,y,size,'hardcore') end
+    if effects.hardcore then fx.front(x,y,size,'hardcore','down',score.skin or 1) end
     if effects.gold then fx.front(x,y,size,'gold') end
-    if effects.heartbreak then require('skin_extension').draw(x,y,size,'down',true,true) end
+    if effects.heartbreak then require('skin_extension').draw(x,y,size,'down',true,true,score.skin or 1) end
 end
 -- Crown variants retain the body color of their base skin.
 C.bodyColors={original={.57,.29,.10},spider={.94,.90,.79},hell_spider={1,.20,.055},ocean_spider={.15,.68,.91},crown_spider={.94,.90,.79}}

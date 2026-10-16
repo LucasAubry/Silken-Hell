@@ -26,7 +26,7 @@ local B={seen={},unread={},dirty=false,entries={
  {id='jelly',name='Méduse électrique',art='jelly_down',world=4,text='La Pieuvre a fait de sa peur une arme. Elle s’illumine avant de répandre ses fils électriques : glisse-toi entre eux.'},
  {id='worm',name='Ver des profondeurs',art='worm_down',world=5,text='Le Hérisson lui ordonne de creuser toujours plus loin. Il ondule sous terre, émerge et crache des œufs qui deviennent de petits poursuivants contre les murs.'},
  {id='mole',name='Taupe fouisseuse',art='mole_down',world=5,text='Elle ne te hait pas : elle a peur du Hérisson et de ses fils. Elle se cache sous terre ; une motte trahit l’endroit où elle ose remonter.'},
- {id='wind_bat',name='Chauve-souris des bourrasques',world=6,text='Elle reste en vol stationnaire, vise puis bat des ailes pour vous repousser. Éloignez-vous du vide et des traînées électriques.'},
+ {id='wind_bat',name='Chauve-souris du Ciel',world=6,text='Elle traverse le ciel en ligne droite. Anticipe son passage et laisse-la filer avant de couper sa trajectoire.'},
  {id='dragonfly',name='Libellule électrique',world=6,text='Elle zigzague autour de vous et laisse une traînée électrique mortelle jusqu’à la fin de la tentative.'},
  {id='mist_moth',name='Papillon des brumes',world=6,text='Il répand une épaisse brume sombre qui masque le terrain. Le joueur y disparaît. La foudre déchire la brume et révèle le sol ainsi que le trou creusé par l’impact.'},
  {id='rain',trap=true,name='Éclair du Ciel',art='rain',world=6,text='Une ombre grise passe sur le sol avant l’impact. Quitte cette zone : la foudre creuse un trou qui reste dangereux jusqu’à la prochaine tentative.'},

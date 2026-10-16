@@ -50,10 +50,10 @@ local function inside(mx,my)
     local x,y=point(mx,my); return x>=0 and x<=M.layout.width and y>=0 and y<=600
 end
 local function snapped(v) return state.snap and math.floor(v/10+.5)*10 or math.floor(v+.5) end
-local function brush(e) return e and (e.kind=='hole' or e.kind=='lava') end
+local function brush(e) return e and (e.kind=='hole' or e.kind=='lava' or e.kind=='electric_ground') end
 local function entity(e,ghost,terrainDrawn)
     local c=catalog(e); g.setColor(1,1,1,ghost and .45 or 1)
-    if e.type=='dragonfly' or e.type=='mist_moth' or e.type=='wind_bat' or e.type=='lava_scorpion' then require('sky_insect_art').draw(e.type,e.x,e.y,64,state.clock);return end
+    if e.type=='dragonfly' or e.type=='mist_moth' or e.type=='wind_bat' or e.type=='lava_scorpion' then require('sky_insect_art').draw(e.type,e.x,e.y,e.type=='wind_bat' and 48 or 64,state.clock,e.type=='wind_bat' and (e.dx==-1 and math.pi/2 or -math.pi/2) or nil);return end
     if e.kind=='mob' and (e.type=='piege' or e.type=='scie') then require('trap_art').draw(e.type,e.x,e.y,e.type=='scie' and 60 or 52,M.world,false,state.clock);return end
     if e.kind=='wall' and M.world==5 then
         g.push('all');g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180)
@@ -64,6 +64,8 @@ local function entity(e,ghost,terrainDrawn)
         require('tornado_art').draw(Art,e.x,e.y,state.clock,94,ghost and .45 or 1)
     elseif e.kind=='lava' and e.points then
         if not terrainDrawn then require('lava_zones').draw(e,state.clock,ghost and .5 or 1,M.world) end
+    elseif e.kind=='electric_ground' then
+        require('electric_ground').draw({e},state.clock,ghost and .5 or 1)
     elseif e.kind=='hole' then
         if not terrainDrawn then require('terrain_surface').draw({e},'hole',state.clock,ghost and .5 or 1,M.world) end
     elseif e.kind=='rain' then g.setColor(.25,.6,1,.8); for i=-1,1 do g.line(e.x+i*8,e.y-18,e.x+i*8-5,e.y+7) end
@@ -163,6 +165,7 @@ function love.load()
     if ok and type(templates)=='table' then for _,t in ipairs(templates) do if t.kind=='mob' or t.kind=='boss' then C[#C+1]=t end end end
     state.templates=ok and type(templates)=='table' and templates or {}
     state.editorSound=love.audio.newSource('assets/audio/effects/editeur start.mp3','static');state.editorSound:setVolume(.65);state.editorSound:play()
+    if os.getenv('SILKEN_DESIGNER_TEST')=='1' and os.getenv('SILKEN_CELESTIAL_EDITOR_TEST')=='1' then require('celestial_selftest').run(M,state,select);return end
     if os.getenv('SILKEN_DESIGNER_TEST')=='1' and os.getenv('SILKEN_MAP_PREVIEW_TEST')=='1' then require('preview_selftest').run(M,state,select);return end
     if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require(os.getenv('SILKEN_EDITOR_DRAWING_TEST')=='1' and 'drawing_selftest' or os.getenv('SILKEN_GROUND_HOLES_TEST')=='1' and 'holes_selftest' or M.projects and 'project_selftest' or M.workshop and 'workshop_selftest' or 'selftest').run(M,state,select,apply,preview) end
 end
@@ -254,7 +257,7 @@ function love.draw()
         end
         local defaults=e.kind=='boss' and {movementRate=1,attackRate=1} or e.kind=='magma_spawner' and {spawnDelay=1,spawnInterval=3} or {}
         local row=0
-        for _,f in ipairs({'x','y','w','h','rx','ry','speed','phase','dx','rota','radius','spawnDelay','spawnInterval','movementRate','attackRate','rotation'}) do if (e[f]~=nil or defaults[f]~=nil) and not (e.kind=='wall' and f=='rotation') then
+        for _,f in ipairs({'x','y','w','h','rx','ry','speed','phase','dx','rota','radius','spawnDelay','spawnInterval','movementRate','attackRate','rotation'}) do if (e[f]~=nil or defaults[f]~=nil) and not (e.kind=='wall' and f=='rotation') and not (e.type=='wind_bat' and f=='dx') then
             local value=e[f] or defaults[f]
             local yy=272+row*39; text(({rotation='Angle (°)',movementRate='Dépl. ×',attackRate='Attaques ×',spawnDelay='Début (s)',spawnInterval='Intervalle (s)',speed='Vitesse',radius='Rayon',phase='Phase',w='Largeur',h='Hauteur'})[f] or f:upper(),right,yy+8,12,color.muted,M.projects and 103 or nil)
             local label=state.input==f and state.inputText..'|' or tostring(math.floor(value*100+.5)/100)
@@ -262,6 +265,7 @@ function love.draw()
             row=row+1
         end end
         local yy=280+row*39
+        if e.type=='wind_bat' then button(e.dx==-1 and 'Droite → gauche' or 'Gauche → droite',right,yy,207,34,function() M.checkpoint();e.dx=e.dx==-1 and 1 or -1;M.persist() end);yy=yy+42 end
         if e.kind=='wall' then button('Tourner de 90°',right,yy,207,34,M.rotate);yy=yy+42 end
         if e.kind=='mob' and e.type~='piege' and e.type~='scie' then
             button(e.has_larme and 'Porte une larme : oui' or 'Porte une larme : non',right,yy,207,32,function() M.checkpoint(); e.has_larme=not e.has_larme; M.persist() end,e.has_larme); yy=yy+42

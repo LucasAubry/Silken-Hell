@@ -30,6 +30,7 @@ end
 local function sprite(p,x,y)
  local g=love.graphics;local size,height=R.dimensions(p)
  if p.type=='dragonfly' or p.type=='mist_moth' or p.type=='wind_bat' or p.type=='lava_scorpion' then require('sky_insect_art').draw(p.type,x,y,size,UI.clock);return end
+ if p.type=='octopus' then require('octopus_preview').draw(x,y,size,UI.clock);return end
  if p.type=='final_spider' then g.setColor(1,1,1);require('final_art').spider('queen',x,y,62,0);require('final_art').clutch(x,y,62,24);return end
  if p.type=='merle' then require('mobs.bosses.raven.egg').draw(x,y,60,0);return end
  local a=Art.images[p.art]

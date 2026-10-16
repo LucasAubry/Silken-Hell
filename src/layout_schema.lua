@@ -21,7 +21,7 @@ function S.migrate(layout)
     return layout
 end
 -- The retired identifier remains readable for old saves and Workshop maps only.
-local kinds={abyss_gate=true,abyss_part=true,magma_spawner=true,spawn=true,tear=true,wall=true,mob=true,boss=true,nest=true,light=true,lava=true,vent=true,hole=true,tunnel=true,tornado=true,current=true,rain=true}
+local kinds={abyss_gate=true,abyss_part=true,magma_spawner=true,spawn=true,tear=true,wall=true,mob=true,boss=true,nest=true,light=true,lava=true,electric_ground=true,vent=true,hole=true,tunnel=true,tornado=true,current=true,rain=true}
 local mobs={wind_bat=true,dragonfly=true,mist_moth=true,magma_larva=true,ange=true,snake=true,piege=true,scie=true,spinner=true,lava_scorpion=true,crab=true,abyss_fish=true,light_jelly=true,lanternfish=true,waspling=true,larva=true,blackbird_chick=true,fish=true,mole=true,worm=true,jelly=true}
 local bosses={skeleton_head=true,storm=true,merle=true,hellserpent=true,wasp=true,hedgehog=true,octopus=true,skeleton_fish=true}
 function S.validate(l)
@@ -43,7 +43,7 @@ function S.validate(l)
         for _,key in ipairs({'w','h','rx','ry','radius'}) do if e[key] and e[key]<1 then return false,'Les dimensions doivent être positives.' end end
         if e.kind=='wall' and (not e.w or not e.h) then return false,'Dimensions du mur manquantes.' end
         if e.points~=nil then
-            if (e.kind~='hole' and e.kind~='lava') or type(e.points)~='table' or #e.points<2 or #e.points>512 or #e.points%2~=0 then return false,'Dessin de zone invalide.' end
+            if (e.kind~='hole' and e.kind~='lava' and e.kind~='electric_ground') or type(e.points)~='table' or #e.points<2 or #e.points>512 or #e.points%2~=0 then return false,'Dessin de zone invalide.' end
             local count=0
             for i,v in pairs(e.points) do
                 count=count+1
@@ -54,6 +54,8 @@ function S.validate(l)
             if count~=#e.points then return false,'Dessin de zone incomplet.' end
             if not e.radius or e.radius<4 or e.radius>120 then return false,'Taille du pinceau entre 4 et 120.' end
         end
+        if e.kind=='electric_ground' and not e.points then return false,'Dessine la zone électrique.' end
+        if e.type=='wind_bat' and e.dx~=nil and e.dx~=1 and e.dx~=-1 then return false,'Sens de traversée invalide.' end
         if e.customName~=nil and (type(e.customName)~='string' or #e.customName>60) then return false,'Nom de créature invalide.' end
         for _,key in ipairs({'electric','has_larme','elite','startUnderground'}) do if e[key]~=nil and type(e[key])~='boolean' then return false,'Option invalide.' end end
         if e.kind=='spawn' then spawn=spawn+1 end

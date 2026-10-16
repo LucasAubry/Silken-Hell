@@ -5,11 +5,12 @@ local function curve(points) return love.math.newBezierCurve(points):render(5) e
 local function mushroom(x,y,size,angle,seed,time)
  local g=love.graphics;g.push();g.translate(x,y)
  g.rotate(angle+math.sin(time*.85+seed)*.028)
- local h=size;local w=h*(.40+noise(seed)*.24)
+ local kind=seed%3
+ local h=size*(kind==2 and 1.15 or 1);local w=h*(kind==2 and .32 or (.40+noise(seed)*.24))
  local bend=(noise(seed+8)-.5)*h*.22
  local stem=curve({0,2,-h*.10,-h*.25,bend,-h*.53,bend,-h*.73})
  g.setColor(.018,.013,.010,.6);g.setLineWidth(h*.15+3);g.line(stem)
- g.setColor(.23,.20,.13);g.setLineWidth(h*.12);g.line(stem)
+ g.setColor(kind==1 and {.65,.58,.42} or kind==2 and {.35,.36,.44} or {.23,.20,.13});g.setLineWidth(h*.12);g.line(stem)
  g.setColor(.47,.39,.23);g.setLineWidth(h*.035);g.line(stem)
  g.translate(bend,0)
  -- A rounded umbrella, with a shaded underside and warm edge light.
@@ -20,14 +21,15 @@ local function mushroom(x,y,size,angle,seed,time)
  local cap=curve({-w,-h*.75,-w*.75,-h*1.16,w*.58,-h*1.20,w,-h*.75})
  local rim=curve({w,-h*.75,w*.36,-h*.81,-w*.36,-h*.81,-w,-h*.75})
  for i=3,#rim do cap[#cap+1]=rim[i] end
- g.setColor(.25,.145,.065);g.polygon('fill',cap)
+ g.setColor(kind==1 and {.47,.045,.035} or kind==2 and {.20,.16,.31} or {.25,.145,.065});g.polygon('fill',cap)
  local crown=curve({-w*.88,-h*.79,-w*.55,-h*1.11,w*.35,-h*1.12,w*.63,-h*.84})
- g.setColor(.39,.245,.10);g.polygon('fill',crown)
- g.setColor(.64,.43,.18,.65);g.setLineWidth(.9)
+ g.setColor(kind==1 and {.76,.12,.065} or kind==2 and {.40,.31,.52} or {.39,.245,.10});g.polygon('fill',crown)
+ g.setColor(kind==1 and {.98,.37,.19,.7} or kind==2 and {.67,.61,.79,.65} or {.64,.43,.18,.65});g.setLineWidth(.9)
  g.line(curve({-w*.85,-h*.83,-w*.49,-h*1.12,w*.25,-h*1.10,w*.48,-h*.94}))
  for j=1,7 do
   local xx=(noise(seed+j)-.5)*w*1.15
-  g.setColor(.70,.53,.27,.35);g.ellipse('fill',xx,-h*(.83+noise(seed+j*7)*.14),h*.025,h*.015)
+  g.setColor(kind==1 and {.98,.94,.79,.95} or kind==2 and {.75,.70,.88,.55} or {.70,.53,.27,.35})
+  g.ellipse('fill',xx,-h*(.83+noise(seed+j*7)*.14),h*(kind==1 and .065 or .025),h*(kind==1 and .038 or .015))
  end
  g.pop()
 end
@@ -73,6 +75,17 @@ function F.bake(width,height)
    for j=1,6 do
     local px=x+noise(seed+j*5)*w;local py=-depth+noise(seed+j*11)*10
     g.setColor(.08,.085,.035,.85);g.ellipse('fill',px,py,3+noise(seed+j)*4,2)
+   end
+   if i%4==0 then
+    -- Gnarled roots and tiny shelf fungi add forms between the taller caps.
+    local root=curve({x+5,5,x+w*.85,-6,x+w*.15,-depth,x+w*.70,-depth-10})
+    g.setColor(.09,.055,.028);g.setLineWidth(6);g.line(root)
+    g.setColor(.33,.23,.10);g.setLineWidth(1.4);g.line(root)
+    for j=1,3 do
+     local px=x+w*.6-j*4;local py=-depth*.4-j*5
+     g.setColor(.27,.14,.065);g.ellipse('fill',px,py,9-j,3)
+     g.setColor(.64,.43,.20);g.setLineWidth(.8);g.arc('line','open',px,py,9-j,math.pi,math.pi*2)
+    end
    end
    if i%3~=1 then
     local wx,wy=world(x+w*.48,-depth*.42)

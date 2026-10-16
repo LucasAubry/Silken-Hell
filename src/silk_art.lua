@@ -22,7 +22,8 @@ function S.load()
 end
 function S.menuThread(x,top,y,size)
  local index=Characters.menuIndex();index=Characters.crowned[index] or index
- local bottom=y+(S.anchors[index] or -.32)*size+3
+ local anchor=require('winged_anchors').winged(index) and -.19 or (S.anchors[index] or -.32)
+ local bottom=y+anchor*size+3
  if bottom<=top then return end
  local g=love.graphics;g.push('all');g.setColor(.95,.91,.82,.92)
  Art.draw('silk_strand',x,(top+bottom)/2,5.5,0,bottom-top);g.pop()

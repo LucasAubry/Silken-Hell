@@ -383,6 +383,7 @@ function love.draw()
         require('renaissance_frame').draw()
         require('earth_frame').draw()
         require('paradise_frame').draw()
+        require('hell_frame').draw()
         Prism.endScene();love.graphics.setCanvas()
         sceneCanvas=require('world_lighting').apply(gameCanvas)
     elseif App.state=='bossWorld' then
@@ -627,6 +628,7 @@ function love.resize(w,h)
         for _,m in ipairs(Raven.chicks) do m.cx=m.cx*ratio; m.x=m.x*ratio end
     end
     for _,p in ipairs(Hazards.lava) do require('ground_holes').resize(p,ratio) end
+    for _,p in ipairs(Hazards.electric) do require('ground_holes').resize(p,ratio) end
     if Wasp.active then Wasp.resize(ratio) end
     if not custom then Arena.reconcile() end
     if Hedgehog.active then

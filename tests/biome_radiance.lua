@@ -33,8 +33,8 @@ function T.run()
    assert(#L.lights<= (quality==1 and 8 or 16),'Light budget must remain bounded')
   end
   UI.clock=12;local data=draw();data:release()
-  if world==1 or world==3 or world==5 then
-   local frame=require(world==1 and 'paradise_frame' or world==3 and 'renaissance_frame' or 'earth_frame');local canvas=g.newCanvas(Arena.width,600)
+  if world==1 or world==2 or world==3 or world==5 then
+   local frame=require(world==1 and 'paradise_frame' or world==2 and 'hell_frame' or world==3 and 'renaissance_frame' or 'earth_frame');local canvas=g.newCanvas(Arena.width,600)
    local function foliage(time,effects)
     UI.clock=time;Graphics.effects=effects
     g.push('all');g.setCanvas(canvas);g.origin();g.clear(0,0,0,0)

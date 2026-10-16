@@ -12,7 +12,7 @@ for _,v in ipairs({
  {'lava_scorpion','Scorpion de lave',false,2,85},{'spinner','Serpent tournoyant','serpent_down',2,105},
  {'fish','Poisson-lame','fish_down',4,110},{'jelly','Méduse électrique','jelly_down',4,50},{'crab','Crabe','crab_open',4,100},
  {'worm','Ver de terre','worm_down',5,90},{'mole','Taupe','mole_down',5,145},
- {'wind_bat','Chauve-souris des bourrasques',false,6,0},
+ {'wind_bat','Chauve-souris du Ciel',false,6,210},
  {'dragonfly','Libellule électrique',false,6,90},{'mist_moth','Papillon des brumes',false,6,55},
  {'light_jelly','Pieuvre abyssale','abyss_octopus',7,40},
  {'abyss_fish','Gueule des profondeurs','abyss_fish',7,75},{'lanternfish','Poisson-lanterne','lanternfish_down',7,55}
@@ -22,6 +22,7 @@ add('mob','scie','Roue enchaînée','wheel',1,{speed=2,rota=1,radius=60})
 add('mob','magma_larva','Larve de magma','magma_larva',2,{speed=245})
 add('magma_spawner',nil,'Nid de larves','magma_nest',2,{rx=31,ry=23,spawnDelay=1,spawnInterval=3})
 add('lava',nil,'Dessiner la lave',nil,2,{radius=28,points={0,0}})
+add('electric_ground',nil,'Dessiner l’électricité',nil,6,{radius=16,points={0,0}})
 add('vent',nil,'Anémone électrique','electric_anemone',7,{rx=30,ry=23})
 add('tunnel',nil,'Tunnel (par paire)','earth_tunnel',5)
 add('hole',nil,'Dessiner un trou',nil,6,{radius=28,points={0,0}})
