@@ -380,6 +380,8 @@ function love.draw()
         love.graphics.setColor(1,1,1)
         if Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
         if not (require('abyss_gate').active and require('abyss_gate').closing) then draw_player_beacon() end;if not Abyss.playerHidden() then Replay.drawGhost() end
+        require('renaissance_frame').draw()
+        require('earth_frame').draw()
         Prism.endScene();love.graphics.setCanvas()
         sceneCanvas=require('world_lighting').apply(gameCanvas)
     elseif App.state=='bossWorld' then
