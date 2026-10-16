@@ -71,7 +71,7 @@ function A.draw()
         local count=0
         for _,m in ipairs(mobs) do
             if count>=8 then break end
-            local radiant=(m.burnTime or 0)>0 or m.type=='imp' or m.type=='magma_larva' or m.type=='jelly' or (m.type=='gull' and m.electric)
+            local radiant=(m.burnTime or 0)>0 or m.type=='lava_scorpion' or m.type=='magma_larva' or m.type=='jelly'
             if radiant and not m.abyssHeld and not m.spent then
                 count=count+1;local light=A.lights[count]
                 light[1],light[2],light[3],light[4]=m.x,m.y,72+math.sin(t*3+m.x)*8,.65
@@ -110,10 +110,9 @@ function A.draw()
     end
     for _,m in ipairs(mobs) do
         if not m.abyssHeld and not m.spent then
-            if m.type=='imp' or m.type=='magma_larva' then
+            if m.type=='lava_scorpion' or m.type=='magma_larva' then
                 glow(m.x,m.y+7,28,{1,.2,.025},.22)
             elseif m.type=='jelly' then glow(m.x,m.y,39,{.2,.7,1},.16+.1*math.sin(t*4)^2)
-            elseif m.type=='gull' and m.electric then glow(m.x,m.y,28,{1,.85,.08},.22)
             elseif m.type=='worm' and Realms.wormPhase(m.age)=='surface' then
                 glow(m.x,m.y+4,18,{.8,.5,.2},.09)
             end

@@ -13,20 +13,17 @@ function T.run()
   LevelLayouts.disabled=disabled
   for n=1,10 do
    level(6,n)
-   assert(#mobs==0 and not Bosses.alive() and not Storm.active,'Ciel must have no creatures or boss')
+   assert(#mobs>=3 and not Bosses.alive() and not Storm.active,'Ciel contains the new creatures without a boss')
    assert(#Arena.interior==0 and #Realms.holes==0 and #Realms.tornadoes==0 and #Realms.rainSites==0,'Ciel must have no terrain or weather')
    assert(#levels[n].larme_position==0 and objet.larme.taken,'Ciel must have no collectible')
-   local x,y=player.x,player.y
-   for _=1,180 do Realms.update(1/60);Campaign.updateTear(1/60) end
-   assert(x==player.x and y==player.y and not player.reset,'Empty sky must not push or kill')
-   assert(not Realms.fallAt(30,300),'Ciel edges are no longer falling hazards')
+   assert(require('sky_weather').storm and Realms.fallAt(5,300),'Sky has weather and lethal outer void')
   end
  end
  local sky=require('sky')
- local old={world=6,level=1,width=960,height=600,entities={{kind='mob',type='gull',x=300,y=200}}}
- sky.prepare(old);assert(old.skyRevision==1 and #old.entities==1 and old.entities[1].kind=='spawn','Old editor layouts migrate to empty Ciel')
+ local old={world=6,level=1,width=960,height=600,entities={{kind='spawn',x=480,y=300}}}
+ sky.prepare(old);assert(old.skyRevision==3 and #old.entities==4,'Default Sky has all three creatures')
  old.entities[#old.entities+1]={kind='tear',x=400,y=300};sky.prepare(old)
- assert(#old.entities==2,'New Ciel edits survive subsequent loads')
+ assert(#old.entities==5,'Authored edits survive subsequent loads')
  -- Switching direction or entering/leaving a branch retargets a moving marker.
  local M=require('world_map')
  for _,w in ipairs(Worlds.order) do Profile.completed[w]=true;Profile.levels[w]=10 end

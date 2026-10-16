@@ -19,14 +19,6 @@ function L.collect()
   require('biome_radiance').sources(add,UI.clock);return L.lights
  end
  local time=Realms.clock or 0
- -- Transient sources get priority when a crowded custom map reaches the budget.
- for _,p in ipairs(BossFX.events or {}) do
-  add(p.x,p.y,110+(p.power or 3)*25,math.max(0,1-p.age/.4)^2*.95,p.color)
- end
- for _,p in ipairs(Magma.bursts or {}) do add(p.x,p.y,190,math.max(0,1-p.age/.38),fire) end
- for _,p in ipairs(require('storm_lightning').events) do
-  add(p.x,p.y,430,math.max(0,1-p.age/.55)*.85,{.65,.79,1})
- end
  local function storm(boss)
   if not boss.active or boss.defeated then return end
   for _,p in ipairs(boss.pickups or {}) do
@@ -50,7 +42,7 @@ function L.collect()
   local dx,dy=require('render_motion').offset(m)
   if m.type=='lanternfish' then add(m.x+dx,m.y+dy-15,145,.65,gold)
   elseif Campaign.biome==1 and m.type=='ange' then add(m.x+dx,m.y+dy,105,.24,gold)
-  elseif Campaign.biome==2 and m.type=='imp' then add(m.x+dx,m.y+dy,85,.25,fire)
+  elseif Campaign.biome==2 and m.type=='lava_scorpion' then add(m.x+dx,m.y+dy,85,.25,fire)
   elseif m.type=='light_jelly' or Campaign.biome==4 and m.type=='jelly' then add(m.x+dx,m.y+dy,100,.4,blue)
   elseif m.type=='magma_larva' then
    local charge=math.max(0,1-((m.fuse or 3.6)-(m.age or 0))/.8)
@@ -65,9 +57,22 @@ function L.collect()
  end
  if Story.wallAvailable() then local x,y=Story.wallSpot();add(x,y,58,.65,gold) end
  require('biome_radiance').sources(add,UI.clock)
- -- Keep source selection deterministic, so replay rendering stays repeatable.
+ -- Reserve a fixed transient budget: explosions must never evict lava lights.
  local limit=Graphics.quality==1 and 8 or 16
- while #L.lights>limit do table.remove(L.lights) end
+ local transientSlots=Graphics.quality==1 and 2 or 4
+ while #L.lights>limit-transientSlots do table.remove(L.lights) end
+ local function burst(x,y,radius,power,color)
+  if #L.lights<limit then add(x,y,radius,power,color) end
+ end
+ for _,p in ipairs(Magma.bursts or {}) do
+  burst(p.x,p.y,125,math.max(0,1-p.age/.55)^2*.45,fire)
+ end
+ for _,p in ipairs(BossFX.events or {}) do
+  burst(p.x,p.y,110+(p.power or 3)*25,math.max(0,1-p.age/.4)^2*.65,p.color)
+ end
+ for _,p in ipairs(require('storm_lightning').events) do
+  burst(p.x,p.y,430,math.max(0,1-p.age/.55)*.85,{.65,.79,1})
+ end
  return L.lights
 end
 function L.resize(scene)
@@ -124,6 +129,7 @@ function L.apply(scene)
  local biome=require('biome_radiance').biome()
  local ambient=({[1]=.91,[2]=.91,[3]=.87,[4]=.88,[5]=.88,[6]=.91,[7]=1,[8]=.97})[biome] or .97
  L.composite:send('ambient',ambient)
+ L.composite:send('preserveEmbers',biome==2 and 1 or 0)
  L.composite:send('scatter',biome==7 and 0 or biome==4 and .06 or biome==8 and .016 or .035)
  L.composite:send('softHighlights',biome~=7 and biome~=2 and require('biome_radiance').active() and 1 or 0)
  g.setShader(L.composite);g.draw(scene);g.pop()

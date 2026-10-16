@@ -15,7 +15,7 @@ function willCollide(newX, newY)
 	local offsetY = player.hitBox_offset_y or 0
 
     local px,py,pw,ph=require('collision_shapes').bounds(player,newX,newY)
-    return Arena.blocked(px,py,pw,ph,Walls)
+    return Arena.blocked(px,py,pw,ph)
 end
 
 

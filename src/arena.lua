@@ -28,6 +28,8 @@ end
 function A.build(spawn,targets,boss,authored)
     A.walls={{x=0,y=0,w=A.width,h=22},{x=0,y=578,w=A.width,h=22},{x=0,y=0,w=22,h=600},{x=A.width-22,y=0,w=22,h=600}}
     A.interior={}
+    Walls=A.walls
+    A.navigationVersion=(A.navigationVersion or 0)+1
     if authored then return end
     if Campaign.biome==2 or (Campaign.biome==5 and not boss) then
         local function wall(x,y,w,h)

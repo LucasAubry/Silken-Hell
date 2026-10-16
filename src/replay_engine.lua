@@ -52,13 +52,14 @@ function E.create(engine,R)
  local fs,g=env.love.filesystem,env.love.graphics
  local metadata=json.decode(E.source(engine,'assets/art-metadata.json') or E.source(engine,'art-metadata.json') or '{}')
  E.spriteHistory=E.spriteHistory or json.decode(host.filesystem.read('assets/replay_engines/sprite-history.json') or '{}')
+ E.retiredSprites=E.retiredSprites or json.decode(host.filesystem.read('assets/replay_engines/retired-sprites.json') or '{}')
  local function archivedImage(path)
   local key=engine.images and engine.images[path]
   if key then return 'assets/replay_engines/images/'..key..'.png' end
   local resolved=native('asset_paths').resolve(path)
   local meta=metadata[path] or metadata[resolved]
   local versions=E.spriteHistory[resolved]
-  return versions and meta and versions[tostring(meta.fileSize)]
+  return versions and meta and versions[tostring(meta.fileSize)] or E.retiredSprites[path] or E.retiredSprites[resolved]
  end
  local function imageData(path)
   local file=archivedImage(path)

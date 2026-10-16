@@ -1,8 +1,8 @@
 local die=require 'mobs.shared.infernal_contact'
-function spawn_imp(x,y,speed,elite)
-    mobs[#mobs+1]={type='imp',x=x,y=y,speed=speed,charge=1.5,dir='down',elite=elite,hitBox_width=30,hitBox_height=36,hitBox_offset_x=-15,hitBox_offset_y=-18}
+function spawn_lava_scorpion(x,y,speed,elite)
+    mobs[#mobs+1]={type='lava_scorpion',x=x,y=y,speed=speed,charge=1.5,dir='down',elite=elite,hitBox_width=30,hitBox_height=36,hitBox_offset_x=-15,hitBox_offset_y=-18}
 end
-MobBehaviors.imp={
+MobBehaviors.lava_scorpion={
     update=function(m,dt)
         for _,trap in ipairs(mobs) do
             if trap.type=='piege' and not trap.active and isTouching(m,trap) then
@@ -25,6 +25,6 @@ MobBehaviors.imp={
     end,
     draw=function(m)
         love.graphics.setColor(1,m.charge<0 and .7 or 1,1)
-        Art.drawFacing('imp',m.dir,m.x,m.y,m.elite and 94 or 63); love.graphics.setColor(1,1,1)
+        require('sky_insect_art').draw('lava_scorpion',m.x,m.y,m.elite and 94 or 68,Realms.clock,({down=0,up=math.pi,left=math.pi/2,right=-math.pi/2})[m.dir]); love.graphics.setColor(1,1,1)
     end
 }

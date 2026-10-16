@@ -15,7 +15,6 @@ function T.run()
   else
    Realms.tornadoes[1].cooldown=0
    player.whirl={tornado=Realms.tornadoes[1],dx=0,dy=-1,time=.4}
-   for _,m in ipairs(mobs) do if m.type=='gull' then m.age=2;m.electric=level==6 end end
   end
   local random=love.math.getRandomState();local checkpoint=require('replay_state').hash()
   love.draw()

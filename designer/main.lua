@@ -53,7 +53,7 @@ local function snapped(v) return state.snap and math.floor(v/10+.5)*10 or math.f
 local function brush(e) return e and (e.kind=='hole' or e.kind=='lava') end
 local function entity(e,ghost,terrainDrawn)
     local c=catalog(e); g.setColor(1,1,1,ghost and .45 or 1)
-    if e.type=='dragonfly' or e.type=='mist_moth' then require('sky_insect_art').draw(e.type,e.x,e.y,64,state.clock);return end
+    if e.type=='dragonfly' or e.type=='mist_moth' or e.type=='wind_bat' or e.type=='lava_scorpion' then require('sky_insect_art').draw(e.type,e.x,e.y,64,state.clock);return end
     if e.kind=='mob' and (e.type=='piege' or e.type=='scie') then require('trap_art').draw(e.type,e.x,e.y,e.type=='scie' and 60 or 52,M.world,false,state.clock);return end
     if e.kind=='wall' and M.world==5 then
         g.push('all');g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180)
@@ -75,7 +75,6 @@ local function entity(e,ghost,terrainDrawn)
     elseif c.art and Art.images[c.art] then
         local size=e.kind=='boss' and (e.type=='octopus' and 360 or (e.type=='skeleton_fish' or e.type=='skeleton_head') and 170 or 105) or e.kind=='spawn' and 55 or (e.kind=='tear' or e.kind=='light') and 44 or e.kind=='lava' and e.rx*2 or e.kind=='tunnel' and 95 or 60
         if e.kind=='tear' or e.kind=='light' then g.setColor(Worlds.color(M.world).tear) end
-        if e.type=='gull' and e.electric then g.setColor(1,.88,.15) end
         if e.kind=='tear' or e.kind=='light' then Art.drawTinted(c.art,e.x,e.y,size)
         elseif e.kind=='abyss_gate' then Art.draw(c.art,e.x,e.y,e.w or 540,0,e.h or (e.w or 540)*1.2)
         elseif e.kind=='abyss_part' then Art.draw(c.art,e.x,e.y,e.w,(e.rotation or 0)*math.pi/180,e.h)
@@ -199,9 +198,9 @@ function love.draw()
     for i=1,max do local c=palette[i+state.scroll]; if c then
         local y=324+(i-1)*68
         button('',14,y,220,60,function() state.tool=c; M.selected=nil; state.input=nil end,state.tool==c)
-        if c.type=='dragonfly' or c.type=='mist_moth' then require('sky_insect_art').draw(c.type,45,y+29,42,state.clock)
+        if c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion' then require('sky_insect_art').draw(c.type,45,y+29,42,state.clock)
         elseif c.type=='larva' then Art.drawLarva(45,y+29,22,0,state.clock) elseif c.art then g.setColor(1,1,1); local a=Art.images[c.art]; local width=math.min(42,44*a.w/a.h); Art.draw(c.art,45,y+29,width) end
-        local insect=c.type=='dragonfly' or c.type=='mist_moth';local label=c.name
+        local insect=c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion';local label=c.name
         if insect then
             local utf8=require('utf8');local font=state.fonts[16]
             if font:getWidth(label)>145 then repeat local at=utf8.offset(label,-1);label=at and label:sub(1,at-1) or '' until label=='' or font:getWidth(label..'…')<=145;label=label..'…' end
@@ -268,7 +267,6 @@ function love.draw()
             button(e.has_larme and 'Porte une larme : oui' or 'Porte une larme : non',right,yy,207,32,function() M.checkpoint(); e.has_larme=not e.has_larme; M.persist() end,e.has_larme); yy=yy+42
         end
         if e.type=='mole' or e.type=='worm' then button(e.startUnderground and 'Départ : sous terre' or 'Départ : en surface',right,yy,207,32,function() M.checkpoint();e.startUnderground=not e.startUnderground;M.persist() end,e.startUnderground);yy=yy+42 end
-        if e.type=='gull' then button(e.electric and 'Électrique : oui' or 'Électrique : non',right,yy,207,32,function() M.checkpoint(); e.electric=not e.electric; M.persist() end,e.electric); yy=yy+42 end
         button('Dupliquer',right,yy,99,34,function() local t=M.clone(e); M.add(t,math.min(M.layout.width-40,e.x+30),math.min(560,e.y+30)) end)
         button('Supprimer',right+108,yy,99,34,M.delete)
     else

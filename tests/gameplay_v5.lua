@@ -40,11 +40,11 @@ function T.run()
     love.draw(); Campaign.drawTear=tear; Campaign.drawMob=mob
     assert(order[1]=='tear','Toutes les larmes derrière les monstres')
     level(1,1); mobs={}; player.x=700; player.y=300
-    spawn_imp(150,300,50); local m=mobs[1]; m.charge=-.01
-    MobBehaviors.imp.update(m,.6); assert(m.charge<0 and m.x>205,'Charge au-delà de 0,5 seconde')
-    MobBehaviors.imp.update(m,1); assert(m.charge<0,'Charge encore active après 1,6 seconde')
-    MobBehaviors.imp.update(m,1); assert(m.charge<0,'Charge encore active après 2,6 secondes')
-    MobBehaviors.imp.update(m,.5); assert(m.charge>0,'Fin après trois secondes')
+    spawn_lava_scorpion(150,300,50); local m=mobs[1]; m.charge=-.01
+    MobBehaviors.lava_scorpion.update(m,.6); assert(m.charge<0 and m.x>205,'Charge au-delà de 0,5 seconde')
+    MobBehaviors.lava_scorpion.update(m,1); assert(m.charge<0,'Charge encore active après 1,6 seconde')
+    MobBehaviors.lava_scorpion.update(m,1); assert(m.charge<0,'Charge encore active après 2,6 secondes')
+    MobBehaviors.lava_scorpion.update(m,.5); assert(m.charge>0,'Fin après trois secondes')
     for _,w in ipairs({1,2}) do
         level(w,3); mobs={}; spawn_spinner(700,400,110); local snake=mobs[1]; setup_spinner(snake)
         local clone={}; for k,v in pairs(snake) do clone[k]=v end

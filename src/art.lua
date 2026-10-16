@@ -79,7 +79,12 @@ function A.add(key,path)
     data:release()
 end
 -- Subtle contact shadow copied from the actual transparent sprite/mesh.
+function A.shadowAllowed()
+    local actor=require('servant_art').current
+    return not (actor and actor.has_larme)
+end
 function A.shadow(...)
+    if not A.shadowAllowed() then return end
     if not App or App.state~='playing' then return end
     local g=love.graphics;local r,green,b,alpha=g.getColor()
     if math.max(r,green,b)<.25 then return end -- Do not shadow existing dark silhouettes.
@@ -104,6 +109,7 @@ function A.shadow(...)
 end
 -- A single feathered contact ellipse; no stacked solid oval outlines.
 function A.contactShadow(x,y,rx,ry,opacity)
+    if not A.shadowAllowed() then return end
     if not App or App.state~='playing' then return end
     local g=love.graphics;g.push('all');g.setShader();g.setBlendMode('alpha')
     local _,_,_,alpha=g.getColor()
@@ -201,7 +207,7 @@ function A.load(defer)
     A.add('octopus_extended_down','assets/monstres/ocean/poulpe/octopus_extended_down.png')
     A.add('abyss_octopus','assets/monstres/abysse/pieuvre/abyss_octopus.png')
     for _,name in ipairs({'nest','lava','black_feather','wheel','wall','feather'}) do A.add(name,'assets/sprites/'..name..'.png') end
-    for _,name in ipairs({'spider','imp','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','gull','waspling','hedgehog','hedgehog_ball','lanternfish'}) do
+    for _,name in ipairs({'spider','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','waspling','hedgehog','hedgehog_ball','lanternfish'}) do
         for _,dir in ipairs({'up','down','left','right'}) do
             A.add(name..'_'..dir,'assets/sprites/directional/'..name..'_'..dir..'.png')
         end
@@ -220,6 +226,9 @@ end
 function A.drawAnemone(x,y,width,height,time)
     require('anemone_art').draw(A.images.electric_anemone,x,y,width,height,time)
 end
+function A.fishPalette()
+ A.fishShader=A.fishShader or love.graphics.newShader('assets/shaders/fish_palette.glsl');love.graphics.setShader(A.fishShader)
+end
 function A.draw(key,x,y,width,angle,height)
     if key=='earth_tunnel' or key=='earth_mound' then return require('earth_mound').draw(x,y,width,height,angle,true) end
     if key=='electric_anemone' then
@@ -237,6 +246,7 @@ function A.draw(key,x,y,width,angle,height)
     end
     if creature(key) then A.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2) end
     local previous=love.graphics.getShader()
+    if key:match('^fish_') then A.fishPalette() end
     if key=='black_feather' or key:match('^merle_') then
         require('paradise_style').bind(a,'bird')
     end
@@ -270,6 +280,7 @@ function A.drawFacing(name,dir,x,y,size)
     local scale=size/math.max(a.w,a.h)
     if not name:find('spider') then A.shadow(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2) end
     local previous=love.graphics.getShader()
+    if name=='fish' then A.fishPalette() end
     if name=='merle' then require('paradise_style').bind(a,'bird') end
     love.graphics.draw(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
     love.graphics.setShader(previous)

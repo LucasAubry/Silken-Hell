@@ -22,6 +22,7 @@ end
 
 
 local function drawPlayer(direction)
+    if require('sky_weather').playerHidden() then return end
     if Abyss and (Abyss.playerHidden() or Abyss.playerVisibility()==0) then return end
     if player.abyssHeld then
         local s=player.abyssHeld.swallowed; local scale=math.max(0,1-(s and s.time or 0)/.25)
@@ -62,8 +63,9 @@ function draw_player(direction)
 end
 
 local function drawBeacon()
+    if require('sky_weather').playerHidden() then return end
     if Abyss and Abyss.playerHidden() then return end
-    if Abyss.encounterActive() then
+    if Campaign.biome==7 or Abyss.encounterActive() then
         local x,y,r=Ocean.bubblePosition()
         if x then Ocean.drawLantern(x,y,r,Ocean.clock,nil,nil,direction) end
         return

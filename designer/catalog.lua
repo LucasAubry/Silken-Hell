@@ -9,11 +9,12 @@ add('wall',nil,'Mur',nil,0,{w=100,h=24,rotation=0})
 for _,v in ipairs({
  {'waspling','Petite guêpe','waspling_down',2,95},{'larva','Petit ver','worm_down',5,72},{'blackbird_chick','Petit merle','merle_down',1,77},
  {'ange','Ange gardien','catalog_ange',1,2},{'snake','Serpent céleste','catalog_snake',1,2},
- {'imp','Goule de braise','imp_down',2,85},{'spinner','Serpent tournoyant','serpent_down',2,105},
+ {'lava_scorpion','Scorpion de lave',false,2,85},{'spinner','Serpent tournoyant','serpent_down',2,105},
  {'fish','Poisson-lame','fish_down',4,110},{'jelly','Méduse électrique','jelly_down',4,50},{'crab','Crabe','crab_open',4,100},
  {'worm','Ver de terre','worm_down',5,90},{'mole','Taupe','mole_down',5,145},
+ {'wind_bat','Chauve-souris des bourrasques',false,6,0},
  {'dragonfly','Libellule électrique',false,6,90},{'mist_moth','Papillon des brumes',false,6,55},
- {'gull','Mouette','gull_down',6,140},{'light_jelly','Pieuvre abyssale','abyss_octopus',7,40},
+ {'light_jelly','Pieuvre abyssale','abyss_octopus',7,40},
  {'abyss_fish','Gueule des profondeurs','abyss_fish',7,75},{'lanternfish','Poisson-lanterne','lanternfish_down',7,55}
 }) do add('mob',v[1],v[2],v[3],v[4],{speed=v[5]}) end
 add('mob','piege','Piège de capture','catalog_trap',1)

@@ -156,11 +156,11 @@ function C.reset(options)
 end
 function C.spawnHell(n)
     spawn_spinner(650,470,95+n*4)
-    if n>=2 then spawn_imp(120,470,65+n*2) end
+    if n>=2 then spawn_lava_scorpion(120,470,65+n*2) end
     if n>=4 then spawn_spinner(140,105,105) end
-    if n>=5 then spawn_imp(670,115,80) end
+    if n>=5 then spawn_lava_scorpion(670,115,80) end
     if n>=7 then spawn_spinner(380,110,120) end
-    if n>=8 then spawn_imp(130,300,90) end
+    if n>=8 then spawn_lava_scorpion(130,300,90) end
 end
 function C.clearTearSites()
     for _,m in ipairs(mobs) do if m.type=='piege' or m.type=='scie' then

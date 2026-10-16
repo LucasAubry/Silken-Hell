@@ -108,6 +108,15 @@ end
 local function drawSurface(zones,kind,time,alpha,biome)
  local field=S.field(zones,kind);if not field then return end
  local g=love.graphics;g.push('all')
+ if biome==6 and kind=='hole' and require('biome_floor').cache then
+  local floor=require('biome_floor')
+  S.skyShader=S.skyShader or g.newShader('assets/shaders/sky_hole.glsl')
+  local shader=S.skyShader;shader:send('floorImage',floor.cache.canvas);shader:send('floorSize',{floor.worldWidth,floor.worldHeight})
+  shader:send('worldOrigin',{field.x,field.y});shader:send('worldSize',{field.w,field.h})
+  shader:send('sampleStep',{1/field.image:getWidth(),1/field.image:getHeight()})
+  g.setShader(shader);g.setColor(1,1,1,alpha or 1);g.draw(field.image,field.x,field.y,0,field.step,field.step)
+  g.pop();return
+ end
  -- Stone lips never animate: shade once, then composite a single texture.
  if kind~='lava' then
   local image=bake(field,biome)

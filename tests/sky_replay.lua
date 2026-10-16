@@ -3,8 +3,11 @@ function T.run()
  io.stdout:setvbuf('no');love.focus=function()end
  Online.enabled=false;Replay.disabled=false;Profile.save=function()end;Profile.record=function()end;Bestiary.save=function()end
  local json=require('json');local State=require('replay_state')
+ -- Keep this stationary replay fixture alive long enough to cover all weather.
+ -- Lethal contacts are exercised separately by sky_weather/ecosystem_revision.
+ local kill=Hazards.kill;Hazards.kill=function()end
  App.sessionLayout={world=6,level=1,width=960,height=600,entities={{kind='spawn',x=480,y=300},{kind='tear',x=850,y=500},
-  {kind='mob',type='dragonfly',x=700,y=110,speed=70},{kind='mob',type='mist_moth',x=800,y=440,speed=55}}}
+  {kind='mob',type='dragonfly',x=700,y=110,speed=70},{kind='mob',type='mist_moth',x=800,y=440,speed=55},{kind='mob',type='wind_bat',x=80,y=80,speed=0}}}
  App.singleLevel=true;App.practice=1;App.hardcore=false;LevelLayouts.disabled=false;Replay.recording=false;Replay.data=nil
  Input.move=function()if Replay.input then return Replay.input[1],Replay.input[2] end;return 0,0 end
  Input.slow=function()return true end
@@ -23,6 +26,7 @@ function T.run()
  local count=0
  while Replay.playing and count<600 do Replay.update(1/47,tick);count=count+1 end
  assert(Replay.status=='Lecture terminée.',Replay.status)
+ Hazards.kill=kill
  print('PASS Sky replay: 480 full-state ticks with both creatures, electricity, mist, warning, impact and persistent holes at a different playback cadence')
  love.event.quit()
 end

@@ -3,6 +3,7 @@ extern vec2 lightStep;
 extern float ambient;
 extern float scatter;
 extern float softHighlights;
+extern float preserveEmbers;
 vec4 effect(vec4 color, Image texture, vec2 uv, vec2 pixel) {
     vec4 surface=Texel(texture,uv);
     if(max(surface.r,max(surface.g,surface.b))<.001) return surface*color;
@@ -18,5 +19,8 @@ vec4 effect(vec4 color, Image texture, vec2 uv, vec2 pixel) {
     lit=mix(lit,gentle,softHighlights);
     // Scattering stays local; Abyss darkness never receives an additive reveal.
     lit+=light*scatter*surface.a;
+    // Emissive molten pixels keep their colour instead of clipping under bursts.
+    float ember=smoothstep(.48,.9,surface.r)*smoothstep(.09,.3,surface.r-surface.b)*preserveEmbers;
+    lit=mix(lit,surface.rgb,ember*.9);
     return vec4(lit,surface.a)*color;
 }

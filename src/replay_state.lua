@@ -5,8 +5,8 @@ local fields={'type','kind','x','y','cx','cy','vx','vy','tx','ty','angle','speed
  'phase','phaseTime','phaseAge','hp','maxHp','active','defeated','hidden','taken','dead','reset','falling',
  'fallTimer','charges','overload','cooldown','radius','r','rx','ry','w','h','rotation','seed','dir','burst','shot','bolt',
  'boltsRemaining','volleyClock','patrolClock','fishCharge','fishWave','electric','spent','committed',
- 'delay','distance','heading','hitGrace','returnMode','liberating'}
-local lists={'trails','wind','mist','projectiles','strikes','holes','rain','tornadoes','current','vents','lightning','eggs','chicks',
+ 'weaveResume','weaveX','weaveY','weaveAngle','weaveCount','weaveFired','weaveSide','roamIndex','roamTime','roamSeed','volleyTell','shotAim','broodShift','delay','distance','heading','hitGrace','returnMode','liberating'}
+local lists={'trails','wind','mist','mistCuts','projectiles','strikes','holes','rain','tornadoes','current','vents','lightning','eggs','chicks',
  'minions','shots','bones','chargedFish','returnShots','webLinks','webAnchors','beams','lightSites','lumenParticles',
  'schools','members','pools','sparks','orbs','rods','pickups','walls','lava','spawners'}
 local function actor(a,depth)

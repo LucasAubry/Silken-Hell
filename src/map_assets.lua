@@ -2,9 +2,9 @@
 -- Other registered sprites stay lazy so changing the map can add resources safely.
 local M={}
 local directions={'up','down','left','right'}
-local directional={spinner='serpent',imp='imp',fish='fish',jelly='jelly',worm='worm',mole='mole',gull='gull',waspling='waspling',larva='worm',blackbird_chick='merle',lanternfish='lanternfish'}
+local directional={spinner='serpent',fish='fish',jelly='jelly',worm='worm',mole='mole',waspling='waspling',larva='worm',blackbird_chick='merle',lanternfish='lanternfish'}
 local sprites={magma_larva={'magma_larva'},crab={'crab_open','crab_closed','crab_dead'},abyss_fish={'abyss_fish'},light_jelly={'abyss_octopus'}}
-local bosses={merle={'merle','blackbird_chick'},wasp={'wasp','wasp_ground','waspling','magma_larva'},hedgehog={'hedgehog','hedgehog_ball','worm','larva'},octopus={'crab'},storm={'merle_flight','gull'},skeleton_head={'abyss_fish','lanternfish'},skeleton_fish={'abyss_fish','lanternfish'}}
+local bosses={merle={'merle','blackbird_chick'},wasp={'wasp','wasp_ground','waspling','magma_larva'},hedgehog={'hedgehog','hedgehog_ball','worm','larva'},octopus={'crab'},storm={'merle_flight'},skeleton_head={'abyss_fish','lanternfish'},skeleton_fish={'abyss_fish','lanternfish'}}
 function M.load(layout)
  if not layout then return end
  local art=require('art');local ink=require('paradise_ink');local biome=layout.biome or layout.world

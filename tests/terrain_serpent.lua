@@ -26,17 +26,6 @@ function T.run()
     m.x=150; m.y=280; m.path=nil; m.is_frozen=true
     Arena.navigate(m,340,280,90,1); assert(m.x==150,'Un piège immobilise encore')
     Arena.walls=saved; Hazards.lava=lava
-    level(6,8); local gull; for _,v in ipairs(mobs) do if v.type=='gull' then gull=v; break end end
-    for _,corner in ipairs({{48,48},{Arena.width-48,48},{48,552},{Arena.width-48,552}}) do
-        gull.x,gull.y=corner[1],corner[2]; gull.vx=-1; gull.vy=-1; gull.turnTime=0
-        for _=1,120 do Realms.moveGull(gull,.02) end
-        assert(gull.x>48 and gull.x<Arena.width-48 and gull.y>48 and gull.y<552,'Mouette quitte le bord')
-    end
-    local strengths={}; local oldx=player.x
-    Realms.wind={x=100,y=0,tx=100,ty=0,time=10,stage=0}; Realms.updateWind(.1)
-    assert(player.x>oldx,'Vent pousse le joueur')
-    for i=1,6 do Realms.wind.time=0; Realms.updateWind(.01); strengths[i]=math.sqrt(Realms.wind.tx^2+Realms.wind.ty^2) end
-    assert(strengths[3]==0 and strengths[6]==0 and strengths[5]>strengths[1]*2,'Rafales faibles/fortes et accalmies')
     level(2,10); assert(Wasp.active and not Campaign.canCollect(),'Abeille native dans l’Enfer')
     require('tests.wasp_trio').defeat(Wasp)
     assert(Wasp.defeated and Campaign.canCollect(),'Abeille vaincue libère la larme')

@@ -1,13 +1,7 @@
 -- Legacy rain wave data now drives lightning strikes; ambient rain stays harmless.
 local R={impact=.85,activeUntil=1.2,lifetime=1.4,rx=24,ry=12}
-function R.electrify(x,y,rx,ry)
- local changed=false;rx=rx or 45;ry=ry or rx
- for _,m in ipairs(mobs or {}) do
-  if m.type=='gull' and not m.dead and not m.electric and ((m.x-x)/rx)^2+((m.y-y)/ry)^2<1 then
-   m.electric=true;changed=true
-  end
- end
- if changed then Bestiary.discover('electric_gull');Bestiary.save() end
+function R.clearFog(x,y,rx,ry)
+ require('sky_weather').clearFog(x,y)
 end
 function R.update(drops,dt)
  for i=#drops,1,-1 do
@@ -16,7 +10,7 @@ function R.update(drops,dt)
    p.struck=true;Realms.lightningImpact(p.x,p.y,p.x+p.y)
   end
   if p.age>=R.impact and previous<R.activeUntil then
-   R.electrify(p.x,p.y,R.rx,R.ry)
+   R.clearFog(p.x,p.y,R.rx,R.ry)
    if ((player.x+15-p.x)/R.rx)^2+((player.y+12-p.y)/R.ry)^2<1 then Hazards.kill('lightning') end
   end
   if p.age>=R.lifetime then table.remove(drops,i) end

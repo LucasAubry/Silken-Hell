@@ -4,7 +4,6 @@ function A.id(e)
  if e.kind~='mob' and e.kind~='boss' then return end
  if e.type=='skeleton_head' then return 'skeleton_fish' end
  if e.type=='hellserpent' then return 'wasp' end
- if e.type=='gull' and e.electric then return 'electric_gull' end
  return e.type
 end
 function A.check(layout,worlds,bestiary)

@@ -172,7 +172,7 @@ function S.update(dt)
    S.holes[#S.holes+1]={x=p.x,y=p.y,age=0,r=STRIKE_RADIUS,seed=p.seed}
   end
   if p.age>=STRIKE_WARNING and previous<1.2 then
-   Rain.electrify(p.x,p.y,STRIKE_RADIUS)
+   Rain.clearFog(p.x,p.y,STRIKE_RADIUS)
    if require('collision_shapes').touchCircle('lightning',p.x,p.y,STRIKE_RADIUS) then Hazards.kill('lightning') end
   end
   if p.age>1.4 then table.remove(S.strikes,i) end

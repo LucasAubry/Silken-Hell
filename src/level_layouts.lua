@@ -45,7 +45,7 @@ function L.snapshot()
         for i=#out.entities,1,-1 do if out.entities[i].kind=='tear' then table.remove(out.entities,i) end end
         put('tear',{x=gate.tx,y=gate.ty})
     end
-    if Campaign.world==6 then out.skyRevision=2 end
+    if Campaign.world==6 then out.skyRevision=3 end
     return out
 end
 function L.read()
@@ -70,7 +70,7 @@ function L.spawn(e)
     elseif kind=='scie' then spawn_scie(e.x,e.y,e.rota or 1,e.speed or 2)
     elseif kind=='spinner' then spawn_spinner(e.x,e.y,e.speed or 100)
     elseif kind=='magma_larva' then Magma.spawn(e.x,e.y,e.speed)
-    elseif kind=='imp' then spawn_imp(e.x,e.y,e.speed or 80,e.elite)
+    elseif kind=='lava_scorpion' then spawn_lava_scorpion(e.x,e.y,e.speed or 80,e.elite)
     elseif kind=='crab' then Octopus.spawnCrab(e.x,e.y,e.speed or 100)
     elseif kind=='abyss_fish' or kind=='light_jelly' or kind=='lanternfish' then Abyss.add(kind,e.x,e.y,e.speed or 55)
     elseif kind=='waspling' or kind=='larva' or kind=='blackbird_chick' then
@@ -80,7 +80,7 @@ function L.spawn(e)
         if not school then school={age=0,angle=0,members={}}; Realms.schools[#Realms.schools+1]=school; if e.schoolId then L.schools[e.schoolId]=school end end
         local m={type=kind,x=e.x,y=e.y,speed=e.speed or 100,age=0,school=school,slot=2,dir='down',hitBox_width=24,hitBox_height=24,hitBox_offset_x=-12,hitBox_offset_y=-12}
         m.slot=#school.members+1; school.members[#school.members+1]=m; mobs[#mobs+1]=m
-    elseif kind=='mole' or kind=='worm' or kind=='gull' or kind=='jelly' or kind=='dragonfly' or kind=='mist_moth' then
+    elseif kind=='mole' or kind=='worm' or kind=='jelly' or kind=='dragonfly' or kind=='mist_moth' or kind=='wind_bat' then
         Realms.add(kind,e.x,e.y,e.speed or 80,e.elite)
         if kind=='mole' then mobs[#mobs].speed=e.speed or 140 end
     else return end

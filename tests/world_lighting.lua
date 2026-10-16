@@ -61,7 +61,7 @@ function T.run()
  Arena.walls={};for _,wall in ipairs(Arena.interior)do Arena.walls[#Arena.walls+1]=wall end
  player.x=345;player.y=225;Graphics.effects=false;capture('lighting-hell-before.png')
  Graphics.effects=true;capture('lighting-hell-after.png')
- App.start(6);require('run_start').active=false;require('sky_lightning').trigger(Arena.width*.5,310,1);capture('lighting-sky.png')
+ App.start(6);require('run_start').active=false;require('storm_lightning').trigger(Arena.width*.5,310,1);capture('lighting-sky.png')
  App.start(7);require('run_start').active=false;capture('lighting-abyss.png')
  L.apply=apply
  print('PASS lighting scenes: Hell, lightning and Abyss');love.event.quit()

@@ -14,7 +14,7 @@ function T.run()
   local art=Replay.legacy.env.Art.images[key]
   local _,_,w,h=art.quad:getViewport()
   assert(w==art.w and h==art.h,'Historical '..key..' retains its matching image bounds')
-  assert(art.image~=Art.images[key].image,'Historical Sky sprites retain their original PNG')
+  assert(not Art.images[key] or art.image~=Art.images[key].image,'Historical Sky sprites retain their original PNG')
  end
  for frame=1,1000 do
   Replay.frame=frame;Replay.enter();Replay.input={frame<=300 and 0 or 1,0,false};Replay.legacy.tick(1/60);Replay.leave()

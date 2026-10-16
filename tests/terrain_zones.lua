@@ -35,7 +35,7 @@ function T.run()
  local old=Hazards.lava[1];H.resize(old,2/3);assert(H.contains(old,120,300),'Resizing preserves brush width and filled regions')
  -- Ignition follows the painted footprint, including long arms and filled pockets.
  player.reset=false;player.x=740;player.y=500
- Hazards.lava={bent};mobs={};LevelLayouts.spawn({type='imp',x=320,y=270})
+ Hazards.lava={bent};mobs={};LevelLayouts.spawn({type='lava_scorpion',x=320,y=270})
  local walker=mobs[1]
  Burning.update(.01)
  assert(walker.burnTime==0 and #Burning.trails==0,'Dry ground inside a stroke bounding box does not ignite creatures')
@@ -163,12 +163,12 @@ function T.run()
   demo.entities[#demo.entities+1]=H.stroke({650,190,690,220,675,260},15,zone.kind)
   if world==6 then
    demo.entities[#demo.entities+1]=H.stroke({575,35,755,35},20)
-   demo.entities[#demo.entities+1]={kind='mob',type='gull',x=180,y=100,dir='down',speed=125}
-   demo.entities[#demo.entities+1]={kind='mob',type='gull',x=660,y=430,dir='left',speed=125}
+   demo.entities[#demo.entities+1]={kind='mob',type='dragonfly',x=180,y=100,dir='down',speed=125}
+   demo.entities[#demo.entities+1]={kind='mob',type='dragonfly',x=660,y=430,dir='left',speed=125}
    demo.entities[#demo.entities+1]={kind='tornado',x=530,y=445}
   end
   if world==2 then
-   demo.entities[#demo.entities+1]={kind='mob',type='imp',x=120,y=300}
+   demo.entities[#demo.entities+1]={kind='mob',type='lava_scorpion',x=120,y=300}
    demo.entities[#demo.entities+1]=H.stroke({575,25,755,25},20,'lava')
    demo.entities[#demo.entities+1]={kind='wall',x=425,y=180,w=150,h=26}
    demo.entities[#demo.entities+1]={kind='wall',x=555,y=290,w=26,h=120,rotation=30}

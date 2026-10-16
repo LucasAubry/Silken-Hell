@@ -30,13 +30,6 @@ local function update(m,dt)
 end
 local function draw(m)
     local phase,amount=R.molePhase(m.age)
-    if m.type=='gull' and m.electric then
-        local g=love.graphics; g.setColor(1,.78,.05,.18); g.circle('fill',m.x,m.y,30)
-        g.setColor(1,.92,.2,.95); g.setLineWidth(2)
-        for j=0,23 do local a=j*math.pi/12; local b=(j+1)*math.pi/12; local r=28+math.sin(m.age*30+j)*2
-            g.line(m.x+math.cos(a)*r,m.y+math.sin(a)*r,m.x+math.cos(b)*30,m.y+math.sin(b)*30) end
-        g.setLineWidth(1)
-    end
     if m.type=='worm' then phase,amount=R.wormPhase(m.age) end
     if m.tunnelTravel then
         local scale,dy=R.travelPose(m); love.graphics.setColor(1,1,1,scale)
@@ -49,8 +42,7 @@ local function draw(m)
     end
     love.graphics.setColor(m.is_frozen and {.55,.75,1} or {1,1,1})
     if Campaign.biome==7 and not m.is_frozen then love.graphics.setColor(.75,.62,1) end
-    if m.type=='gull' and m.electric then love.graphics.setColor(1,.88,.15) end
-    local size=m.elite and 95 or m.type=='gull' and 75 or 62
+    local size=m.elite and 95 or 62
     if (m.type=='worm' or m.type=='mole') and (phase=='dig' or phase=='emerge') then
         Art.drawBurrowing(m.type,m.dir,m.x+math.sin(m.age*35)*(phase=='dig' and 2 or .7),m.y,size,amount)
     elseif m.type=='worm' then Art.drawWorm(m.dir,m.x,m.y,size,m.age)

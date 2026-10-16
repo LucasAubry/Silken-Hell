@@ -2,6 +2,14 @@
 local S={}
 function S.migrate(layout)
     if type(layout)=='table' and type(layout.entities)=='table' then
+        for i=#layout.entities,1,-1 do
+            local e=layout.entities[i]
+            if e.kind=='mob' and e.type=='wind_cloud' then e.type='wind_bat' end
+            if e.kind=='mob' and e.type=='imp' then e.type='lava_scorpion' end
+            if e.kind=='mob' and e.type=='gull' then
+                if e.has_larme then e.kind='tear';e.type=nil else table.remove(layout.entities,i) end
+            end
+        end
         for _,e in ipairs(layout.entities) do if e.kind=='boss' and e.type=='hellserpent' then e.type='wasp' end end
         if (layout.biome or layout.world)==6 or (layout.biome or layout.world)==2 then
             for i=#layout.entities,1,-1 do
@@ -14,7 +22,7 @@ function S.migrate(layout)
 end
 -- The retired identifier remains readable for old saves and Workshop maps only.
 local kinds={abyss_gate=true,abyss_part=true,magma_spawner=true,spawn=true,tear=true,wall=true,mob=true,boss=true,nest=true,light=true,lava=true,vent=true,hole=true,tunnel=true,tornado=true,current=true,rain=true}
-local mobs={dragonfly=true,mist_moth=true,magma_larva=true,ange=true,snake=true,piege=true,scie=true,spinner=true,imp=true,crab=true,abyss_fish=true,light_jelly=true,lanternfish=true,waspling=true,larva=true,blackbird_chick=true,fish=true,mole=true,worm=true,gull=true,jelly=true}
+local mobs={wind_bat=true,dragonfly=true,mist_moth=true,magma_larva=true,ange=true,snake=true,piege=true,scie=true,spinner=true,lava_scorpion=true,crab=true,abyss_fish=true,light_jelly=true,lanternfish=true,waspling=true,larva=true,blackbird_chick=true,fish=true,mole=true,worm=true,jelly=true}
 local bosses={skeleton_head=true,storm=true,merle=true,hellserpent=true,wasp=true,hedgehog=true,octopus=true,skeleton_fish=true}
 function S.validate(l)
     if type(l)~='table' or not ({[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true})[l.world] or type(l.level)~='number' or l.level%1~=0 or l.level<1 or l.level>(l.world==3 and 6 or 10) then return false,'Monde ou niveau invalide.' end

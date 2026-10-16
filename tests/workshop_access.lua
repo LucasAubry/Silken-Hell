@@ -9,7 +9,7 @@ function T.run()
  layout.entities={{kind='mob',type='crab'}};assert(not A.check(layout,worlds,bestiary))
  bestiary.seen.crab=true;assert(A.check(layout,worlds,bestiary))
  assert(A.id({kind='boss',type='skeleton_head'})=='skeleton_fish')
- assert(A.id({kind='mob',type='gull',electric=true})=='electric_gull')
+ assert(A.id({kind='mob',type='dragonfly',electric=true})=='dragonfly')
  assert(A.warning({kind='mob',type='crab'},1))
  local canEnter=Worlds.canEnter;Worlds.canEnter=function()return false end
  local before=App.state;local session=App.sessionLayout

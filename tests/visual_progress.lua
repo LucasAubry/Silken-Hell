@@ -44,11 +44,11 @@ function T.run()
  end
  assert(Characters.model('down',12)=='final_partner')
  local B=Bestiary
- assert(#B.variants.queen_child==3 and #B.variants.piege==2 and #B.variants.scie==2 and #B.variants.gull==2)
+ assert(#B.variants.queen_child==3 and #B.variants.piege==2 and #B.variants.scie==2)
  B.worldFilter=5;local trap=false
  for _,row in ipairs(B.list('traps')) do if row.entry.id=='piege' then trap=true end end
  assert(trap,'Earth filter includes brown trap variant');B.worldFilter=nil
- B.open('electric_gull');assert(B.entries[UI.bestSelected].id=='gull' and UI.bestVariant==2)
+ B.open('dragonfly');assert(B.entries[UI.bestSelected].id=='dragonfly' and UI.bestVariant==1)
  local g=love.graphics
  local canvas=g.newCanvas(1200,960,{dpiscale=1})
  local function save(file)
@@ -66,7 +66,7 @@ function T.run()
  g.pop();save('visual-progress-skins')
  g.push('all');g.setCanvas(canvas);g.origin();g.clear(.10,.08,.06)
  local row=0
- for _,id in ipairs({'piege','scie','queen_child','gull','earth_tunnel'}) do
+ for _,id in ipairs({'piege','scie','queen_child','dragonfly','earth_tunnel'}) do
   local entry;for _,e in ipairs(B.entries) do if e.id==id then entry=e end end
   row=row+1;local y=90+(row-1)*170
   for col=1,#(B.variants[id] or {entry}) do

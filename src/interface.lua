@@ -451,26 +451,7 @@ function U.settings()
 end
 function U.worlds() WorldMap.draw() end
 function U.bestiaryIcon(entry,x,y,size)
-    g.setColor(1,1,1)
-    if entry.electric or entry.id=='electric_gull' then g.setColor(1,.88,.15) end
-    if entry.id=='dragonfly' or entry.id=='mist_moth' then
-        require('sky_insect_art').draw(entry.id,x,y,size,U.clock)
-    elseif entry.id=='cloud_snare' then
-        require('tornado_art').draw(Art,x,y,U.clock,size)
-    elseif entry.trapKind then
-        require('trap_art').draw(entry.trapKind,x,y,size,entry.world,false)
-    elseif entry.id=='earth_tunnel' then
-        g.push('all');g.translate(x,y);g.scale(size/104);require('earth_mound').draw(0,0);g.pop()
-    elseif entry.art=='cloud' then
-        g.setColor(.79,.87,.95); g.ellipse('fill',x,y,size*.45,size*.2); g.circle('fill',x-size*.16,y-size*.1,size*.23); g.circle('fill',x+size*.14,y-size*.14,size*.28)
-    elseif entry.art=='rain' then
-        g.setColor(1,.85,.32);g.polygon('fill',x+size*.14,y-size*.42,x-size*.25,y+size*.05,x-size*.04,y+size*.05,x-size*.14,y+size*.42,x+size*.25,y-size*.06,x+size*.04,y-size*.06)
-    else
-        local a=Art.images[entry.art]
-        local width=a and size*a.w/math.max(a.w,a.h) or size
-        require('prism_material').drawPreview(function()Art.draw(entry.art,x,y,width)end)
-    end
-    g.setColor(1,1,1)
+    require('bestiary_animation').draw(entry,x,y,size,U.clock)
 end
 function U.scrollBestiary(amount)
     U.bestScroll=math.max(0,math.min(U.bestScrollMax or 0,(U.bestScroll or 0)+amount))

@@ -1,7 +1,7 @@
 local M={scroll=0,scrollTarget=0}
 local g=love.graphics
 local heights={170,380,590,800,1010,1220,1430,1640}
-local monsters={[1]='merle',[6]='gull',[5]='mole',[4]='fish',[7]='lanternfish',[2]='wasp',[3]='crown_spider',[8]='spider'}
+local monsters={[1]='merle',[6]='dragonfly',[5]='mole',[4]='fish',[7]='lanternfish',[2]='wasp',[3]='crown_spider',[8]='spider'}
 local function point(i) return 365+math.sin((i-1)*1.35)*115,heights[i] end
 local function camera(i) return math.max(0,math.min(1270,heights[i]-370)) end
 function M.select(n,i)
@@ -95,11 +95,13 @@ local function circle(mode,x,y,r,color,soft)
     g.draw(UI.pixel,x-52,y-52,0,104,104);g.pop()
 end
 local function markerMob(name,dir,x,y)
+    if name=='dragonfly' then return require('sky_insect_art').draw(name,x,y,44,UI.clock) end
     local a=Art.images[name..'_'..dir]
     local min,mag,anisotropy=a.image:getFilter();local mip,bias=a.image:getMipmapFilter()
     a.image:setFilter('nearest','nearest');a.image:setMipmapFilter()
     g.setColor(1,1,1);local scale=44/math.max(a.w,a.h)
-    g.draw(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
+    local shader=g.getShader();if name=='fish' then Art.fishPalette() end
+    g.draw(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2);g.setShader(shader)
     a.image:setFilter(min,mag,anisotropy);a.image:setMipmapFilter(mip,bias)
 end
 local function node(n,i,x,y)

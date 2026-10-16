@@ -41,7 +41,7 @@ function R.spawn(w,n)
             if n>=5 then add('lanternfish',390,130,46) end
         end
     elseif w==6 then
-        add('dragonfly',190,160,90);add('mist_moth',580,420,55)
+        add('dragonfly',190,160,90);add('mist_moth',580,420,55);add('wind_bat',170,410,0)
         if n>=5 then add('dragonfly',600,150,100) end
     elseif w==5 then
         add('worm',120,120+a,78+n*3.5); add('mole',650,450-a,98+n*3.5)
@@ -52,7 +52,7 @@ function R.spawn(w,n)
 end
 function R.reset(w,n,authored)
     R.custom=false; R.world=w; R.level=n; R.clock=0; R.tunnels={}; R.tornadoes={}; player.whirl=nil; player.throw=nil; player.skyWhirl=nil; player.skyThrow=nil; player.tunnelLock=false; player.tunnelTravel=nil; R.fireflies={};R.starPrevious=nil; R.rain={}; R.rainClock=.25; R.current={}
-    R.electricTrails={}; R.bolts={}; R.eggs={}; R.larvae={}; R.holes={}; R.rainSites={}; R.rainWave=0; R.vents={}; player.illuminated=0
+    R.bolts={}; R.eggs={}; R.larvae={}; R.holes={}; R.rainSites={}; R.rainWave=0; R.vents={}; player.illuminated=0
     require('storm_lightning').reset()
     if w<4 or w==6 then return end
     -- BiomeFloor owns the visible terrain. The old tile canvas was never drawn,
@@ -158,7 +158,6 @@ function R.update(dt)
     if Campaign.biome==5 or R.custom then R.separateEarth() end
     if Abyss.active then Abyss.update(dt) end
     if R.custom then
-        R.updateElectricTrails(dt)
         R.rainClock=R.rainClock-dt
         if Campaign.biome~=6 and not R.stormPresent() and (R.level>=5 or R.custom) and R.rainClock<=0 then
             R.rainClock=math.max(.55,.95-R.level*.035); R.rainWave=R.rainWave+1
@@ -227,44 +226,6 @@ function R.separateEarth()
                 end
             end
         end
-    end
-end
-function R.containGull(m)
-    local lo,hi,top,bottom=48,Arena.width-48,48,552
-    -- Clamp once and keep an inward heading; never flip it on every blocked frame.
-    if m.x<=lo then m.x=lo; m.vx=math.abs(m.vx or 1)+.3
-    elseif m.x>=hi then m.x=hi; m.vx=-math.abs(m.vx or 1)-.3 end
-    if m.y<=top then m.y=top; m.vy=math.abs(m.vy or 1)+.3
-    elseif m.y>=bottom then m.y=bottom; m.vy=-math.abs(m.vy or 1)-.3 end
-end
-function R.moveGull(m,dt)
-    local previousX,previousY=m.x,m.y
-    local tx,ty=objet.larme.x+15,objet.larme.y+20
-    tx=math.max(80,math.min(Arena.width-80,tx)); ty=math.max(80,math.min(520,ty))
-    local dx,dy=tx-m.x,ty-m.y; local d=math.sqrt(dx*dx+dy*dy)
-    if d<85 then
-        m.orbit=(m.orbit or math.atan2(m.y-ty,m.x-tx))+dt*m.speed/65
-        tx,ty=tx+math.cos(m.orbit)*65,ty+math.sin(m.orbit)*52
-        dx,dy=tx-m.x,ty-m.y; d=math.sqrt(dx*dx+dy*dy)
-    else m.orbit=nil end
-    if d>.1 then m.vx,m.vy=dx/d,dy/d; Arena.move(m,m.vx*math.min(d,m.speed*dt),m.vy*math.min(d,m.speed*dt)) end
-    R.containGull(m); m.dir=Art.direction(m.vx,m.vy,m.dir)
-    R.capture(m);if m.is_frozen then return end
-    if m.electric then
-        R.electricTrails[#R.electricTrails+1]={x=previousX,y=previousY,tx=m.x,ty=m.y,life=2.2,seed=m.age*11}
-        if require('collision_shapes').touchCircle('electric_gull',m.x,m.y,30) then Hazards.kill() end
-    end
-end
-function R.trailTouches(p,x,y)
-    local dx,dy=p.tx-p.x,p.ty-p.y; local d=dx*dx+dy*dy
-    local t=d>0 and math.max(0,math.min(1,((x-p.x)*dx+(y-p.y)*dy)/d)) or 0
-    return (x-p.x-t*dx)^2+(y-p.y-t*dy)^2<14^2
-end
-function R.updateElectricTrails(dt)
-    for i=#R.electricTrails,1,-1 do
-        local p=R.electricTrails[i]; p.life=p.life-dt
-        if p.life<=0 then table.remove(R.electricTrails,i)
-        elseif R.trailTouches(p,player.x+15,player.y+12) then Hazards.kill() end
     end
 end
 function R.speed()
@@ -343,7 +304,15 @@ function R.updateProjectiles(dt)
             else
                 p.x=x; p.y=y
                 local radius=list==R.bolts and 5 or 3
-                if require('collision_shapes').projectile(x-radius,y-radius,radius*2,radius*2) then Hazards.kill(); dead=true end
+                local hit=require('collision_shapes').projectile(x-radius,y-radius,radius*2,radius*2)
+                if list==R.bolts then
+                    local speed=math.max(1,math.sqrt(p.vx*p.vx+p.vy*p.vy))
+                    for tail=4,28,4 do
+                        local tx,ty=x-p.vx/speed*tail,y-p.vy/speed*tail
+                        if require('collision_shapes').projectile(tx-5,ty-5,10,10) then hit=true;break end
+                    end
+                end
+                if hit then Hazards.kill(list==R.bolts and 'ocean_lightning' or nil);dead=true end
             end
         end end
         if dead then
@@ -382,9 +351,9 @@ function R.drawCreatures()
     for _,p in ipairs(R.bolts) do if not p.abyssHeld then
         local a=math.atan2(p.vy,p.vx); g.push(); g.translate(p.x,p.y); g.rotate(a); g.scale(1.35)
         local bend=math.sin(R.clock*42+p.seed)*3
-        g.setColor(.1,.5,1,.22); g.setLineWidth(4); g.line(-19,0,-13,bend,-7,-bend,0,0)
-        g.setColor(.3,.8,1); g.setLineWidth(1); g.line(-19,0,-13,bend,-7,-bend,0,0)
-        g.setColor(.85,1,1); g.circle('fill',0,0,1.3); g.pop()
+        if Campaign.biome==4 then g.setColor(1,.72,.06,.28) else g.setColor(.1,.5,1,.22) end; g.setLineWidth(4); g.line(-19,0,-13,bend,-7,-bend,0,0)
+        if Campaign.biome==4 then g.setColor(1,.9,.15) else g.setColor(.3,.8,1) end; g.setLineWidth(1); g.line(-19,0,-13,bend,-7,-bend,0,0)
+        if Campaign.biome==4 then g.setColor(1,1,.72) else g.setColor(.85,1,1) end; g.circle('fill',0,0,1.3); g.pop()
     end end
     g.setLineWidth(1); g.setColor(1,1,1)
 end
@@ -423,22 +392,16 @@ function R.drawDarkness()
     if (Campaign.biome~=7 or Campaign.world==3) and not Abyss.playerHidden() then return end
     local g=love.graphics
     R.darkShader=R.darkShader or g.newShader('assets/shaders/abyss-darkness.glsl')
-    local exposed=(player.illuminated or 0)>0
     local bx,by=Ocean.lightPosition()
     local lights={}
-    if Abyss.encounterActive() and not Abyss.playerHidden() then
+    if not Abyss.playerHidden() then
         if bx then lights[#lights+1]={bx,by,38,.26} end
         if (player.charges or 0)>0 then
             local dx,dy=require('render_motion').offset(player)
             lights[#lights+1]={player.x+15+dx,player.y+12+dy,Abyss.playerLightRadius(),1.4*Abyss.playerBrightness()}
         end
-    elseif bx then
-        lights[1]={bx,by,exposed and Abyss.playerLightRadius() or 75,
-            exposed and (player.circleLight and .8 or .90+.04*math.max(0,(player.charges or 0)-1)) or .32}
     end
-    if Abyss.encounterActive() then
-        lights[#lights+1]={Arena.width/2,300,Arena.width*2,Abyss.isPulling() and .025 or .08}
-    end
+    lights[#lights+1]={Arena.width/2,300,Arena.width*2,Abyss.isPulling() and .025 or .08}
     for _,m in ipairs(mobs) do if m.type=='lanternfish' and not m.abyssHeld then lights[#lights+1]={m.x,m.y-15,145,1} end end
     Abyss.addLights(lights); Bosses.addLights(lights); AbyssTerrain.addLights(lights)
     while #lights>24 do table.remove(lights) end
@@ -476,14 +439,6 @@ end
 function R.drawGround()
     local g=love.graphics
     require('sky_weather').drawGround()
-    for _,p in ipairs(R.electricTrails or {}) do
-        local alpha=math.min(1,p.life/.4)
-        local mx,my=(p.x+p.tx)/2,(p.y+p.ty)/2
-        local j=math.sin(R.clock*24+p.seed)*2
-        g.setColor(1,.74,.08,.2*alpha); g.setLineWidth(7); g.line(p.x,p.y,mx+j,my-j,p.tx,p.ty)
-        g.setColor(1,.94,.35,.95*alpha); g.setLineWidth(1.5); g.line(p.x,p.y,mx+j,my-j,p.tx,p.ty)
-    end
-    g.setLineWidth(1)
     require('storm_lightning').drawAll()
     g.setLineWidth(1)
     for _,t in ipairs(R.tunnels) do
@@ -593,7 +548,7 @@ MobBehaviors.jelly=require('mobs.jelly')(R)
 MobBehaviors.worm=require('mobs.worm')(R)
 MobBehaviors.lanternfish=require('mobs.lanternfish')(R)
 MobBehaviors.mole=require('mobs.mole')(R)
-MobBehaviors.gull=require('mobs.gull')(R)
+MobBehaviors.wind_bat=require('mobs.wind_bat')
 MobBehaviors.dragonfly=require('mobs.sky_insects')
 MobBehaviors.mist_moth=MobBehaviors.dragonfly
 return R

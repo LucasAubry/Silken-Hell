@@ -9,6 +9,8 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_ECOSYSTEM_REVISION_TEST')=='1' then require('tests.ecosystem_revision').run();return end
+    if os.getenv('SILKEN_CONTENT_CLEANUP_TEST')=='1' then require('tests.content_cleanup').run();return end
     if os.getenv('SILKEN_SKY_REPLAY_TEST')=='1' then require('tests.sky_replay').run();return end
     if os.getenv('SILKEN_SKY_WEATHER_TEST')=='1' then require('tests.sky_weather').run();return end
     if os.getenv('SILKEN_MAP_PREVIEW_TEST')=='1' then require('tests.map_preview').run();return end
@@ -78,7 +80,6 @@ function T.run()
     if os.getenv('SILKEN_STORY_DISCOVERY_TEST')=='1' then require('tests.story_discovery').run();return end
     if os.getenv('SILKEN_BOSS_SPIDER_MOTION_TEST')=='1' then require('tests.boss_spider_motion').run();return end
     if os.getenv('SILKEN_MENU_ABYSS_TEST')=='1' then require('tests.menu_abyss_revision').run();return end
-    if os.getenv('SILKEN_SKY_CENTER_TEST')=='1' then require('tests.sky_center').run();return end
     if os.getenv('SILKEN_VISUAL_NOTICE_TEST')=='1' then require('tests.visual_notice').run();return end
     if os.getenv('SILKEN_GAME_FEEDBACK_TEST')=='1' then require('tests.game_feedback').run();return end
     if os.getenv('SILKEN_UI_FEEDBACK_TEST')=='1' then require('tests.ui_feedback').run();return end
@@ -95,7 +96,6 @@ function T.run()
     if os.getenv('SILKEN_ORGANIZATION_TEST')=='1' then require('tests.asset_organization').run();return end
     if os.getenv('SILKEN_UI_REVISION_TEST')=='1' then require('tests.ui_revision').run();return end
     if os.getenv('SILKEN_SPIDER_FEATHER_TEST')=='1' then require('tests.spider_feathers').run();return end
-    if os.getenv('SILKEN_RAIN_REVISION_TEST')=='1' then require('tests.rain_revision').run();return end
     if os.getenv('SILKEN_INK_MATERIAL_TEST')=='1' then require('tests.ink_material').run();return end
     if os.getenv('SILKEN_STORM_DASH_TEST')=='1' then require('tests.storm_dash_revision').run();return end
     if os.getenv('SILKEN_LIBERATION_TEST')=='1' then require('tests.boss_liberation').run();return end
@@ -206,7 +206,7 @@ function T.run()
         local d=love.image.newImageData(require('asset_paths').resolve('assets/sprites/'..name..'.png'))
         local _,_,_,a=d:getPixel(0,0); assert(a==0,'PNG transparent '..name); d:release()
     end
-    for _,name in ipairs({'spider','imp','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','gull'}) do
+    for _,name in ipairs({'spider','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole'}) do
         for _,dir in ipairs({'down','up','left','right'}) do
             local d=Art.imageData('assets/sprites/directional/'..name..'_'..dir..'.png')
             local _,_,_,a=d:getPixel(0,0); assert(a==0,'Alpha directionnel '..name..'_'..dir); d:release()

@@ -29,10 +29,19 @@ function B.update(m,dt)
    end
   end
  else
-  m.cx=m.cx or m.x;m.cy=m.cy or m.y
-  local x=m.cx+math.sin(m.age*.6)*100;local y=m.cy+math.sin(m.age*.9)*60
-  local dx,dy=x-m.x,y-m.y;local d=math.max(1,math.sqrt(dx*dx+dy*dy));local step=math.min(d,(m.speed or 55)*dt)
-  Arena.move(m,dx/d*step,dy/d*step);m.x=math.max(55,math.min(Arena.width-55,m.x));m.y=math.max(55,math.min(545,m.y))
+  -- Visit distant sectors across the whole map instead of circling one nest.
+  m.roamSeed=m.roamSeed or math.floor(m.x*.039+m.y*.017)
+  m.roamTime=(m.roamTime or 0)-dt
+  if not m.tx or m.roamTime<=0 or (m.tx-m.x)^2+(m.ty-m.y)^2<24^2 then
+   m.roamIndex=(m.roamIndex or 0)+1
+   local sector=(m.roamIndex*5+m.roamSeed)%9
+   local tx=70+(sector%3+.5)*(Arena.width-140)/3
+   local ty=70+(math.floor(sector/3)+.5)*460/3
+   m.tx,m.ty=Arena.clearSpot(tx-15,ty-12,30,24);m.tx=m.tx+15;m.ty=m.ty+12
+   m.roamTime=7
+  end
+  local dx,dy=m.tx-m.x,m.ty-m.y
+  Arena.navigate(m,m.tx,m.ty,math.max(140,(m.speed or 55)*2.5),dt)
   m.angle=math.atan2(dy,dx)-math.pi/2
   if m.cooldown<=0 then
    W.fog(m.x,m.y);W.fog(m.x+math.sin(m.age*3)*24,m.y+math.cos(m.age*3)*20)

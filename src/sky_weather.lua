@@ -1,18 +1,41 @@
 -- Sky hazards use simulation time only; drawing never changes their state.
-local S={strikes={},holes={},trails={},mist={},clock=0,phaseTime=4,active=false,storm=false,seed=0}
+local S={strikes={},holes={},trails={},mist={},mistCuts={},clock=0,phaseTime=4,active=false,storm=false,seed=0}
 function S.reset()
- S.strikes={};S.holes={};S.trails={};S.mist={};S.clock=0;S.phaseTime=4;S.seed=0
+ require('sky_trails').reset()
+ S.strikes={};S.holes={};S.trails={};S.mist={};S.mistCuts={};S.clock=0;S.phaseTime=4;S.seed=0
  S.storm=require('sky').openEdges();S.active=S.storm
- for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' then S.active=true end end
+ for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' or m.type=='wind_bat' then S.active=true end end
 end
 function S.trail(x,y,tx,ty)
- local d=math.sqrt((tx-x)^2+(ty-y)^2);if d<.1 then return end
- S.trails[#S.trails+1]={x=x,y=y,tx=tx,ty=ty,vx=(tx-x)/d,vy=(ty-y)/d,life=2.8,age=0}
- if #S.trails>440 then table.remove(S.trails,1) end
+ require('sky_trails').add(S.trails,x,y,tx,ty,S.clock)
 end
 function S.fog(x,y)
  S.mist[#S.mist+1]={x=x,y=y,age=0,life=7,radius=68}
  if #S.mist>100 then table.remove(S.mist,1) end
+end
+function S.fogShape(p)
+ local radius=p.radius*(.65+math.min(p.age/3,1)*.45)
+ return p.x+math.sin(p.age*.6+p.x*.02)*9,p.y-math.min(p.age*2,12),radius*.68,radius*.51
+end
+function S.inFog(p,x,y)
+ if p.age<.18 or p.life<.5 or S.fogCleared(x,y) then return false end
+ local cx,cy,rx,ry=S.fogShape(p)
+ return ((x-cx)/rx)^2+((y-cy)/ry)^2<=1
+end
+function S.playerHidden()
+ if not S.active then return false end
+ for _,p in ipairs(S.mist) do if S.inFog(p,player.x+15,player.y+12) then return true end end
+ return false
+end
+-- Lightning cuts a lasting opening through every puff above its impact hole.
+function S.clearFog(x,y)
+ for _,p in ipairs(S.mistCuts) do if (x-p.x)^2+(y-p.y)^2<20^2 then p.life=8;return end end
+ S.mistCuts[#S.mistCuts+1]={x=x,y=y,life=8}
+ if #S.mistCuts>16 then table.remove(S.mistCuts,1) end
+end
+function S.fogCleared(x,y)
+ for _,list in ipairs({S.holes,S.mistCuts}) do for _,p in ipairs(list) do if (x-p.x)^2+(y-p.y)^2<58^2 then return true end end end
+ return false
 end
 -- Segment against the player rectangle, expanded by the visible electric core.
 local function touches(p)
@@ -35,9 +58,7 @@ local function touches(p)
 end
 function S.contact()
  if not S.active or player.skyThrow or player.tunnelTravel then return end
- for _,p in ipairs(S.trails) do
-  if p.age>=.22 and touches(p) then Hazards.kill('electric_trail');return end
- end
+ if require('sky_trails').near(player.x,player.y,30,24,function(p)return S.clock-p.time>=.22 and touches(p) end) then Hazards.kill('electric_trail');return end
 end
 function S.warn(x,y)
  S.seed=S.seed+1
@@ -59,7 +80,7 @@ end
 function S.update(dt)
  if not S.active then return end
  S.clock=S.clock+dt
- for _,list in ipairs({S.trails,S.mist}) do for i=#list,1,-1 do
+ for _,list in ipairs({S.mist,S.mistCuts}) do for i=#list,1,-1 do
   local p=list[i];p.life=p.life-dt;p.age=(p.age or 0)+dt
   if p.life<=0 then table.remove(list,i) end
  end end
@@ -85,8 +106,8 @@ function S.fallAt(x,y)
  return false
 end
 function S.resize(ratio)
- for _,list in ipairs({S.strikes,S.trails,S.mist}) do for _,p in ipairs(list) do p.x=p.x*ratio;if p.tx then p.tx=p.tx*ratio end end end
- for _,p in ipairs(S.trails) do local d=math.sqrt((p.tx-p.x)^2+(p.ty-p.y)^2);p.vx=(p.tx-p.x)/d;p.vy=(p.ty-p.y)/d end
+ for _,list in ipairs({S.strikes,S.mist,S.mistCuts}) do for _,p in ipairs(list) do p.x=p.x*ratio;if p.tx then p.tx=p.tx*ratio end end end
+ require('sky_trails').resize(S.trails,ratio)
  for _,p in ipairs(S.holes) do require('ground_holes').resize(p,ratio) end
  for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' then if m.tx then m.tx=m.tx*ratio end;if m.cx then m.cx=m.cx*ratio end end end
 end
@@ -94,23 +115,20 @@ function S.drawGround()
  if not S.active then return end
  local g=love.graphics;g.push('all');g.setShader()
  require('terrain_surface').draw(S.holes,'hole',S.clock,1,6)
- for _,p in ipairs(S.trails) do
-  local alpha=math.min(1,p.life/.55)*math.min(1,.3+p.age*3)
-  local dx,dy=p.tx-p.x,p.ty-p.y;local d=math.max(.1,math.sqrt(dx*dx+dy*dy))
-  local bend=math.sin(p.x*.9+p.y*.6+math.floor(S.clock*14))*2.5
-  local mx,my=(p.x+p.tx)*.5-dy/d*bend,(p.y+p.ty)*.5+dx/d*bend
-  g.setLineJoin('bevel')
-  g.setColor(.20,.65,1,.16*alpha);g.setLineWidth(17);g.line(p.x,p.y,mx,my,p.tx,p.ty)
-  g.setColor(.25,.80,1,.7*alpha);g.setLineWidth(6);g.line(p.x,p.y,mx,my,p.tx,p.ty)
-  g.setColor(.94,.98,.65,alpha);g.setLineWidth(2);g.line(p.x,p.y,mx,my,p.tx,p.ty)
- end
+ require('sky_trails').draw(S.trails,S.clock)
  g.pop()
 end
 function S.drawAtmosphere()
  if not S.active then return end
+ require('sky_atmosphere').draw(S.clock)
  local g=love.graphics;g.push('all');g.setShader()
  S.mistShader=S.mistShader or g.newShader('assets/shaders/sky_mist.glsl')
  g.setShader(S.mistShader);S.mistShader:send('clock',S.clock)
+ local cuts={}
+ for _,list in ipairs({S.holes,S.mistCuts}) do for _,p in ipairs(list) do if #cuts<24 then cuts[#cuts+1]={p.x,p.y,58} end end end
+ S.mistShader:send('cutCount',#cuts)
+ while #cuts<24 do cuts[#cuts+1]={-1000,-1000,0} end
+ S.mistShader:send('cuts',unpack(cuts))
  -- One softly feathered, turbulent puff instead of stacked opaque ellipses.
  S.mistTexture=S.mistTexture or g.newImage(love.image.newImageData(1,1))
  for _,p in ipairs(S.mist) do
@@ -118,6 +136,7 @@ function S.drawAtmosphere()
   local radius=p.radius*(.65+math.min(p.age/3,1)*.45)
   local drift=math.sin(p.age*.6+p.x*.02)*9
   S.mistShader:send('drift',{p.x*.021,p.y*.019})
+  S.mistShader:send('puffBounds',{p.x+drift-radius,p.y-math.min(p.age*2,12)-radius*.75,radius*2,radius*1.5})
   g.setColor(1,1,1,alpha)
   g.draw(S.mistTexture,p.x+drift-radius,p.y-math.min(p.age*2,12)-radius*.75,0,radius*2,radius*1.5)
  end
@@ -128,11 +147,7 @@ function S.drawAtmosphere()
  end end
  for _,p in ipairs(S.strikes) do
   if not p.spent then
-   local t=p.age/p.delay
-   for j=5,1,-1 do
-    g.setColor(.28,.29,.32,(.055+t*.07));g.ellipse('fill',p.x+(1-t)*35,p.y-4,40+j*5,32+j*4)
-   end
-   g.setColor(.68,.72,.78,t*.12);g.ellipse('fill',p.x,p.y,36,28)
+   require('sky_storm_art').warning(p,S.clock,S.mistTexture)
   else
    local fade=math.max(0,1-(p.age-p.delay)/.45)
    for layer=2,1,-1 do

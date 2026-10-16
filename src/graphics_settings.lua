@@ -16,13 +16,14 @@ function G.save() love.filesystem.write('graphics.json',json.encode({thermalRevi
 function G.floorHeight() return ({240,360,600})[G.quality] end
 function G.backgroundHz() return G.quality==1 and 30 or 60 end
 function G.targetRate(editor)
+ if editor or (App and (App.preview or App.state~='playing')) then return 0 end
  if not love.window.hasFocus() then return 15 end
- if editor or (App and App.preview) then return math.min(G.limit>0 and G.limit or 60,60) end
- if App and App.state~='playing' then return 30 end
  return G.limit
 end
 function G.pace(editor)
  local rate=G.targetRate(editor)
+ local sync=(editor or App and (App.preview or App.state~='playing')) and 0 or G.vsync
+ if G.appliedSync~=sync then love.window.setVSync(sync);G.appliedSync=sync end
  if os.getenv('SILKEN_TEST')=='1' or os.getenv('SILKEN_DESIGNER_TEST')=='1' or rate==0 then G.lastFrame=love.timer.getTime();return end
  local now=love.timer.getTime();local wait=1/rate-(now-(G.lastFrame or now))
  if wait>0 then love.timer.sleep(wait) end

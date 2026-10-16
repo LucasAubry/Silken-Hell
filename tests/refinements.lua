@@ -14,9 +14,6 @@ function T.run()
     Art.draw=function(name,...) if name=='tear_ring' then rings=rings+1 end; return old(name,...) end
     for _,w in ipairs({1,2,4,5}) do level(w,10); Campaign.drawCircles(); assert(rings==0,'Aucun cercle sous les boss') end
     level(1,1); Campaign.drawCircles(); assert(rings>0); Art.draw=old
-    level(6,1); Realms.wind={x=100,y=20,tx=0,ty=0,time=3,stage=3}
-    local x,y=player.x,player.y; Realms.updateWind(.1)
-    assert(player.x==x and player.y==y and Realms.wind.x==0 and Realms.wind.y==0,'Accalmie sans dérive résiduelle')
     level(5,3); local a,b=Realms.tunnels[1],Realms.tunnels[2]
     for _,kind in ipairs({'mole','worm'}) do
         local m; for _,v in ipairs(mobs) do if v.type==kind then m=v; break end end

@@ -82,7 +82,7 @@ function F.updateCharge(dt)
  end
 end
 function F.reset(active)
- F.landed=nil
+ F.landed=nil;F.weaveResume=nil;F.weaveX=nil;F.weaveY=nil;F.weaveAngle=nil;F.weaveCount=nil;F.weaveFired=nil;F.weaveSide=nil
  Escape.reset(F)
  F.active=active;F.hp=13;F.maxHp=13;F.defeated=false;F.x=Arena.width*.5;F.y=165;F.angle=0;F.clock=0;F.flash=0
  F.chargeDeaths={};F.chargeEggs={};F.grief=nil
@@ -259,6 +259,8 @@ local function updateBehavior(dt)
  if F.phase=='aim' then
   F.angle=math.atan2(F.chargeY-F.y,F.chargeX-F.x)-math.pi/2
   if F.phaseTime>.65 then F.phase='charge';F.phaseTime=0 end
+ elseif F.phase=='weave' then
+  require('queen_weave').update(F)
  elseif F.phase=='charge' then
   F.updateCharge(dt);if F.defeated or player.reset then return end
  elseif F.phase=='mourn' then
@@ -298,7 +300,10 @@ local function updateBehavior(dt)
    Escape.beginLay(F)
   else
    F.shot=F.shot-dt
-   if F.shot<=0 then F.shoot();F.shot=F.shotInterval() end
+   if F.shot<=0 then
+    if F.pressure()>=2 and F.volley%6==5 then require('queen_weave').begin(F)
+    else F.shoot();F.shot=F.shotInterval() end
+   end
    local webbed;for _,b in ipairs(F.babies) do if b.webbed and not b.dead then webbed=b;break end end
    if webbed then F.trap(webbed)
    else
@@ -373,6 +378,7 @@ function F.draw()
 
  if not F.active then return end
  local g=love.graphics;g.push('all')
+ require('queen_weave').draw(F)
  for _,s in ipairs(F.shells) do
   if s.silk and s.variant then
    g.push('all');g.translate(s.x,s.y);g.scale(1,.6);g.setColor(.5,.45,.5,.85)
@@ -414,6 +420,7 @@ function F.draw()
  g.pop()
 end
 function F.resize(r)
+ if F.weaveX then F.weaveX=F.weaveX*r;F.weaveAngle=math.atan2(math.sin(F.weaveAngle),math.cos(F.weaveAngle)*r) end
  if F.grief then F.grief.x=F.grief.x*r end
  if F.jump then F.jump.x=F.jump.x*r;F.jump.tx=F.jump.tx*r end
  if F.nest then F.nest.x=F.nest.x*r end

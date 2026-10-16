@@ -19,7 +19,7 @@ function T.run(M,state,select,apply,preview)
                 {kind='spawn',x=610,y=450},
             }
             if world==6 then
-                M.layout.entities[#M.layout.entities+1]={kind='mob',type='gull',x=600,y=200}
+                M.layout.entities[#M.layout.entities+1]={kind='mob',type='wind_bat',x=600,y=200}
                 M.layout.entities[#M.layout.entities+1]={kind='tornado',x=700,y=330}
             else
                 M.layout.entities[#M.layout.entities+1]={kind='wall',x=190,y=205,w=150,h=26}
@@ -35,7 +35,7 @@ function T.run(M,state,select,apply,preview)
             if tick==3 then scene(6) end
             if tick==4 then love.graphics.captureScreenshot('designer-terrain-hole.png') end
             if tick==5 then
-                print('PASS editor terrain: 66 layouts, joined brush strokes, live brush preview, lava, holes, gulls and tornadoes without game globals')
+                print('PASS editor terrain: 66 layouts, joined brush strokes, live brush preview, lava, holes, wind clouds and tornadoes without game globals')
                 love.event.quit()
             end
         end
