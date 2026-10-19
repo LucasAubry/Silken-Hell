@@ -245,6 +245,7 @@ function C.tearCarried()
     return not Renaissance.active and C.carrier~=nil and not objet.larme_dropped
 end
 function C.drawTear(overlay)
+    if require('silk_intro').active then return end
     if require('boss_liberation').busy() then return end
     if Ending.active and not require('final_spider').defeated then return end
     if Renaissance.active then Renaissance.drawEggs();return end
