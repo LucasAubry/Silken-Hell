@@ -15,6 +15,7 @@ function P.shouldStart()return not Profile.prologueSeen and not App.preview end
 function P.load()
  if P.loaded then return end
  require('prologue_terrain').load(P.terrainStreamX)
+ require('prologue_nest').load()
  Art.add('prologue_carrier_down','assets/prologue/queen_carrying_partner.png')
  for _,dir in ipairs({'up','left','right'}) do Art.add('prologue_carrier_'..dir,'assets/prologue/queen_carrying_'..dir..'.png') end
  Sound.load();P.loaded=true
@@ -41,7 +42,13 @@ function P.canMove()return not P.paused and (P.phase=='wander' or P.phase=='port
 function P.terrainStreamX(y)
  local points={{0,255},{120,230},{240,210},{360,220},{425,210},{510,242},{610,277},{750,345}}
  for i=2,#points do local a,b=points[i-1],points[i]
-  if y<=b[1] then return a[2]+(b[2]-a[2])*(y-a[1])/(b[1]-a[1]) end
+  if y<=b[1] then
+   local before=points[math.max(1,i-2)];local after=points[math.min(#points,i+1)]
+   local span=b[1]-a[1];local t=clamp((y-a[1])/span,0,1)
+   local m0=(b[2]-before[2])/(b[1]-before[1])*span
+   local m1=(after[2]-a[2])/(after[1]-a[1])*span
+   return (2*t^3-3*t^2+1)*a[2]+(t^3-2*t^2+t)*m0+(-2*t^3+3*t^2)*b[2]+(t^3-t^2)*m1
+  end
  end
  return 345
 end
@@ -121,25 +128,7 @@ end
 local function shadow(x,y,w)
  local g=love.graphics;g.setColor(.08,.035,.012,.22);g.ellipse('fill',x+3,y+11,w*.43,w*.13)
 end
-function P.drawNest()
- local g=love.graphics;local x,y=P.nest.x,P.nest.y
- g.push('all');g.translate(x,y)
- g.setColor(.07,.065,.035,.55);g.ellipse('fill',3,7,96,61)
- g.setColor(.25,.23,.15);g.ellipse('fill',0,0,91,55)
- g.setColor(.49,.46,.32);g.ellipse('fill',0,-2,80,45)
- g.setColor(.66,.64,.47);g.ellipse('fill',0,0,67,34)
- -- Overlapping loose silk makes a hollow bed, rather than a portal or trap.
- for i=1,32 do
-  local a=i*2.399;local rx=75+i%5*3;local ry=43+i%4*2
-  g.setColor(.84,.81,.65,.23+i%3*.07);g.setLineWidth(.8)
-  g.ellipse('line',math.sin(a)*3,math.cos(a)*2,rx,ry)
-  g.line(math.cos(a)*rx,math.sin(a)*ry,math.cos(a+.55)*(rx-12),math.sin(a+.55)*(ry-9))
- end
- for i=1,14 do
-  local a=i*2.399;g.setColor(.78,.73,.53,.3);g.line(math.cos(a)*62,math.sin(a)*29,math.cos(a+2)*62,math.sin(a+2)*29)
- end
- g.pop()
-end
+function P.drawNest()require('prologue_nest').draw(P.nest.x,P.nest.y)end
 function P.drawPortal()
  if P.portalAmount<=0 then return end
  local g=love.graphics;local x,y=P.portal.x,P.portal.y;local amount=P.portalAmount;local t=P.clock
@@ -172,17 +161,17 @@ function P.draw(w,h)
  local g=love.graphics;local s=math.min(w/P.width,h/P.height)
  g.push('all');g.origin();g.setShader();g.clear(.045,.025,.015)
  g.translate((w-P.width*s)/2,(h-P.height*s)/2);g.scale(s)
- g.push();g.scale(P.width/1200,P.height/750);require('prologue_terrain').draw(P.terrainStreamX,P.clock);g.pop()
+ g.push();g.scale(P.width/1200,P.height/750);require('prologue_terrain').draw(P.terrainStreamX,P.clock);require('prologue_terrain').life(P.terrainStreamX,P.clock);g.pop()
  -- A little reflected light moves down the river; falling leaves stay visual only.
- for i=1,28 do
+ for i=1,18 do
   local y=(i*31+P.clock*24)%P.height;local x=P.streamX(y)+math.sin(i*17)*20
-  if y<320 or y>360 then g.setColor(.8,.94,.87,.18);g.setLineWidth(1);g.line(x,y,x+7+i%9,y-1) end
+  if y<320 or y>360 then g.setColor(.8,.94,.87,.10);g.ellipse('fill',x,y,3+i%4,.6) end
  end
- for i=1,52 do
+ for i=1,23 do
   local x=(i*139+P.clock*(9+i%5))%P.width;local y=(i*73+P.clock*(12+i%9))%P.height
   g.push();g.translate(x+math.sin(P.clock+i)*8,y);g.rotate(i+P.clock*.5)
   g.setColor(.76+i%3*.07,.28+i%4*.055,.055,.7)
-  g.polygon('fill',-4,0,0,-2,5,0,0,3);g.pop()
+  g.ellipse('fill',0,0,3,1.4);g.pop()
  end
  P.drawNest()
  if not P.carrying and not P.queenGone then
