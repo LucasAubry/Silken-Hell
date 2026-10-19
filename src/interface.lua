@@ -335,10 +335,9 @@ function U.menu()
     U.button(WorldMap.hardcore and 'JOUER · HARDCORE' or 'JOUER',425,496,350,54,function() App.openEntry(App.selectedWorld,WorldMap.hardcore) end,false,true,'selection',false,biomeColor)
     U.button('BESTIAIRE',425,557,170,38,Bestiary.open)
     U.button('SUCCÈS',605,557,170,38,function() require('achievements_screen').open() end)
-    U.button('HISTOIRE',425,603,170,38,function() App.state='story'; U.storyOffset=400 end)
+    U.button('HISTOIRE',425,603,170,38,function() require('prologue').open(true) end)
     U.button('WORKSHOP',605,603,170,38,Workshop.open)
     U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open,false,false,'go')
-    U.button('Tester le début du jeu',425,695,350,36,function()require('prologue').open(true)end)
     if Graphics.effects then
         g.push('all');g.setBlendMode('add')
         for i=1,7 do

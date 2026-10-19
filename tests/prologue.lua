@@ -50,11 +50,14 @@ function T.run()
  P.phase='arrival';P.portalAmount=1;P.darkness=.62
  local portalDraw=P.drawPortal;local art=require('final_art');local spiderDraw=art.spider;local portalCount=0;local queenSeen=false
  P.drawPortal=function()portalCount=portalCount+1;assert(not queenSeen,'Portal must stay behind queen');portalDraw()end
- art.spider=function(kind,x,y,width,...)
-  if kind=='queen' then assert(width==Characters.playerWidth,'Queen matches player size');queenSeen=true end
-  return spiderDraw(kind,x,y,width,...)
+ art.spider=function(kind,x,y,width,angle,...)
+  if kind=='queen' then
+   assert(width==Characters.playerWidth,'Queen matches player size');queenSeen=true
+   local _,turn=art.pose(angle);assert(math.abs(turn)<.001,'Intro queen stays upright during diagonal approach')
+  end
+  return spiderDraw(kind,x,y,width,angle,...)
  end
- capture('queen-portal');assert(portalCount==1 and queenSeen)
+ P.queen.angle=.4;capture('queen-portal');assert(portalCount==1 and queenSeen)
  P.drawPortal=portalDraw;art.spider=spiderDraw;P.open(true)
  assert(P.nest.x==P.width-115 and P.nest.y==112,'Small cocoon in upper-right corner')
  assert(math.sqrt((P.portal.x-P.nest.x)^2+(P.portal.y-P.nest.y)^2)>400,'Portal is far from cocoon')
@@ -106,7 +109,7 @@ function T.run()
  for i=1,23 do P.update(.05) end
  assert(P.phase=='portal_player' and P.queenGone and P.portalAmount==1 and not P.drowning,'Water respawn preserves open portal after kidnapping')
  assert(P.tearsCollected==1 and tear.collected,'Respawn preserves collected tears')
- P.close();assert(App.state=='menu');P.open(true);assert(P.phase=='wander' and not P.carrying)
+ P.close();assert(App.state=='menu');P.open(false);assert(P.phase=='wander' and not P.carrying)
  P.hero.x=P.portal.x;P.hero.y=P.portal.y;P.phase='portal_player';P.update(.05);assert(P.phase=='enter')
  local start=App.start;local called=0;App.start=function(n)assert(n==1);called=called+1 end
  for i=1,20 do P.update(.05) end
@@ -137,8 +140,16 @@ function T.run()
  for i=1,172 do startGate.advance(.05);if i==25 then arrivalCapture('arrival') elseif i==95 then arrivalCapture('tear-story') end end
  assert(not startGate.arrival and startGate.active,'Arrival returns directly to normal start prompt')
  P.close();love.draw();local button
- for _,b in ipairs(UI.buttons) do if b.y==695 and b.w==350 then button=b end end
- assert(button,'Menu replay button present');button.run();assert(App.state=='prologue' and P.phase=='wander')
+ for _,b in ipairs(UI.buttons) do if b.y==603 and b.x==425 then button=b end end
+ assert(button,'History menu button present');button.run();assert(App.state=='prologue' and P.phase=='wander' and P.replay)
+ local savedSeen=Profile.prologueSeen;local selected=App.selectedWorld;local hardcore=P.saved.hardcore
+ local starts=0;local saves=0;local startApp=App.start
+ App.start=function()starts=starts+1 end;Profile.save=function()saves=saves+1 end
+ P.phase='portal_player';P.hero.x=P.portal.x;P.hero.y=P.portal.y;P.update(.05)
+ for i=1,18 do if App.state=='prologue' then P.update(.05) end end
+ assert(App.state=='menu' and starts==0 and saves==0,'History ends at menu without launching or saving campaign')
+ assert(Profile.prologueSeen==savedSeen and App.selectedWorld==selected and App.hardcore==hardcore,'History preserves progress and menu selection')
+ App.start=startApp
  Profile.save=save;Profile.prologueSeen=saved
  print('PASS prologue: campaign dimensions, corner cocoon, water death/respawn before and after kidnapping, safe bridge, cocoon-triggered sleep, no timed/tree event, visible nighttime kidnapping, portal and world 1 transition; screenshots captured')
  love.event.quit()

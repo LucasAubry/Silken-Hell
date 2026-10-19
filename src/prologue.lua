@@ -22,9 +22,9 @@ function P.load()
  for _,dir in ipairs({'up','left','right'}) do Art.add('prologue_carrier_'..dir,'assets/prologue/queen_carrying_'..dir..'.png') end
  Sound.load();P.loaded=true
 end
-function P.open(test)
+function P.open(replay)
  Arena.configure(love.graphics.getDimensions());P.width=Arena.width;P.height=Arena.height
- P.load();P.test=test==true;P.phase='wander';P.time=0;P.clock=0;P.travel=0;P.darkness=0;P.paused=false
+ P.load();P.replay=replay==true;P.phase='wander';P.time=0;P.clock=0;P.travel=0;P.darkness=0;P.paused=false
  P.saved={selectedWorld=App.selectedWorld,hardcore=App.hardcore}
  P.hero={x=P.width*.51,y=432,dir='up',sanctuaryPlayer=true};P.partner={x=P.width*.51+72,y=425,angle=0}
  P.nest={x=P.width-115,y=112};P.victim={x=P.nest.x+27,y=P.nest.y+8}
@@ -100,6 +100,7 @@ local function accompany(dt)
 end
 function P.enterWorld()
  if P.entering then return end;P.entering=true;Sound.stop()
+ if P.replay then P.close();return end
  Profile.prologueSeen=true
  if Profile.name=='' then Profile.name='Joueur' end
  Profile.save();App.hardcore=false;App.practice=nil;App.singleLevel=false;App.sessionLayout=nil;App.workshopMap=nil;Secret.duel=nil
@@ -303,7 +304,10 @@ function P.draw(w,h)
   if P.carrying then
    P.drawCarrier(q,Characters.playerWidth*(.7+.3*fade))
    P.drawTears(true)
-  else ArtSet.spider('queen',q.x,q.y,Characters.playerWidth,q.angle,q) end
+  else
+   local facing=({down=0,up=math.pi,left=math.pi/2,right=-math.pi/2})[ArtSet.facing(q.angle)]
+   ArtSet.spider('queen',q.x,q.y,Characters.playerWidth,facing,q)
+  end
  end
   end}
  }
