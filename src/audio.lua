@@ -39,7 +39,7 @@ function A.update(p,hell)
     if A.focused==false then return end
     local pauseSettings=(App.state=='settings' or App.state=='graphics') and UI.returnTo=='pause'
     local victoryRanking=App.state=='rankings' and UI.boardReturn=='victory'
-    local menu=not victoryRanking and App.state~='playing' and App.state~='pause' and App.state~='credits' and App.state~='victory' and App.state~='customVictory' and not pauseSettings
+    local menu=not victoryRanking and App.state~='playing' and App.state~='prologue' and App.state~='pause' and App.state~='credits' and App.state~='victory' and App.state~='customVictory' and not pauseSettings
     if A.paradise then
         A.paradise:setVolume(p.music)
         if menu then
@@ -52,8 +52,9 @@ function A.update(p,hell)
     -- Birds accompany the reunion after the Renaissance boss, only in level 2.
     if biome==3 and not (Campaign.world==3 and player and player.level==2) then biome=nil end
     for id,source in pairs(A.ambiences or {}) do
-        source:setVolume(p.sound*(ambienceVolumes[id] or 1))
-        if App.state=='playing' and id==biome then
+        local opening=App.state=='prologue' and id==3 and not require('prologue').paused
+        source:setVolume(p.sound*(ambienceVolumes[id] or 1)*(opening and (1-require('prologue').darkness) or 1))
+        if App.state=='playing' and id==biome or opening then
             if not source:isPlaying() then source:play() end
         elseif App.state=='pause' and biome==id then source:pause()
         else source:stop() end

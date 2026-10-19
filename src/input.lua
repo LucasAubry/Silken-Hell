@@ -154,7 +154,7 @@ function I.update(dt)
     if App.state=='bestiary' and I.pad and I.pad:isConnected() then
         local scroll=I.pad:getGamepadAxis('righty');if math.abs(scroll)>.2 then UI.scrollBestiary(scroll*240*dt);I.active=true end
     end
-    if App.state=='playing' or App.state=='bossWorld' then return end
+    if App.state=='playing' or App.state=='bossWorld' or App.state=='prologue' and not require('prologue').paused then return end
     I.repeatAt=math.max(0,I.repeatAt-dt)
     if App.state=='achievements' and I.pad and I.pad:isConnected() then
         local turn=I.pad:getGamepadAxis('rightx')
@@ -184,6 +184,7 @@ function I.press(j,b)
         return
     end
     if Replay and Replay.playing then if not I.padAction(b) and b=='b' then Replay.stop() end;return end
+    if App.state=='prologue' and not require('prologue').paused then if b=='start' or b=='b' then require('prologue').key('escape') end;return end
     if App.state=='playing' then I.padAction(b);return end
     if App.state=='pause' and b==Profile.padBindings.pause then I.padAction(b);return end
     if b=='start' or b=='b' then love.keypressed('escape');I.active=true;return end

@@ -338,6 +338,7 @@ function U.menu()
     U.button('HISTOIRE',425,603,170,38,function() App.state='story'; U.storyOffset=400 end)
     U.button('WORKSHOP',605,603,170,38,Workshop.open)
     U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open,false,false,'go')
+    U.button('Tester le début du jeu',425,695,350,36,function()require('prologue').open(true)end)
     if Graphics.effects then
         g.push('all');g.setBlendMode('add')
         for i=1,7 do
@@ -800,6 +801,7 @@ function U.workshop()
 end
 function U.draw()
     U.buttons={}
+    if App.state=='prologue' then require('prologue').ui();return end
     if App.state=='creatorConfirm' then Creator.draw();return end
     if App.state=='skinUnlock' then require('skin_unlock').draw();return end
     if App.state=='playing' then U.gameHud();if Replay and Replay.playing then Replay.controls() end;if Secret.duel and Secret.duel.kind=='mob' then U.text(Secret.duel.name..(Secret.duel.kind=='mob' and (' · Survie '..math.ceil(math.max(0,20-Secret.duel.time))..' s') or ' · Duel'),300,90,'body',white,600,'center') end;return end

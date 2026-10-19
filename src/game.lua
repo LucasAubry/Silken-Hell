@@ -152,6 +152,7 @@ function love.load()
     if preview or require('platform').flag('--preview') then
         App.preview=true;PreviewBridge.update(.2)
     end
+    if os.getenv('SILKEN_TEST')~='1' and os.getenv('SILKEN_ONLINE_TEST')~='1' and os.getenv('SILKEN_WORKSHOP_LIVE_TEST')~='1' and require('prologue').shouldStart() then require('prologue').open(false) end
     if os.getenv('SILKEN_WORKSHOP_LIVE_TEST')=='1' then require('tests.workshop_live').run()
     elseif os.getenv('SILKEN_TEST')=='1' then require('tests.runtime').run()
     elseif os.getenv('SILKEN_ONLINE_TEST')=='1' then require('tests.online').run() end
@@ -235,6 +236,7 @@ function love.update(dt)
     end
     Audio.update(Profile,App.selectedWorld==2 and App.state~='credits')
     if App.state=='credits' then Ending.updateCredits(dt);return end
+    if App.state=='prologue' then require('prologue').update(dt);return end
     if App.state=='bossWorld' then Secret.update(dt);return end
     if App.state~='playing' then
         RunStart.suspend()
@@ -418,6 +420,8 @@ function love.draw()
         if not psychedelic and Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
         love.graphics.draw(sceneCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale); love.graphics.setShader()
         if App.state=='playing' then Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
+    elseif App.state=='prologue' then
+        require('prologue').draw(w,h)
     elseif App.state=='skinUnlock' then
         love.graphics.clear(.008,.015,.027)
     elseif App.state=='credits' then
@@ -435,8 +439,8 @@ function love.draw()
     end
     local s=math.min(w/1200,h/750)
     love.graphics.push(); love.graphics.translate((w-1200*s)/2,(h-750*s)/2); love.graphics.scale(s)
-    if App.state~='credits' then UI.draw();Input.draw();require('discovery_notice').draw();RunStart.draw() end
-    require('achievement_notice').draw();require('skin_unlock').drawToast();love.graphics.pop()
+    if App.state~='credits' then UI.draw();Input.draw();if App.state~='prologue' then require('discovery_notice').draw();RunStart.draw() end end
+    if App.state~='prologue' then require('achievement_notice').draw();require('skin_unlock').drawToast() end;love.graphics.pop()
     -- The final collectible also celebrates over the results screen.
     if App.state=='victory' or App.state=='customVictory' then
         local scale,x,y=App.viewport(w,h)
@@ -445,7 +449,7 @@ function love.draw()
     end
     if App.state=='playing' then Ending.drawOverlay(w,h) end
     Hardcore.drawBorder(w,h)
-    if App.state~='credits' and App.state~='skinUnlock' and not Ending.active then
+    if App.state~='credits' and App.state~='skinUnlock' and App.state~='prologue' and not Ending.active then
         love.graphics.push('all');love.graphics.origin();love.graphics.setShader()
         local cleanScreen=App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements'
         love.graphics.setFont(cleanScreen and UI.fonts.body or UI.fonts.tiny)
@@ -489,6 +493,7 @@ function love.keypressed(key,scancode,isrepeat)
         return
     end
     if key=='escape' and not isrepeat then Audio.play('back') end
+    if App.state=='prologue' then require('prologue').key(key);return end
     if App.state=='bossWorld' and Secret.key(key,isrepeat) then return end
     if key=='escape' and App.state=='victory' and require('podium_celebration').closePreview() then return end
     if App.state=='skinUnlock' then
@@ -553,6 +558,7 @@ end
 function love.focus(focused)
     if focused and App.state=='workshop' then Workshop.reloadLocal() end
     Audio.focus(focused)
+    if not focused and App.state=='prologue' then require('prologue').paused=true end
     if not focused and App.state=='playing' then if Replay.playing then if not Replay.recovery then Replay.paused=true end else App.state='pause' end end
 end
 
