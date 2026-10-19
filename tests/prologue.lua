@@ -26,7 +26,14 @@ function T.run()
  trees.drawPart=drawPart
  local back,trunk,front,crown
  for i,e in ipairs(events) do if e=='back' then back=i elseif e==tree.y then trunk=i elseif e=='front' then front=i elseif e=='crown' and not crown then crown=i end end
- assert(back<trunk and trunk<front and front<crown,'Trunk depth and canopy occlusion')
+ assert(back<trunk and trunk<front and front<crown,'Only roots share depth; the trunk and crown always cover the player')
+ for i=1,3 do
+  local t=trees.geometry(i,P.width,P.height)
+  assert(t.species[3]>=.89,'Upper trunk stays in front, only root pixels are sorted')
+  assert(trees.blocked(t.x,t.y-5,P.width,P.height),'Visible trunk base blocks movement')
+  assert(not trees.blocked(t.x+t.rx+2,t.y-5,P.width,P.height),'Can walk beside each trunk')
+  assert(not trees.blocked(t.x,t.y+t.ry+2,P.width,P.height),'Can walk over exposed roots')
+ end
  assert(P.blocked(P.nest.x,P.nest.y-30) and not P.blocked(P.nest.x,P.nest.y+12),'Cocoon collision leaves front entrance open')
  P.open(true)
  -- Directional views retain independent source pixels, including both sides.
