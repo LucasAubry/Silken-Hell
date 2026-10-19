@@ -13,12 +13,12 @@ local function move(a,x,y,speed,dt)
 end
 function P.shouldStart()return not Profile.prologueSeen and not App.preview end
 function P.load()
- if P.background then return end
- local g=love.graphics
- P.background=g.newImage('assets/prologue/autumn_forest.png')
+ if P.loaded then return end
+ require('prologue_terrain').load(P.streamX)
  Art.add('prologue_tree','assets/prologue/autumn_tree.png')
- Art.add('prologue_carrier','assets/prologue/queen_carrying_partner.png')
- Sound.load()
+ Art.add('prologue_carrier_down','assets/prologue/queen_carrying_partner.png')
+ for _,dir in ipairs({'up','left','right'}) do Art.add('prologue_carrier_'..dir,'assets/prologue/queen_carrying_'..dir..'.png') end
+ Sound.load();P.loaded=true
 end
 function P.open(test)
  P.load();P.test=test==true;P.phase='wander';P.time=0;P.clock=0;P.travel=0;P.darkness=0;P.paused=false
@@ -134,11 +134,20 @@ function P.drawPortal()
  end
  g.pop()
 end
+-- Each side has its own passenger view: mirroring would swap her fixed flank.
+function P.drawCarrier(q,width)
+ local dir=ArtSet.facing(q.angle);local a=Art.images['prologue_carrier_'..dir]
+ local g=love.graphics;local scale=width/a.w
+ if not require('brown_walk').draw(a.image,dir,q.x,q.y,width,q,a.quad) then
+  g.draw(a.image,a.quad,q.x,q.y,0,scale,scale,a.w/2,a.h/2)
+ end
+ return dir
+end
 function P.draw(w,h)
  local g=love.graphics;local s=math.min(w/P.width,h/P.height)
  g.push('all');g.origin();g.setShader();g.clear(.045,.025,.015)
  g.translate((w-P.width*s)/2,(h-P.height*s)/2);g.scale(s)
- g.setColor(1,1,1);g.draw(P.background,0,0,0,P.width/P.background:getWidth(),P.height/P.background:getHeight())
+ require('prologue_terrain').draw(P.streamX,P.clock)
  -- A little reflected light moves down the river; falling leaves stay visual only.
  for i=1,28 do
   local y=(i*31+P.clock*24)%750;local x=P.streamX(y)+math.sin(i*17)*20
@@ -164,10 +173,7 @@ function P.draw(w,h)
   local q=P.queen;local fade=P.phase=='departure' and clamp(distance(q,P.portal)/58,0,1) or 1
   shadow(q.x,q.y,112);g.setColor(1,1,1,fade)
   if P.carrying then
-   local a=Art.images.prologue_carrier
-   -- Rotate the assembled captive and queen together when she turns toward us.
-   local scale=112/a.w;g.push();g.translate(q.x,q.y);g.rotate(q.angle)
-   if not require('brown_walk').draw(a.image,'down',0,0,112,q,a.quad) then g.draw(a.image,a.quad,0,0,0,scale,scale,a.w/2,a.h/2) end;g.pop()
+   P.drawCarrier(q,112)
   else ArtSet.spider('queen',q.x,q.y,112,q.angle,q) end
  end
  g.setColor(.008,.005,.016,P.darkness);g.rectangle('fill',0,0,1200,750)

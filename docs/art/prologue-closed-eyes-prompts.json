@@ -1,0 +1,10 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "prompt": "Edit ONLY the eyes of the SMALL WHITE FEMALE SPIDER carried on the red queen's abdomen. Both white spider eyes must be fully CLOSED, drawn as thin curved dark eyelids with delicate eyelashes, sleeping/unconscious peacefully. Remove all amber/yellow iris and white eye shine from the WHITE spider only. Preserve absolutely EVERYTHING else: exact position and orientation on the queen abdomen, same body, folded legs, silk strands, scale, pixel-art style, red queen pose and all legs. The RED QUEEN'S eyes stay wide OPEN amber and entirely unchanged. No moving either spider. Real transparent background retained.",
+  "assets": [
+    "assets/prologue/queen_carrying_partner.png",
+    "assets/prologue/queen_carrying_left.png",
+    "assets/prologue/queen_carrying_up.png"
+  ],
+  "unchangedRearView": "assets/prologue/queen_carrying_right.png"
+}

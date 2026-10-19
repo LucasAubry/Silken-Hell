@@ -120,7 +120,7 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   float grit=pow(noise(soil*vec2(190.0,175.0)),7.0);
   c+=vec3(.15,.115,.075)*grit;
   c+=(grain-.5)*.024;
- } else if(biome==3.0) {
+ } else if(biome==3.0 || biome==9.0) {
   vec2 flow=p+vec2(fbm(p*2.0),fbm(p*2.0+19.0))*.36;
   float pigment=fbm(flow*18.0)-.5;
   float meadow=fbm(p*4.5);
@@ -134,6 +134,12 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   float tufts=pow(noise(flow*vec2(110.0,55.0)),4.0);
   c+=vec3(.075,.085,.025)*tufts;
   c+=vec3(.045,.055,.025)*pigment;
+  if(biome==9.0) {
+   // Same flowing moss/earth material as Renaissance, in autumn ochre.
+   c=mix(vec3(.15,.17,.075),vec3(.40,.31,.13),canopy);
+   c=mix(c,vec3(.54,.43,.22),clearing*(.28+canopy*.40));
+   c+=vec3(.065,.048,.02)*tufts+vec3(.045,.035,.018)*pigment;
+  }
  } else if(biome==2.0 || biome==8.0) {
   float fissure=1.0-smoothstep(.009,.045,cells(p*8.0+terrain).y);
   c=mix(vec3(.055,.028,.030),vec3(.14,.075,.062),terrain)+(grain-.5)*.025;

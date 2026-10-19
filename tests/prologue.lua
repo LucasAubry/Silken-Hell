@@ -10,6 +10,16 @@ function T.run()
   c:newImageData():encode('png','prologue-'..name..'.png');c:release()
  end
  capture('forest')
+ -- Directional views retain independent source pixels, including both sides.
+ for _,entry in ipairs({{'down',0},{'up',math.pi},{'left',math.pi/2},{'right',-math.pi/2}}) do
+  local q={x=300,y=300,angle=entry[2]};assert(P.drawCarrier(q,112)==entry[1])
+ end
+ assert(Art.images.prologue_carrier_left.image~=Art.images.prologue_carrier_right.image)
+ P.phase='confront';P.carrying=true;P.time=1;P.queen.x=710;P.queen.y=440
+ for _,entry in ipairs({{'down',0},{'up',math.pi},{'left',math.pi/2},{'right',-math.pi/2}}) do
+  P.queen.angle=entry[2];capture('direction-'..entry[1])
+ end
+ P.open(true)
  assert(P.blocked(P.streamX(300),300) and not P.blocked(P.streamX(425),425),'Stream and bridge collision')
  local x=P.hero.x;Input.move=function()return 1,0 end;P.update(.05);assert(P.hero.x>x);Input.move=function()return 0,0 end
  P.paused=true;local t=P.clock;P.update(.05);assert(P.clock==t);P.paused=false
