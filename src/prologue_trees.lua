@@ -1,7 +1,7 @@
--- Only exposed roots share actor depth; the entire trunk and crown cover actors.
+-- Sort the lower trunk with actors; keep the canopy above their complete silhouette.
 local T={}
--- name, height in spider widths, root cut, trunk anchor X/Y, trunk half-width.
-local species={{'oak',3.3,.89,.55,.91,.08},{'birch',3.8,.925,.52,.945,.045},{'maple',3.5,.925,.60,.945,.05}}
+-- name, height in spider widths, canopy cut, trunk anchor X/Y, trunk half-width.
+local species={{'oak',3.3,.70,.55,.91,.08},{'birch',3.8,.74,.52,.945,.045},{'maple',3.5,.72,.60,.945,.05}}
 function T.load()
  if T.shader then return end
  for _,v in ipairs(species) do Art.add('prologue_tree_'..v[1],'assets/prologue/tree_'..v[1]..'.png') end

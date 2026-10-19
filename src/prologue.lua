@@ -28,8 +28,9 @@ function P.open(test)
  P.saved={selectedWorld=App.selectedWorld,hardcore=App.hardcore}
  P.hero={x=P.width*.51,y=432,dir='up',sanctuaryPlayer=true};P.partner={x=P.width*.51+72,y=425,angle=0}
  P.nest={x=P.width-115,y=112};P.victim={x=P.nest.x+27,y=P.nest.y+8}
- P.portal={x=P.width*.86,y=300};P.queen={x=P.portal.x,y=P.portal.y,angle=0}
+ P.portal={x=P.width*.65,y=500};P.queen={x=P.portal.x,y=P.portal.y,angle=0}
  P.spawn={x=P.hero.x,y=P.hero.y};P.safe={x=P.hero.x,y=P.hero.y};P.drowning=nil;P.waterDeaths=0
+ P.tears={};P.tearsCollected=0;P.dropDistance=55
  P.portalAmount=0;P.carrying=false;P.queenGone=false;P.entering=false
  Replay.input=nil;Replay.recording=false;App.hardcore=false;App.state='prologue';UI.buttons={};UI.pressed=nil
  require('run_start').active=false;require('run_start').suspend();love.keyboard.setTextInput(false)
@@ -104,6 +105,34 @@ function P.enterWorld()
  App.start(1)
  if App.state=='playing' then require('run_start').beginArrival() end
 end
+-- Intro tears belong to the scene, never campaign progression or replay state.
+function P.updateTears(dt)
+ for _,tear in ipairs(P.tears) do
+  tear.age=tear.age+dt
+  if not tear.collected and tear.age>=.55 and P.canMove() and distance(P.hero,tear)<27 then
+   tear.collected=true;tear.pickupAge=0;P.tearsCollected=P.tearsCollected+1
+  end
+  if tear.collected then tear.pickupAge=tear.pickupAge+dt end
+ end
+end
+function P.drawTears()
+ local g=love.graphics;g.push('all')
+ for i,tear in ipairs(P.tears) do
+  if not tear.collected then
+   local fall=1-ease(tear.age/.55);local y=tear.y-23*fall
+   require('tear_fx').draw(tear.x,y,{.68,.86,1},P.clock+i)
+   local img=objet.larme.img;local scale=24/img:getHeight()
+   g.setColor(1,1,1);g.draw(img,tear.x,y,0,scale,scale,img:getWidth()/2,img:getHeight()/2)
+  elseif tear.pickupAge<.55 then
+   local age=tear.pickupAge/.55
+   for n=1,8 do local a=n*2.399
+    g.setColor(.76,.9,1,(1-age)*.8)
+    g.circle('fill',tear.x+math.cos(a)*age*23,tear.y+math.sin(a)*age*14-age*14,1.5*(1-age))
+   end
+  end
+ end
+ g.pop()
+end
 function P.update(dt)
  Sound.update(P.paused,P.darkness)
  if P.paused then return end
@@ -127,6 +156,7 @@ function P.update(dt)
   if math.abs(dx)>math.abs(dy) then hero.dir=dx<0 and 'left' or 'right' elseif dy~=0 then hero.dir=dy<0 and 'up' or 'down' end
   local d=math.sqrt((hero.x-ox)^2+(hero.y-oy)^2);P.travel=P.travel+d;require('brown_walk').advance(hero,d,dt)
  end
+ P.updateTears(dt)
  if P.phase=='wander' then
   accompany(dt)
   if P.inNest(hero) then P.transition('settle') end
@@ -151,7 +181,12 @@ function P.update(dt)
   P.queen.angle=target*ease(P.time/.7)
   if P.time>=6.5 then P.transition('departure') end
  elseif P.phase=='departure' then
+  local ox,oy=P.queen.x,P.queen.y
   move(P.queen,P.portal.x,P.portal.y,145,dt)
+  P.dropDistance=P.dropDistance+math.sqrt((P.queen.x-ox)^2+(P.queen.y-oy)^2)
+  if P.dropDistance>=55 and distance(P.queen,P.portal)>55 and not P.blocked(P.queen.x,P.queen.y) and not P.inWater(P.queen.x,P.queen.y) then
+   P.tears[#P.tears+1]={x=P.queen.x,y=P.queen.y,age=0};P.dropDistance=0
+  end
   if distance(P.queen,P.portal)<4 then P.transition('queen_enter') end
  elseif P.phase=='queen_enter' then
   if P.time>=1.8 then P.queenGone=true;P.transition('portal_player') end
@@ -212,6 +247,7 @@ function P.draw(w,h)
   g.setColor(.76+i%3*.07,.28+i%4*.055,.055,.7)
   g.ellipse('fill',0,0,3,1.4);g.pop()
  end
+ P.drawTears()
  P.drawNest()
  P.drawPortal()
  local actors={

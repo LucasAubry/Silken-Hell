@@ -38,7 +38,7 @@ function C.advance(dt)
   local a=C.arrivalActor;local oldY=a.y
   a.y=a.targetY-75+75*smooth((C.arrival-1.4)/1.9)
   require('brown_walk').advance(a,a.y-oldY,step)
-  if C.arrival>=9.5 then C.arrival=nil;C.armed=false;C.elapsed=0 end
+  if C.arrival>=12.5 then C.arrival=nil;C.armed=false;C.elapsed=0 end
   return 0
  end
  if not C.active then if C.goAge then C.goAge=C.goAge+dt end;return dt end
@@ -83,7 +83,7 @@ function C.drawArrivalActor()
 end
 function C.drawArrival()
  local g=love.graphics;local t=C.arrival
- local reveal=smooth((t-.2)/1.6);local out=1-smooth((t-7.9)/1.6)
+ local reveal=smooth((t-.2)/1.6);local out=1-smooth((t-10.9)/1.6)
  g.push('all');g.setShader()
  -- Cover letterboxing as well as the arena during the black-to-daylight fade.
  g.setColor(.008,.005,.016,1-reveal);g.rectangle('fill',-4000,-4000,9200,8750)
@@ -94,7 +94,8 @@ function C.drawArrival()
  g.setColor(1,.91,.65,.5*title);g.setLineWidth(1);g.line(560,116,640,116)
  local story=smooth((t-4.2)/.8)*out
  g.setColor(.025,.04,.035,.88*story);g.rectangle('fill',140,562,920,98,14)
- UI.text('Le portail s’est refermé… Elle est passée par ici. Je dois retrouver sa trace.',165,582,'medium',{1,.96,.84,story},870,'center')
+ local text=t<8 and 'Le portail s’est refermé… Elle est passée par ici. Je dois retrouver sa trace.' or 'Elle a laissé des larmes. Je vais les suivre.'
+ UI.text(text,165,582,'medium',{1,.96,.84,story},870,'center')
  g.pop()
 end
 function C.draw()

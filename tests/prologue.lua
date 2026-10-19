@@ -26,10 +26,10 @@ function T.run()
  trees.drawPart=drawPart
  local back,trunk,front,crown
  for i,e in ipairs(events) do if e=='back' then back=i elseif e==tree.y then trunk=i elseif e=='front' then front=i elseif e=='crown' and not crown then crown=i end end
- assert(back<trunk and trunk<front and front<crown,'Only roots share depth; the trunk and crown always cover the player')
+ assert(back<trunk and trunk<front and front<crown,'Lower trunk shares depth while canopy stays above actors')
  for i=1,3 do
   local t=trees.geometry(i,P.width,P.height)
-  assert(t.species[3]>=.89,'Upper trunk stays in front, only root pixels are sorted')
+  assert((t.species[5]-t.species[3])*t.h>Characters.playerWidth*.6,'Canopy seam clears the complete spider at the roots')
   assert(trees.blocked(t.x,t.y-5,P.width,P.height),'Visible trunk base blocks movement')
   assert(not trees.blocked(t.x+t.rx+2,t.y-5,P.width,P.height),'Can walk beside each trunk')
   assert(not trees.blocked(t.x,t.y+t.ry+2,P.width,P.height),'Can walk over exposed roots')
@@ -57,6 +57,7 @@ function T.run()
  capture('queen-portal');assert(portalCount==1 and queenSeen)
  P.drawPortal=portalDraw;art.spider=spiderDraw;P.open(true)
  assert(P.nest.x==P.width-115 and P.nest.y==112,'Small cocoon in upper-right corner')
+ assert(math.sqrt((P.portal.x-P.nest.x)^2+(P.portal.y-P.nest.y)^2)>400,'Portal is far from cocoon')
  local phase=P.phase;local savedAttempts=Profile.stats.attempts
  P.hero.x=P.streamX(280)+80;P.hero.y=280;Input.move=function()return -1,0 end
  for i=1,12 do P.update(.05);if P.drowning then break end end
@@ -88,9 +89,16 @@ function T.run()
  assert(seen.dusk and seen.portal_open and seen.arrival and seen.lift and seen.confront and seen.departure)
  assert(not seen.fall and not seen.blackout,'No tree fall or blackout')
  assert(seen.queen_enter and seen.enterPicture,'Queen remains visible inside portal before fading');assert(P.queenGone and P.canMove());capture('portal')
+ assert(#P.tears>=5,'Queen leaves a trail while carrying her partner')
+ for _,tear in ipairs(P.tears) do assert(not P.blocked(tear.x,tear.y) and not P.inWater(tear.x,tear.y),'Tears are reachable on land') end
+ local tear=P.tears[1];P.hero.x=tear.x;P.hero.y=tear.y;P.update(.05)
+ assert(tear.collected and P.tearsCollected==1,'Intro tears can be collected')
+ P.update(.05);assert(P.tearsCollected==1,'Each tear is collected once')
+ capture('tear-trail')
  P.hero.x=P.streamX(270);P.hero.y=270;P.update(.05);assert(P.drowning)
  for i=1,23 do P.update(.05) end
  assert(P.phase=='portal_player' and P.queenGone and P.portalAmount==1 and not P.drowning,'Water respawn preserves open portal after kidnapping')
+ assert(P.tearsCollected==1 and tear.collected,'Respawn preserves collected tears')
  P.close();assert(App.state=='menu');P.open(true);assert(P.phase=='wander' and not P.carrying)
  P.hero.x=P.portal.x;P.hero.y=P.portal.y;P.phase='portal_player';P.update(.05);assert(P.phase=='enter')
  local start=App.start;local called=0;App.start=function(n)assert(n==1);called=called+1 end
@@ -119,7 +127,7 @@ function T.run()
  assert(startGate.arrivalActor.y==py+12 and not startGate.arrivalActor.walkMoving,'Visual arrival matches campaign spawn')
  arrivalCapture('closing')
  App.state='pause';local arrivalTime=startGate.arrival;startGate.advance(.5);assert(startGate.arrival==arrivalTime);App.state='playing'
- for i=1,112 do startGate.advance(.05);if i==25 then arrivalCapture('arrival') end end
+ for i=1,172 do startGate.advance(.05);if i==25 then arrivalCapture('arrival') elseif i==95 then arrivalCapture('tear-story') end end
  assert(not startGate.arrival and startGate.active,'Arrival returns directly to normal start prompt')
  P.close();love.draw();local button
  for _,b in ipairs(UI.buttons) do if b.y==695 and b.w==350 then button=b end end
