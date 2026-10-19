@@ -139,10 +139,12 @@ function P.drawTears(airborne)
   if not tear.collected and (tear.age<1.05)==(airborne==true) then
    local falling=clamp((tear.age-.4)/.65,0,1)
    local x=tear.eyeX;local y=tear.eyeY+32*falling*falling
-   local size=tear.age<.4 and 1+5*ease(tear.age/.4) or 6+18*ease(falling)
+   local img=objet.larme.img;local filter=require('art_filter')
+   local iw,ih=filter.sourceSize(img);local fullHeight=ih*objet.larme.size
+   local size=tear.age<.4 and 1+5*ease(tear.age/.4) or 6+(fullHeight-6)*ease(falling)
    if not airborne then x,y=tear.x,tear.y;require('tear_fx').draw(x,y,{.68,.86,1},P.clock+i) end
-   local img=objet.larme.img;local scale=size/img:getHeight()
-   g.setColor(.78,.93,1);g.draw(img,x,y,0,scale,scale,img:getWidth()/2,img:getHeight()/2)
+   local scale=objet.larme.size*(size/fullHeight)
+   g.setColor(.78,.93,1);filter.drawSource(img,x,y,0,scale,scale,iw/2,ih/2)
   elseif tear.collected and not airborne and tear.pickupAge<.55 then
    local age=tear.pickupAge/.55
    for n=1,8 do local a=n*2.399
