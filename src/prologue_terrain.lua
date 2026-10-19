@@ -1,5 +1,10 @@
 -- Native autumn clearing: soft banks and uneven plant clusters, baked once.
-local T={}
+local T={trees={
+ {95,250,142,54},{113,615,160,59},{391,185,130,57},
+ {565,250,155,67},{772,158,150,69},{915,235,128,53},
+ {445,463,142,61},{795,472,153,65},{966,665,165,72},
+ {525,707,137,64},{1128,518,132,56}
+}}
 local function rand(i,s)local n=math.sin(i*127.1+s*311.7)*43758.5453;return n-math.floor(n)end
 local function leaf(x,y,size,a,color)
  local g=love.graphics;g.push();g.translate(x,y);g.rotate(a);g.setColor(color)
@@ -28,6 +33,42 @@ local function shrub(x,y,r,seed)
  for j=1,9 do
   local a=j*2.399+seed;local d=r*rand(j,seed+2)
   leaf(x+math.cos(a)*d-2,y+math.sin(a)*d*.5-4,4+rand(j,8)*5,a,{.49,.46,.20,.35})
+ end
+end
+local function tree(x,y,h,r,seed)
+ local g=love.graphics;local cy=y-h*.73
+ -- Roots and trunk sit under a layered, irregular crown.
+ for i=5,1,-1 do g.setColor(.035,.065,.032,.035);g.ellipse('fill',x+13,y-12,r*.85+i*5,r*.39+i*3) end
+ local bend=(rand(seed,72)-.5)*h*.16
+ local trunk=love.math.newBezierCurve({x,y,x-9,y-h*.25,x+bend,y-h*.55,x+bend*.6,cy}):render(4)
+ g.setColor(.19,.125,.06);g.setLineWidth(h*.105);g.line(trunk)
+ g.setColor(.34,.24,.12);g.setLineWidth(h*.055);g.line(trunk)
+ for j=1,3 do
+  local side=j%2==0 and 1 or -1
+  g.setColor(.23,.16,.075);g.setLineWidth(3+j)
+  g.line(x,y-4,x+side*(10+j*3),y+3-j,x+side*(16+j*4),y+4)
+ end
+ g.setColor(.27,.19,.085);g.setLineWidth(h*.042)
+ g.line(x,y-h*.30,x-r*.35,cy+20,x-r*.52,cy+4)
+ g.line(x+bend*.5,y-h*.42,x+r*.39,cy+11,x+r*.52,cy-5)
+ local warm=rand(seed,75)
+ for j=1,15 do
+  local a=j*2.399+seed;local d=math.sqrt(rand(j,seed+80))*r*.64
+  local xx,yy=x+math.cos(a)*d,cy+math.sin(a)*d*.69
+  local size=r*(.23+rand(j,seed+81)*.19)
+  g.setColor(.13+warm*.13,.19+warm*.035,.065)
+  g.ellipse('fill',xx,yy+5,size,size*.75)
+  g.setColor(.23+warm*.20+rand(j,seed+83)*.05,.29+warm*.035,.085)
+  g.ellipse('fill',xx-2,yy-2,size*.96,size*.70)
+ end
+ for j=1,140 do
+  local a=j*2.399;local d=math.sqrt(rand(j,seed+90))*r*.94
+  local xx=x+math.cos(a)*d;local yy=cy+math.sin(a)*d*.68
+  local light=rand(j,seed+91)
+  leaf(xx,yy,3+rand(j,seed+92)*7,a,{.27+warm*.23+light*.08,.32+light*.13,.085+light*.045,.9})
+ end
+ for j=1,12 do
+  local a=j*2.399;leaf(x+math.cos(a)*22,y+math.sin(a)*8,5,a,{.24,.31,.10,.8})
  end
 end
 local function flower(x,y,seed)
@@ -109,6 +150,15 @@ function T.load(stream)
  end
  g.setColor(.24,.17,.08);g.setLineWidth(3);g.line(x-58,402,x-12,400,x+58,403);g.line(x-58,449,x+18,451,x+58,448)
  props()
+ -- Interior undergrowth creates little groves around the walkable clearing.
+ for i,p in ipairs({{355,290,31},{378,308,25},{620,150,35},{648,164,24},
+  {720,338,34},{747,353,25},{905,505,36},{931,520,28},
+  {378,622,37},{410,637,24},{715,659,34},{742,673,27},
+  {1094,592,31},{101,360,29},{89,393,21},{1000,270,26},
+  {853,80,31},{675,82,28},{1140,254,28},{494,345,23}}) do
+  shrub(p[1],p[2],p[3],i+180)
+ end
+ for i,p in ipairs(T.trees) do tree(p[1],p[2],p[3],p[4],i+210) end
  T.foliage=g.newCanvas(1200,750);g.setCanvas(T.foliage);g.clear(0,0,0,0)
  -- Irregular islands overlap the screen edge, with gaps and varying depth.
  for i=0,23 do
