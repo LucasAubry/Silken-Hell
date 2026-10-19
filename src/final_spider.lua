@@ -70,7 +70,8 @@ function F.leap(resume)
  F.jumpResume=F.pendingEggs>0 and 'seek_nest' or resume or 'webs';F.jumpResumeTime=F.phaseTime;F.jumpCooldown=4
  F.phase='intro_jump';F.phaseTime=0;F.contactGrace=.85
  F.target=nil;F.cornerLay=false;F.cast=0
- F.jump=require('queen_jump').choose(F,F)
+ local nest=F.pendingEggs>0 and F.chooseNest()
+ F.jump=nest and {x=F.x,y=F.y,tx=nest.x,ty=nest.y} or require('queen_jump').choose(F,F)
  F.angle=math.atan2(F.jump.ty-F.y,F.jump.tx-F.x)-math.pi/2
 end
 function F.beginCombat()
@@ -82,7 +83,7 @@ function F.damage(egg)
  F.hp=math.max(0,F.hp-1);F.flash=.25
  BossFX.shake(8)
  if F.hp>0 then
-  if (F.maxHp-F.hp)%2==0 then F.pendingEggs=F.pendingEggs+1;F.chooseNest() end
+  if (F.maxHp-F.hp)%2==0 then F.pendingEggs=F.pendingEggs+1 end
   F.frozen=0;F.leap('webs')
  else
   F.bombs={};F.bursts={};F.stuck={};F.snare=0;F.frozen=0
@@ -104,6 +105,10 @@ function F.chooseNest()
  local function consider(x,y)
   if Arena.blocked(x-20,y-24,40,48) then return end
   for _,e in ipairs(F.eggs) do if (e.x-x)^2+(e.y-y)^2<48^2 then return end end
+  for _,b in ipairs(F.babies) do if not b.dead then
+   local j=b.jump;local bx,by=j and j.tx or b.x,j and j.ty or b.y
+   if (bx-x)^2+(by-y)^2<110^2 or (b.x-x)^2+(b.y-y)^2<110^2 then return end
+  end end
   local d=(x-p.x)^2+(y-p.y)^2
   if not score or d>score then best={x=x,y=y};score=d end
  end
@@ -119,7 +124,7 @@ function F.layEgg()
  F.eggs[#F.eggs+1]={x=point.x,y=point.y,fromX=F.x,fromY=F.y,age=0,hatch=1.5,seed=F.eggSerial}
 end
 function F.trap(target)
- if F.defeated or F.cornerLay or grieving() or F.phase=='charge' or F.phase=='aim' or F.phase=='intro_jump' then return end
+ if F.defeated or F.pendingEggs>0 or F.cornerLay or grieving() or F.phase=='charge' or F.phase=='aim' or F.phase=='intro_jump' then return end
  F.chargeDeaths={};F.chargeEggs={};F.grief=nil
  F.resume=F.phase;F.target=target;F.phase='aim';F.phaseTime=0
  if target==player then F.snare=2.1;F.escapeTaps={} else target.webbed=true end
@@ -226,11 +231,23 @@ local function updateBehavior(dt)
   local t=math.min(1,F.phaseTime/.85);local ease=t*t*(3-2*t);local j=F.jump
   F.x=j.x+(j.tx-j.x)*ease;F.y=j.y+(j.ty-j.y)*ease
   F.jumpHeight=math.sin(t*math.pi)*115
-  if t>=1 then require('queen_presence').land(F);F.landingVolley();F.phase=F.jumpResume or 'webs';F.phaseTime=F.phase=='lay' and F.jumpResumeTime or 0;F.shot=.45;F.contactGrace=.35;F.jump=nil;F.jumpHeight=0 end
+  if t>=1 then
+   require('queen_presence').land(F);F.landingVolley()
+   F.phase=F.jumpResume or 'webs';F.phaseTime=0;F.shot=.45;F.contactGrace=.35;F.jump=nil;F.jumpHeight=0
+   if F.pendingEggs>0 and F.nest and near(F,F.nest,4) then
+    F.layEgg();F.pendingEggs=F.pendingEggs-1;F.nest=nil
+    F.phase=F.pendingEggs>0 and 'seek_nest' or 'webs'
+   end
+  end
  end
  F.contactGrace=math.max(0,(F.contactGrace or 0)-dt)
  if not jumping and F.phase~='charge' and F.contactGrace<=0 and require('collision_shapes').touchCircle('queen',F.x,F.y,27) then F.damage();return end
  if jumping then return end
+ if (F.phase=='webs' or F.phase=='seek_nest' or F.phase=='recover')
+  and F.contactGrace<=0 and near(F,p,F.leapRadius)
+  and (F.jumpCooldown<=0 or F.pendingEggs>0) then
+  F.leap('webs');return
+ end
  if F.phase=='aim' then
   F.angle=math.atan2(F.chargeY-F.y,F.chargeX-F.x)-math.pi/2
   if F.phaseTime>.65 then F.phase='charge';F.phaseTime=0 end
@@ -251,10 +268,10 @@ local function updateBehavior(dt)
    F.phase='recover';F.phaseTime=0;F.contactGrace=.45;F.jump=nil;F.jumpHeight=0;F.grief=nil;F.chargeDeaths={};F.shot=.6
   end
  elseif F.phase=='seek_nest' then
-  local nest=F.chooseNest()
+  local nest=F.nest or F.chooseNest()
   if nest then
    if towards(F,nest.x,nest.y,340,dt)<4 then
-    F.layEgg();F.pendingEggs=math.max(0,F.pendingEggs-1)
+    F.layEgg();F.pendingEggs=math.max(0,F.pendingEggs-1);F.nest=nil
     F.phase=F.pendingEggs>0 and 'seek_nest' or 'webs';F.phaseTime=0;F.shot=.45
    end
   end

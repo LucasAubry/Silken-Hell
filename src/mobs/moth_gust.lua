@@ -31,7 +31,7 @@ function G.update(m,dt)
    -- Keep flying sideways while preserving the direction chosen at release.
    Arena.move(m,-m.vy*60*step,m.vx*60*step)
    for _,other in ipairs(mobs) do
-    if other~=m and not (other.dead or other.spent or other.falling or other.capture or other.tunnelTravel or other.abyssHeld)
+    if other~=m and other.type~='mist_moth' and not (other.dead or other.spent or other.falling or other.capture or other.tunnelTravel or other.abyssHeld)
      and not Realms.underground(other) and other.hitBox_width and other.hitBox_height and other.type~='scie' and other.type~='piege' and not other.ground then
      local steps=math.max(1,math.ceil(G.power*step/4))
      for _=1,steps do

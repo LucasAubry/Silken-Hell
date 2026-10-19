@@ -25,7 +25,9 @@ function T.run()
  G.update(m,.86);assert(m.phase=='gust' and m.vy>.99,'The next gust aims at the new player position')
  m.phase='gust';m.phaseTime=.6;m.x=220;m.y=300;m.vx=1;m.vy=0;player.x=355;player.y=288
  local other={x=450,y=300,type='cloud_snail',hitBox_width=24,hitBox_height=20,hitBox_offset_x=-12,hitBox_offset_y=-10}
- mobs={m,other};G.update(m,.01);assert(other.x>450,'Wind pushes other monsters')
+ local moth={x=480,y=300,type='mist_moth',hitBox_width=30,hitBox_height=24,hitBox_offset_x=-15,hitBox_offset_y=-12}
+ mobs={m,other,moth};G.update(m,.01);assert(other.x>450,'Wind pushes other monsters')
+ assert(moth.x==480 and moth.y==300,'Wind never pushes another wind moth')
  m.x=220;m.y=300;player.x=355;player.y=288
  local contacts=0;Hazards.contact=function()contacts=contacts+1;if player.x>=365 then player.reset=true end end
  G.update(m,.5);assert(player.reset and contacts>0 and player.x<370,'Push checks hazards in small steps and stops on death')
