@@ -108,20 +108,13 @@ function S.updateWall(dt)
   require('achievement_notice').storyProgress(S.progress())
  end
 end
--- Reserve an undecorated patch around the tiny inscription and its light.
+-- Keep the original rim continuous, curving it around the exact text width.
 function S.drawDecor(draw)
  if not S.wallAvailable() then draw();return end
- local x,y=S.wallSpot();local g=love.graphics
- local left,top=math.max(0,x-72),math.max(0,y-62)
- local right,bottom=math.min(Arena.width,x+72),math.min(600,y+62)
- g.push('all')
- for _,r in ipairs({{0,0,Arena.width,top},{0,bottom,Arena.width,600-bottom},{0,top,left,bottom-top},{right,top,Arena.width-right,bottom-top}}) do
-  if r[3]>0 and r[4]>0 then
-   local ax,ay=g.transformPoint(r[1],r[2]);local bx,by=g.transformPoint(r[1]+r[3],r[2]+r[4])
-   g.setScissor(ax,ay,bx-ax,by-ay);draw()
-  end
- end
- g.pop()
+ local x,y,side=S.wallSpot()
+ local line=require('localization').render(S.inscriptions[Campaign.biome])
+ local half=UI.fonts.body:getWidth(line)*.19*.5
+ require('inscription_decor').draw(draw,x,y,side,half)
 end
 function S.drawWallMessage()
  if not S.wallAvailable() then return end
