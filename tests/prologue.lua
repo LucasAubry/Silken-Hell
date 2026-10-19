@@ -21,7 +21,21 @@ function T.run()
   P.queen.angle=entry[2];capture('direction-'..entry[1])
  end
  P.open(true)
- assert(P.blocked(P.streamX(300),300) and not P.blocked(P.streamX(340),340),'Stream and bridge collision')
+ assert(not P.blocked(P.streamX(300),300) and P.inWater(P.streamX(300),300) and not P.inWater(P.streamX(340),340),'Water is lethal, bridge remains safe')
+ assert(P.nest.x==P.width-115 and P.nest.y==112,'Small cocoon in upper-right corner')
+ local phase=P.phase;local savedAttempts=Profile.stats.attempts
+ P.hero.x=P.streamX(280)+80;P.hero.y=280;Input.move=function()return -1,0 end
+ for i=1,12 do P.update(.05);if P.drowning then break end end
+ assert(P.drowning and not P.canMove() and P.waterDeaths==1,'Walking into river drowns')
+ capture('drowning')
+ Input.move=function()return 0,0 end
+ for i=1,24 do P.update(.05) end
+ assert(not P.drowning and not P.inWater(P.hero.x,P.hero.y) and P.phase==phase,'Respawn on safe land without restarting story')
+ assert(Profile.stats.attempts==savedAttempts,'Intro drowning does not alter campaign attempts')
+ P.hero.x=P.streamX(340)+75;P.hero.y=340;Input.move=function()return -1,0 end
+ for i=1,6 do P.update(.05) end
+ assert(not P.drowning and P.hero.x<P.streamX(340),'Bridge can be crossed at running speed')
+ P.open(true);Input.move=function()return 0,0 end
  local x=P.hero.x;Input.move=function()return 1,0 end;P.update(.05);assert(P.hero.x>x);Input.move=function()return 0,0 end
  P.paused=true;local t=P.clock;P.update(.05);assert(P.clock==t);P.paused=false
  for i=1,700 do P.update(.05) end
@@ -39,6 +53,9 @@ function T.run()
  assert(seen.dusk and seen.portal_open and seen.arrival and seen.lift and seen.confront and seen.departure)
  assert(not seen.fall and not seen.blackout,'No tree fall or blackout')
  assert(P.queenGone and P.canMove());capture('portal')
+ P.hero.x=P.streamX(270);P.hero.y=270;P.update(.05);assert(P.drowning)
+ for i=1,23 do P.update(.05) end
+ assert(P.phase=='portal_player' and P.queenGone and P.portalAmount==1 and not P.drowning,'Water respawn preserves open portal after kidnapping')
  P.close();assert(App.state=='menu');P.open(true);assert(P.phase=='wander' and not P.carrying)
  P.hero.x=P.portal.x;P.hero.y=P.portal.y;P.phase='portal_player';P.update(.05);assert(P.phase=='enter')
  local start=App.start;local called=0;App.start=function(n)assert(n==1);called=called+1 end
@@ -50,7 +67,7 @@ function T.run()
  for _,b in ipairs(UI.buttons) do if b.y==695 and b.w==350 then button=b end end
  assert(button,'Menu replay button present');button.run();assert(App.state=='prologue' and P.phase=='wander')
  Profile.save=save;Profile.prologueSeen=saved
- print('PASS prologue: campaign dimensions and sprite sizes, nest-triggered sleep, no timed/tree event, visible nighttime kidnapping, portal and world 1 transition; screenshots captured')
+ print('PASS prologue: campaign dimensions, corner cocoon, water death/respawn before and after kidnapping, safe bridge, cocoon-triggered sleep, no timed/tree event, visible nighttime kidnapping, portal and world 1 transition; screenshots captured')
  love.event.quit()
 end
 return T

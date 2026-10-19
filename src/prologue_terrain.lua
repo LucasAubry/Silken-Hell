@@ -36,6 +36,37 @@ local function flower(x,y,seed)
  for j=1,5 do local a=j*math.pi*.4;g.setColor(.79,.65,.35,.8);g.ellipse('fill',x+math.cos(a)*2.5,y+math.sin(a)*2,2,1.6) end
  g.setColor(.40,.27,.08);g.circle('fill',x,y,1.2)
 end
+local function mushroom(x,y,size)
+ local g=love.graphics
+ g.setColor(.10,.12,.05,.18);g.ellipse('fill',x+3,y+3,size*.7,size*.25)
+ g.setColor(.61,.57,.37);g.setLineWidth(size*.19);g.line(x,y,x-1,y-size*.8)
+ g.setColor(.31,.13,.055);g.ellipse('fill',x-1,y-size*.8,size*.65,size*.30)
+ g.setColor(.65,.31,.11);g.ellipse('fill',x-2,y-size*.92,size*.60,size*.29)
+ g.setColor(.85,.64,.33,.65);g.ellipse('fill',x-size*.18,y-size,size*.22,size*.08)
+ for j=1,3 do g.setColor(.88,.77,.51,.65);g.circle('fill',x-2+math.cos(j*2.4)*size*.32,y-size*.91+math.sin(j*2.4)*size*.10,size*.06) end
+end
+local function props()
+ local g=love.graphics
+ for _,p in ipairs({{435,225,16},{451,230,10},{428,237,8},{1000,480,18},{1020,490,11},{987,495,9}}) do mushroom(p[1],p[2],p[3]) end
+ -- A low weathered log, moss and a few small pebbles along the walk.
+ g.push();g.translate(665,570);g.rotate(-.22)
+ g.setColor(.075,.09,.035,.22);g.ellipse('fill',3,9,51,15)
+ g.setColor(.25,.18,.09);g.rectangle('fill',-40,-9,80,20,9)
+ g.setColor(.38,.27,.13);g.rectangle('fill',-38,-10,76,10,6)
+ g.setColor(.16,.105,.05);g.ellipse('fill',40,1,8,11)
+ g.setColor(.55,.40,.22);g.ellipse('fill',40,1,6,9)
+ g.setColor(.24,.16,.08);g.ellipse('fill',40,2,3,5)
+ for i=1,7 do leaf(-36+i*10,-9+math.sin(i)*3,5,i,{.31,.37,.13,.9}) end
+ g.pop()
+ for i=1,9 do
+  local x=463+math.cos(i*2.399)*(10+i*2);local y=538+math.sin(i*2.399)*(6+i)
+  local r=3+i%3*2
+  g.setColor(.12,.15,.08,.2);g.ellipse('fill',x+2,y+3,r+1,r*.6)
+  g.setColor(.33+i%3*.035,.36+i%3*.03,.24);g.ellipse('fill',x,y,r,r*.65)
+  g.setColor(.53,.54,.37,.55);g.ellipse('fill',x-1,y-1,r*.45,r*.18)
+ end
+ for _,p in ipairs({{550,135},{555,144},{565,136},{857,628},{870,635},{878,624}}) do flower(p[1],p[2],1) end
+end
 function T.load(stream)
  if T.details then return end
  local g=love.graphics;T.details=g.newCanvas(1200,750)
@@ -77,6 +108,7 @@ function T.load(stream)
   g.setColor(.48,.37,.20,.4);g.setLineWidth(.8);g.line(xx+3,406+dy,xx+4,443-dy)
  end
  g.setColor(.24,.17,.08);g.setLineWidth(3);g.line(x-58,402,x-12,400,x+58,403);g.line(x-58,449,x+18,451,x+58,448)
+ props()
  T.foliage=g.newCanvas(1200,750);g.setCanvas(T.foliage);g.clear(0,0,0,0)
  -- Irregular islands overlap the screen edge, with gaps and varying depth.
  for i=0,23 do
