@@ -3,6 +3,7 @@
 local P={width=960,height=600,partnerWidth=62}
 local ArtSet=require('final_art')
 local Sound=require('prologue_audio')
+local Trees=require('prologue_trees')
 local function clamp(x,a,b)return math.max(a,math.min(b,x))end
 local function ease(t)t=clamp(t,0,1);return t*t*(3-2*t)end
 local function distance(a,b)return math.sqrt((a.x-b.x)^2+(a.y-b.y)^2)end
@@ -16,6 +17,7 @@ function P.load()
  if P.loaded then return end
  require('prologue_terrain').load(P.terrainStreamX)
  require('prologue_nest').load()
+ Trees.load()
  Art.add('prologue_carrier_down','assets/prologue/queen_carrying_partner.png')
  for _,dir in ipairs({'up','left','right'}) do Art.add('prologue_carrier_'..dir,'assets/prologue/queen_carrying_'..dir..'.png') end
  Sound.load();P.loaded=true
@@ -56,7 +58,7 @@ end
 function P.streamX(y)return P.terrainStreamX(y*750/P.height)*P.width/1200 end
 function P.blocked(x,y)
  if x<40 or x>P.width-40 or y<48 or y>P.height-40 then return true end
- return false
+ return Trees.blocked(x,y,P.width,P.height) or require('prologue_nest').blocked(x,y,P.nest.x,P.nest.y)
 end
 function P.inWater(x,y)
  if y>=320 and y<=360 then return false end
@@ -82,7 +84,7 @@ local function stepHero(dx,dy)
  end
 end
 function P.inNest(a)
- return ((a.x-P.nest.x)/49)^2+((a.y-P.nest.y)/30)^2<1
+ return a.y>=P.nest.y-8 and ((a.x-P.nest.x)/39)^2+((a.y-P.nest.y)/26)^2<1
 end
 local function accompany(dt)
  local a,h=P.partner,P.hero
@@ -207,11 +209,16 @@ function P.draw(w,h)
   g.ellipse('fill',0,0,3,1.4);g.pop()
  end
  P.drawNest()
+ P.drawPortal()
+ local actors={
+  {y=P.partner.y,draw=function()
  if not P.carrying and not P.queenGone then
   local partner=P.partner;local lift=P.phase=='lift' and ease(P.time/1.2) or 0
   shadow(partner.x,partner.y,P.partnerWidth)
   g.setColor(1,1,1,1-lift);ArtSet.spider('partner',partner.x+(P.queen.x-partner.x)*lift,partner.y-32*lift,P.partnerWidth,partner.angle,partner)
  end
+  end},
+  {y=P.hero.y,draw=function()
  if P.drowning then
   local d=P.drowning;local t=d.time;local scale=math.max(0,1-t/.65)
   g.setColor(1,1,1,scale)
@@ -224,7 +231,8 @@ function P.draw(w,h)
  else
   shadow(P.hero.x,P.hero.y,Characters.playerWidth);g.setColor(1,1,1);Characters.draw(P.hero.x,P.hero.y,Characters.playerWidth,P.hero.dir,P.hero)
  end
- P.drawPortal()
+  end},
+  {y=P.queen.y,draw=function()
  if (P.phase=='arrival' or P.phase=='lift' or P.carrying) and not P.queenGone then
   local q=P.queen;local fade=P.phase=='departure' and clamp(distance(q,P.portal)/58,0,1) or 1
   shadow(q.x,q.y,112);g.setColor(1,1,1,fade)
@@ -232,6 +240,9 @@ function P.draw(w,h)
    P.drawCarrier(q,112)
   else ArtSet.spider('queen',q.x,q.y,112,q.angle,q) end
  end
+  end}
+ }
+ Trees.drawScene(actors,P.width,P.height,P.clock)
  g.setColor(.008,.005,.016,P.darkness);g.rectangle('fill',0,0,P.width,P.height)
  -- The portal stays readable after the forest has gone dark.
  if P.darkness<.98 then P.drawPortal() end

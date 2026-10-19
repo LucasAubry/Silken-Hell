@@ -11,6 +11,24 @@ function T.run()
   c:newImageData():encode('png','prologue-'..name..'.png');c:release()
  end
  capture('forest')
+ local trees=require('prologue_trees');local tree=trees.geometry(3,P.width,P.height)
+ assert(tree.h>Characters.playerWidth*3 and tree.h<Characters.playerWidth*4,'Trees scaled to spiders')
+ assert(P.blocked(tree.x,tree.y) and not P.blocked(tree.x,tree.y-65),'Only the trunk blocks passage')
+ P.hero.x=tree.x-65;P.hero.y=tree.y;Input.move=function()return 1,0 end
+ for i=1,12 do P.update(.05) end
+ assert(P.hero.x<tree.x-15,'Walking cannot cross a trunk')
+ Input.move=function()return 0,0 end
+ P.hero.x=tree.x;P.hero.y=tree.y+27;capture('tree-front')
+ P.hero.y=tree.y-28;capture('tree-back')
+ local events={};local drawPart=trees.drawPart
+ trees.drawPart=function(t,crown)events[#events+1]=crown and 'crown' or t.y end
+ trees.drawScene({{y=tree.y-1,draw=function()events[#events+1]='back'end},{y=tree.y+1,draw=function()events[#events+1]='front'end}},P.width,P.height,0)
+ trees.drawPart=drawPart
+ local back,trunk,front,crown
+ for i,e in ipairs(events) do if e=='back' then back=i elseif e==tree.y then trunk=i elseif e=='front' then front=i elseif e=='crown' and not crown then crown=i end end
+ assert(back<trunk and trunk<front and front<crown,'Trunk depth and canopy occlusion')
+ assert(P.blocked(P.nest.x,P.nest.y-30) and not P.blocked(P.nest.x,P.nest.y+12),'Cocoon collision leaves front entrance open')
+ P.open(true)
  -- Directional views retain independent source pixels, including both sides.
  for _,entry in ipairs({{'down',0},{'up',math.pi},{'left',math.pi/2},{'right',-math.pi/2}}) do
   local q={x=300,y=300,angle=entry[2]};assert(P.drawCarrier(q,112)==entry[1])

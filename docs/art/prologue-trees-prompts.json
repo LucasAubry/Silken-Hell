@@ -1,0 +1,17 @@
+{
+  "generator": "Built-in ImageGen",
+  "trees": [
+    {
+      "key": "oak",
+      "prompt": "Create ONE isolated transparent PNG tree sprite for the 2D game in the reference screenshot. Match its overhead three-quarter RPG camera and muted autumn olive/ochre palette, with clear handcrafted pixel clusters, restrained dark contours, matte colors and readable broad forms. Entire tree including trunk and roots, root base at bottom CENTER, trunk clearly visible in lower third, crown above; 12% transparent padding, real transparent background. No ground patch, NO cast shadow, no glow or halo, no text, no other objects, not photorealistic, not 3D, not hyper-detailed illustration. This is one of a coherent set of three trees, drawn for a final screen height around 150 pixels. An old squat OAK: wide irregular rounded crown of dark moss-green and olive leaves with a few ochre tips, stout crooked dark brown trunk with a split and short exposed roots. Distinct low broad silhouette, crown width about 90% of total tree height. Organic layered leaf clusters, natural gaps, warm highlights sparingly."
+    },
+    {
+      "key": "birch",
+      "prompt": "Create ONE isolated transparent PNG tree sprite for the 2D game in the reference screenshot. Match its overhead three-quarter RPG camera and muted autumn olive/ochre palette, with clear handcrafted pixel clusters, restrained dark contours, matte colors and readable broad forms. Entire tree including trunk and roots, root base at bottom CENTER, trunk clearly visible in lower third, crown above; 12% transparent padding, real transparent background. No ground patch, NO cast shadow, no glow or halo, no text, no other objects, not photorealistic, not 3D, not hyper-detailed illustration. This is one of a coherent set of three trees, drawn for a final screen height around 150 pixels. A slender autumn BIRCH: taller airy asymmetric golden-yellow and muted amber crown, TWO slender ivory-brown trunks with dark bark markings, subtly leaning branches and small roots centered at base. Distinct tall narrow silhouette, crown width about 60% of total tree height. Leave readable gaps between loose leaf clusters, soft golden top light, same muted game palette."
+    },
+    {
+      "key": "maple",
+      "prompt": "Create ONE isolated transparent PNG tree sprite for the 2D game in the reference screenshot. Match its overhead three-quarter RPG camera and muted autumn olive/ochre palette, with clear handcrafted pixel clusters, restrained dark contours, matte colors and readable broad forms. Entire tree including trunk and roots, root base at bottom CENTER, trunk clearly visible in lower third, crown above; 12% transparent padding, real transparent background. No ground patch, NO cast shadow, no glow or halo, no text, no other objects, not photorealistic, not 3D, not hyper-detailed illustration. This is one of a coherent set of three trees, drawn for a final screen height around 150 pixels. A medium MAPLE: asymmetrical spreading canopy of burnt orange, rust-red and muted copper leaves, a graceful forked brown trunk leaning a little right, short roots centered at base. Distinct tilted organic crown with three uneven lobes, width about 80% of total height. Chunky leaf shapes, warm but subdued highlights, no neon orange, rich dark lower foliage."
+    }
+  ]
+}
