@@ -7,7 +7,7 @@ function T.run()
  P.open(true);assert(App.state=='prologue' and P.canMove())
  assert(P.width==Arena.width and P.height==600 and P.partnerWidth==62 and Characters.playerWidth==59,'Campaign map and sprite scale')
  local function capture(name)
-  local g=love.graphics;local c=g.newCanvas(1200,750);g.push('all');g.setCanvas(c);P.draw(1200,750);g.setCanvas();g.pop()
+  local g=love.graphics;local c=g.newCanvas(1200,750);g.push('all');g.setCanvas(c);P.draw(1200,750);P.ui();g.setCanvas();g.pop()
   c:newImageData():encode('png','prologue-'..name..'.png');c:release()
  end
  capture('forest')
@@ -150,6 +150,25 @@ function T.run()
  assert(App.state=='menu' and starts==0 and saves==0,'History ends at menu without launching or saving campaign')
  assert(Profile.prologueSeen==savedSeen and App.selectedWorld==selected and App.hardcore==hardcore,'History preserves progress and menu selection')
  App.start=startApp
+ love.draw();local mysteryButton
+ for _,b in ipairs(UI.buttons) do if b.y==695 and b.x==425 then mysteryButton=b end end
+ assert(mysteryButton,'New cinematic preview button exists');mysteryButton.run()
+ assert(P.mystery and P.phase=='dusk' and not P.canMove())
+ local elapsed=0;local shots={};local beforeSaves=saves
+ P.paused=true;P.update(.05);assert(P.time==0);P.paused=false
+ while App.state=='prologue' do
+  P.update(.05);elapsed=elapsed+.05;assert(elapsed<21)
+  if P.phase=='dusk' and P.time>1.5 and not shots.glow then capture('mystery-glow');shots.glow=true end
+  if P.phase=='lift' and P.time>.7 and not shots.lift then capture('mystery-lift');shots.lift=true end
+  if P.phase=='confront' and P.time>1 and not shots.dialogue then capture('mystery-dialogue');shots.dialogue=true end
+  if P.phase=='look' and P.time>1 and not shots.look then
+   assert(P.eyeOpen>.9 and #P.tears==1);capture('mystery-look');shots.look=true
+  end
+ end
+ assert(App.state=='menu' and elapsed>=15 and elapsed<=20 and saves==beforeSaves,'Preview ends at menu without progression writes')
+ assert(shots.glow and shots.lift and shots.dialogue and shots.look and #P.tears==1)
+ require('prologue').open(true);assert(not P.mystery and P.phase=='wander','History keeps full introduction');P.close()
+ print('Mystery intro duration: '..elapsed..' seconds')
  Profile.save=save;Profile.prologueSeen=saved
  print('PASS prologue: campaign dimensions, corner cocoon, water death/respawn before and after kidnapping, safe bridge, cocoon-triggered sleep, no timed/tree event, visible nighttime kidnapping, portal and world 1 transition; screenshots captured')
  love.event.quit()

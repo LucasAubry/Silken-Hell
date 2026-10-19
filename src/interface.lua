@@ -338,6 +338,7 @@ function U.menu()
     U.button('HISTOIRE',425,603,170,38,function() require('prologue').open(true) end)
     U.button('WORKSHOP',605,603,170,38,Workshop.open)
     U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open,false,false,'go')
+    U.button('Tester la nouvelle intro',425,695,350,36,function() require('prologue_mystery').open() end)
     if Graphics.effects then
         g.push('all');g.setBlendMode('add')
         for i=1,7 do

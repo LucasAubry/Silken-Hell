@@ -24,7 +24,7 @@ function P.load()
 end
 function P.open(replay)
  Arena.configure(love.graphics.getDimensions());P.width=Arena.width;P.height=Arena.height
- P.load();P.replay=replay==true;P.phase='wander';P.time=0;P.clock=0;P.travel=0;P.darkness=0;P.paused=false
+ P.load();P.mystery=false;P.replay=replay==true;P.phase='wander';P.time=0;P.clock=0;P.travel=0;P.darkness=0;P.paused=false
  P.saved={selectedWorld=App.selectedWorld,hardcore=App.hardcore}
  P.hero={x=P.width*.51,y=432,dir='up',sanctuaryPlayer=true};P.partner={x=P.width*.51+72,y=425,angle=0}
  P.nest={x=P.width-115,y=112};P.victim={x=P.nest.x+27,y=P.nest.y+8}
@@ -160,6 +160,7 @@ function P.update(dt)
  Sound.update(P.paused,P.darkness)
  if P.paused then return end
  dt=math.min(dt,.05);P.clock=P.clock+dt
+ if P.mystery then require('prologue_mystery').update(P,dt);return end
  if P.drowning then
   P.drowning.time=P.drowning.time+dt
   if P.drowning.time>=1.05 then
@@ -254,12 +255,14 @@ function P.drawCarrier(q,width)
  if not require('brown_walk').draw(a.image,dir,q.x,q.y,width,q,a.quad) then
   g.draw(a.image,a.quad,q.x,q.y,0,scale,scale,a.w/2,a.h/2)
  end
+ if P.mystery then require('prologue_mystery').eyes(P,q,width) end
  return dir
 end
 function P.draw(w,h)
  local g=love.graphics;local s=math.min(w/P.width,h/P.height)
  g.push('all');g.origin();g.setShader();g.clear(.045,.025,.015)
  g.translate((w-P.width*s)/2,(h-P.height*s)/2);g.scale(s)
+ if P.mystery then require('prologue_mystery').camera(P) end
  g.push();g.scale(P.width/1200,P.height/750);require('prologue_terrain').draw(P.terrainStreamX,P.clock);require('prologue_terrain').life(P.terrainStreamX,P.clock);g.pop()
  -- A little reflected light moves down the river; falling leaves stay visual only.
  for i=1,18 do
@@ -278,7 +281,7 @@ function P.draw(w,h)
  local actors={
   {y=P.partner.y,draw=function()
  if not P.carrying and not P.queenGone then
-  local partner=P.partner;local lift=P.phase=='lift' and ease(P.time/1.2) or 0
+  local partner=P.partner;local lift=P.phase=='lift' and ease(P.time/(P.mystery and 1.5 or 1.2)) or 0
   shadow(partner.x,partner.y,P.partnerWidth)
   g.setColor(1,1,1,1-lift);ArtSet.spider('partner',partner.x+(P.queen.x-partner.x)*lift,partner.y-16*lift,P.partnerWidth,partner.angle,partner)
  end
@@ -306,20 +309,27 @@ function P.draw(w,h)
    P.drawTears(true)
   else
    local facing=({down=0,up=math.pi,left=math.pi/2,right=-math.pi/2})[ArtSet.facing(q.angle)]
-   ArtSet.spider('queen',q.x,q.y,Characters.playerWidth,facing,q)
+   local kneel=P.mystery and P.kneel or 0
+   g.push();g.translate(q.x,q.y+kneel*5);g.scale(1,1-kneel*.12)
+   ArtSet.spider('queen',0,0,Characters.playerWidth,facing,q);g.pop()
   end
  end
   end}
  }
  Trees.drawScene(actors,P.width,P.height,P.clock)
  g.setColor(.008,.005,.016,P.darkness);g.rectangle('fill',0,0,P.width,P.height)
- if P.phase=='confront' then
+ if P.mystery and not P.queenGone then
+  local x,y=P.partner.x,P.partner.y;if P.carrying then x,y=P.partnerEye() end
+  require('prologue_mystery').halo(P,x,y)
+ end
+ if P.phase=='confront' and not P.mystery then
   local a=clamp(P.time/.5,0,1);g.setColor(.018,.008,.023,a*.88);g.rectangle('fill',40,P.height-110,P.width-80,90,10)
   UI.text('Son heure est venue. Je dois l’emmener là-haut. Je suis désolée.',60,P.height-92,'medium',{1,.89,.73,a},P.width-120,'center')
  end
  g.pop()
 end
 function P.ui()
+ if P.mystery then require('prologue_mystery').ui(P) end
  if not P.paused then return end
  local g=love.graphics;g.setColor(.01,.008,.016,.72);g.rectangle('fill',0,0,1200,750)
  UI.panel(375,275,450,210)
