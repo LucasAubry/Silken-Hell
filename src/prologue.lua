@@ -30,7 +30,7 @@ function P.open(test)
  P.nest={x=P.width-115,y=112};P.victim={x=P.nest.x+27,y=P.nest.y+8}
  P.portal={x=P.width*.65,y=500};P.queen={x=P.portal.x,y=P.portal.y,angle=0}
  P.spawn={x=P.hero.x,y=P.hero.y};P.safe={x=P.hero.x,y=P.hero.y};P.drowning=nil;P.waterDeaths=0
- P.tears={};P.tearsCollected=0;P.dropDistance=55
+ P.tears={};P.tearsCollected=0;P.departureDistance=nil
  P.portalAmount=0;P.carrying=false;P.queenGone=false;P.entering=false
  Replay.input=nil;Replay.recording=false;App.hardcore=false;App.state='prologue';UI.buttons={};UI.pressed=nil
  require('run_start').active=false;require('run_start').suspend();love.keyboard.setTextInput(false)
@@ -41,6 +41,7 @@ function P.close()
 end
 function P.transition(phase)
  P.phase=phase;P.time=0
+ if phase=='departure' then P.departureDistance=distance(P.queen,P.portal) end
 end
 function P.canMove()return not P.paused and not P.drowning and (P.phase=='wander' or P.phase=='portal_player')end
 function P.terrainStreamX(y)
@@ -106,24 +107,43 @@ function P.enterWorld()
  if App.state=='playing' then require('run_start').beginArrival() end
 end
 -- Intro tears belong to the scene, never campaign progression or replay state.
+function P.partnerEye()
+ local q=P.queen;local dir=ArtSet.facing(q.angle)
+ local a=Art.images['prologue_carrier_'..dir]
+ -- Closed eyelid coordinates in the original directional PNGs.
+ local eye=({down={820,425},left={820,422},up={535,648},right={480,137}})[dir]
+ local qx,qy=a.quad:getViewport();local scale=Characters.playerWidth/a.w
+ local x,y=(eye[1]-qx-a.w/2)*scale,(eye[2]-qy-a.h/2)*scale
+ local phase=q.walkPhase or 0;local turn=q.walkMoving and math.sin(phase)*.012 or 0
+ local bob=q.walkMoving and math.cos(phase*2)*.55*Characters.playerWidth/62 or 0
+ return q.x+x*math.cos(turn)-y*math.sin(turn),q.y+x*math.sin(turn)+y*math.cos(turn)+bob
+end
 function P.updateTears(dt)
  for _,tear in ipairs(P.tears) do
   tear.age=tear.age+dt
-  if not tear.collected and tear.age>=.55 and P.canMove() and distance(P.hero,tear)<27 then
+  if tear.age<=.4 or not tear.released then
+   tear.eyeX,tear.eyeY=P.partnerEye()
+   if tear.age>=.4 then
+    tear.released=true;tear.x=tear.eyeX;tear.y=tear.eyeY+32
+   end
+  end
+  if not tear.collected and tear.age>=1.05 and P.canMove() and distance(P.hero,tear)<27 then
    tear.collected=true;tear.pickupAge=0;P.tearsCollected=P.tearsCollected+1
   end
   if tear.collected then tear.pickupAge=tear.pickupAge+dt end
  end
 end
-function P.drawTears()
+function P.drawTears(airborne)
  local g=love.graphics;g.push('all')
  for i,tear in ipairs(P.tears) do
-  if not tear.collected then
-   local fall=1-ease(tear.age/.55);local y=tear.y-23*fall
-   require('tear_fx').draw(tear.x,y,{.68,.86,1},P.clock+i)
-   local img=objet.larme.img;local scale=24/img:getHeight()
-   g.setColor(1,1,1);g.draw(img,tear.x,y,0,scale,scale,img:getWidth()/2,img:getHeight()/2)
-  elseif tear.pickupAge<.55 then
+  if not tear.collected and (tear.age<1.05)==(airborne==true) then
+   local falling=clamp((tear.age-.4)/.65,0,1)
+   local x=tear.eyeX;local y=tear.eyeY+32*falling*falling
+   local size=tear.age<.4 and 1+5*ease(tear.age/.4) or 6+18*ease(falling)
+   if not airborne then x,y=tear.x,tear.y;require('tear_fx').draw(x,y,{.68,.86,1},P.clock+i) end
+   local img=objet.larme.img;local scale=size/img:getHeight()
+   g.setColor(.78,.93,1);g.draw(img,x,y,0,scale,scale,img:getWidth()/2,img:getHeight()/2)
+  elseif tear.collected and not airborne and tear.pickupAge<.55 then
    local age=tear.pickupAge/.55
    for n=1,8 do local a=n*2.399
     g.setColor(.76,.9,1,(1-age)*.8)
@@ -156,7 +176,6 @@ function P.update(dt)
   if math.abs(dx)>math.abs(dy) then hero.dir=dx<0 and 'left' or 'right' elseif dy~=0 then hero.dir=dy<0 and 'up' or 'down' end
   local d=math.sqrt((hero.x-ox)^2+(hero.y-oy)^2);P.travel=P.travel+d;require('brown_walk').advance(hero,d,dt)
  end
- P.updateTears(dt)
  if P.phase=='wander' then
   accompany(dt)
   if P.inNest(hero) then P.transition('settle') end
@@ -181,11 +200,13 @@ function P.update(dt)
   P.queen.angle=target*ease(P.time/.7)
   if P.time>=6.5 then P.transition('departure') end
  elseif P.phase=='departure' then
-  local ox,oy=P.queen.x,P.queen.y
   move(P.queen,P.portal.x,P.portal.y,145,dt)
-  P.dropDistance=P.dropDistance+math.sqrt((P.queen.x-ox)^2+(P.queen.y-oy)^2)
-  if P.dropDistance>=55 and distance(P.queen,P.portal)>55 and not P.blocked(P.queen.x,P.queen.y) and not P.inWater(P.queen.x,P.queen.y) then
-   P.tears[#P.tears+1]={x=P.queen.x,y=P.queen.y,age=0};P.dropDistance=0
+  local threshold=({.78,.38})[#P.tears+1]
+  if threshold and distance(P.queen,P.portal)<=P.departureDistance*threshold then
+   local x,y=P.partnerEye()
+   if not P.blocked(x,y+32) and not P.inWater(x,y+32) then
+    P.tears[#P.tears+1]={x=x,y=y+32,eyeX=x,eyeY=y,age=0}
+   end
   end
   if distance(P.queen,P.portal)<4 then P.transition('queen_enter') end
  elseif P.phase=='queen_enter' then
@@ -197,6 +218,7 @@ function P.update(dt)
   P.darkness=.32+.68*ease(P.time/.8)
   if P.time>=.85 then P.enterWorld() end
  end
+ P.updateTears(dt)
 end
 local function shadow(x,y,w)
  local g=love.graphics;g.setColor(.08,.035,.012,.22);g.ellipse('fill',x+3,y+11,w*.43,w*.13)
@@ -278,6 +300,7 @@ function P.draw(w,h)
   shadow(q.x,q.y,Characters.playerWidth);g.setColor(1,1,1,fade)
   if P.carrying then
    P.drawCarrier(q,Characters.playerWidth*(.7+.3*fade))
+   P.drawTears(true)
   else ArtSet.spider('queen',q.x,q.y,Characters.playerWidth,q.angle,q) end
  end
   end}

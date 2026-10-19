@@ -83,13 +83,20 @@ function T.run()
    if P.phase=='portal_open' then assert(P.darkness==.62 and not P.canMove());capture('sleep') end
    if P.phase=='confront' then assert(P.carrying) end
   end
+  local falling=P.tears[1]
+  if falling and falling.age>=.25 and falling.age<.4 and not seen.eyeTear then
+   local ex,ey=P.partnerEye();assert(math.abs(falling.eyeX-ex)<.01 and math.abs(falling.eyeY-ey)<.01,'Tear forms at partner eyelid')
+   capture('tear-eye');seen.eyeTear=true
+  end
+  if falling and falling.age>=.7 and falling.age<1.05 and not seen.fallingTear then capture('tear-falling');seen.fallingTear=true end
   if P.phase=='queen_enter' and P.time>.5 and not seen.enterPicture then assert(not P.queenGone and not P.canMove());capture('queen-enter');seen.enterPicture=true end
   if P.phase=='confront' and P.time>1 and not seen.picture then capture('queen');seen.picture=true end
  end
  assert(seen.dusk and seen.portal_open and seen.arrival and seen.lift and seen.confront and seen.departure)
  assert(not seen.fall and not seen.blackout,'No tree fall or blackout')
  assert(seen.queen_enter and seen.enterPicture,'Queen remains visible inside portal before fading');assert(P.queenGone and P.canMove());capture('portal')
- assert(#P.tears>=5,'Queen leaves a trail while carrying her partner')
+ assert(seen.eyeTear and seen.fallingTear,'Visible eye and falling stages')
+ assert(#P.tears==2,'Queen leaves exactly two tears')
  for _,tear in ipairs(P.tears) do assert(not P.blocked(tear.x,tear.y) and not P.inWater(tear.x,tear.y),'Tears are reachable on land') end
  local tear=P.tears[1];P.hero.x=tear.x;P.hero.y=tear.y;P.update(.05)
  assert(tear.collected and P.tearsCollected==1,'Intro tears can be collected')
