@@ -152,7 +152,10 @@ function T.run()
  assert(Profile.prologueSeen==savedSeen and App.selectedWorld==selected and App.hardcore==hardcore,'History preserves progress and menu selection')
  App.start=startApp
  -- First launch starts asleep and reaches a playable Paradise in 10–15 seconds.
- P.open(false);assert(P.short and not P.canMove() and P.hero.x==P.nest.x-18 and P.hero.y<P.nest.y)
+ love.draw();local shortButton
+ for _,b in ipairs(UI.buttons) do if b.y==695 and b.x==425 then shortButton=b end end
+ assert(shortButton,'Short intro test button present');shortButton.run()
+ assert(P.short and not P.canMove() and P.hero.x==P.nest.x-18 and P.hero.y<P.nest.y)
  capture('short-sleep');local elapsed=0;local phases={}
  while App.state=='prologue' do
   P.update(.05);elapsed=elapsed+.05;phases[P.phase]=true
