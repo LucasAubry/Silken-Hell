@@ -100,12 +100,15 @@ local function accompany(dt)
 end
 function P.enterWorld()
  if P.entering then return end;P.entering=true;Sound.stop()
- if P.replay then P.close();return end
+ if P.replay and not P.mystery then P.close();return end
+ if not P.mystery then
  Profile.prologueSeen=true
  if Profile.name=='' then Profile.name='Joueur' end
- Profile.save();App.hardcore=false;App.practice=nil;App.singleLevel=false;App.sessionLayout=nil;App.workshopMap=nil;Secret.duel=nil
+ Profile.save()
+ end
+ App.hardcore=false;App.practice=nil;App.singleLevel=false;App.sessionLayout=nil;App.workshopMap=nil;Secret.duel=nil
  App.start(1)
- if App.state=='playing' then require('run_start').beginArrival() end
+ if App.state=='playing' then require('run_start').beginArrival(P.mystery) end
 end
 -- Intro tears belong to the scene, never campaign progression or replay state.
 function P.partnerEye()
@@ -297,7 +300,10 @@ function P.draw(w,h)
   end
   g.setColor(.56,.80,.76,math.max(0,1-t)*.25);g.setLineWidth(1);g.ellipse('line',d.x,d.y+5,12+t*28,4+t*11)
  else
-  shadow(P.hero.x,P.hero.y,Characters.playerWidth);g.setColor(1,1,1);Characters.draw(P.hero.x,P.hero.y,Characters.playerWidth,P.hero.dir,P.hero)
+  local fade=P.mystery and P.phase=='enter' and 1-ease(P.time/.85) or 1
+  local breath=P.mystery and (P.phase=='dusk' or P.phase=='portal_open' or P.phase=='arrival') and 1+.012*math.sin(P.clock*2) or 1
+  shadow(P.hero.x,P.hero.y,Characters.playerWidth*fade);g.setColor(1,1,1,fade)
+  Characters.draw(P.hero.x,P.hero.y,Characters.playerWidth*breath*(.65+.35*fade),P.hero.dir,P.hero)
  end
   end},
   {y=P.queen.y,draw=function()

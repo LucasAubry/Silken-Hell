@@ -7,7 +7,8 @@ function C.begin()
  C.armed=not Input.speedHeld()
 end
 -- The first portal opens onto the real level, held still until the story ends.
-function C.beginArrival()
+function C.beginArrival(opening)
+ C.arrivalOpening=opening==true
  C.arrival=0;C.active=true;C.armed=false
  C.arrivalActor={x=player.x+15,y=player.y+12-75,targetY=player.y+12,walkMoving=false}
  C.arrivalPortal={x=player.x+15,y=player.y+12-75}
@@ -63,7 +64,7 @@ end
 -- Visual proxy only: campaign position and replay state never move during arrival.
 function C.drawArrivalActor()
  local t=C.arrival;local a=C.arrivalActor;local g=love.graphics
- local closing=smooth((t-3.3)/1.1);local amount=1-closing
+ local closing=smooth((t-3.3)/1.1);local amount=(1-closing)*(C.arrivalOpening and smooth((t-.2)/1.1) or 1)
  if amount>0 then require('prologue').drawPortal(C.arrivalPortal,amount,t) end
  if t>=3.3 and t<4.9 then
   local age=t-3.3;g.push('all');g.setShader()
@@ -83,7 +84,7 @@ function C.drawArrivalActor()
 end
 function C.drawArrival()
  local g=love.graphics;local t=C.arrival
- local reveal=smooth((t-.2)/1.6);local out=1-smooth((t-10.9)/1.6)
+ local reveal=smooth((t-.2)/(C.arrivalOpening and .6 or 1.6));local out=1-smooth((t-10.9)/1.6)
  g.push('all');g.setShader()
  -- Cover letterboxing as well as the arena during the black-to-daylight fade.
  g.setColor(.008,.005,.016,1-reveal);g.rectangle('fill',-4000,-4000,9200,8750)

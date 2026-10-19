@@ -154,18 +154,29 @@ function T.run()
  for _,b in ipairs(UI.buttons) do if b.y==695 and b.x==425 then mysteryButton=b end end
  assert(mysteryButton,'New cinematic preview button exists');mysteryButton.run()
  assert(P.mystery and P.phase=='dusk' and not P.canMove())
- local elapsed=0;local shots={};local beforeSaves=saves
+ local elapsed=0;local shots={};local beforeSaves=saves;local glowMin,glowMax=2,0
  P.paused=true;P.update(.05);assert(P.time==0);P.paused=false
  while App.state=='prologue' do
-  P.update(.05);elapsed=elapsed+.05;assert(elapsed<21)
-  if P.phase=='dusk' and P.time>1.5 and not shots.glow then capture('mystery-glow');shots.glow=true end
+  P.update(.05);elapsed=elapsed+.05;assert(elapsed<32)
+  if P.phase=='dusk' then
+   if P.time<3 then assert(P.glow==0 and not P.hero.walkMoving,'Quiet sleep before first light') end
+   if P.time>4 then glowMin=math.min(glowMin,P.glow);glowMax=math.max(glowMax,P.glow) end
+   if P.time>6 and not shots.glow then capture('mystery-glow');shots.glow=true end
+  end
   if P.phase=='lift' and P.time>.7 and not shots.lift then capture('mystery-lift');shots.lift=true end
   if P.phase=='confront' and P.time>1 and not shots.dialogue then capture('mystery-dialogue');shots.dialogue=true end
-  if P.phase=='look' and P.time>1 and not shots.look then
-   assert(P.eyeOpen>.9 and #P.tears==1);capture('mystery-look');shots.look=true
+  if P.phase=='departure' and P.time>1.3 and not shots.look then
+   assert(P.eyeOpen>.9 and #P.tears==1 and P.hero.walkMoving,'Automatic animated chase');capture('mystery-look');shots.look=true
   end
  end
- assert(App.state=='menu' and elapsed>=15 and elapsed<=20 and saves==beforeSaves,'Preview ends at menu without progression writes')
+ assert(App.state=='playing' and Campaign.world==1 and saves==beforeSaves,'Preview reaches Paradise')
+ assert(glowMax-glowMin>.7 and P.tearsCollected==1 and P.tears[1].collected,'Pulsing light and automatic single tear pickup')
+ assert(startGate.arrivalOpening and startGate.arrival==0)
+ for i=1,250 do
+  startGate.advance(.05)
+  if i==15 then arrivalCapture('mystery-opening') elseif i==45 then arrivalCapture('mystery-emergence') end
+ end
+ startGate.advance(.05);assert(not startGate.arrival and startGate.active,'Portal arrival returns control')
  assert(shots.glow and shots.lift and shots.dialogue and shots.look and #P.tears==1)
  require('prologue').open(true);assert(not P.mystery and P.phase=='wander','History keeps full introduction');P.close()
  print('Mystery intro duration: '..elapsed..' seconds')

@@ -13,15 +13,31 @@ function M.open()
  p.partner.x=p.victim.x;p.partner.y=p.victim.y;p.partner.angle=math.pi
  p.camera={x=p.nest.x,y=p.nest.y};p.glow=0;p.eyeOpen=0;p.kneel=0
 end
+local function chase(p,dt,speed)
+ local h,q=p.hero,p.queen;local tear=p.tears[1]
+ local target=tear and tear.released and not tear.collected and tear or q
+ local dx,dy=target.x-h.x,target.y-h.y;local d=math.sqrt(dx*dx+dy*dy)
+ local stop=target==q and not p.queenGone and 48 or 0
+ if d>stop then move(h,target.x,target.y,math.min(speed,(d-stop)/dt),dt) end
+ if math.abs(dx)>math.abs(dy) then h.dir=dx<0 and 'left' or 'right' else h.dir=dy<0 and 'up' or 'down' end
+ if tear and not tear.collected and tear.age>=1.05 and (h.x-tear.x)^2+(h.y-tear.y)^2<27^2 then
+  tear.collected=true;tear.pickupAge=0;p.tearsCollected=p.tearsCollected+1
+ end
+end
 function M.update(p,dt)
  p.time=p.time+dt;local t=p.time
  p.hero.walkMoving=false;p.partner.walkMoving=false;p.queen.walkMoving=false
  if p.phase=='dusk' then
-  p.glow=ease(t/2);p.darkness=.38*ease(t/2)
-  if t>=2 then p.transition('portal_open') end
+  -- Three quiet seconds together before several slow pulses of light.
+  local age=math.max(0,t-3)
+  p.glow=ease(age/.7)*(.15+1.05*(.5+.5*math.cos(age*2.1)))
+  p.darkness=.38*ease(age/3)
+  if t>=10 then p.transition('portal_open') end
  elseif p.phase=='portal_open' then
+  p.glow=.2+.9*(.5+.5*math.cos((p.clock-3)*2.1))
   p.portalAmount=ease(t);if t>=1 then p.transition('arrival') end
  elseif p.phase=='arrival' then
+  p.glow=.2+.9*(.5+.5*math.cos((p.clock-3)*2.1))
   move(p.queen,p.victim.x+15,p.victim.y+8,240,dt)
   if t>=2 then p.queen.x=p.victim.x+15;p.queen.y=p.victim.y+8;p.transition('lift') end
  elseif p.phase=='lift' then
@@ -29,30 +45,27 @@ function M.update(p,dt)
   p.glow=1-.5*ease(t/1.5)
   if t>=1.5 then p.kneel=0;p.carrying=true;p.transition('confront') end
  elseif p.phase=='confront' then
-  -- The waking hero approaches; the queen hesitates instead of fleeing.
-  move(p.hero,p.queen.x-58,p.queen.y+43,65,dt);p.hero.dir='up'
+  move(p.hero,p.queen.x-55,p.queen.y-15,80,dt);p.hero.dir='right'
   p.queen.angle=0
-  if t>=3 then p.transition('departure') end
+  if t>=1.4 then p.transition('departure') end
  elseif p.phase=='departure' then
-  move(p.queen,p.portal.x,p.portal.y,p.departureDistance/2.5,dt)
-  move(p.hero,p.queen.x-65,p.queen.y+50,155,dt);p.hero.dir='up'
-  if t>=2.5 then p.queen.x=p.portal.x;p.queen.y=p.portal.y;p.queen.angle=0;p.transition('look') end
- elseif p.phase=='look' then
-  p.eyeOpen=ease(t/.65);p.glow=.5+.2*math.sin(t*2)
-  move(p.hero,p.queen.x-65,p.queen.y+50,100,dt);p.hero.dir='up'
-  if t>=.8 and #p.tears==0 then
+  local speed=p.departureDistance/4.5
+  move(p.queen,p.portal.x,p.portal.y,speed,dt)
+  p.eyeOpen=ease(t/.65)
+  if t>=.85 and #p.tears==0 then
    local x,y=p.partnerEye();p.tears[1]={x=x,y=y+32,eyeX=x,eyeY=y,age=0}
   end
-  if t>=2.3 then p.transition('queen_enter') end
+  chase(p,dt,speed*1.3)
+  if t>=4.5 then p.queen.x=p.portal.x;p.queen.y=p.portal.y;p.queen.angle=0;p.transition('queen_enter') end
  elseif p.phase=='queen_enter' then
-  p.eyeOpen=1-ease(t/1.8);p.glow=.5*(1-ease(t/1.8))
+  p.eyeOpen=1-ease(t/1.8);p.glow=.5*(1-ease(t/1.8));chase(p,dt,165)
   if t>=1.8 then p.queenGone=true;p.transition('wake') end
  elseif p.phase=='wake' then
-  move(p.hero,p.portal.x,p.portal.y,110,dt);p.hero.dir='up'
-  if t>=1 then p.transition('enter') end
+  chase(p,dt,170)
+  if (p.hero.x-p.portal.x)^2+(p.hero.y-p.portal.y)^2<6^2 and p.tearsCollected==1 then p.transition('enter') end
  elseif p.phase=='enter' then
   p.darkness=.38+.62*ease(t/.85)
-  if t>=.85 then p.close();return end
+  if t>=.85 then p.enterWorld();return end
  end
  p.updateTears(dt)
  local target=p.carrying and not p.queenGone and p.queen or p.hero
@@ -67,7 +80,7 @@ end
 function M.halo(p,x,y)
  if p.glow<=0 then return end
  local g=love.graphics;g.push('all');g.setBlendMode('add')
- for i=8,1,-1 do g.setColor(.67,.81,1,.035*p.glow);g.ellipse('fill',x,y,24+i*5,18+i*3) end
+ for i=32,1,-1 do g.setColor(.67,.81,1,.00875*p.glow);g.ellipse('fill',x,y,24+i*1.25,18+i*.75) end
  for i=1,7 do local a=i*2.399+p.clock*.5;local r=18+i%3*4
   g.setColor(.8,.9,1,p.glow*.5);g.circle('fill',x+math.cos(a)*r,y+math.sin(a)*r*.6, .7)
  end
@@ -90,6 +103,6 @@ function M.ui(p)
  if p.phase~='confront' then return end
  local g=love.graphics;local alpha=ease(p.time/.35)
  g.setColor(.018,.008,.023,alpha*.88);g.rectangle('fill',200,620,800,74,12)
- UI.text('Pardonne-moi. Son heure est venue.',220,642,'medium',{1,.89,.73,alpha},760,'center')
+ UI.text('Pardonne-moi.',220,642,'medium',{1,.89,.73,alpha},760,'center')
 end
 return M
