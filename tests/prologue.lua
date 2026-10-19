@@ -92,16 +92,26 @@ function T.run()
  P.entering=false;P.enterWorld();assert(App.state=='playing' and Campaign.world==1 and player.level==1,'Real first-world initialization')
  local startGate=require('run_start');assert(startGate.arrival==0)
  assert(not startGate.press(Profile.keys.dash) and not startGate.launch(),'Arrival cannot be skipped by held run input')
+ local function arrivalCapture(name)
+  local g=love.graphics;local c=g.newCanvas(g.getDimensions());local setCanvas=g.setCanvas
+  g.push('all');setCanvas(c)
+  g.setCanvas=function(target,...)if target==nil then return setCanvas(c) end;return setCanvas(target,...)end
+  love.draw();g.setCanvas=setCanvas;setCanvas();g.pop()
+  c:newImageData():encode('png','prologue-paradise-'..name..'.png');c:release()
+ end
  local px,py=player.x,player.y
- for i=1,80 do assert(startGate.advance(.05)==0) end
+ for i=1,80 do
+  assert(startGate.advance(.05)==0)
+  if i==44 then
+   assert(startGate.arrivalActor.y<py+12 and startGate.arrivalActor.y>startGate.arrivalPortal.y and startGate.arrivalActor.walkMoving,'Spider walks out of portal')
+   arrivalCapture('emergence')
+  end
+ end
  assert(player.x==px and player.y==py and startGate.active,'Arrival keeps the level safe and frozen')
- local g=love.graphics;local c=g.newCanvas(g.getDimensions());local setCanvas=g.setCanvas
- g.push('all');setCanvas(c)
- g.setCanvas=function(target,...)if target==nil then return setCanvas(c) end;return setCanvas(target,...)end
- love.draw();g.setCanvas=setCanvas;setCanvas();g.pop()
- c:newImageData():encode('png','prologue-paradise-arrival.png');c:release()
+ assert(startGate.arrivalActor.y==py+12 and not startGate.arrivalActor.walkMoving,'Visual arrival matches campaign spawn')
+ arrivalCapture('closing')
  App.state='pause';local arrivalTime=startGate.arrival;startGate.advance(.5);assert(startGate.arrival==arrivalTime);App.state='playing'
- for i=1,82 do startGate.advance(.05) end
+ for i=1,112 do startGate.advance(.05);if i==25 then arrivalCapture('arrival') end end
  assert(not startGate.arrival and startGate.active,'Story leads into normal start prompt')
  P.close();love.draw();local button
  for _,b in ipairs(UI.buttons) do if b.y==695 and b.w==350 then button=b end end

@@ -393,7 +393,7 @@ function love.draw()
         end
         if queenScene then drawFrame() end
         love.graphics.setColor(1,1,1)
-        if Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
+        if RunStart.arrival then RunStart.drawArrivalActor() elseif Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
         if not (require('abyss_gate').active and require('abyss_gate').closing) then draw_player_beacon() end;if not Abyss.playerHidden() then Replay.drawGhost() end
         if not queenScene then drawFrame() end
         if queenScene then Campaign.drawTear(true) end

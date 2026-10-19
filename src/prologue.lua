@@ -165,9 +165,10 @@ local function shadow(x,y,w)
  local g=love.graphics;g.setColor(.08,.035,.012,.22);g.ellipse('fill',x+3,y+11,w*.43,w*.13)
 end
 function P.drawNest()require('prologue_nest').draw(P.nest.x,P.nest.y)end
-function P.drawPortal()
- if P.portalAmount<=0 then return end
- local g=love.graphics;local x,y=P.portal.x,P.portal.y;local amount=P.portalAmount;local t=P.clock
+function P.drawPortal(portal,amount,t)
+ portal=portal or P.portal;amount=amount or P.portalAmount;t=t or P.clock
+ if amount<=0 then return end
+ local g=love.graphics;local x,y=portal.x,portal.y
  g.push('all');g.translate(x,y);g.scale(amount,amount)
  g.setBlendMode('add');for i=10,1,-1 do g.setColor(.8,.27,.12,.018);g.ellipse('fill',0,0,45+i*4,60+i*4) end;g.setBlendMode('alpha')
  g.setColor(.025,.008,.025,.98);g.ellipse('fill',0,0,43,60)
