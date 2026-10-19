@@ -9,6 +9,14 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_NEST_PREVIEW_TEST')=='1' then require('tests.nest_and_preview').run();return end
+    if os.getenv('SILKEN_QUEEN_POLISH_TEST')=='1' then require('tests.queen_polish').run();return end
+    if os.getenv('SILKEN_QUEEN_HEIRS_TEST')=='1' then require('tests.queen_heirs').run();return end
+    if os.getenv('SILKEN_QUEEN_REPLAY_TEST')=='1' then require('tests.queen_replay').run();return end
+    if os.getenv('SILKEN_QUEEN_REVISION_TEST')=='1' then require('tests.queen_revision').run();return end
+    if os.getenv('SILKEN_EDGE_REFINEMENT_TEST')=='1' then require('tests.edge_refinement').run();return end
+    if os.getenv('SILKEN_BIOME_LIFE_REVISION_TEST')=='1' then require('tests.biome_life_revision').run();return end
+    if os.getenv('SILKEN_WORLD_SELECTOR_TEST')=='1' then require('tests.world_selector').run();return end
     if os.getenv('SILKEN_CELESTIAL_REVISION_TEST')=='1' then require('tests.celestial_revision').run();return end
     if os.getenv('SILKEN_ECOSYSTEM_REVISION_TEST')=='1' then require('tests.ecosystem_revision').run();return end
     if os.getenv('SILKEN_CONTENT_CLEANUP_TEST')=='1' then require('tests.content_cleanup').run();return end

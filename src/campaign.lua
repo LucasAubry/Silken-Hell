@@ -46,6 +46,9 @@ function C.reset(options)
     shader_effect_timer=0;shake_timer=0;cameraShakeX=0;cameraShakeY=0;ghost_timer=0
     Aftermath.reset()
     AbyssTerrain.reset()
+    if App.state=='playing' and not App.preview and not App.sessionLayout and not App.workshopMap and not (Replay and Replay.playing) then
+        App.previewLevels=App.previewLevels or {};App.previewLevels[C.world..':'..tostring(App.hardcore==true)]=player.level
+    end
     C.biome=Worlds.biome(C.world,player.level)
     local layout=LevelLayouts and (C.world~=3 or App.sessionLayout) and C.world~=8 and not Worlds.isSecret(C.world) and LevelLayouts.current()
     if layout then C.biome=layout.biome or layout.world end
@@ -225,7 +228,7 @@ function C.draw()
     if Secret.inArena() then require('sanctuary_scene').arena(App.hardcore or Worlds.isSecret(C.world))
     else Arena.drawFloor(hell);if C.world==3 then Meadow.draw() end end
     Hazards.drawFloor()
-    require('ocean_scenery').draw()
+    Story.drawDecor(function()require('ocean_scenery').draw()end)
     C.drawCircles(); Abyss.drawSites()
     if hell and not Secret.inArena() then
         for i=1,32 do

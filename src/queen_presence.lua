@@ -6,7 +6,7 @@ function Q.ground(f)
  local g=love.graphics;g.push('all');g.setShader()
  local height=f.jumpHeight or 0
  -- A planted shadow expands and softens as she rises.
- Art.contactShadow(f.x,f.y+13,28+height*.06,11+height*.025,height>0 and .27 or .48)
+ if height<=0 then Art.contactShadow(f.x,f.y+13,28,11,.32) end
  local landing=f.landed
  if landing and (not Graphics or Graphics.effects) then
   local t=(f.clock-landing.at)/.7
@@ -16,8 +16,7 @@ function Q.ground(f)
     local x=landing.x+math.cos(a)*r;local y=landing.y+math.sin(a)*r*.5-math.sin(t*math.pi)*10
     g.setColor(.69,.60,.45,(1-t)*.4);g.circle('fill',x,y,1.4+i%3*.5)
    end
-   g.setLineWidth(1);g.setColor(.85,.80,.67,(1-t)*.22)
-   g.ellipse('line',landing.x,landing.y+12,22+t*35,7+t*13)
+
   end
  end
  g.pop()

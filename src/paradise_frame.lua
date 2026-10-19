@@ -136,9 +136,6 @@ function F.bake(width,height)
     leaf(x-4,-9,31,-.7);leaf(x+4,-9,28,.6)
     lotus(x,-depth-15,16+noise(seed+6)*5)
    elseif motif==6 then
-    local cy=-depth-15;glow(x,cy,16)
-    g.setColor(1,.82,.34,.7);g.setLineWidth(2);g.ellipse('line',x,cy,13,7)
-    g.setColor(1,.98,.78,.85);g.setLineWidth(.8);g.ellipse('line',x,cy,16,10)
     feather(x,-7,27,.2)
    elseif motif==8 or motif==9 then
     tallPlant(x,-8,60+noise(seed+25)*16,(noise(seed+26)-.5)*27,motif==9)

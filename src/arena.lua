@@ -259,9 +259,7 @@ function A.drawWall(r,hell)
     local g=love.graphics
     if Campaign.biome>=4 then Realms.drawWall(r)
     elseif hell then
-        g.setColor(1,1,1)
-        if r.w>=r.h then Art.draw('wall',r.x+r.w/2,r.y+r.h/2,r.w,0,r.h+8)
-        else Art.draw('wall',r.x+r.w/2,r.y+r.h/2,r.h,math.pi/2,r.w+8) end
+        require('hell_rocks').draw(r)
     elseif require('paradise_style').active() then
         require('paradise_ink').wall(r)
     else

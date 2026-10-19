@@ -30,7 +30,7 @@ function R.bind(frame,earth,redEyes)
  R.shader:send('lamp',R.lamp or {-.5,-.75});R.shader:send('earth',earth and 1 or 0);R.shader:send('redEyes',redEyes and 1 or 0)
  g.setShader(R.shader)
 end
-function R.draw(frame,x,y,width,angle,height,depth,earth,pose,redEyes)
+function R.draw(frame,x,y,width,angle,height,depth,earth,pose,redEyes,noShadow)
  local g=love.graphics;angle=angle or 0;height=height or width*frame.h/frame.w
  depth=depth or math.max(2,math.min(6,width*.065))
  local sx,sy=width/frame.w,height/frame.h
@@ -42,7 +42,7 @@ function R.draw(frame,x,y,width,angle,height,depth,earth,pose,redEyes)
  g.push('all')
  R.silhouette=R.silhouette or g.newShader([[vec4 effect(vec4 c,Image t,vec2 uv,vec2 p){return vec4(c.rgb,Texel(t,uv).a*c.a);}]])
  g.setShader(R.silhouette)
- g.setColor(.015,.012,.012,a*.26);paint(x+depth*.8,y+depth+3)
+ if not noShadow then g.setColor(.015,.012,.012,a*.26);paint(x+depth*.8,y+depth+3) end
  for i=math.ceil(depth),1,-1 do
   local light=.10+(1-i/depth)*.07
   g.setColor(light,light*.82,light*.68,a)

@@ -23,6 +23,7 @@ function A.spider(name,x,y,width,angle,walk)
  local servants=require('servant_art');local context=servants.current
  servants.current={type='queen_child',bossServant=name~='queen'}
  local dir,turn=A.pose(angle)
+ if name~='queen' then turn=0 end
  local graphics=love.graphics
  local function body(sprite)
   local key='final_'..sprite
@@ -34,16 +35,19 @@ function A.spider(name,x,y,width,angle,walk)
    end
   end
   require('sprite_relief').draw(a,0,0,width,0,nil,math.max(1,width*.038),false,pose,
-   name=='baby_white' or name=='queen' and walk and walk.enraged)
+   name=='baby_white' or name=='queen' and walk and walk.enraged,walk and (walk.jumpHeight or 0)>0)
 
  end
- Art.contactShadow(x,y+width*.18,width*.34,width*.12,.24)
+ if not walk or (walk.jumpHeight or 0)<=0 then Art.contactShadow(x,y+width*.18,width*.34,width*.12,.24) end
  graphics.push('all');graphics.translate(x,y);graphics.rotate(turn)
  x,y=0,0
  if dir~='down' then
   local variant=(name=='queen' or name=='baby_red') and 'red' or name=='baby_black' and 'black' or 'white'
   local g=love.graphics;g.push('all');g.translate(x,y)
-  body((dir=='right' and 'side_' or dir..'_')..variant)
+  if name=='partner' then
+   if dir=='right' then g.scale(-1,1) end
+   body(dir=='up' and 'partner_up' or 'partner_left')
+  else body((dir=='right' and 'side_' or dir..'_')..variant) end
   g.pop()
  else
   body(name)

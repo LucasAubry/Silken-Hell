@@ -153,7 +153,8 @@ function S.draw()
  if a then
   local done=Achievements.unlocked(a)
   S.drawRewards(a)
-  local title=require('localization').render(a.localizedName and a.localizedName() or a.name)
+  local hidden=a.world and not Worlds.canEnter(a.world)
+  local title=hidden and 'Verrouillé' or require('localization').render(a.localizedName and a.localizedName() or a.name)
   U.rawText(U.ellipsize(title,'heading',650),275,554,'heading',white,650,'center')
   condition(a,done)
  end

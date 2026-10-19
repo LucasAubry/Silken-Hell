@@ -1,0 +1,15 @@
+{
+  "tool": "built-in image_gen.imagegen",
+  "intent": "precise-object-edit",
+  "transparent_background": true,
+  "assets": [
+    "assets/monstres/renaissance/reine/partner.png",
+    "assets/monstres/renaissance/reine/partner_up.png",
+    "assets/monstres/renaissance/reine/partner_left.png"
+  ],
+  "prompts": [
+    "Correct this sprite: it STILL HAS ONLY SIX LEGS. Keep the six existing legs unchanged and ADD TWO NEW rear legs in the currently empty upper-left and upper-right quadrants alongside the large round abdomen. Each new leg must visibly connect near the upper side of the thorax, extend diagonally upward/outward beside the abdomen then bend downward at a knee, ending above and outside the existing upper leg. Four distinct knees and four distinct feet must be countable on EACH side. Eight walking legs TOTAL plus the two short mouth fangs. Preserve the eyelashes, eyes, colors, black pixel outlines, large block pixel-art style. Preserve alpha transparency. No shadow. Give enough canvas margin for the NEW upper pair of legs, do not replace or merge an existing pair.",
+    "Edit this rear-view ivory spider game sprite, keeping pixel art, chunky pixels, dark outlines, palette, abdomen and upward-facing orientation unchanged. Correct SIX walking legs to EIGHT: preserve the three existing long bent legs on each side, ADD a fourth clearly separated long jointed walking leg on each side in the empty area above the current uppermost legs. The little two prongs at the head are mouthparts, not walking legs; retain them. Exactly four clearly countable extended long walking legs left and four right. No eyes visible from back, no shadow, transparent alpha background, whole character.",
+    "Precise edit of this ivory female spider game sprite in LEFT-facing side profile. Preserve exactly this composition, chunky pixel art, ivory body, dark outlines, four distinct visible long jointed near-side walking legs, gold eye, mouthparts, proportions, and transparent background. Add delicate dark pixel eyelashes above the upper OUTER corner of the visible eye, matching the same female spider's front view. Keep all four visible walking legs clearly separate. Do not add a crown, do not rotate, no shadow, no background, no text."
+  ]
+}

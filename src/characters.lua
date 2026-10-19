@@ -1,4 +1,4 @@
-local C={names={'Soie','Perle','Braise','Écume','Royale','Auréole','Zéphyr','Ambre','Corail','Lanterne','Cendre','Renouveau','Gil','Max'},keys={'original','spider','hell_spider','ocean_spider','crown_spider','spider','spider','spider','ocean_spider','spider','hell_spider','crown_spider','crown_spider','crown_spider'}}
+local C={names={'Soie','Perle','Braise','Écume','Royale','Auréole','Zéphyr','Ambre','Corail','Lanterne','Cendre','Renouveau','Gil','C’est que le début'},keys={'original','spider','hell_spider','ocean_spider','crown_spider','spider','spider','spider','ocean_spider','spider','hell_spider','crown_spider','crown_spider','crown_spider'}}
 C.tints={[6]={1,.9,.55},[7]={.58,.83,1},[8]={.8,.49,.21},[9]={.25,1,.82},[10]={.43,.45,1},[11]={1,.25,.12},[12]={1,.63,.78},[13]={1,.68,.12},[14]={.7,1,.6}}
 -- IDs 1–14 stay stable for existing profiles, leaderboards and replays.
 -- Keep legacy reward IDs and lookup names for saved profiles and replays.
@@ -13,7 +13,7 @@ C.names[23]='Cocon';C.keys[23]='cocon'
 C.names[24]='Champagne';C.keys[24]='champagne'
 C.names[25]='Sauge';C.keys[25]='sage'
 C.names[26]='Pétrole';C.keys[26]='petrol'
-C.names[27]='Amir';C.keys[27]='amir'
+C.names[27]='Hardie';C.keys[27]='amir'
 -- Menu silk colors share the authored spider rig, including its gold markings.
 C.materials={
  [24]={body={.98,.85,.65},markings={1,.72,.24},iris={1,.72,.22},effect={.98,.81,.51}},
@@ -114,7 +114,10 @@ end
 function C.model(dir,index)
     dir=dir or 'down'
     if (C.crowned[index] or index)==12 then
-        return ({down='final_partner',up='final_up_white',left='final_left_white',right='final_left_white'})[dir]
+        for _,name in ipairs({'partner','partner_up','partner_left'}) do
+            local key='final_'..name;if not Art.images[key] then Art.add(key,'assets/sprites/final/'..name..'.png') end
+        end
+        return ({down='final_partner',up='final_partner_up',left='final_partner_left',right='final_partner_left'})[dir]
     end
     local custom=C.customSprites[C.crowned[index] or index]
     return 'player_skin_'..(custom and custom..'_' or '')..((dir=='left' or dir=='right') and 'profil' or dir)

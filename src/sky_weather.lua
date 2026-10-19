@@ -22,11 +22,19 @@ function S.inFog(p,x,y)
  local cx,cy,rx,ry=S.fogShape(p)
  return ((x-cx)/rx)^2+((y-cy)/ry)^2<=1
 end
-function S.playerHidden()
- if not S.active then return false end
- for _,p in ipairs(S.mist) do if S.inFog(p,player.x+15,player.y+12) then return true end end
- return false
+function S.playerVisibility()
+ if not S.active then return 1 end
+ local x,y=player.x+15,player.y+12
+ if S.fogCleared(x,y) then return 1 end
+ local thickness=0
+ for _,p in ipairs(S.mist) do
+  local cx,cy,rx,ry=S.fogShape(p)
+  local d=((x-cx)/rx)^2+((y-cy)/ry)^2
+  if d<1 then thickness=thickness+(1-d)*math.min(1,p.age*2,p.life/1.6)*.55 end
+ end
+ return .24+.76*math.exp(-thickness)
 end
+function S.playerHidden() return false end
 -- Lightning cuts a lasting opening through every puff above its impact hole.
 function S.clearFog(x,y)
  for _,p in ipairs(S.mistCuts) do if (x-p.x)^2+(y-p.y)^2<20^2 then p.life=8;return end end

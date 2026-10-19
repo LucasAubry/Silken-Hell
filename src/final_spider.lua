@@ -1,6 +1,8 @@
 -- Renaissance guardian. Eggs are independent actors, including the carried clutch.
 local ArtSet=require 'final_art'
 local Escape=require 'queen_escape'
+local Brood=require 'queen_brood'
+local Heirs=require 'queen_heirs'
 local F={active=false,name='La Gardienne de la Soie',maxHp=13,leapRadius=180}
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 local function length(x,y) return math.sqrt(x*x+y*y) end
@@ -45,67 +47,45 @@ function F.recoil(p)
  F.jump=best;F.jumpHeight=0;F.phase='recoil_jump';F.phaseTime=0;F.jumpCooldown=4
 end
 function F.updateCharge(dt)
- local ox,oy=F.x,F.y;towards(F,F.chargeX,F.chargeY,920,dt)
- local xx,yy=F.x,F.y
- local px,py=require('collision_shapes').center();local playerCenter={x=px,y=py}
- local danger=F.contactGrace<=0 and entryTime(ox,oy,xx,yy,playerCenter,27) or nil
- local close=entryTime(ox,oy,xx,yy,playerCenter,44)
- local hits={};local first
- for _,b in ipairs(F.babies) do if not b.dead then
-  local t=entryTime(ox,oy,xx,yy,b,27)
-  if t and (not danger or t<=danger) then hits[#hits+1]={baby=b,t=t};first=math.min(first or t,t) end
- end end
- local stop
- if close and (#F.chargeDeaths>0 or first) then stop=math.max(close,#F.chargeDeaths>0 and 0 or first) end
- -- Nothing beyond the stopping point (or a lethal player contact) was touched.
- local limit=stop or danger or 1
- F.x=ox+(xx-ox)*limit;F.y=oy+(yy-oy)*limit
- table.sort(hits,function(a,b) if a.t==b.t then return (a.baby.seed or 0)<(b.baby.seed or 0) end;return a.t<b.t end)
- for _,hit in ipairs(hits) do if hit.t<=limit then
-  local b=hit.baby;b.dead=true
-  local corpse={x=b.x,y=b.y,seed=b.seed,silk=true,variant=b.variant,angle=b.angle or 0}
-  F.shells[#F.shells+1]=corpse;F.chargeDeaths[#F.chargeDeaths+1]=corpse
-  F.damage();if F.defeated then return end
- end end
- -- Each egg receives one crack per dash, only along the travelled segment.
- F.chargeEggs=F.chargeEggs or {}
- for i=#F.eggs,1,-1 do local e=F.eggs[i]
-  if not F.chargeEggs[e] and entryTime(ox,oy,F.x,F.y,e,32) then
-   F.chargeEggs[e]=true;e.hits=(e.hits or 0)+1;e.crackShake=.32
-   if e.hits>=2 then F.breakEgg(i);if F.defeated then return end end
-  end
- end
- if stop then F.mourn();return end
- if danger and F.contactGrace<=0 then Hazards.kill();return end
- if length(F.x-F.chargeX,F.y-F.chargeY)<4 or F.phaseTime>1.7 then
-  if #F.chargeDeaths>0 then F.mourn() else F.phase='recover';F.phaseTime=0;F.target=nil end
- end
+ local x,y=F.x,F.y;towards(F,F.chargeX,F.chargeY,920,dt)
+ local px,py=require('collision_shapes').center()
+ local hit=F.contactGrace<=0 and entryTime(x,y,F.x,F.y,{x=px,y=py},27)
+ if hit then F.x=x+(F.x-x)*hit;F.y=y+(F.y-y)*hit;if F.snare>0 then Hazards.kill() else F.damage() end;return end
+ if length(F.x-F.chargeX,F.y-F.chargeY)<4 or F.phaseTime>1.7 then F.phase='recover';F.phaseTime=0;F.target=nil end
 end
 function F.reset(active)
  F.landed=nil;F.weaveResume=nil;F.weaveX=nil;F.weaveY=nil;F.weaveAngle=nil;F.weaveCount=nil;F.weaveFired=nil;F.weaveSide=nil
  Escape.reset(F)
+ F.id=0;F.frozen=0;F.eggSerial=0;F.pendingEggs=0;F.bombs={};F.bursts={};F.cast=0;F.damageGrace=0
  F.active=active;F.hp=13;F.maxHp=13;F.defeated=false;F.x=Arena.width*.5;F.y=165;F.angle=0;F.clock=0;F.flash=0
  F.chargeDeaths={};F.chargeEggs={};F.grief=nil
  F.afterimages={};F.ghostClock=0;F.walkPhase=0;F.walkMoving=false;F.surge=1;F.dashing=false
- F.phase='passive';F.engaged=false;F.jumpCooldown=0;F.jump=nil;F.jumpHeight=0;F.contactGrace=0;F.phaseTime=0;F.shot=.65;F.volley=0;F.snareSource=nil;F.layPulse=0;F.eggs={};F.babies={};F.shells={};F.webs={};F.stuck={};F.carried=24;F.wave=0;F.snare=0;F.webGrace=0;F.target=nil;F.gate=false;F.batch=0;F.nest=nil
+ F.phase='passive';F.engaged=false;F.jumpCooldown=0;F.jump=nil;F.jumpHeight=0;F.contactGrace=0;F.phaseTime=0;F.shot=.65;F.volley=0;F.snareSource=nil;F.layPulse=0;F.eggs={};F.babies={};F.shells={};F.webs={};F.stuck={};F.carried=0;F.wave=0;F.snare=0;F.webGrace=0;F.target=nil;F.gate=false;F.batch=0;F.nest=nil
 end
 function F.visualAngle()
  local dir=ArtSet.facing(F.angle)
  return ({down=0,up=math.pi,left=math.pi/2,right=-math.pi/2})[dir]
 end
 function F.leap(resume)
- F.jumpResume=resume or 'webs';F.jumpResumeTime=F.phaseTime;F.jumpCooldown=4
- F.phase='intro_jump';F.phaseTime=0;F.contactGrace=1.2
+ F.jumpResume=F.pendingEggs>0 and 'seek_nest' or resume or 'webs';F.jumpResumeTime=F.phaseTime;F.jumpCooldown=4
+ F.phase='intro_jump';F.phaseTime=0;F.contactGrace=.85
+ F.target=nil;F.cornerLay=false;F.cast=0
  F.jump={x=F.x,y=F.y,tx=F.x<Arena.width*.5 and Arena.width-110 or 110,ty=F.y<300 and 480 or 120}
  F.angle=math.atan2(F.jump.ty-F.y,F.jump.tx-F.x)-math.pi/2
 end
 function F.beginCombat()
  F.engaged=true;F.leap('webs')
 end
-function F.damage()
- if F.defeated then return end
+function F.damage(egg)
+ if F.defeated or (not egg and F.damageGrace>0) then return end
+ F.engaged=true;F.damageGrace=.95
  F.hp=math.max(0,F.hp-1);F.flash=.25
- if F.hp==0 then
+ if F.hp>0 then
+  if (F.maxHp-F.hp)%2==0 then F.pendingEggs=F.pendingEggs+1;F.chooseNest() end
+  F.frozen=0;F.leap('webs')
+ else
+  F.bombs={};F.bursts={};F.stuck={};F.snare=0;F.frozen=0
+  for _,b in ipairs(F.babies) do b.frozen=0 end
   require('boss_liberation').start(F,'final_spider',function()
    F.defeated=true;F.enraged=false;F.silkBits={};F.phase='retreat';F.phaseTime=0;F.snare=0;F.webs={};F.stuck={};F.target=nil;F.grief=nil;F.chargeDeaths={};F.jump=nil;F.jumpHeight=0
    for _,b in ipairs(F.babies) do b.webbed=false end
@@ -116,36 +96,26 @@ function F.damage()
 end
 function F.breakEgg(index)
  local e=table.remove(F.eggs,index);if not e then return end
- F.shells[#F.shells+1]={x=e.x,y=e.y,seed=e.seed};F.damage()
+ F.shells[#F.shells+1]={x=e.x,y=e.y,seed=e.seed};F.damage(true)
 end
 function F.chooseNest()
  local p=playerPoint();local best,score
- for i=1,16 do
-  local c={x=love.math.random(150,math.max(150,math.floor(Arena.width-150))),y=love.math.random(155,430)}
-  local d=length(c.x-p.x,c.y-p.y)
-  if not score or d>score then best,score=c,d end
-  if d>240 and d<Arena.width*.65 then best=c;break end
+ local function consider(x,y)
+  if Arena.blocked(x-20,y-24,40,48) then return end
+  for _,e in ipairs(F.eggs) do if (e.x-x)^2+(e.y-y)^2<48^2 then return end end
+  local d=(x-p.x)^2+(y-p.y)^2
+  if not score or d>score then best={x=x,y=y};score=d end
  end
+ -- Include the exact arena corners; scan inward when an egg occupies one.
+ for _,x in ipairs({55,Arena.width-55}) do for _,y in ipairs({70,530}) do consider(x,y) end end
+ for x=55,Arena.width-55,16 do for y=70,530,16 do consider(x,y) end end
  F.nest=best
+ return best
 end
 function F.layEgg()
- if F.carried<=0 or (not F.cornerLay and #F.babies+#F.eggs>=36) then return end
- if not F.nest then F.chooseNest() end
- local point
- if F.cornerLay then point=Escape.point(F) else
- for i=1,80 do
-  local angle=love.math.random()*math.pi*2;local radius=math.sqrt(love.math.random())*110
-  local c={x=clamp(F.nest.x+math.cos(angle)*radius,65,Arena.width-65),y=clamp(F.nest.y+math.sin(angle)*radius,105,525)}
-  local free=not near(c,playerPoint(),65)
-  for _,e in ipairs(F.eggs) do if near(c,e,44) then free=false;break end end
-  if free then point=c;break end
- end
- end
- if not point then return end
- F.carried=F.carried-1;F.batch=F.batch+1
- F.layPulse=.32
- local a=F.angle or 0;local rearX,rearY=F.x+math.sin(a)*14,F.y-math.cos(a)*14
- F.eggs[#F.eggs+1]={x=point.x,y=point.y,fromX=rearX,fromY=rearY,age=0,hatch=7.5,seed=F.wave*8+F.batch}
+ local point={x=F.x,y=F.y}
+ F.eggSerial=F.eggSerial+1;F.layPulse=.32
+ F.eggs[#F.eggs+1]={x=point.x,y=point.y,fromX=F.x,fromY=F.y,age=0,hatch=1.5,seed=F.eggSerial}
 end
 function F.trap(target)
  if F.defeated or F.cornerLay or grieving() or F.phase=='charge' or F.phase=='aim' or F.phase=='intro_jump' then return end
@@ -157,53 +127,79 @@ end
 function F.pressure()
  return F.hp<=4 and 3 or F.hp<=8 and 2 or 1
 end
-function F.shotInterval() return ({.55,.49,.44})[F.pressure()] end
-function F.shoot()
- local p=playerPoint();local angle=math.atan2(p.y-F.y,p.x-F.x)
- F.angle=angle-math.pi/2
- F.volley=(F.volley or 0)+1
- local stage=F.pressure()
- local pattern=stage==1 and {1,2,1,3} or stage==2 and {2,3,1,3} or {3,2,3,4}
- local count=pattern[(F.volley-1)%4+1]
- local speed=460+(stage-1)*25
- -- Alternating fans leave a side to dodge instead of tracking after launch.
- local sweep=stage>1 and (F.volley%2==0 and .055 or -.055) or 0
+function F.shotInterval() return ({.95,.88,.8})[F.pressure()] end
+function F.fire(actor,radial)
+ actor.cast=.16;actor.volley=(actor.volley or 0)+1
+ local angle=math.atan2(player.y+12-actor.y,player.x+15-actor.x)
+ if not radial then actor.angle=angle-math.pi/2 end
+ local count=radial and (actor==F and 10 or 8) or (actor==F and F.pressure()==3 and actor.volley%3==0 and 2 or 1)
  for i=1,count do
-  local a=angle+sweep+(i-(count+1)/2)*.20
-  local dx,dy=math.cos(a),math.sin(a)
-  F.webs[#F.webs+1]={x=F.x+dx*23,y=F.y+dy*23,vx=dx*speed,vy=dy*speed,age=0}
+  local a=radial and i*math.pi*2/count+actor.volley*.11 or angle+(i-(count+1)/2)*.20
+  local dx,dy=math.cos(a),math.sin(a);local speed=radial and 265 or 420
+  F.webs[#F.webs+1]={x=actor.x+dx*32,y=actor.y+dy*32,vx=dx*speed,vy=dy*speed,age=0,owner=actor.id}
  end
 end
-function F.wallWeb(x,y)
- for _,w in ipairs(F.stuck) do if (w.x-x)^2+(w.y-y)^2<24^2 then return end end
- F.stuck[#F.stuck+1]={x=x,y=y,variant=#F.stuck%3+1}
-end
+function F.shoot() F.fire(F,false) end
+function F.landingVolley() F.fire(F,true) end
 function F.updateWebs(dt)
- if grieving() then return end
+ Brood.update(F,dt)
  local p=playerPoint()
- for i=#F.webs,1,-1 do local w=F.webs[i];w.age=(w.age or 0)+dt;local xx,yy=w.x+w.vx*dt,w.y+w.vy*dt
-  local victim,first=nil,2
-  for _,b in ipairs(F.babies) do if not b.dead and not b.webbed then local hit,t=segment(w.x,w.y,xx,yy,b,19);if hit and t<first then victim=b;first=t end end end
+ for i=#F.webs,1,-1 do local w=F.webs[i];w.owner=w.owner or 0;w.age=(w.age or 0)+dt;local xx,yy=w.x+w.vx*dt,w.y+w.vy*dt
+  local wallX,wallY,wallT=Brood.impact(w.x,w.y,xx,yy)
+  local victim,first=nil,wallT or 2
+  for _,b in ipairs(F.babies) do if b.id~=w.owner and b.phase~='intro_jump' then local hit,t=segment(w.x,w.y,xx,yy,b,25);if hit and t<first then victim=b;first=t end end end
+  if w.owner~=0 and F.phase~='intro_jump' then local hit,t=segment(w.x,w.y,xx,yy,F,27);if hit and t<first then victim=F;first=t end end
   local hit,t=segment(w.x,w.y,xx,yy,p,21);if hit and t<first and F.webGrace<=0 then victim=player end
   if victim then
-   if victim==player then if F.snare<=0 then F.escapeTaps={} end;F.snare=2.1;F.snareSource='shot' else victim.webbed=true end
-   F.trap(victim);table.remove(F.webs,i)
-  elseif xx<34 or xx>Arena.width-34 or yy<34 or yy>566 then
-   F.wallWeb(clamp(xx,34,Arena.width-34),clamp(yy,34,566));table.remove(F.webs,i)
+   if victim==player then
+    if F.snare<=0 then F.escapeTaps={} end;F.snare=2.1;F.snareSource='shot'
+    if (w.owner or 0)==0 then F.trap(player) else
+     for _,b in ipairs(F.babies) do if b.id==w.owner and b.phase~='intro_jump' then b.phase='aim';b.phaseTime=0;b.chargeX=p.x;b.chargeY=p.y end end
+    end
+   else victim.frozen=2.2 end
+   table.remove(F.webs,i)
+  elseif wallX then
+   Brood.spawn(F,wallX,wallY);table.remove(F.webs,i)
   else w.x=xx;w.y=yy end
  end
- for _,w in ipairs(F.stuck) do if near(w,p,24) and F.snare<=0 and (F.webGrace or 0)<=0 then F.trap(player);F.snare=2.1;F.snareSource='floor';F.webGrace=3;break end end
+
+end
+function F.updateEggs(dt)
+ for i=#F.eggs,1,-1 do
+  local e=F.eggs[i];e.age=e.age+dt
+  local touching=near(e,playerPoint(),27)
+  e.crackShake=math.max(0,(e.crackShake or 0)-dt)
+  if touching and not e.touching then
+   e.touching=true;e.hits=(e.hits or 0)+1;e.crackShake=.25
+   if e.hits>=4 then F.breakEgg(i) end
+  elseif not near(e,playerPoint(),37) then e.touching=false end
+  if F.eggs[i]==e and e.age>=e.hatch then
+   table.remove(F.eggs,i);F.shells[#F.shells+1]={x=e.x,y=e.y,seed=e.seed};Heirs.hatch(F,e)
+   if Bestiary.discover('queen_child') then Bestiary.save() end
+  end
+ end
 end
 local function updateBehavior(dt)
 
  if not F.active then return end
+ F.damageGrace=math.max(0,F.damageGrace-dt);F.cast=math.max(0,F.cast-dt)
  F.layPulse=math.max(0,(F.layPulse or 0)-dt)
  F.jumpCooldown=math.max(0,(F.jumpCooldown or 0)-dt)
  F.clock=F.clock+dt;F.phaseTime=F.phaseTime+dt;F.flash=math.max(0,F.flash-dt);F.snare=math.max(0,F.snare-dt);F.webGrace=math.max(0,(F.webGrace or 0)-dt)
  Escape.struggle(F,dt)
  if F.defeated then
-  towards(F,Arena.width*.5,95,110,dt)
-  for i,b in ipairs(F.babies) do towards(b,Arena.width*.5+((i-1)%9-4)*36,55+math.floor((i-1)/9)*25,140,dt) end
+  F.settle(dt)
+  if F.jumpHeight<=0 then
+   if towards(F,Arena.width*.5,95,110,dt)<4 then F.angle=math.atan2(player.y+12-F.y,player.x+15-F.x)-math.pi/2 end
+  end
+  for i,b in ipairs(F.babies) do
+   local x,y=b.x,b.y
+   if b.jumpHeight<=0 then
+    local tx=Arena.width*.5+(i-(#F.babies+1)/2)*68;local ty=60
+    if towards(b,tx,ty,140,dt)<4 then b.angle=math.atan2(player.y+12-b.y,player.x+15-b.x)-math.pi/2 end
+   end
+   require('brown_walk').advance(b,length(b.x-x,b.y-y),dt)
+  end
   Aftermath.update(dt)
   if Campaign.canCollect() and isTouching(player,objet.larme) then
    require('psychedelic_fx').collect(objet.larme.x+15,objet.larme.y+20,player.x+15,player.y+12)
@@ -211,9 +207,14 @@ local function updateBehavior(dt)
   end
   return
  end
+ if F.frozen>0 then
+  if F.phase~='intro_jump' and require('collision_shapes').touchCircle('queen',F.x,F.y,27) then F.damage();return end
+  F.frozen=math.max(0,F.frozen-dt);F.phaseTime=F.phaseTime-dt;return
+ end
  local p=playerPoint()
  if not F.engaged then
   F.angle=math.atan2(p.y-F.y,p.x-F.x)-math.pi/2
+  if require('collision_shapes').touchCircle('queen',F.x,F.y,27) then F.damage();return end
   if near(F,p,F.leapRadius) then
    F.beginCombat()
   end
@@ -224,37 +225,10 @@ local function updateBehavior(dt)
   local t=math.min(1,F.phaseTime/.85);local ease=t*t*(3-2*t);local j=F.jump
   F.x=j.x+(j.tx-j.x)*ease;F.y=j.y+(j.ty-j.y)*ease
   F.jumpHeight=math.sin(t*math.pi)*115
-  if t>=1 then require('queen_presence').land(F);F.phase=F.jumpResume or 'webs';F.phaseTime=F.phase=='lay' and F.jumpResumeTime or 0;F.shot=.45;F.contactGrace=.35;F.jump=nil;F.jumpHeight=0 end
- end
- if not F.cornerLay and not jumping and F.jumpCooldown<=0 and (F.phase=='webs' or F.phase=='lay') and near(F,p,F.leapRadius) then
-  F.leap(F.phase);jumping=true
+  if t>=1 then require('queen_presence').land(F);F.landingVolley();F.phase=F.jumpResume or 'webs';F.phaseTime=F.phase=='lay' and F.jumpResumeTime or 0;F.shot=.45;F.contactGrace=.35;F.jump=nil;F.jumpHeight=0 end
  end
  F.contactGrace=math.max(0,(F.contactGrace or 0)-dt)
- if F.phase~='charge' and not grieving() and F.contactGrace<=0 and require('collision_shapes').touchCircle('queen',F.x,F.y,27) then Hazards.kill();return end
- for i=#F.eggs,1,-1 do local e=F.eggs[i];e.age=e.age+dt;e.crackShake=math.max(0,(e.crackShake or 0)-dt)
-  local touching=near(e,p,32)
-  local broken=false
-  if touching and not e.touching then
-   e.touching=true;e.hits=(e.hits or 0)+1;e.crackShake=.32
-   if e.hits>=2 then F.breakEgg(i);broken=true;if F.defeated then return end end
-  elseif not near(e,p,40) then e.touching=false end
-  if not broken and e.age>=e.hatch then
-   table.remove(F.eggs,i);F.shells[#F.shells+1]={x=e.x,y=e.y,seed=e.seed}
-   if Bestiary.discover('queen_child') then Bestiary.save() end
-   F.babies[#F.babies+1]={x=e.x,y=e.y,age=0,variant=e.seed%11==0 and 'black' or e.seed%2==0 and 'white' or 'red',seed=e.seed}
-  end
- end
- for _,b in ipairs(F.babies) do
-  b.age=b.age+dt
-  if not b.dead and not b.webbed then
-   local dx,dy=p.x-b.x,p.y-b.y;local d=math.max(1,length(dx,dy));local tx,ty=p.x,p.y
-   for _,other in ipairs(F.babies) do if other~=b and not other.dead then local x,y=b.x-other.x,b.y-other.y;local n=length(x,y);if n>0 and n<30 then tx=tx+x/n*(30-n)*2;ty=ty+y/n*(30-n)*2 end end end
-   local contactX,contactY=b.x,b.y
-   towards(b,tx,ty,120+(b.seed%5)*9,dt);b.x=clamp(b.x,35,Arena.width-35);b.y=clamp(b.y,35,565)
-   if b.age>.7 and require('collision_shapes').touchCircle('queen_baby',contactX,contactY,25) then Hazards.kill();return end
-  end
- end
- F.updateWebs(dt)
+ if not jumping and F.phase~='charge' and F.contactGrace<=0 and require('collision_shapes').touchCircle('queen',F.x,F.y,27) then F.damage();return end
  if jumping then return end
  if F.phase=='aim' then
   F.angle=math.atan2(F.chargeY-F.y,F.chargeX-F.x)-math.pi/2
@@ -267,54 +241,44 @@ local function updateBehavior(dt)
   local grief=F.grief;local target=math.atan2(grief.y-F.y,grief.x-F.x)-math.pi/2
   local delta=math.atan2(math.sin(target-grief.angle),math.cos(target-grief.angle))
   local t=clamp(F.phaseTime/.32,0,1);F.angle=grief.angle+delta*t*t*(3-2*t)
-  if F.phaseTime>=1.2 then F.recoil(p) end
+  if F.phaseTime>=.12 then F.recoil(p) end
  elseif F.phase=='recoil_jump' then
   local t=clamp(F.phaseTime/.65,0,1);local ease=t*t*(3-2*t);local jump=F.jump
   F.x=jump.x+(jump.tx-jump.x)*ease;F.y=jump.y+(jump.ty-jump.y)*ease;F.jumpHeight=math.sin(t*math.pi)*85
   if t>=1 then
-   require('queen_presence').land(F)
+   require('queen_presence').land(F);F.landingVolley()
    F.phase='recover';F.phaseTime=0;F.contactGrace=.45;F.jump=nil;F.jumpHeight=0;F.grief=nil;F.chargeDeaths={};F.shot=.6
   end
- elseif F.phase=='recover' then
-  if F.phaseTime>1 then F.phase='webs';F.phaseTime=0;F.shot=.5 end
- elseif F.phase=='lay' and F.cornerLay then
-  Escape.lay(F,dt,towards)
- elseif F.phase=='lay' then
-  -- Keep running away, turning along the arena edge instead of getting stuck.
-  local away=math.atan2(F.y-p.y,F.x-p.x);local best,score
-  for _,offset in ipairs({0,.6,-.6,1.2,-1.2,1.8,-1.8}) do
-   local tx=clamp(F.x+math.cos(away+offset)*140,100,Arena.width-100)
-   local ty=clamp(F.y+math.sin(away+offset)*140,110,490)
-   local travel=length(tx-F.x,ty-F.y)
-   local value=length(tx-p.x,ty-p.y)+travel*.4
-   if not score or value>score then best={x=tx,y=ty};score=value end
+ elseif F.phase=='seek_nest' then
+  local nest=F.chooseNest()
+  if nest then
+   if towards(F,nest.x,nest.y,340,dt)<4 then
+    F.layEgg();F.pendingEggs=math.max(0,F.pendingEggs-1)
+    F.phase=F.pendingEggs>0 and 'seek_nest' or 'webs';F.phaseTime=0;F.shot=.45
+   end
   end
-  towards(F,best.x,best.y,270*F.surge,dt)
-  F.nest={x=F.x,y=F.y}
-  if F.phaseTime>=.65+F.batch*.34 and F.batch<8 then F.layEgg() end
-  if F.batch>=8 or F.phaseTime>4.5 then F.phase='webs';F.phaseTime=0;F.shot=.5 end
+ elseif F.phase=='recover' then
+  if F.phaseTime>.12 then F.phase=F.pendingEggs>0 and 'seek_nest' or 'webs';F.phaseTime=0;F.shot=.5 end
  else
-  if F.phaseTime>6-(F.pressure()-1)*.5 and #F.babies+#F.eggs<29 then
-   F.phase='lay';F.phaseTime=0;F.wave=F.wave+1;F.batch=0
-   if F.carried<8 then F.carried=24 end
-   Escape.beginLay(F)
-  else
-   F.shot=F.shot-dt
-   if F.shot<=0 then
-    if F.pressure()>=2 and F.volley%6==5 then require('queen_weave').begin(F)
-    else F.shoot();F.shot=F.shotInterval() end
+  F.shot=F.shot-dt
+  if F.shot<=0 then F.shoot();F.shot=F.shotInterval() end
+  if F.cast<=0 and F.shot>.10 then
+   local egg=F.eggs[1]
+   local tx=Arena.width*.5+math.sin(F.clock*.5)*Arena.width*.18;local ty=175+math.cos(F.clock*.65)*45
+   if egg then
+    local dx,dy=p.x-egg.x,p.y-egg.y;local d=math.max(1,length(dx,dy))
+    tx=clamp(egg.x+dx/d*65,55,Arena.width-55);ty=clamp(egg.y+dy/d*65,70,530)
    end
-   local webbed;for _,b in ipairs(F.babies) do if b.webbed and not b.dead then webbed=b;break end end
-   if webbed then F.trap(webbed)
-   else
-    towards(F,Arena.width*.5+math.sin(F.clock*.5)*Arena.width*.18,175+math.cos(F.clock*.65)*45,(100+(F.pressure()-1)*10)*F.surge,dt)
-    -- Keep aiming at the player while strafing between web shots.
-    F.angle=math.atan2(p.y-F.y,p.x-F.x)-math.pi/2
-   end
+   towards(F,tx,ty,(egg and 155 or 110)*F.surge,dt)
+   F.angle=math.atan2(p.y-F.y,p.x-F.x)-math.pi/2
   end
  end
- if not grieving() and F.contactGrace<=0 and require('collision_shapes').touchCircle('queen',F.x,F.y,27) then Hazards.kill();return end
+ if F.phase~='intro_jump' and F.phase~='recoil_jump' and F.contactGrace<=0 and require('collision_shapes').touchCircle('queen',F.x,F.y,27) then F.damage();return end
  for i=#F.babies,1,-1 do if F.babies[i].dead then table.remove(F.babies,i) end end
+end
+function F.settle(dt)
+ F.jump=nil;F.jumpHeight=math.max(0,(F.jumpHeight or 0)-dt*260)
+ for _,b in ipairs(F.babies) do b.jump=nil;b.jumpHeight=math.max(0,(b.jumpHeight or 0)-dt*260);b.walkMoving=false end
 end
 function F.update(dt)
  if not F.active then return end
@@ -326,6 +290,10 @@ function F.update(dt)
  local cycle=(F.clock+dt)%4.8
  local u=clamp((cycle-2.9)/.85,0,1)
  F.surge=1+math.sin(u*math.pi)^2*.65
+ if not F.defeated then
+  F.updateEggs(dt)
+  if not F.defeated then Heirs.update(F,dt);F.updateWebs(dt) end
+ end
  updateBehavior(dt)
  local distance=length(F.x-x,F.y-y)
  require('brown_walk').advance(F,distance*1.35,dt)
@@ -374,24 +342,30 @@ function F.drawGriefTear(facing)
  g.ellipse('fill',eye[1],eye[2]+fall,radius,radius*.85)
  g.setColor(.95,1,1,alpha);g.circle('fill',eye[1]-.5,eye[2]+fall-.5,.65);g.pop()
 end
-function F.draw()
-
+function F.drawGround()
  if not F.active then return end
  local g=love.graphics;g.push('all')
- require('queen_weave').draw(F)
  for _,s in ipairs(F.shells) do
   if s.silk and s.variant then
    g.push('all');g.translate(s.x,s.y);g.scale(1,.6);g.setColor(.5,.45,.5,.85)
    ArtSet.spider('baby_'..s.variant,0,0,36,s.angle);g.pop()
   else g.setColor(1,1,1,.8);ArtSet.draw('shell',s.x,s.y,34,(s.seed or 0)*.7) end
  end
- for _,w in ipairs(F.stuck) do web(w.x,w.y,25,.78) end
+ Brood.drawGround(F)
  for _,e in ipairs(F.eggs) do
   local t=math.min(1,e.age/.32);local ease=1-(1-t)^2
   local pose={crackShake=e.crackShake,seed=e.seed,x=(e.fromX or e.x)+(e.x-(e.fromX or e.x))*ease,y=(e.fromY or e.y)+(e.y-(e.fromY or e.y))*ease-math.sin(t*math.pi)*18}
-  F.egg(pose,17*(.65+.35*ease),math.max(e.age/e.hatch,(e.hits or 0)>0 and .45 or 0))
+  F.egg(pose,17*(.65+.35*ease),math.max(e.age/e.hatch,(e.hits or 0)/4))
  end
- for _,b in ipairs(F.babies) do if not b.dead then require('monster_fx').halo(b.x,b.y,36);F.spider(b.x,b.y,36,b.variant,b.angle);if b.webbed then web(b.x,b.y,24) end end end
+ g.pop()
+end
+function F.draw(skipGround)
+ if not F.active then return end
+ if not skipGround then F.drawGround() end
+ local g=love.graphics;g.push('all')
+ require('queen_weave').draw(F);Brood.draw(F)
+ Heirs.draw(F)
+
  if F.phase=='aim' then g.setColor(1,.28,.25,.5);g.setLineWidth(2);g.circle('line',F.chargeX,F.chargeY,34+math.sin(F.clock*18)*3) end
  -- Keep the body grounded; only a deliberate escape leap raises it.
  for _,ghost in ipairs(F.afterimages) do
@@ -406,11 +380,12 @@ function F.draw()
  g.push();g.translate(F.x,F.y-F.jumpHeight);g.scale(1+pulse*.045+breath,1-pulse*.045-breath*.55)
  F.spider(0,0,62,'queen',facing,F)
  ArtSet.clutch(0,0,62,F.carried,facing);F.drawGriefTear(facing);g.pop()
+ if F.frozen>0 then web(F.x,F.y-F.jumpHeight,35,.8) end
  for _,w in ipairs(F.webs) do
   local a=math.atan2(w.vy,w.vx);local dx,dy=math.cos(a),math.sin(a)
   g.setShader();g.setColor(.18,.24,.12,.3);g.setLineWidth(4);g.line(w.x-dx*17+2,w.y-dy*17+5,w.x+2,w.y+5)
   g.setColor(.88,.94,.73,.7);g.setLineWidth(1.2);g.line(w.x-dx*17,w.y-dy*17,w.x,w.y)
-  g.setColor(1,1,1);ArtSet.draw('web_shot',w.x,w.y,32,a)
+  local c=Heirs.color(w.owner or 0);g.setColor(c[1],c[2],c[3]);ArtSet.draw('web_shot',w.x,w.y,26,a)
  end
  Escape.draw(F)
  if F.gate then
@@ -426,6 +401,7 @@ function F.resize(r)
  if F.nest then F.nest.x=F.nest.x*r end
  for _,p in ipairs(F.cornerSlots or {}) do p.x=p.x*r end
  F.x=F.x*r;if F.chargeX then F.chargeX=F.chargeX*r end
- for _,list in ipairs({F.eggs,F.babies,F.shells,F.webs,F.stuck,F.afterimages}) do for _,o in ipairs(list or {}) do o.x=o.x*r;if o.vx then o.vx=o.vx*r end end end
+ for _,b in ipairs(F.babies)do if b.jump then b.jump.x=b.jump.x*r;b.jump.tx=b.jump.tx*r end;if b.chargeX then b.chargeX=b.chargeX*r end end
+ for _,list in ipairs({F.eggs,F.babies,F.shells,F.webs,F.stuck,F.bombs,F.bursts,F.afterimages}) do for _,o in ipairs(list or {}) do o.x=o.x*r;if o.vx then o.vx=o.vx*r end end end
 end
 return F

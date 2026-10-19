@@ -15,7 +15,7 @@ local function fire(x,y,h,seed,time)
   g.setColor(1,.22,.035,.012*pulse);g.ellipse('fill',x,y-h*.25,h*j*.27,h*j*.20)
  end
  -- Three overlapping tongues, with tapered translucent edges and pale cores.
- -- All flames rise in screen space, including those on the side walls.
+ -- Flame tips follow the inward normal of their supporting wall.
  for tongue=1,3 do
   local phase=seed+tongue*2.7
   local height=h*(tongue==2 and 1 or .65)*(.9+.1*math.sin(time*3.3+phase))
@@ -37,14 +37,6 @@ local function fire(x,y,h,seed,time)
   local xx=x+math.sin(t*5+seed+j)*h*.18;local yy=y-h*(.3+t*1.1)
   g.setColor(1,.59,.14,math.sin(t*math.pi)*.65);g.ellipse('fill',xx,yy,.7,1.6)
  end
-end
-local function boulder(x,y,w,h,seed)
- local g=love.graphics;local skew=noise(seed)*w*.12
- g.setColor(.055,.04,.045);g.polygon('fill',x-w*.5,y,x-w*.54,y-h*.55,x-w*.19,y-h,x+w*.26,y-h*.92,x+w*.51,y-h*.43,x+w*.43,y)
- g.setColor(.24,.17,.15);g.polygon('fill',x-w*.54,y-h*.55,x-w*.19,y-h,x+w*.26,y-h*.92,x+skew,y-h*.40,x-w*.5,y)
- g.setColor(.34,.25,.20);g.polygon('fill',x-w*.19,y-h,x+w*.26,y-h*.92,x+w*.51,y-h*.43,x+skew,y-h*.40)
- g.setColor(.49,.32,.22);g.setLineWidth(.8);g.line(x-w*.54,y-h*.55,x-w*.19,y-h,x+w*.26,y-h*.92)
- g.setColor(.08,.045,.043);g.line(x+skew,y-h*.40,x+w*.13,y-h*.22,x+w*.10,y)
 end
 function F.bake(width,height)
  local g=love.graphics;F.fires={};F.embers={}
@@ -76,12 +68,18 @@ function F.bake(width,height)
    elseif motif==2 or motif==6 then
     F.fires[#F.fires+1]={ox+(x+21)*math.cos(angle)+12*math.sin(angle),oy+(x+21)*math.sin(angle)-12*math.cos(angle),angle,21+noise(seed+6)*14,seed}
    elseif motif==5 then
-    boulder(x+15,-4,34,35+noise(seed+5)*14,seed)
-    boulder(x+35,-3,24,22,seed+1)
+    -- Charred, curling roots replace the broad block-like stones.
+    for j=1,3 do
+     local xx=x+7+j*8;local h=26+noise(seed+j)*22
+     local p=curve({xx,-3,xx-13,-h*.35,xx+12,-h*.65,xx+5,-h})
+     g.setColor(.075,.025,.025);g.setLineWidth(5);g.line(p)
+     g.setColor(.52,.15,.045);g.setLineWidth(1);g.line(p)
+     spike(xx+5,-h+5,10,5)
+    end
    elseif motif==7 then
     for j=1,3 do
      local h=22+noise(seed+j)*30;local xx=x+7+j*8
-     boulder(xx,-4,13,h,seed+j)
+     spike(xx,-4,h,(noise(seed+j)-.5)*12)
      g.setColor(.75,.25,.07,.75);g.setLineWidth(.8);g.line(xx-2,-h*.8,xx+1,-h*.4,xx,-7)
     end
    else
@@ -117,11 +115,12 @@ function F.draw()
  g.push('all');g.setShader();g.setColor(1,1,1);g.setBlendMode('alpha','premultiplied');g.draw(F.canvas)
  g.setBlendMode('alpha','alphamultiply');local time=Graphics.effects and UI.clock or 0
  for _,v in ipairs(F.fires) do
-  fire(math.max(18,math.min(Arena.width-18,v[1])),math.max(28,v[2]),v[4],v[5],time)
+  g.push();g.translate(v[1],v[2]);g.rotate(v[3]);fire(0,0,v[4],v[5],time);g.pop()
  end
  for _,v in ipairs(F.embers) do
   local t=(time*.18+noise(v[3]))%1;local a=math.sin(t*math.pi)*.7
-  local x=v[1]+math.sin(t*4+v[3])*3;local y=v[2]-t*24
+  local drift=math.sin(t*4+v[3])*3
+  local x=v[1]+drift*math.cos(v[4])+t*24*math.sin(v[4]);local y=v[2]+drift*math.sin(v[4])-t*24*math.cos(v[4])
   g.setColor(1,.28,.04,a*.18);g.circle('fill',x,y,4)
   g.setColor(1,.65,.22,a);g.circle('fill',x,y,1.1)
  end

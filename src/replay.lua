@@ -46,6 +46,10 @@ function R.begin(world)
     if not R.playing then
         R.data=nil
         local layouts=LevelLayouts.read()
+        if world==6 and not App.sessionLayout then
+            layouts=json.decode(json.encode(layouts))
+            for n=1,10 do local key='6:'..n;layouts[key]=layouts[key] and require('sky').prepare(layouts[key]) or require('sky').layout(n,Arena.width) end
+        end
         local seed=love.math.random(1,2147483646)
         R.data={version=1,build=R.build(),world=world,seed=seed,width=Arena.width,height=600,skin=Characters.selected(),effects=require('skin_effects').snapshot(),startLevel=player.level,single=not not App.singleLevel,hardcore=not not App.hardcore,layouts=json.decode(json.encode(layouts)),session=App.sessionLayout~=nil,states={},duel=Secret.duel and {kind=Secret.duel.kind,name=Secret.duel.name,time=0} or nil,inputs={},checks={},frames=0,startedAt=os.time()}
     end
@@ -150,7 +154,15 @@ function R.validate(data)
         total=total+e[1]
     end
     if total~=data.frames or total>5184000 then return false,'Durée de replay invalide.' end
-    for _,layout in pairs(data.layouts) do if not LayoutSchema.validate(layout) then return false,'Carte de replay invalide.' end end
+    for _,layout in pairs(data.layouts) do
+        -- Validate retired entity IDs through the known data migrations. Never
+        -- rewrite the snapshot: its historical engine needs the original map.
+        local ok,valid=pcall(function()
+            local candidate=LayoutSchema.migrate(json.decode(json.encode(layout)))
+            return LayoutSchema.validate(candidate)
+        end)
+        if not ok or not valid then return false,'Carte de replay invalide.' end
+    end
     return true
 end
 function R.saveContext()
@@ -196,14 +208,14 @@ function R.stop(message)
     Secret.duel=nil;App.sessionLayout=nil;App.hardcore=false;App.singleLevel=false;App.practice=nil;App.state=saved and saved.returnTo or 'rankings';if App.state=='victory' and saved.victory then App.hardcore=saved.victory.hardcore end;R.status=message or 'Lecture arrêtée.'
 end
 function R.watch(score)
-    R.status=''
+    R.status='';RunDetails.view=nil;UI.showRunDetails=false
     if type(score.replay)=='string' and #score.replay==64 and score.replay:match('^[a-f0-9]+$') then
         local raw=love.filesystem.read('replays/'..score.replay..'.json');local ok,data=pcall(json.decode,raw or '')
         if ok then return R.play(data) end
     end
     if type(score.runId)=='string' and score.runId:match('^[a-f0-9%-]+$') and #score.runId==36 and score.hasReplay then
         R.status='Chargement du replay…'
-        Online.request('/v1/replays/'..score.runId,nil,function(data,code) if code==200 then R.play(data.replay) else R.status=data.error or 'Replay indisponible.' end end)
+        Online.request('/v1/replays/'..score.runId,nil,function(data,code) if code==200 and type(data)=='table' and type(data.replay)=='table' then R.play(data.replay) else R.status=type(data)=='table' and data.error or 'Replay indisponible.' end end)
     else R.status='Cette ancienne run ne possède pas de replay.' end
 end
 Tools.install(R)

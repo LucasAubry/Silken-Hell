@@ -16,8 +16,9 @@ function G.save() love.filesystem.write('graphics.json',json.encode({thermalRevi
 function G.floorHeight() return ({240,360,600})[G.quality] end
 function G.backgroundHz() return G.quality==1 and 30 or 60 end
 function G.targetRate(editor)
- if editor or (App and (App.preview or App.state~='playing')) then return 0 end
- if not love.window.hasFocus() then return 15 end
+ if editor then return love.window.hasFocus() and 30 or 10 end
+ if not love.window.hasFocus() then return 10 end
+ if App and (App.preview or App.state~='playing') then return 60 end
  return G.limit
 end
 function G.pace(editor)

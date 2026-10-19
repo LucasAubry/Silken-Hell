@@ -26,7 +26,40 @@ function T.run(M,state,select)
  g.push('all');g.setCanvas(canvas);love.draw();g.pop()
  Art.draw=draw;Art.drawWorm=worm
  assert(magmaSize==38 and wormSize==30,'Editor uses the same magma larva and small worm dimensions as gameplay')
- pixels=canvas:newImageData();pixels:encode('png','designer-larvae-size.png');pixels:release();canvas:release()
+ pixels=canvas:newImageData();pixels:encode('png','designer-larvae-size.png');pixels:release()
+ -- Compare the whole editor at different animation times, including palette sprites.
+ M.layout.entities[#M.layout.entities+1]={kind='mob',type='dragonfly',x=500,y=300}
+ M.layout.entities[#M.layout.entities+1]={kind='vent',x=600,y=300,rx=30,ry=23}
+ M.selected=nil;state.tool=nil;state.category='Mobs';state.scroll=0
+ local getTime=love.timer.getTime
+ local function frozenFrame(time)
+  state.clock=time;love.timer.getTime=function() return time end
+  g.push('all');g.setCanvas(canvas);love.draw();g.pop()
+  local data=canvas:newImageData();local bytes=data:getString();data:release();return bytes
+ end
+ local first=frozenFrame(0);local second=frozenFrame(1.73)
+ love.timer.getTime=getTime
+ assert(first==second,'Editor monsters and palette must stay still as both clocks advance')
+ canvas:release()
+ local G=require('graphics_settings');local focus=love.window.hasFocus
+ love.window.hasFocus=function() return true end;assert(G.targetRate(true)==30)
+ love.window.hasFocus=function() return false end;assert(G.targetRate(true)==10)
+ love.window.hasFocus=focus
+ -- Exercise the production limiter with a fake clock (tests normally bypass sleeps).
+ local getenv,sleep,setSync=os.getenv,love.timer.sleep,love.window.setVSync
+ local lastFrame,appliedSync=G.lastFrame,G.appliedSync
+ local now,slept=100,0
+ os.getenv=function(key) if key=='SILKEN_TEST' or key=='SILKEN_DESIGNER_TEST' then return nil end;return getenv(key) end
+ love.timer.getTime=function() return now end
+ love.timer.sleep=function(seconds) slept=slept+seconds;now=now+seconds end
+ love.window.setVSync=function() end
+ for _,active in ipairs({true,false}) do
+  love.window.hasFocus=function() return active end;G.lastFrame=now;slept=0
+  G.pace(true);assert(math.abs(slept-1/(active and 30 or 10))<.00001,'Production editor pacing must sleep')
+ end
+ os.getenv=getenv;love.timer.sleep=sleep;love.timer.getTime=getTime;love.window.setVSync=setSync;love.window.hasFocus=focus
+ G.lastFrame=lastFrame;G.appliedSync=appliedSync
+ print('PASS editor thermal: static monster pixels and production frame pacing at 30/10 FPS')
  print('PASS editor: movable level-nine gate, placement palette, exact game larva sizes and visible carrier markers')
  print('VISUALS '..love.filesystem.getSaveDirectory());love.event.quit()
 end

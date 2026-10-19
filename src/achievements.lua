@@ -5,7 +5,7 @@ function A.maxanceTime() return Scoring.total(552.732,95) end
 function A.gillouTime() return Scoring.total(2264.85,513) end
 A.list={
     {id='workshop_publish',category='community',name='Créateur',rewardSkin=24,description=function() return 'Publie une carte sur le Workshop.' end},
-    {id='workshop_test',category='community',name='Explorateur',rewardSkin=25,description=function() return 'Teste une carte du Workshop ou ta propre création.' end},
+    {id='workshop_test',category='community',name='Explorateur',rewardSkin=25,description=function() return 'Teste une carte du Workshop.' end},
     {id='heartbreak',category='secrets',name='Une triste fin',rewardEffect='heartbreak',description=function()
         return ''
     end},
@@ -16,13 +16,13 @@ A.list={
     {id='gillou',category='secrets',name='3 piques d’un coup',rewardSkin=13,description=function()
         return 'En Enfer, fais charger les trois sœurs contre un mur, puis touche-les toutes avant le réveil de la première.'
     end},
-    {id='maxance',category='secrets',name='C’est dur ?',rewardSkin=14,description=function()
-        return 'Termine un parcours complet du Paradis avec au moins 95 morts.'
+    {id='maxance',category='secrets',name='C’est que le début',rewardSkin=14,description=function()
+        return ''
     end},
     {id='flawless_all',category='mastery',name='Un fil sans faute',trophy='flawless_all',rewardSkin=23,description=function()
         return 'Termine chacun des sept mondes sans mourir, en parcours complet (hors entraînement).'
     end},
-    {id='hardcore_all',category='mastery',name='Tous les mondes · Hardcore',trophy='hardcore_all',rewardSkin=27,description=function()
+    {id='hardcore_all',category='mastery',name='Hardie',trophy='hardcore_all',rewardSkin=27,description=function()
         return 'Termine chacun des sept mondes en hardcore, en parcours complet (hors entraînement).'
     end},
     {id='hardcore',category='mastery',name='Auréole hardcore',rewardEffect='hardcore',description=function()
@@ -34,7 +34,7 @@ A.list={
 }
 for _,world in ipairs(Worlds.order) do
     local w=world
-    A.list[#A.list+1]={id='world'..w,world=w,rewardSkin=w==4 and 4 or Worlds.rank(w)+5,category='worlds',name=Worlds.names[w],description=function() return T('Termine tous les niveaux de %s en parcours complet (hors entraînement).',T(Worlds.names[w])) end}
+    A.list[#A.list+1]={id='world'..w,world=w,rewardSkin=w==4 and 4 or Worlds.rank(w)+5,category='worlds',name=Worlds.names[w],description=function() return '' end}
 end
 -- Group the gallery by its reward while preserving the order within each group.
 local grouped,seen={},{}

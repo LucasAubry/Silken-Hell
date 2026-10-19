@@ -92,7 +92,7 @@ function B.paint(canvas,zones,edgeConnectionsOnly)
  g.draw(canvas);g.pop()
 end
 function B.draw()
- if Campaign.biome==6 and not Secret.inArena() then return end
+ if (Campaign.biome==6 or Campaign.biome==7) and not Secret.inArena() then return end
  local g=love.graphics;local biome=Secret.inArena() and 8 or Campaign.biome;local rank=Worlds.rank(biome);if rank==math.huge then rank=biome==8 and 4 or 1 end;rank=math.min(7,rank)
  local target=g.getCanvas()
  local density=target and target:getDPIScale() or 1

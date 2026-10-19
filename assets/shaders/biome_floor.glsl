@@ -90,9 +90,16 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   vapor+=vec3(.025,.030,.035)*(noise(sky*7.0)-.5);
   c=mix(air,vapor,cloud);
   // The former 22-unit perimeter is open sky, matching the falling boundary.
-  float edge=min(min(pixel.x,dimensions.x-pixel.x),min(pixel.y,dimensions.y-pixel.y))*600.0/dimensions.y;
-  vec3 voidColor=mix(vec3(.018,.042,.080),vec3(.065,.13,.22),smoothstep(0.,22.,edge));
-  c=mix(voidColor,c,smoothstep(21.,24.,edge));
+  vec2 q=pixel*600.0/dimensions.y;
+  float width=dimensions.x*600.0/dimensions.y;
+  float topEdge=23.+8.*sin(q.x*.037+1.7)+4.*sin(q.x*.091+.8);
+  float bottom=23.+8.*sin(q.x*.037+3.4)+4.*sin(q.x*.091+1.6);
+  float left=23.+8.*sin(q.y*.037+5.1)+4.*sin(q.y*.091+2.4);
+  float right=23.+8.*sin(q.y*.037+6.8)+4.*sin(q.y*.091+3.2);
+  float edge=min(min(q.x-left,width-q.x-right),min(q.y-topEdge,600.-q.y-bottom));
+  vec3 voidColor=mix(vec3(.007,.018,.047),c*vec3(.23,.31,.44),smoothstep(-20.,-2.,edge));
+  vec3 lip=c+vec3(.07,.08,.09)*exp(-pow((edge-2.)/3.,2.));
+  c=mix(voidColor,lip,smoothstep(-1.,2.,edge));
  } else if(biome==5.0) {
   // The meadow's broad, softly blended relief becomes dry underground soil.
   // Warped sediment, compact clods and mineral grains replace grassy streaks.

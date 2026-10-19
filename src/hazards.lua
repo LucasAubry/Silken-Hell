@@ -44,7 +44,7 @@ end
 function H.speed()
     local factor=player.venom>0 and 0.42 or 1
     if Raven.active then for _,n in ipairs(Raven.nests) do if H.inEllipse(player.x+15,player.y+12,n,0) then factor=math.min(factor,0.40) end end end
-    return math.min(factor,Realms.speed(),Bosses.speed())
+    return math.min(factor,Realms.speed(),Bosses.speed(),require('queen_brood').speed(require('final_spider')))
 end
 function H.drawFloor()
     require('lava_zones').drawAll(H.lava,UI.clock)

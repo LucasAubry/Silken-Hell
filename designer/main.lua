@@ -29,13 +29,13 @@ local function catalog(e)
 end
 local function backdrop()
     if state.background then state.background:release() end
-    state.background=g.newCanvas(M.layout.width,600)
+    state.background=g.newCanvas(M.layout.width,600,{dpiscale=1})
     g.push('all'); g.setCanvas(state.background); g.origin(); g.clear(.25,.35,.45)
     Biome.draw(M.world,M.layout.width,600,0)
     g.setCanvas(); g.pop()
 end
 local function select(w,n)
-    M.select(w,n); state.tool=nil;state.stroke=nil; state.input=nil; state.scroll=0; backdrop()
+    M.select(w,n); state.tool=nil;state.stroke=nil; state.input=nil; state.scroll=0;state.category=(w==6 or w==2) and 'Terrain' or 'Mobs';state.all=false; backdrop()
 end
 local function bounds()
     local w,h=g.getDimensions(); local avail=w-530
@@ -51,10 +51,14 @@ local function inside(mx,my)
 end
 local function snapped(v) return state.snap and math.floor(v/10+.5)*10 or math.floor(v+.5) end
 local function brush(e) return e and (e.kind=='hole' or e.kind=='lava' or e.kind=='electric_ground') end
+-- Explicit time also freezes procedural sprites which use the real clock in game.
+local function drawArt(key,x,y,width,angle,height)
+    Art.draw(key,x,y,width,angle,height,0)
+end
 local function entity(e,ghost,terrainDrawn)
     local c=catalog(e); g.setColor(1,1,1,ghost and .45 or 1)
-    if e.type=='dragonfly' or e.type=='mist_moth' or e.type=='wind_bat' or e.type=='lava_scorpion' then require('sky_insect_art').draw(e.type,e.x,e.y,e.type=='wind_bat' and 48 or 64,state.clock,e.type=='wind_bat' and (e.dx==-1 and math.pi/2 or -math.pi/2) or nil);return end
-    if e.kind=='mob' and (e.type=='piege' or e.type=='scie') then require('trap_art').draw(e.type,e.x,e.y,e.type=='scie' and 60 or 52,M.world,false,state.clock);return end
+    if e.type=='dragonfly' or e.type=='mist_moth' or e.type=='wind_bat' or e.type=='lava_scorpion' then require('sky_insect_art').draw(e.type,e.x,e.y,e.type=='wind_bat' and 48 or 64,0,e.type=='wind_bat' and (e.dx==-1 and math.pi/2 or -math.pi/2) or nil);return end
+    if e.kind=='mob' and (e.type=='piege' or e.type=='scie') then require('trap_art').draw(e.type,e.x,e.y,e.type=='scie' and 60 or 52,M.world,false,0);return end
     if e.kind=='wall' and M.world==5 then
         g.push('all');g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180)
         require('earth_rocks').wall({x=-e.w/2,y=-e.h/2,w=e.w,h=e.h});g.pop();return
@@ -70,28 +74,28 @@ local function entity(e,ghost,terrainDrawn)
         if not terrainDrawn then require('terrain_surface').draw({e},'hole',state.clock,ghost and .5 or 1,M.world) end
     elseif e.kind=='rain' then g.setColor(.25,.6,1,.8); for i=-1,1 do g.line(e.x+i*8,e.y-18,e.x+i*8-5,e.y+7) end
     elseif e.kind=='current' then g.setColor(.2,.85,1,.2); g.ellipse('fill',e.x,e.y,e.rx,e.ry); text(e.dx==1 and '>' or '<',e.x-6,e.y-9,18)
-    elseif e.type=='larva' then Art.drawWorm('down',e.x,e.y,30,state.clock)
+    elseif e.type=='larva' then Art.drawWorm('down',e.x,e.y,30,0)
     elseif e.type=='magma_larva' then
-        local a=Art.images.magma_larva;local size=38+math.sin(state.clock*22)*1.7
-        Art.draw('magma_larva',e.x,e.y,size*a.w/math.max(a.w,a.h),0,size*a.h/math.max(a.w,a.h))
+        local a=Art.images.magma_larva;local size=38
+        drawArt('magma_larva',e.x,e.y,size*a.w/math.max(a.w,a.h),0,size*a.h/math.max(a.w,a.h))
     elseif c.art and Art.images[c.art] then
         local size=e.kind=='boss' and (e.type=='octopus' and 360 or (e.type=='skeleton_fish' or e.type=='skeleton_head') and 170 or 105) or e.kind=='spawn' and 55 or (e.kind=='tear' or e.kind=='light') and 44 or e.kind=='lava' and e.rx*2 or e.kind=='tunnel' and 95 or 60
         if e.kind=='tear' or e.kind=='light' then g.setColor(Worlds.color(M.world).tear) end
         if e.kind=='tear' or e.kind=='light' then Art.drawTinted(c.art,e.x,e.y,size)
-        elseif e.kind=='abyss_gate' then Art.draw(c.art,e.x,e.y,e.w or 540,0,e.h or (e.w or 540)*1.2)
-        elseif e.kind=='abyss_part' then Art.draw(c.art,e.x,e.y,e.w,(e.rotation or 0)*math.pi/180,e.h)
-        elseif e.type=='skeleton_head' then Art.draw(c.art,e.x,e.y,170,0,150)
+        elseif e.kind=='abyss_gate' then drawArt(c.art,e.x,e.y,e.w or 540,0,e.h or (e.w or 540)*1.2)
+        elseif e.kind=='abyss_part' then drawArt(c.art,e.x,e.y,e.w,(e.rotation or 0)*math.pi/180,e.h)
+        elseif e.type=='skeleton_head' then drawArt(c.art,e.x,e.y,170,0,150)
         elseif e.type=='skeleton_fish' then
             local width=M.layout.width; local span=width*.48; local count=math.max(3,math.floor(span/205)+1)
             for i=1,((e.skeletonStage or 10)>=9 and count or 0) do
                 local xx=e.x-width*.3+(i-1)*span/(count-1); local hh=95+18*math.sin(i/count*math.pi)
-                Art.draw('skeleton_spine',xx,e.y,22,0,28)
-                Art.draw('skeleton_rib',xx,e.y-hh/2-20,22,-.12,hh)
-                Art.draw('skeleton_rib',xx,e.y+hh/2+20,22,math.pi+.12,hh)
+                drawArt('skeleton_spine',xx,e.y,22,0,28)
+                drawArt('skeleton_rib',xx,e.y-hh/2-20,22,-.12,hh)
+                drawArt('skeleton_rib',xx,e.y+hh/2+20,22,math.pi+.12,hh)
             end
-            Art.draw('skeleton_tail',e.x-width*.405,e.y,100,0,145)
-            if (e.skeletonStage or 10)==10 then Art.draw('skeleton_head',e.x+width*.29,e.y,170,0,150) end
-        else Art.draw(c.art,e.x,e.y,size) end
+            drawArt('skeleton_tail',e.x-width*.405,e.y,100,0,145)
+            if (e.skeletonStage or 10)==10 then drawArt('skeleton_head',e.x+width*.29,e.y,170,0,150) end
+        else drawArt(c.art,e.x,e.y,size) end
     end
     if e.kind=='spawn' then g.setColor(.3,1,.7,.75); g.circle('line',e.x,e.y,32) end
     if e.has_larme then g.setColor(Worlds.color(M.world).tear); g.circle('fill',e.x+21,e.y+20,6) end
@@ -189,7 +193,12 @@ function love.draw()
     button('Rétablir',w-390,120,94,30,function() M.undo(true) end)
     button(state.grid and 'Grille : oui' or 'Grille : non',w-286,120,124,30,function() state.grid=not state.grid end)
     button(state.snap and 'Aimant : oui' or 'Aimant : non',w-152,120,132,30,function() state.snap=not state.snap end)
-    text('BIBLIOTHÈQUE',20,177,12,color.muted)
+    if M.world==6 or M.world==2 then
+        local kind=M.world==6 and 'hole' or 'lava'
+        button(M.world==6 and 'Dessiner les trous' or 'Dessiner la lave',14,166,220,30,function()
+            for _,c in ipairs(C) do if c.kind==kind then state.tool=c;M.selected=nil;state.input=nil;state.category='Terrain';state.all=false;state.scroll=0;break end end
+        end,state.tool and state.tool.kind==kind)
+    else text('BIBLIOTHÈQUE',20,177,12,color.muted) end
     for i,cat in ipairs({'Mobs','Pièges','Terrain','Boss'}) do button(cat,14+(i-1)%2*114,203+math.floor((i-1)/2)*36,106,30,function() state.category=cat; state.scroll=0 end,state.category==cat) end
     button(state.all and 'Tous les biomes' or 'Ce biome',14,280,220,30,function() state.all=not state.all; state.scroll=0 end,state.all)
     local palette={}
@@ -201,8 +210,8 @@ function love.draw()
     for i=1,max do local c=palette[i+state.scroll]; if c then
         local y=324+(i-1)*68
         button('',14,y,220,60,function() state.tool=c; M.selected=nil; state.input=nil end,state.tool==c)
-        if c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion' then require('sky_insect_art').draw(c.type,45,y+29,42,state.clock)
-        elseif c.type=='larva' then Art.drawLarva(45,y+29,22,0,state.clock) elseif c.art then g.setColor(1,1,1); local a=Art.images[c.art]; local width=math.min(42,44*a.w/a.h); Art.draw(c.art,45,y+29,width) end
+        if c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion' then require('sky_insect_art').draw(c.type,45,y+29,42,0)
+        elseif c.type=='larva' then Art.drawLarva(45,y+29,22,0,0) elseif c.art then g.setColor(1,1,1); local a=Art.images[c.art]; local width=math.min(42,44*a.w/a.h); drawArt(c.art,45,y+29,width) end
         local insect=c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion';local label=c.name
         if insect then
             local utf8=require('utf8');local font=state.fonts[16]
@@ -233,7 +242,7 @@ function love.draw()
         end
     end
     require('terrain_surface').draw(holes,'hole',state.clock,1,M.world)
-    require('lava_zones').drawAll(lava,state.clock,1,M.world)
+    require('editor_terrain').draw(lava,M.world,state.clock)
     if moving then require('brush_preview').draw(moving) end
     if state.stroke then require('brush_preview').draw(state.stroke) end
     for _,e in ipairs(M.layout.entities) do if e.kind~='mob' and e.kind~='boss' and e.kind~='spawn' then entity(e,false,true) end end

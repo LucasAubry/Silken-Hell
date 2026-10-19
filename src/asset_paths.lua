@@ -1,5 +1,7 @@
 -- Asset locations. Old paths remain resolvable for procedural loaders and older tools.
 local paths={
+ ["assets/sprites/final/partner_up.png"]="assets/monstres/renaissance/reine/partner_up.png",
+ ["assets/sprites/final/partner_left.png"]="assets/monstres/renaissance/reine/partner_left.png",
  ["assets/textures/background_paradie.png"]="assets/environments/paradis/background_paradie.png",
  ["assets/sprites/abyss_fish.png"]="assets/monstres/abysse/poisson/abyss_fish.png",
  ["assets/sprites/abyss_octopus.png"]="assets/monstres/abysse/pieuvre/abyss_octopus.png",

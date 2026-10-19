@@ -111,6 +111,12 @@ local function node(n,i,x,y)
         return
     end
     for r=5,1,-1 do g.setColor(c.tear[1],c.tear[2],c.tear[3],.018);g.ellipse('fill',x,y,42+r*12,24+r*7) end
+    -- A layered stone medallion gives each stop a physical place on the route.
+    g.setColor(.004,.008,.015,.75);g.ellipse('fill',x,y+18,45,18)
+    g.setColor(c.floor[1]*.6+.035,c.floor[2]*.6+.035,c.floor[3]*.6+.035)
+    g.polygon('fill',x-38,y+2,x-26,y-22,x+26,y-22,x+38,y+2,x+25,y+25,x-25,y+25)
+    g.setColor(c.tear[1],c.tear[2],c.tear[3],.30);g.setLineWidth(1)
+    g.line(x-38,y+2,x-26,y-22,x+26,y-22,x+38,y+2)
     local soft=occupancy(x,y)
     circle('fill',x,y,24,{.015,.035,.045,.95},soft)
     g.setLineWidth(2);circle('line',x,y,24,{c.tear[1]*.5+.5,c.tear[2]*.5+.5,c.tear[3]*.5+.5,1},soft)
@@ -119,12 +125,21 @@ local function node(n,i,x,y)
     elseif Profile.hasCompleted(n) then g.setColor(1,.87,.55);g.line(x-8,y,x-2,y+6,x+10,y-7)
     else g.setColor(1,.91,.65);g.circle('fill',x,y,5) end
     g.setLineWidth(1)
-    local labelX=math.max(48,x-245)
-    g.setColor(.015,.025,.035,.96);g.rectangle('fill',labelX-6,y-20,187,40,8,8)
-    UI.text(Worlds.names[n],labelX,y-10,'medium',{.97,.90,.72},175,'right')
+    local labelX=math.max(48,x-265)
+    local labelW=x-54-labelX;local selected=n==App.selectedWorld
+    local ink=selected and {.99,.92,.72} or {.77,.80,.77}
+    -- Names sit on the route itself, with a fine illuminated underline.
+    UI.text(Worlds.names[n],labelX+1,y-12,'medium',{0,.005,.012,.85},labelW,'right')
+    UI.text(Worlds.names[n],labelX,y-14,'medium',ink,labelW,'right')
+    local lineEnd=x-54;local lineStart=lineEnd-math.min(labelW,selected and 118 or 68)
+    g.setColor(c.tear[1],c.tear[2],c.tear[3],selected and .85 or .35)
+    g.line(lineStart,y+18,lineEnd,y+18)
+    local tip=lineEnd+9;local size=selected and 3 or 2
+    g.setColor(ink[1],ink[2],ink[3],selected and .95 or .5)
+    g.polygon('fill',tip-size,y+18,tip,y+18-size,tip+size,y+18,tip,y+18+size)
     if Profile.flawless(n) then require('flawless_badge').draw(x+32,y+25,12) end
-    for j=1,(n==3 and 1 or 2) do local a=UI.clock*.25+j*math.pi
-        local xx,yy=x+math.cos(a)*76,y+math.sin(a)*29
+    do local a=math.sin(UI.clock*.5)*.15
+        local xx,yy=x+63,y-34+math.sin(UI.clock+i)*3
         if n==3 then
             g.setColor(1,1,1);require('final_art').spider('queen',xx,yy,44,a)
         else markerMob(monsters[n],Art.direction(-math.sin(a),math.cos(a)),xx,yy) end
@@ -156,7 +171,7 @@ function M.draw()
                 local bx=x+165
                 if not Art.images.hardcore_skull then Art.add('hardcore_skull','assets/sprites/hardcore_skull.png') end
                 if M.hardcore and n==App.selectedWorld then g.setLineWidth(1.5);circle('line',bx,y,31,{1,.8,.45,.65},occupancy(bx,y)) end
-                g.setColor(1,1,1,available and 1 or .28);local icon=Art.images.hardcore_skull;Art.draw('hardcore_skull',bx,y,54*icon.w/math.max(icon.w,icon.h))
+                g.setColor(1,1,1,available and 1 or .28);local icon=Art.images.hardcore_skull;Art.draw('hardcore_skull',bx,y,54*icon.w/math.max(icon.w,icon.h)*(Graphics.effects and (1+.035*math.sin(UI.clock*1.8+i*.5)) or 1))
                 if available and y>=145 and y<=638 then UI.buttons[#UI.buttons+1]={x=bx-28,y=y-28,w=56,h=80,run=function() M.select(n,i);M.branch(true,true) end,sound='go'} end
             end
         end
@@ -186,31 +201,41 @@ function M.draw()
     ]])
     g.push('all');g.setShader(M.edgeShader);g.setColor(1,1,1)
     g.setBlendMode('alpha','premultiplied');g.draw(M.routeCanvas);g.pop()
-    -- Floating controls leave the painted terrain visible across the entire screen.
-    g.setColor(.015,.025,.035,.88);g.rectangle('fill',756,136,388,510,16,16)
-    g.setColor(.86,.74,.49,.45);g.rectangle('line',756,136,388,510,16,16)
-    UI.button('↑',55,151,62,40,function() M.step(-1,true) end,false,false,'go')
-    UI.button('↓',55,620,62,40,function() M.step(1,true) end,false,false,'go')
-    g.setColor(.95,.84,.59,.2);g.rectangle('fill',733,195,2,390)
-    g.setColor(.95,.84,.59,.9);g.rectangle('fill',730,195+M.scroll/1270*356,8,34,4,4)
+    -- The selected biome has a framed diorama and a compact, readable control stack.
     local n=App.selectedWorld;local unlocked=Worlds.canEnter(n)
-    UI.text(Worlds.displayName(n),784,169,'heading',{.95,.85,.65},330,'center')
-    if M.hardcore then UI.text('MODE HARDCORE',784,207,'small',{1,.72,.42},330,'center') end
+    local palette=Worlds.color(n==8 and 7 or n).tear
+    local accent=M.hardcore and {1,.40,.24} or palette
+    g.setColor(.004,.009,.015,.52);g.rectangle('fill',763,131,388,535,12,12)
+    g.setColor(.015,.025,.035,.95);g.rectangle('fill',756,124,388,532,10,10)
+    g.setColor(accent[1],accent[2],accent[3],.5);g.setLineWidth(1);g.rectangle('line',756,124,388,532,10,10)
+    g.setColor(.94,.85,.63,.8);g.line(780,124,1120,124)
+    UI.text('LES MONDES',64,65,'heading',{.94,.88,.72})
+    UI.text(Worlds.displayName(n),778,145,'heading',{.97,.91,.76},344,'center')
+    UI.button('↑',64,685,62,38,function() M.step(-1,true) end,false,false,'go')
+    UI.button('↓',138,685,62,38,function() M.step(1,true) end,false,false,'go')
+    g.setColor(.95,.84,.59,.15);g.rectangle('fill',733,195,2,390)
+    g.setColor(accent[1],accent[2],accent[3],.85);g.rectangle('fill',731,195+M.scroll/1270*356,6,34,3,3)
+    local hardcoreAvailable=n==8 and unlocked or Hardcore.available(n)
+    UI.button('Classique',780,190,163,34,function()M.branch(false)end,false,not M.hardcore)
+    UI.button('Hardcore',953,190,163,34,function()M.branch(true)end,not hardcoreAvailable,M.hardcore)
+    require('world_preview').draw(n,780,238,336,148,M.hardcore)
     local best=Profile.ranking(n,nil,M.hardcore)[1]
-    UI.text(M.hardcore and (n==8 and 'Sept boss à la suite.\nChaque mort te ramène au boss précédent.' or 'Chaque mort te fait reculer d’un niveau.\nMinimum : niveau 1.') or best and ('Record : '..UI.time(best.time)..'\n'..best.deaths..' morts') or 'Aucun parcours terminé',785,M.hardcore and 242 or 227,'body',{.75,.78,.81},330,'center')
+    UI.text(best and ('Record  '..UI.time(best.time)..'  ·  '..best.deaths..' morts') or 'Aucun record',780,398,'body',{.86,.86,.80},336,'center')
     if n~=8 then
-        local index=n==4 and 4 or Worlds.rank(n)+5;g.setColor(1,1,1)
-        Characters.portrait(index,950,331,74*(1+.025*math.sin(UI.clock*2)),'down',not M.hardcore and not Characters.unlocked(index))
-        if M.hardcore then require('skin_effects').halo(950,331,74*(1+.025*math.sin(UI.clock*2))) end
-        UI.text(M.hardcore and 'Effet : auréole rouge' or Characters.unlocked(index) and ('Skin obtenu : '..Characters.names[index]) or 'Termine le monde pour gagner ce skin',780,377,'body',{.73,.74,.78},340,'center')
-        UI.text(M.hardcore and 'Parcours complet · départ au niveau 1' or 'ENTRAÎNEMENT · sans classement',780,427,'small',{.89,.78,.52},340,'center')
-        for level=1,(M.hardcore and 0 or Worlds.levelCount(n)) do
-            local available=unlocked and level<=((Profile.levels or {})[n] or 1)
-            UI.button(available and tostring(level) or '—',790+(level-1)%5*64,461+math.floor((level-1)/5)*42,55,34,function() App.practiceLevel(n,level) end,not available,false,'selection')
+        UI.text(M.hardcore and 'Parcours complet' or 'Entraînement',780,437,'body',{.94,.85,.65},336,'center')
+        if M.hardcore then
+            UI.text('Chaque mort fait reculer\nd’un niveau.',790,478,'body',{.82,.82,.78},316,'center')
+        else
+            for level=1,Worlds.levelCount(n) do
+                local available=unlocked and level<=((Profile.levels or {})[n] or 1)
+                UI.button(available and tostring(level) or '—',790+(level-1)%5*64,471+math.floor((level-1)/5)*42,55,34,function()App.practiceLevel(n,level)end,not available,false,'selection')
+            end
         end
-    else UI.text(M.hardcore and 'Parcours classé · boss uniquement\nDépart au premier boss.' or 'Exploration libre.\nChoisis tes créatures et tes boss.',790,320,'body',{.75,.78,.81},320,'center') end
-    if n~=8 and not M.hardcore and not Hardcore.available(n) then UI.text(Hardcore.unlocked() and 'Hardcore : termine ce monde.' or 'Hardcore : termine Terre (monde 3).',785,548,'small',{.82,.71,.51},330,'center') end
-    UI.button(n==8 and (M.hardcore and 'Sanctuaire hardcore' or 'Entrer au Sanctuaire') or M.hardcore and 'Commencer en hardcore' or 'Commencer le monde',790,578,320,45,function() App.openEntry(n,M.hardcore) end,not unlocked,true,'selection')
+    else
+        UI.text(M.hardcore and 'Les sept boss à la suite' or 'Créatures et boss découverts',780,445,'body',{.94,.85,.65},336,'center')
+        local index=Characters.selected();g.setColor(1,1,1);Characters.portrait(index,948,513,66,'down')
+    end
+    UI.button(n==8 and 'Entrer au Sanctuaire' or M.hardcore and 'Jouer en hardcore' or 'Jouer',790,587,320,46,function()App.openEntry(n,M.hardcore)end,not unlocked,true,'selection')
     UI.button('Retour',850,685,260,38,function() UI.boardHardcore=M.hardcore;App.state='menu' end)
 end
 return M

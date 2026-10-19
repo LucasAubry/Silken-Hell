@@ -23,8 +23,10 @@ local function update(m,dt)
             Arena.navigate(m,m.x+vx*180,m.y+vy*180,speed,dt)
         end
     end
-    if hx then m.vx=-m.vx; m.phase=m.phase+math.pi end
-    if hy then m.vy=-m.vy; m.phase=-m.phase+1 end
+    if m.type~='fish' then
+        if hx then m.vx=-m.vx; m.phase=m.phase+math.pi end
+        if hy then m.vy=-m.vy; m.phase=-m.phase+1 end
+    end
     R.capture(m)
     if dangerous and isTouching(player,m) then Hazards.kill() end
 end

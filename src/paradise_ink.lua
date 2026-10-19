@@ -37,7 +37,7 @@ function P.draw(key,x,y,width,angle,height,flip)
  if flip then sx=-sx end
  if key=='egg' then
   Art.contactShadow(x,y+(height or a.h*sy)*.43,width*.50,(height or a.h*sy)*.10,.18)
- elseif key~='tear' then
+ elseif key~='tear' and key~='tear_ring' then
   g.push()
   if key=='wheel' or key=='trap_open' or key=='trap_closed' or key=='nest' then g.translate(-4,-8) end
   Art.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)

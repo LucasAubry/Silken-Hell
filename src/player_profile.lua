@@ -42,7 +42,7 @@ function P.draw()
   for i,label in ipairs({'Terminé','Hardcore','Sans mourir'}) do U.text(label,490+(i-1)*180,300,'body',muted,175,'center') end
   local rows={};for _,r in ipairs(P.data.worlds) do rows[r.world]=r end
   for i,world in ipairs(Worlds.order) do local row=rows[world] or {};local y=334+(i-1)*38
-   U.text(Worlds.names[world],140,y,'body',white)
+   U.text(Worlds.canEnter(world) and Worlds.names[world] or '???',140,y,'body',white)
    for j,key in ipairs({'completed','hardcore','flawless'}) do U.text(row[key] and 'Oui' or '—',490+(j-1)*180,y,'body',row[key] and gold or muted,175,'center') end
   end
   if P.data.source=='scores' then U.text('Statistiques des parcours classés',140,610,'body',muted,920,'center') end
@@ -53,7 +53,7 @@ function P.draw()
   for i=(P.page-1)*8+1,math.min(P.page*8,#list) do
    local a=list[i];local y=216+(i-1)%8*43
    require('flawless_badge').draw(175,y+12,10)
-   U.rawText(U.ellipsize(require('localization').render(a.name),'body',780),210,y,'body',white)
+   U.rawText(U.ellipsize((a.world and not Worlds.canEnter(a.world)) and '???' or require('localization').render(a.name),'body',780),210,y,'body',white)
   end
   if #list==0 then U.text('Aucun succès obtenu',180,350,'body',muted,840,'center') end
   U.button('←',140,594,64,36,function()P.page=P.page-1 end,P.page<=1,false,'go')

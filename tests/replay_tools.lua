@@ -10,6 +10,12 @@ function T.run()
  for _=1,1500 do if App.state=='playing' then Replay.update(1/60,App.simulate) end end
  assert(App.state=='victory' and Replay.last,'Record a complete real run')
  local data=json.decode(json.encode(Replay.last));local stats=json.encode(Profile.stats);local count=#Profile.scores
+ local historic=json.decode(json.encode(data));historic.build=string.rep('0',64)
+ historic.layouts['2:3']={world=2,level=3,width=960,height=600,entities={{kind='spawn',x=80,y=300},{kind='mob',type='imp',x=400,y=300}}}
+ assert(Replay.validate(historic),'An unused map with a retired monster cannot block a historical replay')
+ assert(historic.layouts['2:3'].entities[2].type=='imp','Validation preserves the historical snapshot')
+ historic.build=Replay.build();assert(Replay.validate(historic),'A current run can retain unused legacy maps too')
+ historic.layouts['2:3'].entities[2]=false;assert(not Replay.validate(historic),'Malformed historical entities are rejected without a crash')
  assert(Replay.play(data));Replay.paused=true;UI.draw();local buttons=#UI.buttons;assert(#Replay.levels()==10 and buttons>=14,'Ten level buttons and spectator controls are visible')
  local speed=Replay.speed;UI.click(950,30);assert(Replay.speed==2 and Replay.speed~=speed,'Clickable x1 control')
  love.keypressed(Profile.keys.replaySlower);assert(Replay.speed==1);love.keypressed(Profile.keys.pause);assert(not Replay.paused)

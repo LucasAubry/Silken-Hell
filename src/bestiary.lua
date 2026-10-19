@@ -32,8 +32,8 @@ local B={seen={},unread={},dirty=false,entries={
  {id='rain',trap=true,name='Éclair du Ciel',art='rain',world=6,text='Une ombre grise passe sur le sol avant l’impact. Quitte cette zone : la foudre creuse un trou qui reste dangereux jusqu’à la prochaine tentative.'},
  {id='larva',name='Minuscule ver',art='worm_down',world=5,text='Le Hérisson réclame des serviteurs toujours plus jeunes. À peine sorti de son œuf, ce petit ver te poursuit sans comprendre pourquoi.'},
  {id='blackbird_chick',name='Petit merle noir',art='merle_down',world=1,text='L’Œuf les a fait éclore dans une cage de soie. Les oiseaux clairs tirent ; les sombres poursuivent. Quand la coquille cède, leurs liens se brisent ensemble.'}
- ,{id='final_spider',boss=true,name='La Gardienne de la Soie',art='final_queen',world=3,text='Elle tient les gardiens, qui tiennent leurs créatures. Toute cette descente était sa toile. Attire sa charge vers ses enfants : chaque bébé écrasé lui coûte une vie, et les œufs touchés se fissurent.'}
- ,{id='queen_child',name='Enfant de la Soie',art='final_baby_red',world=3,text='La Gardienne noue ses propres enfants avant leur premier pas. Ils te poursuivent. La charge de leur mère peut les écraser, même sans toile, et lui retire alors une vie.'}
+ ,{id='final_spider',boss=true,name='La Gardienne de la Soie',art='final_queen',world=3,text='Touche-la pour la blesser : elle saute et tire en cercle à l’atterrissage. Tous les deux PV perdus, elle pond un œuf qu’elle protège. Brise-le en quatre contacts distincts pour lui retirer un PV avant qu’il éclose.'}
+ ,{id='queen_child',name='Enfant de la Soie',art='final_baby_red',world=3,text='Éclos d’un œuf de la Gardienne, il est invincible et reprend ses attaques sans pondre. Son contact est mortel, surtout lorsque ses tirs te prennent dans une toile. Les projectiles des autres araignées l’immobilisent temporairement.'}
 }}
 -- Keep encounter IDs stable while grouping related appearances on one page.
 B.variants={

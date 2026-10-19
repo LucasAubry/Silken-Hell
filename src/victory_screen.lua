@@ -105,6 +105,7 @@ function V.draw()
   return
  end
  local replay=r.replayData
+ if Replay.status and Replay.status~='' then UI.text(Replay.status,70,578,'body',muted,1060,'center') end
  UI.button('Voir ma traversée',70,617,250,47,function() Replay.play(replay) end,not (replay and replay.completed))
  UI.button('Classement',334,617,210,47,function() UI.boardReturn='victory';UI.boardWorld=r.world;UI.boardHardcore=r.hardcore==true;UI.boardCountry=false;UI.boardLocal=false;UI.boardPage=1;App.state='rankings' end)
  UI.button('Recommencer',560,617,220,47,function() V.restart(r) end)

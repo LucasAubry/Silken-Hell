@@ -59,6 +59,7 @@ function L.update(dt)
  objet.larme.taken=true
  for i=#L.events,1,-1 do
   local e=L.events[i];e.age=e.age+dt
+  if e.kind=='final_spider' then e.boss.settle(dt) end
   if e.age>=L.duration then
    table.remove(L.events,i);e.boss.liberating=nil;e.complete()
   end

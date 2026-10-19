@@ -1,10 +1,10 @@
 -- Preview poses share game sprites and rigs, never run combat updates.
 local A={}
 local facing={ange='ange',snake='snake',spinner='serpent',wasp='wasp',waspling='waspling',storm='merle_flight',hedgehog='hedgehog',fish='fish',jelly='jelly',mole='mole',lanternfish='lanternfish',blackbird_chick='merle'}
-function A.draw(e,x,y,size,time)
+function A.draw(e,x,y,size,time,direction)
  local g=love.graphics;local t=time or 0;local id=e.id
  g.push('all');g.setColor(1,1,1)
- local dir=({'down','left','up','right'})[math.floor(t/2.8)%4+1]
+ local dir=direction or ({'down','left','up','right'})[math.floor(t/2.8)%4+1]
  local angle=({down=0,left=math.pi/2,up=math.pi,right=-math.pi/2})[dir]
  if id=='dragonfly' or id=='mist_moth' or id=='wind_bat' or id=='lava_scorpion' then
   require('sky_insect_art').draw(id,x+math.sin(t*1.4)*size*.03,y,size,t,angle)
@@ -14,7 +14,7 @@ function A.draw(e,x,y,size,time)
   local variant=id=='final_spider' and 'queen' or (e.art or 'final_baby_red'):gsub('final_','')
   local walk={walkPhase=t*7,walkMoving=true,enraged=false}
   require('final_art').spider(variant,x,y,size*.85,angle,walk)
-  if id=='final_spider' then require('final_art').clutch(x,y,size*.85,24,angle) end
+
  elseif id=='octopus' then
   require('octopus_preview').draw(x,y,size,t)
  elseif id=='light_jelly' then

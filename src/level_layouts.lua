@@ -45,7 +45,7 @@ function L.snapshot()
         for i=#out.entities,1,-1 do if out.entities[i].kind=='tear' then table.remove(out.entities,i) end end
         put('tear',{x=gate.tx,y=gate.ty})
     end
-    if Campaign.world==6 then out.skyRevision=3 end
+    if Campaign.world==6 then out.skyRevision=4 end
     return out
 end
 function L.read()
@@ -172,8 +172,8 @@ MobBehaviors.larva=require('mobs.larva')
 MobBehaviors.blackbird_chick=require('mobs.blackbird_chick')
 function L.current()
     local layout=L.read()[Campaign.world..':'..player.level]
-    if layout and Campaign.world==6 and not App.sessionLayout and not (Replay and Replay.playing) then
-        layout=require('sky').prepare(layout)
+    if Campaign.world==6 and not App.sessionLayout and not (Replay and (Replay.playing or Replay.recording)) then
+        layout=layout and require('sky').prepare(layout) or require('sky').layout(player.level,Arena.width)
     end
     return layout
 end

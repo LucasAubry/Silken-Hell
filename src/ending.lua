@@ -85,7 +85,7 @@ function E.spider(x,y,size,white,spots,variant,angle)
 end
 function E.drawFamily()
  if not E.active then return end
- if (player.level==1 or Campaign.world==8) then require('final_spider').draw();return end
+ if (player.level==1 or Campaign.world==8) then require('final_spider').draw(true);return end
  love.graphics.setColor(1,1,1);require('final_art').spider('partner',E.partner.x,E.partner.y,62,E.partner.angle,E.partner)
 end
 function E.openReunion()

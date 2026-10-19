@@ -9,7 +9,9 @@ function T.run(M,state,select)
  end
  for _,world in ipairs({2,6}) do
   select(world,1);state.grid=false;M.layout.entities={};M.selected=nil
-  local baseline=render();local v=state.canvas;local width=M.layout.width
+  local baseline=render();
+  local E=require('editor_terrain');local editorBuilds=E.builds;render():release();assert(require('editor_terrain').builds==editorBuilds,'Idle terrain reuses cached material')
+local v=state.canvas;local width=M.layout.width
   local kind=world==2 and 'lava' or 'hole'
   M.layout.entities={
    H.stroke({0,120,0,480},100,kind),H.stroke({width,120,width,480},100,kind),
@@ -35,9 +37,16 @@ function T.run(M,state,select)
    pixels:release()
   end
   state.stroke=nil
+  if world==2 then
+   local E=require('editor_terrain');local before=E.renders;local builds=E.builds;local geometry=S.builds
+   state.clock=state.clock+1;render():release()
+   assert(E.renders>before and E.builds==builds and S.builds==geometry,'Animated lava refreshes pixels, reusing canvas and terrain geometry')
+  end
   baseline:release()
   print('PASS editor clipping: '..kind..', cold/warm caches and all four edges')
-  state.tool={kind=kind,points={0,0}};state.brush=28
+  local found=false
+  for _,b in ipairs(state.buttons)do if b.x==14 and b.y==166 then b.fn();found=true;break end end
+  assert(found and state.tool.kind==kind,'Direct terrain drawing control selects the brush');state.brush=28
   local function point(x,y)return v.x+x*v.s,v.y+y*v.s end
   local x,y=point(100,180);love.mousepressed(x,y,1)
   assert(state.stroke,'Brush stroke starts')

@@ -57,7 +57,7 @@ function T.run()
  W.update(120);assert(#W.trails==count,'Electric paths do not expire even after two minutes')
  W.trail(250,250,300,250);assert(#W.trails==count,'Repeated paths are deduplicated without disappearing')
  local state=App.state;App.state='menu';assert(Graphics.targetRate(false)==0,'Menus have no FPS cap')
- assert(Graphics.targetRate(true)==0,'Editor has no FPS cap');App.state=state
+ assert(Graphics.targetRate(true)==(love.window.hasFocus() and 30 or 10),'Editor has a separate frame budget');App.state=state
  local old={world=2,level=1,width=960,height=600,entities={{kind='spawn',x=100,y=300},{kind='mob',type='imp',x=300,y=200},{kind='mob',type='gull',x=400,y=200}}}
  require('layout_schema').migrate(old);assert(#old.entities==2 and old.entities[2].type=='lava_scorpion','Old maps replace goblins and remove gulls')
  assert(require('layout_schema').validate(old))

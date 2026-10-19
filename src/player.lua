@@ -52,7 +52,7 @@ local function drawPlayer(direction)
     else love.graphics.setColor(1,1,1) end
     local g=love.graphics
     local r,green,b,alpha=g.getColor()
-    local visibility=Abyss.playerVisibility()
+    local visibility=Abyss.playerVisibility()*require('sky_weather').playerVisibility()
     g.setColor(r*visibility,green*visibility,b*visibility,alpha)
     Characters.draw(player.x+15,player.y+8,Characters.playerWidth,direction,player,Campaign.biome)
     love.graphics.setColor(1,1,1)

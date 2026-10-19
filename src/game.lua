@@ -356,6 +356,8 @@ function love.draw()
         love.graphics.setCanvas(gameCanvas); love.graphics.clear(); love.graphics.origin(); love.graphics.setColor(1,1,1)
         Prism.beginScene(gameCanvas)
         draw_level()
+        local queenScene=Ending.active and require('final_spider').active
+        if queenScene then require('final_spider').drawGround() end
 
         if not Secret.inArena() then Atmosphere.drawDrops() end
         -- Draw all floor traps first, regardless of their spawn order.
@@ -374,16 +376,25 @@ function love.draw()
         require('sky_weather').drawAtmosphere()
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end;require('biome_radiance').motes()
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies(); Realms.drawAnemoneElectric() end
-        Abyss.drawLights(); Bosses.drawLights();require('earth_light').draw();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage()
+        Abyss.drawLights(); Bosses.drawLights();require('earth_light').draw();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw()
         -- Boss rewards remain readable above the arena effects.
-        if not Campaign.tearCarried() and not droppedCarrier and not Renaissance.active then Campaign.drawTear(true) end
+        if not queenScene and not Campaign.tearCarried() and not droppedCarrier and not Renaissance.active then Campaign.drawTear(true) end
+        local function drawFrame()
+        Story.drawDecor(function()
+            require('renaissance_frame').draw()
+            require('earth_frame').draw()
+            require('paradise_frame').draw()
+            require('hell_frame').draw()
+            require('biome_edge_life').draw()
+        end)
+        end
+        if queenScene then drawFrame() end
         love.graphics.setColor(1,1,1)
         if Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
         if not (require('abyss_gate').active and require('abyss_gate').closing) then draw_player_beacon() end;if not Abyss.playerHidden() then Replay.drawGhost() end
-        require('renaissance_frame').draw()
-        require('earth_frame').draw()
-        require('paradise_frame').draw()
-        require('hell_frame').draw()
+        if not queenScene then drawFrame() end
+        if queenScene then Campaign.drawTear(true) end
+        Story.drawWallMessage()
         Prism.endScene();love.graphics.setCanvas()
         sceneCanvas=require('world_lighting').apply(gameCanvas)
     elseif App.state=='bossWorld' then

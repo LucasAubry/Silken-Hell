@@ -31,6 +31,11 @@ local function mushroom(x,y,size,angle,seed,time)
   g.setColor(kind==1 and {.98,.94,.79,.95} or kind==2 and {.75,.70,.88,.55} or {.70,.53,.27,.35})
   g.ellipse('fill',xx,-h*(.83+noise(seed+j*7)*.14),h*(kind==1 and .065 or .025),h*(kind==1 and .038 or .015))
  end
+ -- Moss overlaps the stem root so no cut end is visible.
+ for j=-2,2 do
+  g.setColor(.12,.14,.055);g.ellipse('fill',j*2.5,1-math.abs(j)*.5,4,2.5)
+  g.setColor(.29,.32,.12,.7);g.line(j*2.5,0,j*3,-4-noise(seed+j)*4)
+ end
  g.pop()
 end
 local function crystal(x,y,size,angle,seed,time)

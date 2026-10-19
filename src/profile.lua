@@ -59,7 +59,7 @@ function P.load()
         if ok and type(publications)=='table' then
             for _,id in pairs(publications) do
                 if type(id)=='string' and #id==36 and id:match('^[a-f0-9%-]+$') then
-                    P.achievements.workshop_publish=true;P.achievements.workshop_test=true;break
+                    P.achievements.workshop_publish=true;break
                 end
             end
         end

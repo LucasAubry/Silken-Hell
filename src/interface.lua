@@ -265,7 +265,7 @@ function U.rankings()
     U.rawText(T('Page %d / %d  ·  %d records',U.boardPage,math.max(1,math.ceil((data.total or 0)/10)),data.total or 0),370,610,'body',gold,460,'center')
     U.button('Précédente',200,605,160,36,function() U.boardPage=U.boardPage-1 end,U.boardPage==1 or status=='loading')
     U.button('Suivante',840,605,160,36,function() U.boardPage=U.boardPage+1 end,not data.hasMore or status=='loading')
-    U.text(Replay.status or '',190,641,'small',muted,820,'center')
+    U.text(Replay.status or '',190,641,'body',muted,820,'center')
     U.button('Retour',490,675,220,38,U.backRankings)
 end
 function U.countryName()
@@ -317,13 +317,23 @@ function U.menu()
     U.arrow(430,248,-1,function() Characters.cycle(-1) end)
     U.arrow(770,248,1,function() Characters.cycle(1) end)
     require('menu_trophies').draw(gold)
+    local biomeColor=Worlds.color(App.selectedWorld).tear
     U.playGlow(425,496,350,54)
-    U.button(WorldMap.hardcore and 'JOUER · HARDCORE' or 'JOUER',425,496,350,54,function() App.openEntry(App.selectedWorld,WorldMap.hardcore) end,false,true,'selection')
+    U.button(WorldMap.hardcore and 'JOUER · HARDCORE' or 'JOUER',425,496,350,54,function() App.openEntry(App.selectedWorld,WorldMap.hardcore) end,false,true,'selection',false,biomeColor)
     U.button('BESTIAIRE',425,557,170,38,Bestiary.open)
     U.button('SUCCÈS',605,557,170,38,function() require('achievements_screen').open() end)
     U.button('HISTOIRE',425,603,170,38,function() App.state='story'; U.storyOffset=400 end)
     U.button('WORKSHOP',605,603,170,38,Workshop.open)
-    U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open)
+    U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open,false,false,'go')
+    if Graphics.effects then
+        g.push('all');g.setBlendMode('add')
+        for i=1,7 do
+            local t=(U.clock*.18+i/7)%1;local x=438+t*324
+            g.setColor(biomeColor[1],biomeColor[2],biomeColor[3],math.sin(t*math.pi)*.55)
+            g.circle('fill',x,546+math.sin(U.clock*1.5+i)*1.5,1.1)
+        end
+        g.pop()
+    end
     U.iconButton(1148,54,'settings',function() App.state='settings'; U.returnTo='menu' end)
 end
 function U.skins()
@@ -471,7 +481,7 @@ function U.bestiary()
     local rows=Bestiary.list(category)
     local known=0; for _,e in ipairs(Bestiary.entries) do if Bestiary.seen[e.id] then known=known+1 end end
     if not Bestiary.levelFilter then
-        U.button(Bestiary.worldFilter and Worlds.names[Bestiary.worldFilter] or 'Tous les mondes',840,107,235,38,function()
+        U.button(Bestiary.worldFilter and (Worlds.canEnter(Bestiary.worldFilter) and Worlds.names[Bestiary.worldFilter] or '?') or 'Tous les mondes',840,107,235,38,function()
             local index=Bestiary.worldFilter and Worlds.rank(Bestiary.worldFilter) or 0
             Bestiary.worldFilter=Worlds.order[index+1];selectCategory(category)
         end)
@@ -496,7 +506,7 @@ function U.bestiary()
         U.bestiaryIcon(appearance,780,245+5*(1-reveal),132*(.94+.06*reveal));g.setShader()
         if appearance.undiscovered then require('locked_art').question(780,245,132) end
         U.rawText(U.ellipsize(appearance.undiscovered and '???' or T(appearance.name),'body',570),490,332,'body',white,570,'center')
-        U.text(Worlds.names[appearance.world],490,373,'body',gold,570,'center')
+        U.text(Worlds.canEnter(appearance.world) and Worlds.names[appearance.world] or '?',490,373,'body',gold,570,'center')
         local content=appearance.undiscovered and '' or L.render(Bestiary.description(appearance,false))
         local font=U.fonts.body;local _,lines=font:getWrap(content,490)
         local height=#lines*font:getHeight()*font:getLineHeight()
@@ -744,24 +754,28 @@ function U.workshop()
         end
         U.button('Retour au Workshop',400,650,400,38,Workshop.open)
     else
-        U.button('Créer une carte',125,149,615,40,function() Creator.open() end)
+        U.button('Créer une carte',125,149,615,40,function() Creator.open() end,not Profile.hasCompleted(1))
         U.button('Actualiser',755,149,315,40,Workshop.refresh,Workshop.busy)
         U.workshopSelect('filterBiome',Workshop.filterBiome==0 and 'Tous les biomes' or Worlds.names[Workshop.filterBiome],125,198,300,40,true)
         U.workshopSelect('filterDifficulty',Workshop.filterDifficulty==0 and 'Toutes difficultés' or 'Difficulté '..Workshop.filterDifficulty,440,198,300,40,true)
         U.button(({stars='Les plus aimées',easy='Faciles → difficiles',hard='Difficiles → faciles'})[Workshop.sort],755,198,315,40,function() Workshop.filter('sort',({stars='easy',easy='hard',hard='stars'})[Workshop.sort]) end,Workshop.busy)
         for i,row in ipairs(Workshop.rows) do
             local y=244+(i-1)*39
-            U.rawText(U.ellipsize(row.title,'body',310),130,y+8,'body',white)
+            local locked=not Worlds.canEnter(row.biome or row.world)
+            g.push('all')
+            if locked then U.lockedMapShader=U.lockedMapShader or g.newShader('vec4 effect(vec4 c, Image t, vec2 uv, vec2 p){vec4 v=Texel(t,uv)*c;float l=dot(v.rgb,vec3(.299,.587,.114));return vec4(vec3(l*.65),v.a); }');g.setShader(U.lockedMapShader) end
+            U.rawText(U.ellipsize(row.title,'body',310),130,y+8,'body',locked and muted or white)
             U.difficulty(row.difficulty,row.difficultyExtra,455,y+14)
             if row.owned then
                 U.button('Statistiques',610,y,145,36,function() Workshop.statistics(row) end,Workshop.busy)
                 U.button('Retirer',765,y,90,36,function() Workshop.removing=row end,Workshop.busy)
             else
-                U.rawText(U.ellipsize(row.author..' · '..T(Worlds.names[row.biome or row.world] or ''),'body',240),610,y+8,'body',muted)
+                U.rawText(U.ellipsize(row.author..' · '..(locked and '???' or T(Worlds.names[row.biome or row.world] or '')),'body',240),610,y+8,'body',muted)
             end
             U.button('   '..row.stars,865,y,85,36,function() Workshop.star(row) end,row.voting or row.owned)
             U.voteStar(row,883,y+18)
-            U.button('Jouer',965,y,105,36,function() Workshop.play(row) end,Workshop.busy)
+            U.button('Jouer',965,y,105,36,function() Workshop.play(row) end,Workshop.busy or locked)
+            g.pop()
         end
         U.button('Précédent',125,565,200,40,function() Workshop.page=Workshop.page-1; Workshop.refresh() end,Workshop.page<=1 or Workshop.busy)
         U.text('Page '..Workshop.page,460,576,'body',white,280,'center')
@@ -773,6 +787,7 @@ function U.workshop()
 end
 function U.draw()
     U.buttons={}
+    if App.state=='creatorConfirm' then Creator.draw();return end
     if App.state=='skinUnlock' then require('skin_unlock').draw();return end
     if App.state=='playing' then U.gameHud();if Replay and Replay.playing then Replay.controls() end;if Secret.duel and Secret.duel.kind=='mob' then U.text(Secret.duel.name..(Secret.duel.kind=='mob' and (' · Survie '..math.ceil(math.max(0,20-Secret.duel.time))..' s') or ' · Duel'),300,90,'body',white,600,'center') end;return end
     if App.state=='bossWorld' then Secret.draw();return end

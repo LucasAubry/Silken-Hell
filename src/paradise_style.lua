@@ -31,7 +31,6 @@ function S.ring(x,y,width)
     local a=require('paradise_ink').frame('tear_ring')
     local w=width*1.14;local h=w*a.h/a.w
     g.push('all');g.setShader();g.setBlendMode('alpha')
-    Art.contactShadow(x,y+1,w*.57,h*.61,.25)
     if not Graphics or Graphics.effects then
         g.setColor(1,.74,.23,.09);g.setLineWidth(7);g.ellipse('line',x,y,w*.45,h*.37)
         g.setColor(1,.88,.40,.17);g.setLineWidth(3.5);g.ellipse('line',x,y,w*.44,h*.36)

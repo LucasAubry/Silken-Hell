@@ -13,7 +13,7 @@ function T.draw(kind,x,y,size,biome,active,angle)
  -- Jaw traps stay planted even when the editor supplies its animation clock.
  local height=size*frame.h/frame.w*.62
  local depth=math.max(1,math.min(3,size*.035))
- require('sprite_relief').draw(frame,x,y,size,0,height,depth,biome==5)
+ require('sprite_relief').draw(frame,x,y,size,0,height,depth,biome==5,nil,nil,true)
  g.pop()
 end
 return T

@@ -19,7 +19,9 @@ function R.openScore(score,world)
  if type(score.replay)=='string' and #score.replay==64 and score.replay:match('^[a-f0-9]+$') then
   local ok,data=pcall(json.decode,love.filesystem.read('replays/'..score.replay..'.json') or '')
   if ok and type(data)=='table' then receive(data.splits) end
- elseif type(score.runId)=='string' and #score.runId==36 and score.runId:match('^[a-f0-9%-]+$') and score.hasReplay then
+ end
+ if next(view.rows) then return end
+ if type(score.runId)=='string' and #score.runId==36 and score.runId:match('^[a-f0-9%-]+$') and score.hasReplay then
   view.status='Chargement…'
   Online.request('/v1/replays/'..score.runId,nil,function(data,code)
    if R.view~=view then return end
@@ -36,7 +38,7 @@ function R.draw()
   UI.text(r and UI.time(r.time) or '—',500,248+(n-1)*30,'body')
   UI.text(r and tostring(r.deaths) or '—',770,248+(n-1)*30,'body')
  end
- UI.text(R.view and R.view.status or 'Temps actif, tentatives ratées incluses. Pénalités de mort à part.',330,568,'small',{.65,.77,.79})
+ if R.view and R.view.status then UI.text(R.view.status,330,561,'body',{.65,.77,.79},540,'center') end
  UI.button('Retour',330,600,540,35,function() UI.showRunDetails=false;R.view=nil end)
 end
 return R

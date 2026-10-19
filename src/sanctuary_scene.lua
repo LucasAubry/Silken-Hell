@@ -150,6 +150,9 @@ local function throne(x,c,selected)
   g.line(x+side*77,217,x+side*100,185,x+side*116,212)
  end
 end
+function R.emptyThrone(x,color)
+ throne(x,color or {.65,.72,.85},true)
+end
 function R.draw(S)
  local g=love.graphics;local w=Arena.width;local camera=S.cameraX or 0
  g.push('all');g.setShader();R.hall(false)
