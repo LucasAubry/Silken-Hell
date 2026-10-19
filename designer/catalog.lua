@@ -12,8 +12,10 @@ for _,v in ipairs({
  {'lava_scorpion','Scorpion de lave',false,2,85},{'spinner','Serpent tournoyant','serpent_down',2,105},
  {'fish','Poisson-lame','fish_down',4,110},{'jelly','Méduse électrique','jelly_down',4,50},{'crab','Crabe','crab_open',4,100},
  {'worm','Ver de terre','worm_down',5,90},{'mole','Taupe','mole_down',5,145},
+ {'cloud_beast','Bête des nuages',false,6,330},
+ {'cloud_snail','Escargot des nuages',false,6,66},
  {'wind_bat','Chauve-souris du Ciel',false,6,210},
- {'dragonfly','Libellule électrique',false,6,90},{'mist_moth','Papillon des brumes',false,6,55},
+ {'dragonfly','Libellule électrique',false,6,90},{'mist_moth','Papillon des vents',false,6,55},
  {'light_jelly','Pieuvre abyssale','abyss_octopus',7,40},
  {'abyss_fish','Gueule des profondeurs','abyss_fish',7,75},{'lanternfish','Poisson-lanterne','lanternfish_down',7,55}
 }) do add('mob',v[1],v[2],v[3],v[4],{speed=v[5]}) end

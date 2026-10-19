@@ -2,11 +2,11 @@
 -- treating insignificant floating-point roundoff as a different encounter.
 local S={}
 local fields={'type','kind','x','y','cx','cy','vx','vy','tx','ty','angle','speed','age','life','time','clock',
- 'pendingEggs','hits','touching','hatch','jumpCooldown','owner','id','frozen','eggSerial','volley','cast','damageGrace','contactGrace','jumpHeight','snare','phase','phaseTime','phaseAge','hp','maxHp','active','defeated','hidden','taken','dead','reset','falling',
+ 'snailId','pendingEggs','hits','touching','hatch','jumpCooldown','owner','id','frozen','eggSerial','volley','cast','damageGrace','contactGrace','jumpHeight','snare','phase','phaseTime','phaseAge','hp','maxHp','active','defeated','hidden','taken','dead','reset','falling',
  'fallTimer','charges','overload','cooldown','radius','r','rx','ry','w','h','rotation','seed','dir','burst','shot','bolt',
  'boltsRemaining','volleyClock','patrolClock','fishCharge','fishWave','electric','spent','committed',
  'weaveResume','weaveX','weaveY','weaveAngle','weaveCount','weaveFired','weaveSide','roamIndex','roamTime','roamSeed','volleyTell','shotAim','broodShift','delay','distance','heading','hitGrace','returnMode','liberating'}
-local lists={'trails','wind','mist','mistCuts','projectiles','strikes','holes','rain','tornadoes','current','vents','lightning','eggs','chicks',
+local lists={'snailHoles','trails','wind','mist','mistCuts','projectiles','strikes','holes','rain','tornadoes','current','vents','lightning','eggs','chicks',
  'minions','shots','bones','chargedFish','returnShots','webLinks','webAnchors','beams','lightSites','lumenParticles',
  'webs','stuck','bombs','bursts','babies','schools','members','pools','sparks','orbs','rods','pickups','walls','lava','spawners'}
 local function actor(a,depth)

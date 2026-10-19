@@ -232,8 +232,9 @@ function R.speed()
     return 1
 end
 function R.fallAt(x,y)
-    if require('sky_weather').fallAt(x,y) then return true end
     if require('sky').fallAt(x,y) then return true end
+    if require('cloud_snail').fallAt(x,y) then return true end
+    if require('sky_weather').fallAt(x,y) then return true end
     if not R.custom and not R.stormActive() then return false end
     if Storm.holeAt and Storm.holeAt(x,y) then return true end
     for _,item in ipairs(Bosses.items) do if item.kind=='storm' and item.boss.holeAt(x,y) then return true end end
@@ -351,9 +352,9 @@ function R.drawCreatures()
     for _,p in ipairs(R.bolts) do if not p.abyssHeld then
         local a=math.atan2(p.vy,p.vx); g.push(); g.translate(p.x,p.y); g.rotate(a); g.scale(1.35)
         local bend=math.sin(R.clock*42+p.seed)*3
-        if Campaign.biome==4 then g.setColor(1,.72,.06,.28) else g.setColor(.1,.5,1,.22) end; g.setLineWidth(4); g.line(-19,0,-13,bend,-7,-bend,0,0)
-        if Campaign.biome==4 then g.setColor(1,.9,.15) else g.setColor(.3,.8,1) end; g.setLineWidth(1); g.line(-19,0,-13,bend,-7,-bend,0,0)
-        if Campaign.biome==4 then g.setColor(1,1,.72) else g.setColor(.85,1,1) end; g.circle('fill',0,0,1.3); g.pop()
+        g.setColor(.10,.48,1,.28); g.setLineWidth(4); g.line(-19,0,-13,bend,-7,-bend,0,0)
+        g.setColor(.25,.75,1); g.setLineWidth(1); g.line(-19,0,-13,bend,-7,-bend,0,0)
+        g.setColor(.72,.94,1); g.circle('fill',0,0,1.3); g.pop()
     end end
     g.setLineWidth(1); g.setColor(1,1,1)
 end
@@ -527,6 +528,8 @@ function R.drawWall(r)
     g.setColor(1,1,1)
 end
 function R.underground(m)
+    if m.type=='cloud_snail' then return m.falling or m.dead end
+    if m.type=='cloud_beast' then return m.phase=='hidden' or m.phase=='dive' end
     if m.type=='worm' then return R.wormPhase(m.age or 0)=='hidden' end
     if m.type=='mole' then local p=R.molePhase(m.age or 0);return p=='hidden' or p=='warning' end
     return false
@@ -549,6 +552,8 @@ MobBehaviors.worm=require('mobs.worm')(R)
 MobBehaviors.lanternfish=require('mobs.lanternfish')(R)
 MobBehaviors.mole=require('mobs.mole')(R)
 MobBehaviors.wind_bat=require('mobs.wind_bat')
+MobBehaviors.cloud_snail=require('cloud_snail')
+MobBehaviors.cloud_beast=require('mobs.cloud_beast')
 MobBehaviors.dragonfly=require('mobs.sky_insects')
 MobBehaviors.mist_moth=MobBehaviors.dragonfly
 return R

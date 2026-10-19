@@ -1,10 +1,10 @@
 -- Sky hazards use simulation time only; drawing never changes their state.
-local S={strikes={},holes={},trails={},mist={},mistCuts={},clock=0,phaseTime=4,active=false,storm=false,seed=0}
+local S={strikes={},holes={},trails={},snailHoles={},mist={},mistCuts={},clock=0,phaseTime=4,active=false,storm=false,seed=0}
 function S.reset()
  require('sky_trails').reset()
- S.strikes={};S.holes={};S.trails={};S.mist={};S.mistCuts={};S.clock=0;S.phaseTime=4;S.seed=0
+ S.strikes={};S.holes={};S.trails={};S.snailHoles={};S.mist={};S.mistCuts={};S.clock=0;S.phaseTime=4;S.seed=0
  S.storm=require('sky').openEdges();S.active=S.storm
- for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' or m.type=='wind_bat' then S.active=true end end
+ for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' or m.type=='wind_bat' or m.type=='cloud_snail' then S.active=true end end
 end
 function S.trail(x,y,tx,ty)
  require('sky_trails').add(S.trails,x,y,tx,ty,S.clock)
@@ -114,17 +114,20 @@ function S.fallAt(x,y)
  return false
 end
 function S.resize(ratio)
- for _,list in ipairs({S.strikes,S.mist,S.mistCuts}) do for _,p in ipairs(list) do p.x=p.x*ratio;if p.tx then p.tx=p.tx*ratio end end end
+ local snail=require("cloud_snail");snail.list=nil;snail.revision=(snail.revision or 0)+1
+ for _,list in ipairs({S.strikes,S.mist,S.mistCuts,S.snailHoles}) do for _,p in ipairs(list) do p.x=p.x*ratio;if p.tx then p.tx=p.tx*ratio end end end
  require('sky_trails').resize(S.trails,ratio)
  for _,p in ipairs(S.holes) do require('ground_holes').resize(p,ratio) end
- for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' then if m.tx then m.tx=m.tx*ratio end;if m.cx then m.cx=m.cx*ratio end end end
+ for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' or m.type=='cloud_snail' then if m.tx then m.tx=m.tx*ratio end;if m.cx then m.cx=m.cx*ratio end end end
 end
 function S.drawGround()
  if not S.active then return end
  local g=love.graphics;g.push('all');g.setShader()
  require('terrain_surface').draw(S.holes,'hole',S.clock,1,6)
- require('sky_trails').draw(S.trails,S.clock)
  g.pop()
+end
+function S.drawElectric()
+ if S.active then require('sky_trails').draw(S.trails,S.clock) end
 end
 function S.drawAtmosphere()
  if not S.active then return end
@@ -149,10 +152,6 @@ function S.drawAtmosphere()
   g.draw(S.mistTexture,p.x+drift-radius,p.y-math.min(p.age*2,12)-radius*.75,0,radius*2,radius*1.5)
  end
  g.setShader()
- -- Their silhouettes remain readable even inside their own mist.
- for _,m in ipairs(mobs) do if m.type=='mist_moth' and not m.capture and not m.abyssHeld and not m.tunnelTravel then
-  Campaign.drawMob(m)
- end end
  for _,p in ipairs(S.strikes) do
   if not p.spent then
    require('sky_storm_art').warning(p,S.clock,S.mistTexture)

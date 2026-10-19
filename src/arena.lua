@@ -33,7 +33,7 @@ function A.build(spawn,targets,boss,authored)
     if authored then return end
     if Campaign.biome==2 or (Campaign.biome==5 and not boss) then
         local function wall(x,y,w,h)
-            local r={x=x,y=y,w=w,h=h}; A.interior[#A.interior+1]=r; A.walls[#A.walls+1]=r
+            local r=A.thickenHellWall({x=x,y=y,w=w,h=h}); A.interior[#A.interior+1]=r; A.walls[#A.walls+1]=r
         end
         if boss then
             wall(A.width/2-55,430,110,18)
@@ -241,6 +241,12 @@ function A.navigate(m,tx,ty,speed,dt)
             if hx or hy then m.navTime=0; break end
         end
     end
+end
+function A.thickenHellWall(r)
+ if Campaign.biome~=2 then return r end
+ if r.w<26 then r.x=r.x-(26-r.w)/2;r.w=26 end
+ if r.h<26 then r.y=r.y-(26-r.h)/2;r.h=26 end
+ return r
 end
 function A.drawFloor(hell)
     local g=love.graphics

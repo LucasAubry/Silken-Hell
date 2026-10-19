@@ -34,13 +34,13 @@ function T.run()
  assert(dragon.x==x and dragon.y==y and #W.trails==count,'Frozen dragonflies cannot move or emit electricity')
  dragon.is_frozen=false
  local moth=mobs[2];for i=1,180 do B.update(moth,1/60);W.update(1/60) end
- assert(#W.mist>=30 and #W.mist<=100 and W.mist[1].radius>=68,'Moth emits plentiful large dark mist clouds')
+ assert(#W.mist==0,'Moth gusts replace persistent mist')
  W.storm=false;W.update(8);assert(#W.trails>0 and #W.mist==0,'Electricity remains permanently while mist expires')
  reset_level();W.storm=false;W.fog(300,300);W.fog(370,300);W.fog(700,160)
  for _,p in ipairs(W.mist) do p.age=1 end
- player.x=285;player.y=288;assert(W.playerHidden(),'The player disappears inside mist')
+ player.x=285;player.y=288;assert(not W.playerHidden() and W.playerVisibility()<1,'Legacy mist attenuates visibility without hiding the player')
  local draw=Characters.draw;local drawn=false;Characters.draw=function()drawn=true end
- draw_player('down');Characters.draw=draw;assert(not drawn,'The actual player renderer hides the spider in mist')
+ draw_player('down');Characters.draw=draw;assert(drawn,'The player remains visible in legacy mist')
  player.x=500;assert(not W.playerHidden(),'Leaving mist restores visibility')
  W.warn(300,300);W.update(1.61)
  assert(W.fogCleared(300,300) and not W.mist[1].electric,'Lightning opens the fog without charging it')
@@ -56,7 +56,7 @@ function T.run()
  reset_level();W.storm=false;W.trail(250,250,300,250);local count=#W.trails
  W.update(120);assert(#W.trails==count,'Electric paths do not expire even after two minutes')
  W.trail(250,250,300,250);assert(#W.trails==count,'Repeated paths are deduplicated without disappearing')
- local state=App.state;App.state='menu';assert(Graphics.targetRate(false)==0,'Menus have no FPS cap')
+ local state=App.state;App.state='menu';assert(Graphics.targetRate(false)==(love.window.hasFocus() and 60 or 10),'Menus use the thermal frame budget')
  assert(Graphics.targetRate(true)==(love.window.hasFocus() and 30 or 10),'Editor has a separate frame budget');App.state=state
  local old={world=2,level=1,width=960,height=600,entities={{kind='spawn',x=100,y=300},{kind='mob',type='imp',x=300,y=200},{kind='mob',type='gull',x=400,y=200}}}
  require('layout_schema').migrate(old);assert(#old.entities==2 and old.entities[2].type=='lava_scorpion','Old maps replace goblins and remove gulls')

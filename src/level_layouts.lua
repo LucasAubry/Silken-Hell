@@ -45,7 +45,7 @@ function L.snapshot()
         for i=#out.entities,1,-1 do if out.entities[i].kind=='tear' then table.remove(out.entities,i) end end
         put('tear',{x=gate.tx,y=gate.ty})
     end
-    if Campaign.world==6 then out.skyRevision=4 end
+    if Campaign.world==6 then out.skyRevision=6 end
     return out
 end
 function L.read()
@@ -80,7 +80,7 @@ function L.spawn(e)
         if not school then school={age=0,angle=0,members={}}; Realms.schools[#Realms.schools+1]=school; if e.schoolId then L.schools[e.schoolId]=school end end
         local m={type=kind,x=e.x,y=e.y,speed=e.speed or 100,age=0,school=school,slot=2,dir='down',hitBox_width=24,hitBox_height=24,hitBox_offset_x=-12,hitBox_offset_y=-12}
         m.slot=#school.members+1; school.members[#school.members+1]=m; mobs[#mobs+1]=m
-    elseif kind=='mole' or kind=='worm' or kind=='jelly' or kind=='dragonfly' or kind=='mist_moth' or kind=='wind_bat' then
+    elseif kind=='mole' or kind=='worm' or kind=='jelly' or kind=='dragonfly' or kind=='mist_moth' or kind=='wind_bat' or kind=='cloud_snail' or kind=='cloud_beast' then
         Realms.add(kind,e.x,e.y,e.speed or 80,e.elite)
         if kind=='mole' then mobs[#mobs].speed=e.speed or 140 end
     else return end
@@ -130,7 +130,7 @@ function L.apply(layout)
         if e.kind=='spawn' then player.x=e.x-15; player.y=e.y-12
         elseif e.kind=='tear' then tears[#tears+1]={x=e.x-15,y=e.y-39}
         elseif e.kind=='wall' then
-            local r={x=e.x-e.w*scale/2,y=e.y-e.h/2,w=e.w*scale,h=e.h,rotation=e.rotation}; Arena.interior[#Arena.interior+1]=r; Arena.walls[#Arena.walls+1]=r
+            local r=Arena.thickenHellWall({x=e.x-e.w*scale/2,y=e.y-e.h/2,w=e.w*scale,h=e.h,rotation=e.rotation}); Arena.interior[#Arena.interior+1]=r; Arena.walls[#Arena.walls+1]=r
         elseif e.kind=='magma_spawner' then Magma.addSpawner(e.x,e.y,e.spawnDelay,e.spawnInterval)
         elseif e.kind=='mob' then L.spawn(e)
         elseif e.kind=='abyss_part' then AbyssTerrain.add(e)

@@ -33,7 +33,7 @@ function L.collect()
  storm(Storm)
  for _,item in ipairs(Bosses.items or {}) do if item.kind=='storm' then storm(item.boss) end end
  for _,p in ipairs(Hazards.lava) do
-  add(p.x,p.y,math.max(p.rx,p.ry)*3+75,1.1*pulse(time,p.x*.03+p.y),fire)
+  add(p.x,p.y,math.max(p.rx,p.ry)*3+75,1.1,fire)
  end
  for _,p in ipairs(Magma.pools or {}) do
   add(p.x,p.y,130,.5*pulse(time,p.x),fire)
@@ -89,8 +89,32 @@ function L.resize(scene)
   L.output=g.newCanvas(scene:getWidth(),scene:getHeight(),{dpiscale=scene:getDPIScale()})
   L.output:setFilter('linear','linear')
  end
+ for _,key in ipairs({'bloomA','bloomB','emissionMask'}) do
+  if not L[key] or L[key]:getWidth()~=width or L[key]:getHeight()~=height then
+   if L[key] then L[key]:release() end
+   L[key]=g.newCanvas(width,height,{dpiscale=1});L[key]:setFilter('linear','linear')
+  end
+ end
+ L.bloomShader=L.bloomShader or g.newShader('assets/shaders/soft_bloom.glsl')
  L.sourceShader=L.sourceShader or g.newShader('assets/shaders/world_light.glsl')
  L.composite=L.composite or g.newShader('assets/shaders/world_light_composite.glsl')
+end
+-- Molten terrain keeps its own emission independently of explosion flashes.
+function L.renderEmissionMask()
+ local g=love.graphics;g.push('all');g.setCanvas(L.emissionMask);g.origin();g.setShader();g.clear(0,0,0,1)
+ g.scale(L.emissionMask:getWidth()/Arena.width,L.emissionMask:getHeight()/600)
+ g.setBlendMode('replace','premultiplied');g.setColor(1,1,1,1)
+ if Campaign.biome==2 and App.state=='playing' then
+  for _,p in ipairs(Hazards.lava) do
+   if p.points then require('ground_holes').draw(p) else g.ellipse('fill',p.x,p.y,p.rx,p.ry) end
+  end
+  g.setColor(0,0,0,1)
+  for _,r in ipairs(Arena.interior) do
+   g.push();g.translate(r.x+r.w/2,r.y+r.h/2);g.rotate((r.rotation or 0)*math.pi/180)
+   g.rectangle('fill',-r.w/2,-r.h/2,r.w,r.h);g.pop()
+  end
+ end
+ g.pop()
 end
 function L.renderMap()
  local g=love.graphics;local shader=L.sourceShader
@@ -112,11 +136,22 @@ function L.renderMap()
  shader:send('arenaSize',{Arena.width,600})
  g.setCanvas(L.map);g.clear(0,0,0,1);g.origin();g.scale(L.map:getWidth()/Arena.width,L.map:getHeight()/600)
  g.setBlendMode('add','premultiplied');g.setColor(1,1,1)
- require('biome_radiance').drawMap();g.setShader(shader)
+ require('biome_radiance').drawMap(count,L.blockers,L.rotations);g.setShader(shader)
  for _,p in ipairs(L.lights) do
-  shader:send('source',{p.x,p.y,p.radius,p.power});shader:send('lightColor',p.color)
+  shader:send('source',{p.x,p.y,p.radius,p.power*(require('biome_radiance').biome()==3 and 1.65 or .55)});shader:send('lightColor',p.color)
   g.rectangle('fill',p.x-p.radius,p.y-p.radius,p.radius*2,p.radius*2)
  end
+end
+-- Two small separable passes: no full-resolution blur and no scene geometry rebuild.
+function L.renderBloom(scene)
+ local g=love.graphics;local w,h=L.bloomA:getDimensions()
+ g.origin();g.setShader(L.bloomShader);g.setColor(1,1,1);g.setBlendMode('replace','premultiplied')
+ g.setCanvas(L.bloomA);g.clear()
+ L.bloomShader:send('extract',1);L.bloomShader:send('direction',{1/w,0})
+ g.draw(scene,0,0,0,w/scene:getWidth(),h/scene:getHeight())
+ g.setCanvas(L.bloomB);g.clear()
+ L.bloomShader:send('extract',0);L.bloomShader:send('direction',{0,1/h})
+ g.draw(L.bloomA)
 end
 function L.apply(scene)
  L.collect()
@@ -124,14 +159,19 @@ function L.apply(scene)
  L.resize(scene)
  local g=love.graphics;g.push('all');g.setScissor()
  L.renderMap()
+ L.renderEmissionMask()
+ L.renderBloom(scene)
  g.setCanvas(L.output);g.origin();g.clear();g.setColor(1,1,1);g.setBlendMode('replace','premultiplied')
+ L.composite:send('emissionMask',L.emissionMask)
  L.composite:send('lightMap',L.map);L.composite:send('lightStep',{1/L.map:getWidth(),1/L.map:getHeight()})
  local biome=require('biome_radiance').biome()
- local ambient=({[1]=.91,[2]=.91,[3]=.87,[4]=.88,[5]=.88,[6]=.91,[7]=1,[8]=.97})[biome] or .97
+ local ambient=biome==3 and .67 or biome==6 and .88 or .96
  L.composite:send('ambient',ambient)
+ L.composite:send('bloomMap',L.bloomB)
+ L.composite:send('bloomStrength',biome==3 and .28 or biome==6 and .10 or .07)
  L.composite:send('preserveEmbers',biome==2 and 1 or 0)
- L.composite:send('scatter',biome==7 and 0 or biome==4 and .06 or biome==8 and .016 or .035)
- L.composite:send('softHighlights',biome~=7 and biome~=2 and require('biome_radiance').active() and 1 or 0)
+ L.composite:send('scatter',biome==3 and .16 or .02)
+ L.composite:send('softHighlights',biome==3 and 1 or 0)
  g.setShader(L.composite);g.draw(scene);g.pop()
  return L.output
 end

@@ -7,6 +7,8 @@ function T.run()
  LevelLayouts.disabled=true;App.singleLevel=true;App.practice=1
  local H=require('ground_holes');local schema=require('layout_schema');local json=require('json');local g=love.graphics
  App.start(2)
+ local thin=Arena.thickenHellWall({x=200,y=100,w=6,h=180})
+ assert(thin.w==26 and thin.x+thin.w/2==203,'Thin Hell walls gain visible width without shifting their centre')
  for n=1,10 do player.level=n;reset_level();assert(#Hazards.lava==0,'No generated lava puddles')end
  local loop=H.stroke({200,160,440,160,440,380,200,380,200,175},24)
  assert(H.contains(loop,320,260),'Closed brush contours fill without painting the centre')
@@ -64,7 +66,8 @@ function T.run()
   local canvas=g.newCanvas(960,600)
   g.push('all');g.setCanvas(canvas);g.origin();g.clear(0,0,0,0);require('biome_borders').draw();g.pop()
   local pixels=canvas:newImageData();local _,_,_,cut=pixels:getPixel(10,300);local _,_,_,wall=pixels:getPixel(10,100)
-  assert(wall>.5,'Border remains visible away from the painted zone')
+  if world==2 then assert(wall>.5,'Hell border remains visible away from the painted zone')
+  else assert(wall<.01,'Sky uses open cloud edges instead of masonry') end
   if world==2 then assert(cut>.5,'Lava reaching outside stays below the border')
   else assert(cut<.01,'A sky hole opens the border at its outside connection') end
   pixels:encode('png','terrain-border-'..world..'.png');pixels:release();canvas:release()
@@ -100,7 +103,8 @@ function T.run()
   local covered=scenePixels()
   for _,p in ipairs(probes) do
    local a,b,c=uncut:getPixel(p[1],p[2]);local x,y,z=covered:getPixel(p[1],p[2])
-   assert(math.abs(a-x)+math.abs(b-y)+math.abs(c-z)<.02,'Walls remain above '..kind..' at '..p[1]..','..p[2])
+   if world==2 then assert(math.abs(a-x)+math.abs(b-y)+math.abs(c-z)<.02,'Walls remain above '..kind..' at '..p[1]..','..p[2])
+   else assert(Realms.fallAt(p[1],p[2]),'Painted sky edge remains a lethal opening') end
   end
   covered:encode('png','terrain-'..kind..'-layering.png');covered:release();uncut:release()
   g.push('all');g.setCanvas(rim);g.origin();g.clear();require('biome_borders').draw();g.pop()
@@ -129,7 +133,7 @@ function T.run()
   g.push('all');g.setCanvas(joined);g.origin();g.clear(.3,.4,.5)
   surface.draw({loop,branch},kind,2);g.pop()
   local data=joined:newImageData();local cr,cg,cb=data:getPixel(320,260)
-  if kind=='hole' then assert(cr<.02 and cg<.02 and cb<.02,'Closed hole centre is a deep black void') end
+  if kind=='hole' then assert(cr<.08 and cg<.12 and cb<.20 and cb>cr,'Closed hole centre remains a dark blue depth') end
   local sample={data:getPixel(360,250)};data:release()
   g.push('all');g.setCanvas(joined);g.origin();g.clear(.3,.4,.5)
   surface.draw({branch,loop},kind,2);g.pop()

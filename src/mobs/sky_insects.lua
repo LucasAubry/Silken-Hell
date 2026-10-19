@@ -29,28 +29,31 @@ function B.update(m,dt)
    end
   end
  else
+  if require('mobs.moth_gust').update(m,dt) then
+   if isTouching(player,m) then Hazards.kill() end
+   return
+  end
   -- Visit distant sectors across the whole map instead of circling one nest.
   m.roamSeed=m.roamSeed or math.floor(m.x*.039+m.y*.017)
   m.roamTime=(m.roamTime or 0)-dt
   if not m.tx or m.roamTime<=0 or (m.tx-m.x)^2+(m.ty-m.y)^2<24^2 then
    m.roamIndex=(m.roamIndex or 0)+1
-   local sector=(m.roamIndex*5+m.roamSeed)%9
+   local sector=m.roamIndex%2==1 and 4 or (m.roamIndex*5+m.roamSeed)%9
    local tx=70+(sector%3+.5)*(Arena.width-140)/3
    local ty=70+(math.floor(sector/3)+.5)*460/3
    m.tx,m.ty=Arena.clearSpot(tx-15,ty-12,30,24);m.tx=m.tx+15;m.ty=m.ty+12
    m.roamTime=7
   end
   local dx,dy=m.tx-m.x,m.ty-m.y
+  if dx*dx+dy*dy>35^2 and m.roamTime>0 then m.cooldown=math.max(m.cooldown,.15) end
   Arena.navigate(m,m.tx,m.ty,math.max(140,(m.speed or 55)*2.5),dt)
   m.angle=math.atan2(dy,dx)-math.pi/2
-  if m.cooldown<=0 then
-   W.fog(m.x,m.y);W.fog(m.x+math.sin(m.age*3)*24,m.y+math.cos(m.age*3)*20)
-   m.cooldown=.16
-  end
+
  end
  if isTouching(player,m) then Hazards.kill() end
 end
 function B.draw(m)
- require('sky_insect_art').draw(m.type,m.x,m.y,m.type=='mist_moth' and 76 or 72,m.age,m.angle)
+ if m.type=='mist_moth' then require('mobs.moth_gust').draw(m) end
+ require('sky_insect_art').draw(m.type,m.x,m.y,m.type=='mist_moth' and 76 or 72,m.age,m.angle,m.phase)
 end
 return B

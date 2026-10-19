@@ -33,6 +33,9 @@ function S.layout(n,width)
   add('boss','guardian',width*.5,170,'storm')
  else
   for i,p in ipairs(routes[n] or routes[1]) do add('tear','tear-'..i,p[1]*width,p[2]) end
+  add('mob','snail',width*.35,340,'cloud_snail',66)
+  add('mob','cloud-beast',width*.65,210,'cloud_beast',330)
+  if n>=6 then add('mob','cloud-beast-2',width*.22,380,'cloud_beast',350) end
   add('mob','dragonfly',width*.28,160,'dragonfly',70+n*4)
   if n>=2 then add('mob','moth',width*.75,310,'mist_moth',42+n*2) end
   if n>=3 then add('mob','bat',width*.15,250,'wind_bat',180+n*5) end
@@ -43,10 +46,10 @@ function S.layout(n,width)
   if n>=8 then add('mob','bat-2',width*.85,390,'wind_bat',225);entities[#entities].dx=-1 end
   if n>=9 then add('mob','dragonfly-3',width*.48,110,'dragonfly',105) end
  end
- return {world=6,biome=6,level=n,width=width,height=600,skyRevision=4,entities=entities}
+ return {world=6,biome=6,level=n,width=width,height=600,skyRevision=6,entities=entities}
 end
 function S.prepare(layout)
- if layout.world~=6 or (layout.skyRevision or 0)>=4 then return layout end
+ if layout.world~=6 or (layout.skyRevision or 0)>=6 then return layout end
  for _,e in ipairs(layout.entities) do
   if e.kind~='spawn' and not (e.id and e.id:match('^sky%-')) then return layout end
  end

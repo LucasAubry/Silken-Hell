@@ -1,4 +1,4 @@
--- Hatched guardians share the queen's attacks, but never take HP or lay eggs.
+-- Hatched guardians share attacks and redirect player hits to the queen.
 local H={}
 H.colors={{.35,.85,1},{.85,.45,1},{1,.68,.22},{.4,1,.6},{1,.4,.65},{.65,.65,1}}
 local function clamp(x,a,b)return math.max(a,math.min(b,x))end
@@ -11,6 +11,10 @@ function H.jump(b)
  b.jump={x=b.x,y=b.y,tx=b.x<Arena.width/2 and Arena.width-110 or 110,ty=b.y<300 and 480 or 120}
  b.angle=math.atan2(b.jump.ty-b.y,b.jump.tx-b.x)-math.pi/2
 end
+function H.hit(f,b)
+ if f.defeated or f.hp<=0 or b.phase=='intro_jump' or b.contactGrace>0 then return end
+ H.jump(b);f.damage(true)
+end
 local function move(b,x,y,speed,dt)
  local dx,dy=x-b.x,y-b.y;local d=math.sqrt(dx*dx+dy*dy)
  if d>0 then local n=math.min(d,speed*dt);b.x=b.x+dx/d*n;b.y=b.y+dy/d*n;b.angle=math.atan2(dy,dx)-math.pi/2 end
@@ -21,7 +25,7 @@ function H.update(f,dt)
   b.jumpCooldown=math.max(0,(b.jumpCooldown or 5)-dt)
   if b.phase=='webs' and b.frozen<=0 and b.jumpCooldown<=0 then H.jump(b) end
   local x,y=b.x,b.y;b.age=b.age+dt;b.contactGrace=math.max(0,b.contactGrace-dt)
-  if b.phase~='intro_jump' and b.contactGrace<=0 and require('collision_shapes').touchCircle('queen_baby',b.x,b.y,27) then Hazards.kill();return end
+  if b.phase~='intro_jump' and b.contactGrace<=0 and require('collision_shapes').touchCircle('queen_baby',b.x,b.y,27) then if f.snare>0 then Hazards.kill() else H.hit(f,b) end;return end
   if b.frozen>0 then b.frozen=math.max(0,b.frozen-dt);b.walkMoving=false
   else
    b.phaseTime=b.phaseTime+dt;b.cast=math.max(0,b.cast-dt)
@@ -36,7 +40,7 @@ function H.update(f,dt)
     local dx,dy=b.x-x,b.y-y;local n=dx*dx+dy*dy
     local t=n>0 and clamp(((player.x+15-x)*dx+(player.y+12-y)*dy)/n,0,1) or 0
     if b.contactGrace<=0 and (x+dx*t-player.x-15)^2+(y+dy*t-player.y-12)^2<27^2 then
-     b.x=x+dx*t;b.y=y+dy*t;Hazards.kill();return
+     b.x=x+dx*t;b.y=y+dy*t;if f.snare>0 then Hazards.kill() else H.hit(f,b) end;return
     elseif (b.x-b.chargeX)^2+(b.y-b.chargeY)^2<16 or b.phaseTime>1.7 then b.phase='webs';b.shot=.4 end
    else
     b.shot=b.shot-dt

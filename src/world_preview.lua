@@ -95,6 +95,7 @@ local function ocean(t)
  for i=1,18 do g.setColor(.55,.88,1,.3);g.circle('line',(i*97)%680,(i*59-t*19)%300,2+i%4) end
 end
 local function sky(t)
+ require('mobs.cloud_beast').art(230+math.sin(t)*55,240,65,t,-math.pi/2)
  local x=(t*125)%860-90
  require('sky_insect_art').draw('wind_bat',x,75,76,t,-math.pi/2)
  local points={}
@@ -178,6 +179,7 @@ function P.draw(world,x,y,w,h,hardcore)
   require('sanctuary_scene').hall(hardcore)
   g.pop()
  else require('biome_floor').draw(biome,680,300,time) end
+ if world==8 or P.revealed(world) then require('biome_radiance').preview(world,time) end
  if world==8 then sanctuary(time)
  elseif not P.revealed(world) then
   require('reached_level_preview').border(world)
@@ -188,7 +190,10 @@ function P.draw(world,x,y,w,h,hardcore)
   g.setFont(font);g.setColor(.04,.015,.09,.9);g.print('?',tx+3,ty+5)
   g.setColor(.96,.89,1);g.print('?',tx,ty)
 
- else require('reached_level_preview').draw(world,time) end
+ else
+  if scenes[world] then scenes[world](time) end
+  require('reached_level_preview').border(world)
+ end
  g.pop()
  g.push('all');g.setShader();g.setColor(1,1,1);g.draw(P.scene,x,y,0,w/680,h/300)
  local c=hardcore and {1,.38,.23} or Worlds.color(biome).tear

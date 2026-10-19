@@ -227,6 +227,7 @@ function C.draw()
     local g=love.graphics; local hell=C.biome==2
     if Secret.inArena() then require('sanctuary_scene').arena(App.hardcore or Worlds.isSecret(C.world))
     else Arena.drawFloor(hell);if C.world==3 then Meadow.draw() end end
+    require('cloud_snail').drawTrail()
     Hazards.drawFloor()
     Story.drawDecor(function()require('ocean_scenery').draw()end)
     C.drawCircles(); Abyss.drawSites()
@@ -237,7 +238,7 @@ function C.draw()
             g.setColor(1,.38+i%3*.12,.10,0.35); g.circle('fill',x,y,1+i%2)
         end
     end
-    Hazards.draw(); Realms.drawGround(); Ocean.drawGround(); Octopus.drawGround(); Raven.drawGround(); Wasp.drawGround(); Storm.drawGround(); Bosses.drawGround(); Arena.drawWalls(hell)
+    Hazards.draw(); Realms.drawGround(); Ocean.drawGround(); Octopus.drawGround(); Raven.drawGround(); Wasp.drawGround(); Storm.drawGround(); Bosses.drawGround(); require('sky_weather').drawElectric(); Arena.drawWalls(hell)
     g.setColor(1,1,1)
 end
 function C.tearCarried()

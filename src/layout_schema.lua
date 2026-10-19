@@ -22,7 +22,7 @@ function S.migrate(layout)
 end
 -- The retired identifier remains readable for old saves and Workshop maps only.
 local kinds={abyss_gate=true,abyss_part=true,magma_spawner=true,spawn=true,tear=true,wall=true,mob=true,boss=true,nest=true,light=true,lava=true,electric_ground=true,vent=true,hole=true,tunnel=true,tornado=true,current=true,rain=true}
-local mobs={wind_bat=true,dragonfly=true,mist_moth=true,magma_larva=true,ange=true,snake=true,piege=true,scie=true,spinner=true,lava_scorpion=true,crab=true,abyss_fish=true,light_jelly=true,lanternfish=true,waspling=true,larva=true,blackbird_chick=true,fish=true,mole=true,worm=true,jelly=true}
+local mobs={cloud_beast=true,cloud_snail=true,wind_bat=true,dragonfly=true,mist_moth=true,magma_larva=true,ange=true,snake=true,piege=true,scie=true,spinner=true,lava_scorpion=true,crab=true,abyss_fish=true,light_jelly=true,lanternfish=true,waspling=true,larva=true,blackbird_chick=true,fish=true,mole=true,worm=true,jelly=true}
 local bosses={skeleton_head=true,storm=true,merle=true,hellserpent=true,wasp=true,hedgehog=true,octopus=true,skeleton_fish=true}
 function S.validate(l)
     if type(l)~='table' or not ({[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true})[l.world] or type(l.level)~='number' or l.level%1~=0 or l.level<1 or l.level>(l.world==3 and 6 or 10) then return false,'Monde ou niveau invalide.' end

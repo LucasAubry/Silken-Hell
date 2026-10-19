@@ -37,7 +37,7 @@ function W.draw(img,dir,x,y,width,p,bounds)
  local cached=poses[dir]
  if not cached then cached=build(img,dir,bounds);cached.image=img;poses[dir]=cached end
  local phase=p.walkPhase or 0
- local amplitude=p==player and 1.9 or 1
+ local amplitude=(p==player or p.sanctuaryPlayer) and 1.55 or 1
  -- Several display frames may share one 60 Hz simulation pose.
  -- Reuse that mesh, and batch changed vertices into a single upload.
  if cached.phase~=phase or cached.amplitude~=amplitude then

@@ -77,9 +77,10 @@ function F.beginCombat()
  F.engaged=true;F.leap('webs')
 end
 function F.damage(egg)
- if F.defeated or (not egg and F.damageGrace>0) then return end
+ if F.defeated or F.hp<=0 or (not egg and F.damageGrace>0) then return end
  F.engaged=true;F.damageGrace=.95
  F.hp=math.max(0,F.hp-1);F.flash=.25
+ BossFX.shake(8)
  if F.hp>0 then
   if (F.maxHp-F.hp)%2==0 then F.pendingEggs=F.pendingEggs+1;F.chooseNest() end
   F.frozen=0;F.leap('webs')

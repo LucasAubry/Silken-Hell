@@ -6,7 +6,11 @@ function A.draw(e,x,y,size,time,direction)
  g.push('all');g.setColor(1,1,1)
  local dir=direction or ({'down','left','up','right'})[math.floor(t/2.8)%4+1]
  local angle=({down=0,left=math.pi/2,up=math.pi,right=-math.pi/2})[dir]
- if id=='dragonfly' or id=='mist_moth' or id=='wind_bat' or id=='lava_scorpion' then
+ if id=='cloud_beast' then
+  require('mobs.cloud_beast').art(x,y,size,t,angle)
+ elseif id=='cloud_snail' then
+  require('cloud_snail').art(x,y,size,t,angle+math.pi/2)
+ elseif id=='dragonfly' or id=='mist_moth' or id=='wind_bat' or id=='lava_scorpion' then
   require('sky_insect_art').draw(id,x+math.sin(t*1.4)*size*.03,y,size,t,angle)
  elseif id=='worm' or id=='larva' then
   Art.drawWorm(dir,x,y,size*(id=='larva' and .5 or 1),t)

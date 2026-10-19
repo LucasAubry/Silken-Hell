@@ -76,6 +76,10 @@ local v=state.canvas;local width=M.layout.width
   M.undo(false);assert(#M.layout.entities==count);M.undo(true);assert(#M.layout.entities==count+1)
   state.tool=nil
  end
+ M.layout.entities[#M.layout.entities+1]={kind='mob',type='cloud_beast',x=M.layout.width*.6,y=300,speed=330}
+ M.layout.entities[#M.layout.entities+1]={kind='mob',type='cloud_snail',x=M.layout.width*.5,y=300,speed=66}
+ state.category='Mobs';state.scroll=0;render():release()
+ print('PASS editor cloud snail placement and catalog rendering')
  target:release()
  print('PASS editor drawing: smooth live strokes, final terrain, clipping and undo/redo')
  love.event.quit()

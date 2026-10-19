@@ -3,6 +3,15 @@ function T.run()
  io.stdout:setvbuf('no');Online.enabled=false;Replay.disabled=true;Profile.save=function()end;Bestiary.save=function()end;love.focus=function()end
  local g=love.graphics;local L=require('world_lighting')
  App.start(2);require('run_start').active=false;Graphics.effects=true;Graphics.quality=2
+ -- Fixed molten emission must not brighten or disappear when creatures burst.
+ Hazards.lava={{x=320,y=300,rx=90,ry=65}};mobs={};Magma.bursts={};BossFX.reset();Arena.interior={}
+ local molten=g.newCanvas(Arena.width,600)
+ g.push('all');g.setCanvas(molten);g.clear(.44,.12,.025,1);g.pop()
+ local quiet=L.apply(molten):newImageData();local r0,g0,b0=quiet:getPixel(320,300);quiet:release()
+ Magma.bursts={{x=320,y=300,age=0}};BossFX.burst(330,300,{1,.3,.05},6)
+ local blast=L.apply(molten):newImageData();local r1,g1,b1=blast:getPixel(320,300);blast:release();molten:release()
+ assert(math.abs(r1-r0)+math.abs(g1-g0)+math.abs(b1-b0)<.015,'Lava emission stays constant under explosions')
+ Magma.bursts={};BossFX.reset()
  local count=#L.collect();local active,defeated,strikes=Storm.active,Storm.defeated,Storm.strikes
  Storm.active=true;Storm.defeated=false;Storm.strikes={{x=200,y=200,age=-.2}}
  assert(#L.collect()==count,'Delayed lightning must not illuminate before its warning')
@@ -29,7 +38,20 @@ function T.run()
  data=map();local straight=sample(data,410,390);data:release()
  assert(rotated>straight*3,'Occlusion must follow rotated editor walls')
  radiance.drawMap=drawMap
+ local biome=Campaign.biome;Campaign.biome=6;L.lights={};Arena.interior={}
+ local clear=map();Arena.interior={{x=0,y=200,w=Arena.width,h=25}}
+ local occluded=map();local bright,dark=0,0
+ for x=60,Arena.width-60,30 do bright=bright+sample(clear,x,420);dark=dark+sample(occluded,x,420) end
+ assert(bright>dark*3,'Walls occlude the restrained ambient lighting')
+ clear:release();occluded:release();Campaign.biome=biome
  Arena.interior=walls
+ -- Bright sources spread softly into nearby pixels without blurring the scene.
+ g.push('all');g.setCanvas(scene);g.clear(.04,.04,.04,1);g.setColor(1,.75,.3);g.rectangle('fill',300,280,20,30)
+ L.renderBloom(scene);g.pop()
+ local glow=L.bloomB:newImageData()
+ local near=sample(glow,325,295);local far=sample(glow,450,295)
+ assert(near>far+.005,'Bloom spreads locally around bright sources')
+ glow:release();local cached=L.bloomA;L.resize(scene);assert(L.bloomA==cached,'Bloom buffers are reused')
  local state=love.math.getRandomState();local x,y=player.x,player.y
  local before=require('json').encode(LevelLayouts.snapshot())
  g.push('all');g.setCanvas(scene);g.clear(.2,.2,.2,1);g.pop()

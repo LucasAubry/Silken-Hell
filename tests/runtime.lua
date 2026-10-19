@@ -16,11 +16,15 @@ function T.run()
     if os.getenv('SILKEN_QUEEN_REVISION_TEST')=='1' then require('tests.queen_revision').run();return end
     if os.getenv('SILKEN_EDGE_REFINEMENT_TEST')=='1' then require('tests.edge_refinement').run();return end
     if os.getenv('SILKEN_BIOME_LIFE_REVISION_TEST')=='1' then require('tests.biome_life_revision').run();return end
+    if os.getenv('SILKEN_MENU_FREEZE_TEST')=='1' then require('tests.menu_freeze').run();return end
     if os.getenv('SILKEN_WORLD_SELECTOR_TEST')=='1' then require('tests.world_selector').run();return end
     if os.getenv('SILKEN_CELESTIAL_REVISION_TEST')=='1' then require('tests.celestial_revision').run();return end
     if os.getenv('SILKEN_ECOSYSTEM_REVISION_TEST')=='1' then require('tests.ecosystem_revision').run();return end
     if os.getenv('SILKEN_CONTENT_CLEANUP_TEST')=='1' then require('tests.content_cleanup').run();return end
     if os.getenv('SILKEN_SKY_REPLAY_TEST')=='1' then require('tests.sky_replay').run();return end
+    if os.getenv('SILKEN_CLOUD_BEAST_TEST')=='1' then require('tests.cloud_beast').run();return end
+    if os.getenv('SILKEN_CLOUD_SNAIL_TEST')=='1' then require('tests.cloud_snail').run();return end
+    if os.getenv('SILKEN_MOTH_GUST_TEST')=='1' then require('tests.moth_gust').run();return end
     if os.getenv('SILKEN_SKY_WEATHER_TEST')=='1' then require('tests.sky_weather').run();return end
     if os.getenv('SILKEN_MAP_PREVIEW_TEST')=='1' then require('tests.map_preview').run();return end
     if os.getenv('SILKEN_SKY_EDGES_TEST')=='1' then require('tests.sky_edges').run();return end

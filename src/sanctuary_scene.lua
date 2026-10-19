@@ -29,6 +29,8 @@ function R.dimensions(p)
 end
 local function sprite(p,x,y)
  local g=love.graphics;local size,height=R.dimensions(p)
+ if p.type=='cloud_beast' then require('mobs.cloud_beast').art(x,y,size,UI.clock,0);return end
+ if p.type=='cloud_snail' then require('cloud_snail').art(x,y,size,UI.clock,0);return end
  if p.type=='dragonfly' or p.type=='mist_moth' or p.type=='wind_bat' or p.type=='lava_scorpion' then require('sky_insect_art').draw(p.type,x,y,size,UI.clock);return end
  if p.type=='octopus' then require('octopus_preview').draw(x,y,size,UI.clock);return end
  if p.type=='final_spider' then g.setColor(1,1,1);require('final_art').spider('queen',x,y,62,0);require('final_art').clutch(x,y,62,24);return end
@@ -120,9 +122,26 @@ local function throne(x,c,selected)
  local g=love.graphics
  local function stone(light,alpha) g.setColor(c[1]*light,c[2]*light,c[3]*light,alpha or 1) end
  g.setBlendMode('add')
+ local t=UI.clock or 0;local breath=.94+.06*math.sin(t*1.1+x)
+ for i=12,1,-1 do
+  g.setColor(c[1],c[2],c[3],(.012+(selected and .008 or 0))*breath)
+  g.ellipse('fill',x,275,48+i*10,95+i*13)
+ end
+ -- Tall coloured shafts frame the silhouette and illuminate the raised dais.
+ for side=-1,1,2 do
+  for i=4,1,-1 do
+   g.setColor(c[1],c[2],c[3],.018*breath)
+   g.polygon('fill',x+side*40-i*3,70,x+side*40+i*3,70,x+side*105+i*9,435,x+side*105-i*9,435)
+  end
+ end
  for i=7,1,-1 do
-  g.setColor(c[1],c[2],c[3],selected and .023 or .01)
-  g.ellipse('fill',x,280,55+i*12,100+i*12)
+  g.setColor(c[1],c[2],c[3],.025*breath)
+  g.ellipse('fill',x,438,75+i*9,4+i*2)
+ end
+ for i=1,14 do
+  local y=420-(t*12+i*31)%330;local px=x+math.sin(i*7.1+t*.18)*103
+  g.setColor(c[1],c[2],c[3],.26+.16*math.sin(i+t))
+  g.circle('fill',px,y,1.2)
  end
  g.setBlendMode('alpha')
  -- A pointed stone back, carved ribs, raised arms and three broad steps.
@@ -184,7 +203,7 @@ function R.draw(S)
   end
  end
  g.setColor(0,0,0,.6);g.ellipse('fill',S.x,S.y+24,24,8)
- g.setColor(1,1,1);Characters.draw(S.x,S.y,62,S.facing or 'right')
+ g.setColor(1,1,1);Characters.draw(S.x,S.y,62,S.facing or 'right',S)
  g.pop()
  R.fog(true,false)
  g.setColor(.008,.013,.023,.8);g.rectangle('fill',0,584,w,16)

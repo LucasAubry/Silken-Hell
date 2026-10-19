@@ -145,6 +145,7 @@ function love.load()
     App.selectedWorld=1
     require('skin_unlock').init()
     require('achievement_notice').init()
+    require('menu_preload').load()
     Online.init()
     if os.getenv('SILKEN_EXPORT_LEVELS')=='1' then require('designer.export').run(); love.event.quit(); return end
     local preview=tonumber(os.getenv('SILKEN_PREVIEW_WORLD'))

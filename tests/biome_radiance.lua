@@ -91,7 +91,7 @@ function T.run()
  print('PASS visible Abyss bosses bypass decorative light at every quality, including custom encounters')
  for _,world in ipairs(Worlds.order) do Profile.completed[world]=true end
  Secret.open(false);love.draw();local hall=rendered:newImageData();hall:encode('png','radiance-sanctuary.png');hall:release()
- assert(B.biome()==8 and #L.lights==2,'Sanctuary lobby receives its own lights without stale gameplay sources')
+ assert(B.biome()==8 and #L.lights==5,'Sanctuary lobby receives its own lights without stale gameplay sources')
  L.apply=apply;Graphics.quality=2
  print('PASS other biomes and Sanctuary lighting; original Abyss rendering across all ten levels, three qualities, boss defeat and custom encounters');love.event.quit()
 end

@@ -57,6 +57,8 @@ local function drawArt(key,x,y,width,angle,height)
 end
 local function entity(e,ghost,terrainDrawn)
     local c=catalog(e); g.setColor(1,1,1,ghost and .45 or 1)
+    if e.type=='cloud_beast' then require('mobs.cloud_beast').art(e.x,e.y,45,0,0);return end
+    if e.type=='cloud_snail' then require('cloud_snail').art(e.x,e.y,45,0,0);return end
     if e.type=='dragonfly' or e.type=='mist_moth' or e.type=='wind_bat' or e.type=='lava_scorpion' then require('sky_insect_art').draw(e.type,e.x,e.y,e.type=='wind_bat' and 48 or 64,0,e.type=='wind_bat' and (e.dx==-1 and math.pi/2 or -math.pi/2) or nil);return end
     if e.kind=='mob' and (e.type=='piege' or e.type=='scie') then require('trap_art').draw(e.type,e.x,e.y,e.type=='scie' and 60 or 52,M.world,false,0);return end
     if e.kind=='wall' and M.world==5 then
@@ -210,9 +212,11 @@ function love.draw()
     for i=1,max do local c=palette[i+state.scroll]; if c then
         local y=324+(i-1)*68
         button('',14,y,220,60,function() state.tool=c; M.selected=nil; state.input=nil end,state.tool==c)
-        if c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion' then require('sky_insect_art').draw(c.type,45,y+29,42,0)
+        if c.type=='cloud_beast' then require('mobs.cloud_beast').art(45,y+29,42,0,0)
+        elseif c.type=='cloud_snail' then require('cloud_snail').art(45,y+29,42,0,0)
+        elseif c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion' then require('sky_insect_art').draw(c.type,45,y+29,42,0)
         elseif c.type=='larva' then Art.drawLarva(45,y+29,22,0,0) elseif c.art then g.setColor(1,1,1); local a=Art.images[c.art]; local width=math.min(42,44*a.w/a.h); drawArt(c.art,45,y+29,width) end
-        local insect=c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion';local label=c.name
+        local insect=c.type=='cloud_beast' or c.type=='cloud_snail' or c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion';local label=c.name
         if insect then
             local utf8=require('utf8');local font=state.fonts[16]
             if font:getWidth(label)>145 then repeat local at=utf8.offset(label,-1);label=at and label:sub(1,at-1) or '' until label=='' or font:getWidth(label..'…')<=145;label=label..'…' end

@@ -57,11 +57,22 @@ function E.draw()
   local count=math.floor(length/(biome==7 and 260 or 90))
   for i=1,count do
    local seed=i+side*127;local x=(i-.5)*length/count;local phase=t*(.6+noise(seed)*.5)+seed
+   if biome==1 or biome==3 or biome==5 then
+    local sway=math.sin(phase)*6+math.sin(phase*1.7)*2
+    local leafColor=biome==1 and {.55,.54,.26} or biome==3 and {.18,.32,.13} or {.30,.35,.12}
+    g.setColor(leafColor);g.setLineWidth(1.2)
+    g.line(x,0,x+sway*.35,-10,x+sway,-23)
+    for j=1,3 do
+     local y=-j*6;local xx=x+sway*(j/4)^2
+     g.push();g.translate(xx,y);g.rotate(sway*.035)
+     g.ellipse('fill',-3,-2,5,2);g.ellipse('fill',4,-4,5,2);g.pop()
+    end
+   end
    if biome==4 then
     -- Swaying anemones and deep-sea luminous feelers rooted in the rim.
     local h=24
     for j=-1,1 do
-     local tip=x+j*4+math.sin(phase+j)*5
+     local tip=x+j*4+math.sin(phase+j)*9
      g.setColor(c[1]*.4,c[2]*.5,c[3]*.5,.8);g.setLineWidth(2)
      g.line(x+j*3,-4,x+j*3+math.sin(phase)*2,-h*.55,tip,-h)
      glow(tip,-h,7,c,.55+.25*math.sin(phase+j))

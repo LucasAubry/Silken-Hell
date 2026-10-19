@@ -1,12 +1,16 @@
 local F={events={},states={},power=0,clock=0}
 function F.reset() F.events={}; F.states={}; F.power=0; F.clock=0 end
-function F.burst(x,y,color,power)
-    if #F.events<32 then F.events[#F.events+1]={x=x,y=y,color=color or {1,.85,.55},age=0,power=power or 3} end
+function F.burst(x,y,color,power,particlesOnly)
+    if #F.events<32 then F.events[#F.events+1]={x=x,y=y,color=color or {1,.85,.55},age=0,power=power or 3,particlesOnly=particlesOnly} end
     F.power=math.min(6,math.max(F.power,power or 3))
 end
-function F.update(dt)
+function F.shake(power) F.power=math.min(9,math.max(F.power,power or 3)) end
+function F.advance(dt)
     F.clock=F.clock+dt; F.power=math.max(0,F.power-dt*16)
     for i=#F.events,1,-1 do local p=F.events[i]; p.age=p.age+dt; if p.age>.65 then table.remove(F.events,i) end end
+end
+function F.update(dt)
+    F.advance(dt)
     local list={Raven,Wasp,Hedgehog,Octopus,Storm}; if Abyss.boss then list[#list+1]=Abyss end
     for _,item in ipairs(Bosses.items) do list[#list+1]=item.boss end
     for _,b in ipairs(list) do if b.active then
@@ -30,7 +34,7 @@ function F.draw()
         -- A quick outward snap eases into a short tail without adding camera shake.
         local spread=1-(1-t)^3;local fade=(1-t)^1.6
         g.setColor(c[1],c[2],c[3],fade*.42);g.setLineWidth(1.2)
-        g.ellipse('line',p.x,p.y,14+spread*65,8+spread*38)
+        if not p.particlesOnly then g.ellipse('line',p.x,p.y,14+spread*65,8+spread*38) end
         local flash=math.max(0,1-p.age/.12)
         if flash>0 then
             local r=3+flash*(3+p.power)

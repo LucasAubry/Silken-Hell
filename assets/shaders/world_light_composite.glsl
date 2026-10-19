@@ -1,3 +1,6 @@
+extern Image emissionMask;
+extern Image bloomMap;
+extern float bloomStrength;
 extern Image lightMap;
 extern vec2 lightStep;
 extern float ambient;
@@ -13,14 +16,18 @@ vec4 effect(vec4 color, Image texture, vec2 uv, vec2 pixel) {
     light+=Texel(lightMap,uv-vec2(lightStep.x,0.0)).rgb*0.15;
     light+=Texel(lightMap,uv+vec2(0.0,lightStep.y)).rgb*0.15;
     light+=Texel(lightMap,uv-vec2(0.0,lightStep.y)).rgb*0.15;
-    light=min(light,vec3(1.35));
-    vec3 lit=surface.rgb*(ambient+light*0.85);
-    vec3 gentle=surface.rgb*ambient+(vec3(1.0)-surface.rgb*ambient)*light*.48;
+    light=min(light,vec3(1.65));
+    vec3 lit=surface.rgb*(ambient+light*1.5);
+    vec3 gentle=surface.rgb*ambient+(vec3(1.0)-surface.rgb*ambient)*light*.64;
     lit=mix(lit,gentle,softHighlights);
     // Scattering stays local; Abyss darkness never receives an additive reveal.
     lit+=light*scatter*surface.a;
     // Emissive molten pixels keep their colour instead of clipping under bursts.
     float ember=smoothstep(.48,.9,surface.r)*smoothstep(.09,.3,surface.r-surface.b)*preserveEmbers;
     lit=mix(lit,surface.rgb,ember*.9);
+    // Restrained, hue-preserving bloom: retain ink outlines and avoid white clipping.
+    vec3 bloom=Texel(bloomMap,uv).rgb*bloomStrength;
+    lit+=bloom*max(vec3(0.0),vec3(1.0)-lit)*surface.a;
+    lit=mix(lit,surface.rgb,Texel(emissionMask,uv).r);
     return vec4(lit,surface.a)*color;
 }

@@ -45,7 +45,7 @@ local function batWings(sprite,time,side)
  else sprite.mesh:setVertices(vertices) end
  return sprite.mesh
 end
-function A.draw(kind,x,y,size,time,angle)
+function A.draw(kind,x,y,size,time,angle,phase)
  local g=love.graphics;local moth=kind=='mist_moth';local t=time or 0
  local dir=directional[kind] and A.facing(angle) or 'down'
  local sprite=A.sprite(kind,dir)
@@ -54,11 +54,12 @@ function A.draw(kind,x,y,size,time,angle)
  local scale=(size or 72)/extent
  local mirror=dir=='left' and -1 or 1
  local flap=(kind=='wind_bat' or kind=='lava_scorpion') and 1 or moth and (.9+.1*math.cos(t*11)) or (.94+.06*math.cos(t*39))
+ if moth and phase=='windup' then flap=1.13 elseif moth and phase=='gust' then flap=.76+.24*math.cos(t*29) end
  g.push('all');g.translate(x,y)
- if not directional[kind] then g.rotate(angle or 0) end
  if require('art').shadowAllowed() then
-  g.setColor(.015,.035,.08,.20);g.ellipse('fill',2,9,(size or 72)*.33,10)
+  g.setColor(.015,.035,.08,.32);g.ellipse('fill',3,15,(size or 72)*.34,11)
  end
+ if not directional[kind] then g.rotate(angle or 0) end
  g.setColor(1,1,1)
  if kind=='wind_bat' then
   g.draw(batWings(sprite,t,dir=='left' or dir=='right'),0,math.sin(t*5)*1.4,0,scale*mirror,scale)

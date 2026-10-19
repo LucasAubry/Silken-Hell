@@ -56,6 +56,7 @@ function L.start(boss,kind,complete)
 end
 function L.update(dt)
  if not L.busy() then return end
+ BossFX.advance(dt)
  objet.larme.taken=true
  for i=#L.events,1,-1 do
   local e=L.events[i];e.age=e.age+dt

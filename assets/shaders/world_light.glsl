@@ -24,7 +24,7 @@ float visibility(vec2 point) {
         vec2 nearSide=min(a,b),farSide=max(a,b);
         float enter=max(nearSide.x,nearSide.y);
         float leave=min(farSide.x,farSide.y);
-        if (max(enter,0.0)<min(leave,1.0)) return 0.06;
+        if (max(enter,0.0)<min(leave,1.0)) return 0.018;
     }
     return 1.0;
 }
