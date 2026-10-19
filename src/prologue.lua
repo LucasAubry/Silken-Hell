@@ -24,7 +24,7 @@ function P.load()
 end
 function P.open(replay)
  Arena.configure(love.graphics.getDimensions());P.width=Arena.width;P.height=Arena.height
- P.load();P.replay=replay==true;P.phase='wander';P.time=0;P.clock=0;P.travel=0;P.darkness=0;P.paused=false
+ P.load();P.replay=replay==true;P.short=not P.replay;P.phase='wander';P.time=0;P.clock=0;P.travel=0;P.darkness=0;P.paused=false
  P.saved={selectedWorld=App.selectedWorld,hardcore=App.hardcore}
  P.hero={x=P.width*.51,y=432,dir='up',sanctuaryPlayer=true};P.partner={x=P.width*.51+72,y=425,angle=0}
  P.nest={x=P.width-115,y=112};P.victim={x=P.nest.x+27,y=P.nest.y+8}
@@ -32,6 +32,12 @@ function P.open(replay)
  P.spawn={x=P.hero.x,y=P.hero.y};P.safe={x=P.hero.x,y=P.hero.y};P.drowning=nil;P.waterDeaths=0
  P.tears={};P.tearsCollected=0;P.departureDistance=nil
  P.portalAmount=0;P.carrying=false;P.queenGone=false;P.entering=false
+ P.approachDistance=distance(P.queen,P.victim)
+ if P.short then
+  P.phase='dusk';P.hero.x=P.nest.x-18;P.hero.y=P.nest.y-9
+  P.victim={x=P.nest.x+18,y=P.nest.y-9}
+  P.partner.x=P.victim.x;P.partner.y=P.victim.y;P.partner.angle=math.pi
+ end
  Replay.input=nil;Replay.recording=false;App.hardcore=false;App.state='prologue';UI.buttons={};UI.pressed=nil
  require('run_start').active=false;require('run_start').suspend();love.keyboard.setTextInput(false)
 end
@@ -105,7 +111,7 @@ function P.enterWorld()
  if Profile.name=='' then Profile.name='Joueur' end
  Profile.save();App.hardcore=false;App.practice=nil;App.singleLevel=false;App.sessionLayout=nil;App.workshopMap=nil;Secret.duel=nil
  App.start(1)
- if App.state=='playing' then require('run_start').beginArrival() end
+ if App.state=='playing' then require('run_start').beginArrival(P.short) end
 end
 -- Intro tears belong to the scene, never campaign progression or replay state.
 function P.partnerEye()
@@ -187,23 +193,25 @@ function P.update(dt)
   if (P.partner.x-P.streamX(P.partner.y))*(P.victim.x-P.streamX(P.victim.y))<0 then accompany(dt) else move(P.partner,P.victim.x,P.victim.y,180,dt) end
   if distance(hero,{x=P.nest.x-27,y=P.nest.y+8})<1 and distance(P.partner,P.victim)<1 then P.partner.angle=math.pi;P.transition('dusk') end
  elseif P.phase=='dusk' then
-  P.darkness=.62*ease(P.time/4)
-  if P.time>=4 then P.transition('portal_open') end
+  local duration=P.short and .7 or 4
+  P.darkness=.62*ease(P.time/duration)
+  if P.time>=duration then P.transition('portal_open') end
  elseif P.phase=='portal_open' then
-  P.portalAmount=ease(P.time/1.5)
-  if P.time>=1.6 then P.transition('arrival') end
+  local duration=P.short and .6 or 1.6
+  P.portalAmount=ease(P.time/(duration-.05))
+  if P.time>=duration then P.transition('arrival') end
  elseif P.phase=='arrival' then
-  P.darkness=.62;move(P.queen,P.victim.x+15,P.victim.y+5,165,dt)
+  P.darkness=.62;move(P.queen,P.victim.x+15,P.victim.y+5,P.short and P.approachDistance/1.5 or 165,dt)
   if distance(P.queen,P.victim)<22 then P.transition('lift') end
  elseif P.phase=='lift' then
   P.queen.angle=0
-  if P.time>=1.2 then P.carrying=true;P.transition('confront') end
+  if P.time>=(P.short and .5 or 1.2) then P.carrying=true;P.transition('confront') end
  elseif P.phase=='confront' then
   local target=math.atan2(hero.y-P.queen.y,hero.x-P.queen.x)-math.pi/2
   P.queen.angle=target*ease(P.time/.7)
-  if P.time>=6.5 then P.transition('departure') end
+  if P.time>=(P.short and 2.1 or 6.5) then P.transition('departure') end
  elseif P.phase=='departure' then
-  move(P.queen,P.portal.x,P.portal.y,145,dt)
+  move(P.queen,P.portal.x,P.portal.y,P.short and P.departureDistance/1.8 or 145,dt)
   local threshold=({.78,.38})[#P.tears+1]
   if threshold and distance(P.queen,P.portal)<=P.departureDistance*threshold then
    local x,y=P.partnerEye()
@@ -213,13 +221,17 @@ function P.update(dt)
   end
   if distance(P.queen,P.portal)<4 then P.transition('queen_enter') end
  elseif P.phase=='queen_enter' then
-  if P.time>=1.8 then P.queenGone=true;P.transition('portal_player') end
+  if P.time>=(P.short and .65 or 1.8) then P.queenGone=true;P.transition(P.short and 'wake' or 'portal_player') end
+ elseif P.phase=='wake' then
+  hero.dir='down';P.darkness=math.max(.32,P.darkness-dt*.5)
+  if P.time>=.45 then P.transition('enter') end
  elseif P.phase=='portal_player' then
   P.darkness=math.max(.32,P.darkness-dt*.12)
   if distance(hero,P.portal)<46 then P.transition('enter') end
  elseif P.phase=='enter' then
-  P.darkness=.32+.68*ease(P.time/.8)
-  if P.time>=.85 then P.enterWorld() end
+  local duration=P.short and .5 or .85
+  P.darkness=.32+.68*ease(P.time/duration)
+  if P.time>=duration then P.enterWorld() end
  end
  P.updateTears(dt)
 end
@@ -278,7 +290,7 @@ function P.draw(w,h)
  local actors={
   {y=P.partner.y,draw=function()
  if not P.carrying and not P.queenGone then
-  local partner=P.partner;local lift=P.phase=='lift' and ease(P.time/1.2) or 0
+  local partner=P.partner;local lift=P.phase=='lift' and ease(P.time/(P.short and .5 or 1.2)) or 0
   shadow(partner.x,partner.y,P.partnerWidth)
   g.setColor(1,1,1,1-lift);ArtSet.spider('partner',partner.x+(P.queen.x-partner.x)*lift,partner.y-16*lift,P.partnerWidth,partner.angle,partner)
  end
@@ -299,7 +311,7 @@ function P.draw(w,h)
   end},
   {y=P.queen.y,draw=function()
  if (P.phase=='arrival' or P.phase=='lift' or P.carrying) and not P.queenGone then
-  local q=P.queen;local fade=P.phase=='queen_enter' and 1-ease((P.time-.35)/1.45) or 1
+  local q=P.queen;local fade=P.phase=='queen_enter' and 1-ease((P.time-(P.short and .1 or .35))/(P.short and .55 or 1.45)) or 1
   shadow(q.x,q.y,Characters.playerWidth);g.setColor(1,1,1,fade)
   if P.carrying then
    P.drawCarrier(q,Characters.playerWidth*(.7+.3*fade))
@@ -315,7 +327,7 @@ function P.draw(w,h)
  g.setColor(.008,.005,.016,P.darkness);g.rectangle('fill',0,0,P.width,P.height)
  if P.phase=='confront' then
   local a=clamp(P.time/.5,0,1);g.setColor(.018,.008,.023,a*.88);g.rectangle('fill',40,P.height-110,P.width-80,90,10)
-  UI.text('Son heure est venue. Je dois l’emmener là-haut. Je suis désolée.',60,P.height-92,'medium',{1,.89,.73,a},P.width-120,'center')
+  UI.text(P.short and 'Son heure est venue. Je suis désolée.' or 'Son heure est venue. Je dois l’emmener là-haut. Je suis désolée.',60,P.height-92,'medium',{1,.89,.73,a},P.width-120,'center')
  end
  g.pop()
 end
