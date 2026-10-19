@@ -109,15 +109,14 @@ function T.run()
  for i=1,23 do P.update(.05) end
  assert(P.phase=='portal_player' and P.queenGone and P.portalAmount==1 and not P.drowning,'Water respawn preserves open portal after kidnapping')
  assert(P.tearsCollected==1 and tear.collected,'Respawn preserves collected tears')
- P.close();assert(App.state=='menu');P.open(false);assert(P.phase=='dusk' and P.short and not P.carrying)
+ P.close();assert(App.state=='menu');P.open(false);assert(P.phase=='wander' and not P.carrying)
  P.hero.x=P.portal.x;P.hero.y=P.portal.y;P.phase='portal_player';P.update(.05);assert(P.phase=='enter')
  local start=App.start;local called=0;App.start=function(n)assert(n==1);called=called+1 end
  for i=1,20 do P.update(.05) end
  assert(called==1 and Profile.prologueSeen and not App.hardcore)
  App.start=start;Profile.record=function()end;Replay.disabled=true;Bestiary.save=function()end
  P.entering=false;P.enterWorld();assert(App.state=='playing' and Campaign.world==1 and player.level==1,'Real first-world initialization')
- local startGate=require('run_start');assert(startGate.arrival==0 and startGate.arrivalShort)
- startGate.beginArrival(false) -- Retain coverage of the full arrival presentation.
+ local startGate=require('run_start');assert(startGate.arrival==0)
  assert(not startGate.press(Profile.keys.dash) and not startGate.launch(),'Arrival cannot be skipped by held run input')
  local function arrivalCapture(name)
   local g=love.graphics;local c=g.newCanvas(g.getDimensions());local setCanvas=g.setCanvas
@@ -151,23 +150,6 @@ function T.run()
  assert(App.state=='menu' and starts==0 and saves==0,'History ends at menu without launching or saving campaign')
  assert(Profile.prologueSeen==savedSeen and App.selectedWorld==selected and App.hardcore==hardcore,'History preserves progress and menu selection')
  App.start=startApp
- -- First launch starts asleep and reaches a playable Paradise in 10–15 seconds.
- love.draw();local shortButton
- for _,b in ipairs(UI.buttons) do if b.y==695 and b.x==425 then shortButton=b end end
- assert(shortButton,'Short intro test button present');shortButton.run()
- assert(P.short and not P.canMove() and P.hero.x==P.nest.x-18 and P.hero.y<P.nest.y)
- capture('short-sleep');local elapsed=0;local phases={}
- while App.state=='prologue' do
-  P.update(.05);elapsed=elapsed+.05;phases[P.phase]=true
-  if P.phase=='confront' and not phases.picture then capture('short-queen');phases.picture=true end
-  assert(elapsed<15,'Short kidnapping finishes automatically')
- end
- assert(App.state=='playing' and Campaign.world==1 and #P.tears==2 and phases.wake and not phases.portal_player)
- assert(startGate.arrivalShort and startGate.arrival==0)
- while startGate.arrival do startGate.advance(.05);elapsed=elapsed+.05 end
- assert(elapsed>=10 and elapsed<=15 and startGate.active,'Short intro including Paradise arrival lasts 10–15 seconds')
- assert(startGate.launch(),'Player can start immediately after short arrival')
- print('Short intro duration: '..elapsed..' seconds')
  Profile.save=save;Profile.prologueSeen=saved
  print('PASS prologue: campaign dimensions, corner cocoon, water death/respawn before and after kidnapping, safe bridge, cocoon-triggered sleep, no timed/tree event, visible nighttime kidnapping, portal and world 1 transition; screenshots captured')
  love.event.quit()

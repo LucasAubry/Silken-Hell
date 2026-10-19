@@ -7,13 +7,11 @@ function C.begin()
  C.armed=not Input.speedHeld()
 end
 -- The first portal opens onto the real level, held still until the story ends.
-function C.beginArrival(short)
- C.arrivalShort=short==true
+function C.beginArrival()
  C.arrival=0;C.active=true;C.armed=false
  C.arrivalActor={x=player.x+15,y=player.y+12-75,targetY=player.y+12,walkMoving=false}
  C.arrivalPortal={x=player.x+15,y=player.y+12-75}
 end
-function C.arrivalTime()return C.arrival*(C.arrivalShort and 4.9/3.2 or 1)end
 function C.startCountdown()
  C.active=true;C.elapsed=0;C.goAge=nil;C.countdown=3;C.armed=false
 end
@@ -38,9 +36,9 @@ function C.advance(dt)
  if C.arrival then
   local step=math.min(dt,.05);C.arrival=C.arrival+step
   local a=C.arrivalActor;local oldY=a.y
-  a.y=a.targetY-75+75*smooth((C.arrivalTime()-1.4)/1.9)
+  a.y=a.targetY-75+75*smooth((C.arrival-1.4)/1.9)
   require('brown_walk').advance(a,a.y-oldY,step)
-  if C.arrival>=(C.arrivalShort and 3.2 or 12.5) then C.arrival=nil;C.armed=false;C.elapsed=0 end
+  if C.arrival>=12.5 then C.arrival=nil;C.armed=false;C.elapsed=0 end
   return 0
  end
  if not C.active then if C.goAge then C.goAge=C.goAge+dt end;return dt end
@@ -64,7 +62,7 @@ function C.keyLabel()
 end
 -- Visual proxy only: campaign position and replay state never move during arrival.
 function C.drawArrivalActor()
- local t=C.arrivalTime();local a=C.arrivalActor;local g=love.graphics
+ local t=C.arrival;local a=C.arrivalActor;local g=love.graphics
  local closing=smooth((t-3.3)/1.1);local amount=1-closing
  if amount>0 then require('prologue').drawPortal(C.arrivalPortal,amount,t) end
  if t>=3.3 and t<4.9 then
@@ -84,8 +82,8 @@ function C.drawArrivalActor()
  end
 end
 function C.drawArrival()
- local g=love.graphics;local t=C.arrivalTime()
- local reveal=smooth((t-.2)/1.6);local out=1-smooth((t-(C.arrivalShort and 3.9 or 10.9))/(C.arrivalShort and 1 or 1.6))
+ local g=love.graphics;local t=C.arrival
+ local reveal=smooth((t-.2)/1.6);local out=1-smooth((t-10.9)/1.6)
  g.push('all');g.setShader()
  -- Cover letterboxing as well as the arena during the black-to-daylight fade.
  g.setColor(.008,.005,.016,1-reveal);g.rectangle('fill',-4000,-4000,9200,8750)
@@ -94,7 +92,6 @@ function C.drawArrival()
  UI.text('Paradis',371,83,'medium',{.05,.07,.04,.8*title},460,'center')
  UI.text('Paradis',370,82,'medium',{1,.94,.74,title},460,'center')
  g.setColor(1,.91,.65,.5*title);g.setLineWidth(1);g.line(560,116,640,116)
- if C.arrivalShort then g.pop();return end
  local story=smooth((t-4.2)/.8)*out
  g.setColor(.025,.04,.035,.88*story);g.rectangle('fill',140,562,920,98,14)
  local text=t<8 and 'Le portail s’est refermé… Elle est passée par ici. Je dois retrouver sa trace.' or 'Elle a laissé des larmes. Je vais les suivre.'
