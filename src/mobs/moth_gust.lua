@@ -1,4 +1,4 @@
--- Tracking gusts; simulation never depends on visual effects or RNG.
+-- Fixed-direction gusts; simulation never depends on visual effects or RNG.
 local G={range=1500,width=28,power=560}
 local function aim(m)
  local dx,dy=player.x+15-m.x,player.y+12-m.y
@@ -27,10 +27,8 @@ function G.update(m,dt)
  while remaining>0 and m.phase~='roam' do
   local step=math.min(remaining,m.phaseTime,1/60)
   if m.phase=='gust' then
-   aim(m)
-   -- Circle the target while continuing to face it.
+   -- Keep flying sideways while preserving the direction chosen at release.
    Arena.move(m,-m.vy*60*step,m.vx*60*step)
-   aim(m)
    for _,other in ipairs(mobs) do
     if other~=m and not (other.dead or other.spent or other.falling or other.capture or other.tunnelTravel or other.abyssHeld)
      and not Realms.underground(other) and other.hitBox_width and other.hitBox_height and other.type~='scie' and other.type~='piege' and not other.ground then

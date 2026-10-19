@@ -30,7 +30,7 @@ local B={seen={},unread={},dirty=false,entries={
  {id='dragonfly',name='Libellule électrique',world=6,text='Elle zigzague autour de vous et laisse une traînée électrique mortelle jusqu’à la fin de la tentative.'},
  {id='cloud_beast',name='Bête des nuages',world=6,text='Elle plonge sous les nuages, puis surgit pour charger en ligne droite. Les gerbes blanches annoncent sa sortie.'},
  {id='cloud_snail',name='Escargot des nuages',world=6,text='Il dévore les nuages et laisse des trous derrière lui. Ses trous restent ouverts : marcher sur sa trace provoque une chute.'},
- {id='mist_moth',name='Papillon des vents',world=6,text='Il vous suit du regard en volant et souffle pendant deux secondes. Sa bourrasque repousse aussi les autres monstres. Écartez-vous de sa trajectoire ou abritez-vous derrière un mur.'},
+ {id='mist_moth',name='Papillon des vents',world=6,text='Il vise votre position puis souffle dans cette direction pendant deux secondes. Sa bourrasque repousse aussi les autres monstres. Écartez-vous de sa trajectoire ou abritez-vous derrière un mur.'},
  {id='rain',trap=true,name='Éclair du Ciel',art='rain',world=6,text='Une ombre grise passe sur le sol avant l’impact. Quitte cette zone : la foudre creuse un trou qui reste dangereux jusqu’à la prochaine tentative.'},
  {id='larva',name='Minuscule ver',art='worm_down',world=5,text='Le Hérisson réclame des serviteurs toujours plus jeunes. À peine sorti de son œuf, ce petit ver te poursuit sans comprendre pourquoi.'},
  {id='blackbird_chick',name='Petit merle noir',art='merle_down',world=1,text='L’Œuf les a fait éclore dans une cage de soie. Les oiseaux clairs tirent ; les sombres poursuivent. Quand la coquille cède, leurs liens se brisent ensemble.'}
