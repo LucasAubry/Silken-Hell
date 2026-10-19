@@ -1,4 +1,4 @@
-local Q={required=12,window=1.5}
+local Q={required=5,window=1.5}
 function Q.reset(f)
  f.enraged=false;f.silkBits={};f.webShake=0;f.escapeTaps={};f.escapeHeld={};f.cornerPending=false;f.cornerLay=false;f.cornerSlots=nil
 end

@@ -1,5 +1,6 @@
 -- Fixed-direction gusts; simulation never depends on visual effects or RNG.
 local G={range=1500,width=28,power=560}
+local Visibility=require('wind_visibility')
 local function aim(m)
  local dx,dy=player.x+15-m.x,player.y+12-m.y
  local length=math.max(.001,math.sqrt(dx*dx+dy*dy))
@@ -10,7 +11,7 @@ function G.reaches(m,x,y)
  local along=dx*m.vx+dy*m.vy
  local across=math.abs(dx*m.vy-dy*m.vx)
  return along>20 and along<G.range and across<G.width
-  and Arena.direct(m.x-15,m.y-12,x-15,y-12)
+  and Visibility.clear(m.x,m.y,x,y)
 end
 function G.update(m,dt)
  if m.phase~='windup' and m.phase~='gust' and m.phase~='recover' then m.phase='roam' end
@@ -59,18 +60,45 @@ function G.update(m,dt)
  end
  return true
 end
+local function cloudTexture()
+ if G.cloud then return G.cloud end
+ local data=love.image.newImageData(40,28)
+ for y=0,27 do for x=0,39 do
+  local d=math.min(((x-11)/9)^2+((y-17)/7)^2,((x-21)/11)^2+((y-12)/10)^2,((x-30)/8)^2+((y-17)/7)^2)
+  local alpha=math.max(0,math.min(1,(1-d)*3))
+  local shade=.82+.18*(1-y/28)
+  data:setPixel(x,y,shade,math.min(1,shade+.045),1,alpha)
+ end end
+ G.cloud=love.graphics.newImage(data);data:release();G.cloud:setFilter('linear','linear');return G.cloud
+end
 function G.draw(m)
  if m.phase~='gust' then return end
- local g=love.graphics;g.push('all');g.setShader();g.setLineWidth(1.5)
- local gust=m.phase=='gust';local t=m.age or 0
+ local g=love.graphics;g.push('all');g.setShader();g.setLineWidth(2.6)
+ local t=m.age or 0;local lanes={}
+ -- Nine wall-clipped lanes serve every streak and cloud puff in this frame.
+ for lane=1,9 do
+  local side=(lane-5)*6
+  lanes[lane]=Visibility.limit(m.x-m.vy*side,m.y+m.vx*side,m.vx,m.vy,G.range)
+ end
  for i=1,70 do
-  local distance=gust and (t*740+i*29)%G.range or 25+i*17
-  local side=math.sin(i*13.7)*(G.width-4)
-  local x=m.x+m.vx*distance-m.vy*side;local y=m.y+m.vy*distance+m.vx*side
-  if Arena.direct(m.x-15,m.y-12,x-15,y-12) then
-   g.setColor(.84,.94,1,.78*(1-distance/G.range*.55));g.setLineWidth(2.6)
-   local length=24+9*math.sin(i)
+  local lane=1+i%9;local side=(lane-5)*6;local distance=(t*740+i*29)%G.range
+  local length=math.min(24+9*math.sin(i),lanes[lane]-distance)
+  if length>0 then
+   local x=m.x+m.vx*distance-m.vy*side;local y=m.y+m.vy*distance+m.vx*side
+   g.setColor(.84,.94,1,.78*(1-distance/G.range*.55))
    g.line(x,y,x+m.vx*length,y+m.vy*length)
+  end
+ end
+ local cloud=cloudTexture();local count=Graphics.quality==1 and 32 or 56
+ for i=1,count do
+  local lane=1+i%9;local side=(lane-5)*6
+  local distance=(t*(280+i%5*35)+i*71)%G.range
+  if distance>12 and distance<lanes[lane]-18 then
+   local life=distance/G.range;local alpha=math.min(1,distance/65)*(1-life)*.42
+   local x=m.x+m.vx*distance-m.vy*side;local y=m.y+m.vy*distance+m.vx*side
+   local size=.23+(i%5)*.07;local lift=math.sin(life*math.pi)*5
+   g.setColor(1,1,1,alpha)
+   g.draw(cloud,x,y-lift,math.atan2(m.vy,m.vx)+math.sin(i+t)*.12,size*1.5,size,20,14)
   end
  end
  g.pop()

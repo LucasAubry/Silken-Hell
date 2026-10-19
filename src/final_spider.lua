@@ -70,7 +70,7 @@ function F.leap(resume)
  F.jumpResume=F.pendingEggs>0 and 'seek_nest' or resume or 'webs';F.jumpResumeTime=F.phaseTime;F.jumpCooldown=4
  F.phase='intro_jump';F.phaseTime=0;F.contactGrace=.85
  F.target=nil;F.cornerLay=false;F.cast=0
- F.jump={x=F.x,y=F.y,tx=F.x<Arena.width*.5 and Arena.width-110 or 110,ty=F.y<300 and 480 or 120}
+ F.jump=require('queen_jump').choose(F,F)
  F.angle=math.atan2(F.jump.ty-F.y,F.jump.tx-F.x)-math.pi/2
 end
 function F.beginCombat()

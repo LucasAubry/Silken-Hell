@@ -6,14 +6,14 @@ function H.color(id)return id==0 and {1,.94,.72} or H.colors[(id-1)%#H.colors+1]
 function H.hatch(f,e)
  f.babies[#f.babies+1]={id=e.seed,seed=e.seed,x=e.x,y=e.y,age=0,phase='webs',phaseTime=0,shot=.7,cast=0,volley=0,angle=0,variant=e.seed%2==0 and 'white' or 'black',frozen=0,jumpCooldown=5+e.seed*.35,contactGrace=.5,jumpHeight=0}
 end
-function H.jump(b)
+function H.jump(b,f)
  b.jumpCooldown=6.5;b.frozen=0;b.phase='intro_jump';b.phaseTime=0;b.contactGrace=1.05
- b.jump={x=b.x,y=b.y,tx=b.x<Arena.width/2 and Arena.width-110 or 110,ty=b.y<300 and 480 or 120}
+ b.jump=require('queen_jump').choose(f or require('final_spider'),b)
  b.angle=math.atan2(b.jump.ty-b.y,b.jump.tx-b.x)-math.pi/2
 end
 function H.hit(f,b)
  if f.defeated or f.hp<=0 or b.phase=='intro_jump' or b.contactGrace>0 then return end
- H.jump(b);f.damage(true)
+ H.jump(b,f);f.damage(true)
 end
 local function move(b,x,y,speed,dt)
  local dx,dy=x-b.x,y-b.y;local d=math.sqrt(dx*dx+dy*dy)
@@ -23,7 +23,7 @@ end
 function H.update(f,dt)
  for _,b in ipairs(f.babies)do
   b.jumpCooldown=math.max(0,(b.jumpCooldown or 5)-dt)
-  if b.phase=='webs' and b.frozen<=0 and b.jumpCooldown<=0 then H.jump(b) end
+  if b.phase=='webs' and b.frozen<=0 and b.jumpCooldown<=0 then H.jump(b,f) end
   local x,y=b.x,b.y;b.age=b.age+dt;b.contactGrace=math.max(0,b.contactGrace-dt)
   if b.phase~='intro_jump' and b.contactGrace<=0 and require('collision_shapes').touchCircle('queen_baby',b.x,b.y,27) then if f.snare>0 then Hazards.kill() else H.hit(f,b) end;return end
   if b.frozen>0 then b.frozen=math.max(0,b.frozen-dt);b.walkMoving=false
