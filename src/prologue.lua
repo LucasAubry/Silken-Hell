@@ -102,6 +102,7 @@ function P.enterWorld()
  if Profile.name=='' then Profile.name='Joueur' end
  Profile.save();App.hardcore=false;App.practice=nil;App.singleLevel=false;App.sessionLayout=nil;App.workshopMap=nil;Secret.duel=nil
  App.start(1)
+ if App.state=='playing' then require('run_start').beginArrival() end
 end
 function P.update(dt)
  Sound.update(P.paused,P.darkness)
@@ -215,7 +216,7 @@ function P.draw(w,h)
  if not P.carrying and not P.queenGone then
   local partner=P.partner;local lift=P.phase=='lift' and ease(P.time/1.2) or 0
   shadow(partner.x,partner.y,P.partnerWidth)
-  g.setColor(1,1,1,1-lift);ArtSet.spider('partner',partner.x+(P.queen.x-partner.x)*lift,partner.y-32*lift,P.partnerWidth,partner.angle,partner)
+  g.setColor(1,1,1,1-lift);ArtSet.spider('partner',partner.x+(P.queen.x-partner.x)*lift,partner.y-16*lift,P.partnerWidth,partner.angle,partner)
  end
   end},
   {y=P.hero.y,draw=function()
@@ -235,17 +236,15 @@ function P.draw(w,h)
   {y=P.queen.y,draw=function()
  if (P.phase=='arrival' or P.phase=='lift' or P.carrying) and not P.queenGone then
   local q=P.queen;local fade=P.phase=='departure' and clamp(distance(q,P.portal)/58,0,1) or 1
-  shadow(q.x,q.y,112);g.setColor(1,1,1,fade)
+  shadow(q.x,q.y,Characters.playerWidth);g.setColor(1,1,1,fade)
   if P.carrying then
-   P.drawCarrier(q,112)
-  else ArtSet.spider('queen',q.x,q.y,112,q.angle,q) end
+   P.drawCarrier(q,Characters.playerWidth)
+  else ArtSet.spider('queen',q.x,q.y,Characters.playerWidth,q.angle,q) end
  end
   end}
  }
  Trees.drawScene(actors,P.width,P.height,P.clock)
  g.setColor(.008,.005,.016,P.darkness);g.rectangle('fill',0,0,P.width,P.height)
- -- The portal stays readable after the forest has gone dark.
- if P.darkness<.98 then P.drawPortal() end
  if P.phase=='confront' then
   local a=clamp(P.time/.5,0,1);g.setColor(.018,.008,.023,a*.88);g.rectangle('fill',40,P.height-110,P.width-80,90,10)
   UI.text('Son heure est venue. Je dois l’emmener là-haut. Je suis désolée.',60,P.height-92,'medium',{1,.89,.73,a},P.width-120,'center')

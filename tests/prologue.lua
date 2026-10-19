@@ -40,6 +40,15 @@ function T.run()
  end
  P.open(true)
  assert(not P.blocked(P.streamX(300),300) and P.inWater(P.streamX(300),300) and not P.inWater(P.streamX(340),340),'Water is lethal, bridge remains safe')
+ P.phase='arrival';P.portalAmount=1;P.darkness=.62
+ local portalDraw=P.drawPortal;local art=require('final_art');local spiderDraw=art.spider;local portalCount=0;local queenSeen=false
+ P.drawPortal=function()portalCount=portalCount+1;assert(not queenSeen,'Portal must stay behind queen');portalDraw()end
+ art.spider=function(kind,x,y,width,...)
+  if kind=='queen' then assert(width==Characters.playerWidth,'Queen matches player size');queenSeen=true end
+  return spiderDraw(kind,x,y,width,...)
+ end
+ capture('queen-portal');assert(portalCount==1 and queenSeen)
+ P.drawPortal=portalDraw;art.spider=spiderDraw;P.open(true)
  assert(P.nest.x==P.width-115 and P.nest.y==112,'Small cocoon in upper-right corner')
  local phase=P.phase;local savedAttempts=Profile.stats.attempts
  P.hero.x=P.streamX(280)+80;P.hero.y=280;Input.move=function()return -1,0 end
@@ -81,6 +90,19 @@ function T.run()
  assert(called==1 and Profile.prologueSeen and not App.hardcore)
  App.start=start;Profile.record=function()end;Replay.disabled=true;Bestiary.save=function()end
  P.entering=false;P.enterWorld();assert(App.state=='playing' and Campaign.world==1 and player.level==1,'Real first-world initialization')
+ local startGate=require('run_start');assert(startGate.arrival==0)
+ assert(not startGate.press(Profile.keys.dash) and not startGate.launch(),'Arrival cannot be skipped by held run input')
+ local px,py=player.x,player.y
+ for i=1,80 do assert(startGate.advance(.05)==0) end
+ assert(player.x==px and player.y==py and startGate.active,'Arrival keeps the level safe and frozen')
+ local g=love.graphics;local c=g.newCanvas(g.getDimensions());local setCanvas=g.setCanvas
+ g.push('all');setCanvas(c)
+ g.setCanvas=function(target,...)if target==nil then return setCanvas(c) end;return setCanvas(target,...)end
+ love.draw();g.setCanvas=setCanvas;setCanvas();g.pop()
+ c:newImageData():encode('png','prologue-paradise-arrival.png');c:release()
+ App.state='pause';local arrivalTime=startGate.arrival;startGate.advance(.5);assert(startGate.arrival==arrivalTime);App.state='playing'
+ for i=1,82 do startGate.advance(.05) end
+ assert(not startGate.arrival and startGate.active,'Story leads into normal start prompt')
  P.close();love.draw();local button
  for _,b in ipairs(UI.buttons) do if b.y==695 and b.w==350 then button=b end end
  assert(button,'Menu replay button present');button.run();assert(App.state=='prologue' and P.phase=='wander')
