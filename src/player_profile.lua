@@ -13,9 +13,16 @@ function P.snapshot()
  return {name=Profile.name,skin=Characters.selected(),stats=stats,worlds=worlds,achievements=achievements}
 end
 function P.open(score)
- P.returnState=App.state;P.page=1;P.tab='stats';P.data=nil;P.status='Chargement…';P.name=score.name
+ P.returnState=App.state;P.page=1;P.tab='stats';P.data=nil;P.status='Chargement…';P.name=score.name;P.skin=score.skin or 1
  local ticket={};P.ticket=ticket;App.state='playerProfile'
- if not score.runId then P.data=P.snapshot();P.status=nil;return end
+ if not score.runId then
+  -- Old local runs have no verified account identity: only display their recorded facts.
+  local world=score.world or UI.boardWorld
+  P.data={name=score.name,skin=score.skin or 1,source='scores',achievements={},
+   stats={runs=1,deaths=score.deaths or 0,time=score.time or 0},
+   worlds={{world=world,completed=not score.hardcore,hardcore=score.hardcore==true,flawless=(score.deaths or 0)==0}}}
+  P.status=nil;return
+ end
  Online.request('/v1/players/by-run/'..score.runId,nil,function(data,code)
   if P.ticket~=ticket then return end
   if code==200 and type(data)=='table' and type(data.stats)=='table' and type(data.worlds)=='table' and type(data.achievements)=='table' then
@@ -28,7 +35,8 @@ function P.draw()
  local U,g=UI,love.graphics;local white={.94,.94,.9};local gold={1,.83,.43};local muted={.66,.73,.76}
  U.panel(90,55,1020,640)
  U.rawText(U.ellipsize(P.data and P.data.name or P.name or '', 'heading',720),240,78,'heading',gold,720,'center')
- if P.data then g.setColor(1,1,1);Characters.portrait(P.data.skin or 1,170,110,64) end
+ local skin=P.data and P.data.skin or P.skin
+ if skin then g.setColor(1,1,1);Characters.portrait(skin,170,110,64) end
  U.button('Statistiques',280,140,300,40,function()P.tab='stats';P.page=1 end,false,P.tab=='stats','go')
  U.button('Succès',620,140,300,40,function()P.tab='achievements';P.page=1 end,false,P.tab=='achievements','go')
  if P.status then U.text(P.status,180,350,'body',muted,840,'center')

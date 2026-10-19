@@ -57,6 +57,20 @@ function U.podiumName(name,x,y,font,rank,world)
  g.setShader(U.podiumShader);U.podiumShader:send('clock',U.clock);U.podiumShader:send('strength',strength)
  U.rawText(name,x,y,font,{c[1],c[2],c[3],1});g.pop()
 end
+-- Shared hit area for player identities in compact and full leaderboards.
+function U.playerTarget(score,x,y,w,h)
+ local mx,my=U.mouse()
+ local hover=Input and Input.active and Input.index==#U.buttons+1
+  or not (Input and Input.active) and mx>=x and mx<=x+w and my>=y and my<=y+h
+ if hover then
+  g.push('all');g.setShader();g.setLineWidth(1.5)
+  g.setColor(gold[1],gold[2],gold[3],.09);g.rectangle('fill',x,y,w,h,5)
+  g.setColor(gold[1],gold[2],gold[3],.9);g.rectangle('line',x,y,w,h,5)
+  g.pop()
+ end
+ U.buttons[#U.buttons+1]={x=x,y=y,w=w,h=h,run=function()require('player_profile').open(score)end,sound='go'}
+ return hover
+end
 function U.panel(x,y,w,h,animated)
     g.setColor(0.018,0.035,0.05,0.88); g.rectangle('fill',x,y,w,h,5)
     g.setColor(0.65,0.61,0.43,0.28); g.rectangle('line',x,y,w,h,5)
@@ -208,11 +222,10 @@ function U.board(x,y,w,country)
     end
     for i=1,math.min(10,#scores) do local score=scores[i]; local yy=y+96+(i-1)*30
         U.text(tostring(i),x+12,yy+3,'small',gold)
+        U.playerTarget(score,x+30,yy,w-150,28)
         g.setColor(1,1,1); Characters.scorePortrait(score,x+43,yy+11,25)
-        local name=score.name
-        while U.fonts.small:getWidth(name)>w-184 do name=name:sub(1,(utf8.offset(name,-1) or 1)-1) end
-        U.buttons[#U.buttons+1]={x=x+30,y=yy,w=w-150,h=28,run=function()require('player_profile').open(score)end,sound='go'}
-        U.podiumName(name,x+61,yy+3,'small',i,U.boardWorld)
+        local name=U.ellipsize(score.name,'body',w-219)
+        U.podiumName(name,x+61,yy+3,'body',i,U.boardWorld)
         U.text(U.time(score.time),x+w-117,yy+3,'small',gold)
         g.setColor(1,1,1); Art.draw('skull',x+w-43,yy+10,14)
         U.text(tostring(score.deaths or 0),x+w-32,yy+3,'small',white)
@@ -253,9 +266,9 @@ function U.rankings()
     U.text('Chrono',724,255,'small',muted); U.text('Morts · pénalité',843,255,'small',muted)
     for i,s in ipairs(data.scores) do local y=287+(i-1)*29
         U.text(tostring((U.boardPage-1)*10+i),226,y,'body',gold)
+        U.playerTarget(s,280,y-2,430,27)
         g.setColor(1,1,1); Characters.scorePortrait(s,300,y+9,26)
-        U.buttons[#U.buttons+1]={x=280,y=y-2,w=430,h=27,run=function()require('player_profile').open(s)end,sound='go'}
-        U.podiumName(s.name,330,y,'body',(U.boardPage-1)*10+i,U.boardWorld); U.text(U.time(s.time),724,y,'body',gold)
+        U.podiumName(U.ellipsize(s.name,'body',368),330,y,'body',(U.boardPage-1)*10+i,U.boardWorld); U.text(U.time(s.time),724,y,'body',gold)
         U.text(tostring(s.deaths)..' ('..Scoring.label(s.deaths)..')',843,y,'small',white)
         U.infoBadge(976,y+10,10)
         U.buttons[#U.buttons+1]={x=966,y=y,w=20,h=22,run=function() RunDetails.openScore(s,U.boardWorld) end,sound='go'}

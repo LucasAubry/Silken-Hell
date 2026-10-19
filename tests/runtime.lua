@@ -9,6 +9,7 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_LEADERBOARD_PROFILE_TEST')=='1' then require('tests.leaderboard_profile').run();return end
     if os.getenv('SILKEN_NEST_PREVIEW_TEST')=='1' then require('tests.nest_and_preview').run();return end
     if os.getenv('SILKEN_QUEEN_POLISH_TEST')=='1' then require('tests.queen_polish').run();return end
     if os.getenv('SILKEN_QUEEN_HEIRS_TEST')=='1' then require('tests.queen_heirs').run();return end
