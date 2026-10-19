@@ -75,11 +75,12 @@ function T.run()
    if P.phase=='portal_open' then assert(P.darkness==.62 and not P.canMove());capture('sleep') end
    if P.phase=='confront' then assert(P.carrying) end
   end
+  if P.phase=='queen_enter' and P.time>.5 and not seen.enterPicture then assert(not P.queenGone and not P.canMove());capture('queen-enter');seen.enterPicture=true end
   if P.phase=='confront' and P.time>1 and not seen.picture then capture('queen');seen.picture=true end
  end
  assert(seen.dusk and seen.portal_open and seen.arrival and seen.lift and seen.confront and seen.departure)
  assert(not seen.fall and not seen.blackout,'No tree fall or blackout')
- assert(P.queenGone and P.canMove());capture('portal')
+ assert(seen.queen_enter and seen.enterPicture,'Queen remains visible inside portal before fading');assert(P.queenGone and P.canMove());capture('portal')
  P.hero.x=P.streamX(270);P.hero.y=270;P.update(.05);assert(P.drowning)
  for i=1,23 do P.update(.05) end
  assert(P.phase=='portal_player' and P.queenGone and P.portalAmount==1 and not P.drowning,'Water respawn preserves open portal after kidnapping')
@@ -112,33 +113,7 @@ function T.run()
  arrivalCapture('closing')
  App.state='pause';local arrivalTime=startGate.arrival;startGate.advance(.5);assert(startGate.arrival==arrivalTime);App.state='playing'
  for i=1,112 do startGate.advance(.05);if i==25 then arrivalCapture('arrival') end end
- local silk=require('silk_intro')
- assert(not startGate.arrival and silk.active and #silk.threads==4,'Arrival leads into four-thread interlude')
- assert(not startGate.launch() and not startGate.press(Profile.keys.dash),'Cannot bypass silk quest')
- local function walkTo(target)
-  local steps=0
-  while not silk.exit and ((silk.actor.x-target.x)^2+(silk.actor.y-target.y)^2)^.5>18 do
-   Input.move=function()local dx,dy=target.x-silk.actor.x,target.y-silk.actor.y;local d=math.sqrt(dx*dx+dy*dy);return dx/d,dy/d end
-   startGate.advance(.025);steps=steps+1;assert(steps<1200,'Silk route is traversable')
-  end
-  Input.move=function()return 0,0 end
-  startGate.advance(.025)
- end
- for i,thread in ipairs(silk.threads) do
-  walkTo(thread);assert(silk.carried==thread and thread.taken,'Collect silk on contact')
-  if i==1 then
-   walkTo(silk.threads[2]);assert(not silk.threads[2].taken and silk.carried==thread,'Carry one thread per journey')
-  end
-  walkTo(silk.portal)
-  assert(silk.delivered==i and not silk.carried,'Deliver a new web section')
-  if i==2 then arrivalCapture('silk-weaving') end
-  if i<#silk.threads then for j=1,25 do startGate.advance(.025) end end
- end
- assert(player.x==px and player.y==py and timer==0,'Interlude does not alter campaign or replay start')
- App.state='pause';local questTime=silk.time;startGate.advance(.5);assert(silk.time==questTime);App.state='playing'
- for i=1,150 do startGate.advance(.025) end
- assert(not silk.active and startGate.active,'Rebuilt portal returns to normal campaign start')
- startGate.begin();assert(not silk.active and not startGate.arrival,'Ordinary runs never start the silk interlude')
+ assert(not startGate.arrival and startGate.active,'Arrival returns directly to normal start prompt')
  P.close();love.draw();local button
  for _,b in ipairs(UI.buttons) do if b.y==695 and b.w==350 then button=b end end
  assert(button,'Menu replay button present');button.run();assert(App.state=='prologue' and P.phase=='wander')

@@ -314,7 +314,7 @@ function App.simulate(dt)
     if liberation.busy() or App.resolveDeath() then return end
     if Ending.checkHellVictory() then return end
     local collected=require('abyss_gate').ready or (Renaissance.active and Renaissance.collect())
-    if not player.tunnelTravel and (collected or (not Renaissance.active and Campaign.canCollect() and isTouching(player,objet.larme))) then
+    if not player.tunnelTravel and (collected or (not Renaissance.active and Campaign.canCollect() and Aftermath.canEnter() and isTouching(player,objet.larme))) then
         Psyche.collect(Renaissance.active and player.x+15 or objet.larme.x+15,
             Renaissance.active and player.y+12 or objet.larme.y+20,player.x+15,player.y+12)
         Achievements.finishLevel()
@@ -393,7 +393,7 @@ function love.draw()
         end
         if queenScene then drawFrame() end
         love.graphics.setColor(1,1,1)
-        if require('silk_intro').active then require('silk_intro').draw() elseif RunStart.arrival then RunStart.drawArrivalActor() elseif Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
+        if RunStart.arrival then RunStart.drawArrivalActor() elseif Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
         if not (require('abyss_gate').active and require('abyss_gate').closing) then draw_player_beacon() end;if not Abyss.playerHidden() then Replay.drawGhost() end
         if not queenScene then drawFrame() end
         if queenScene then Campaign.drawTear(true) end

@@ -2,7 +2,6 @@
 local C={}
 local function smooth(v)v=math.max(0,math.min(1,v));return v*v*(3-2*v)end
 function C.begin()
- require('silk_intro').active=false
  C.elapsed=0;C.goAge=nil;C.countdown=nil;C.arrival=nil;C.arrivalActor=nil
  C.active=not (App.practice or App.singleLevel or App.sessionLayout or Secret.duel or Replay.playing or App.preview or os.getenv('SILKEN_PREVIEW_WORLD'))
  C.armed=not Input.speedHeld()
@@ -17,13 +16,13 @@ function C.startCountdown()
  C.active=true;C.elapsed=0;C.goAge=nil;C.countdown=3;C.armed=false
 end
 function C.launch()
- if C.arrival or require('silk_intro').active or not C.active or App.state~='playing' or Replay.playing then return false end
+ if C.arrival or not C.active or App.state~='playing' or Replay.playing then return false end
  C.active=false;C.goAge=0;C.countdown=nil;Audio.play('startRun')
  require('game_feedback').emit('start',player.x+15,player.y+12)
  return true
 end
 function C.press(binding,isrepeat)
- if C.arrival or require('silk_intro').active or C.countdown then return false end
+ if C.arrival or C.countdown then return false end
  if not C.active or binding~=Profile.keys.dash or isrepeat then return false end
  if App.state~='playing' then C.armed=false;return false end
  -- A non-repeated input event is already a fresh press, even between updates.
@@ -34,16 +33,12 @@ function C.suspend()
 end
 function C.advance(dt)
  if App.state~='playing' then C.suspend();return 0 end
- if require('silk_intro').active then
-  if require('silk_intro').update(dt) then C.armed=false;C.elapsed=0 end
-  return 0
- end
  if C.arrival then
   local step=math.min(dt,.05);C.arrival=C.arrival+step
   local a=C.arrivalActor;local oldY=a.y
   a.y=a.targetY-75+75*smooth((C.arrival-1.4)/1.9)
   require('brown_walk').advance(a,a.y-oldY,step)
-  if C.arrival>=9.5 then C.arrival=nil;C.armed=false;C.elapsed=0;require('silk_intro').begin(C.arrivalActor,C.arrivalPortal) end
+  if C.arrival>=9.5 then C.arrival=nil;C.armed=false;C.elapsed=0 end
   return 0
  end
  if not C.active then if C.goAge then C.goAge=C.goAge+dt end;return dt end
@@ -99,13 +94,12 @@ function C.drawArrival()
  g.setColor(1,.91,.65,.5*title);g.setLineWidth(1);g.line(560,116,640,116)
  local story=smooth((t-4.2)/.8)*out
  g.setColor(.025,.04,.035,.88*story);g.rectangle('fill',140,562,920,98,14)
- UI.text('Le portail s’est refermé… Avec des fils de soie, je peux reconstruire sa toile.',165,582,'medium',{1,.96,.84,story},870,'center')
+ UI.text('Le portail s’est refermé… Elle est passée par ici. Je dois retrouver sa trace.',165,582,'medium',{1,.96,.84,story},870,'center')
  g.pop()
 end
 function C.draw()
  if App.state~='playing' or Replay.playing then return end
  if C.arrival then C.drawArrival();return end
- if require('silk_intro').active then require('silk_intro').drawUI();return end
  if not C.active and (not C.goAge or C.goAge>=.18) then return end
  local g=love.graphics;local T=require('localization').text
  if C.countdown then

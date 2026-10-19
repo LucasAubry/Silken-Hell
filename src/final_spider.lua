@@ -207,7 +207,7 @@ local function updateBehavior(dt)
    require('brown_walk').advance(b,length(b.x-x,b.y-y),dt)
   end
   Aftermath.update(dt)
-  if Campaign.canCollect() and isTouching(player,objet.larme) then
+  if Campaign.canCollect() and Aftermath.canEnter() and isTouching(player,objet.larme) then
    require('psychedelic_fx').collect(objet.larme.x+15,objet.larme.y+20,player.x+15,player.y+12)
    Profile.record('tears');objet.larme.taken=true;Ending.openReunion()
   end

@@ -152,7 +152,9 @@ function P.update(dt)
   if P.time>=6.5 then P.transition('departure') end
  elseif P.phase=='departure' then
   move(P.queen,P.portal.x,P.portal.y,145,dt)
-  if distance(P.queen,P.portal)<4 then P.queenGone=true;P.transition('portal_player') end
+  if distance(P.queen,P.portal)<4 then P.transition('queen_enter') end
+ elseif P.phase=='queen_enter' then
+  if P.time>=1.8 then P.queenGone=true;P.transition('portal_player') end
  elseif P.phase=='portal_player' then
   P.darkness=math.max(.32,P.darkness-dt*.12)
   if distance(hero,P.portal)<46 then P.transition('enter') end
@@ -236,10 +238,10 @@ function P.draw(w,h)
   end},
   {y=P.queen.y,draw=function()
  if (P.phase=='arrival' or P.phase=='lift' or P.carrying) and not P.queenGone then
-  local q=P.queen;local fade=P.phase=='departure' and clamp(distance(q,P.portal)/58,0,1) or 1
+  local q=P.queen;local fade=P.phase=='queen_enter' and 1-ease((P.time-.35)/1.45) or 1
   shadow(q.x,q.y,Characters.playerWidth);g.setColor(1,1,1,fade)
   if P.carrying then
-   P.drawCarrier(q,Characters.playerWidth)
+   P.drawCarrier(q,Characters.playerWidth*(.7+.3*fade))
   else ArtSet.spider('queen',q.x,q.y,Characters.playerWidth,q.angle,q) end
  end
   end}

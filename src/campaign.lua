@@ -245,11 +245,13 @@ function C.tearCarried()
     return not Renaissance.active and C.carrier~=nil and not objet.larme_dropped
 end
 function C.drawTear(overlay)
-    if require('silk_intro').active then return end
     if require('boss_liberation').busy() then return end
     if Ending.active and not require('final_spider').defeated then return end
     if Renaissance.active then Renaissance.drawEggs();return end
-    if Aftermath.cleared and not overlay then return end
+    if Aftermath.cleared then
+        if overlay then Aftermath.drawPortal() end
+        return
+    end
     if objet.larme.abyssHeld or (C.carrier and not objet.larme_dropped and (Realms.underground(C.carrier) or C.carrier.tunnelTravel)) then return end
     local g=love.graphics
     if not objet.larme.taken then
