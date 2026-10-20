@@ -42,17 +42,17 @@ local function cloud(w,h,camera,t,opacity)
  E.cloud=E.cloud or g.newShader(love.filesystem.read('assets/shaders/sky_clouds.glsl')..[[
   extern vec2 dimensions;extern float camera;extern float clock;extern float opacity;
   vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel){
-   vec2 q=(pixel/dimensions-vec2(.46,.31-camera))*vec2(1.,1.);
+   vec2 q=(pixel/dimensions-vec2(.21,.31-camera))*vec2(1.,1.);
    float mass=0.;
    for(int i=0;i<5;i++){
     float k=float(i);float crown=1.-abs(k-2.)*.5;
     vec2 c=vec2((k-2.)*.045,-.035*crown+sin(k*2.)*.008);
-    vec2 d=(q-c)/vec2(.046,.035+.023*crown);mass+=exp(-dot(d,d)*1.7);
+    vec2 d=(q-c)/vec2(.057,.044+.028*crown);mass+=exp(-dot(d,d)*1.7);
    }
    float n=skyNoise(q*60.+vec2(clock*.035,0.));
-   float a=smoothstep(.09,.65,mass+n*.045);
+   float a=smoothstep(.08,.42,mass+n*.045);
    float light=1.-smoothstep(-.06,.055,q.y);
-   vec3 c=mix(vec3(.57,.72,.86),vec3(.97,.98,1.),light);
+   vec3 c=mix(vec3(.48,.66,.84),vec3(.97,.98,1.),light);
    c+=vec3(.025)*(n-.5);
    return vec4(c,a*opacity);
   }
@@ -72,28 +72,16 @@ function E.draw(canvas,w,h)
  local underground=ease((t-2.9)/3.1)
  decor.backdrop(5,w,h,t,underground,p.rappel)
  require('sky_arrival').drawClouds(w,h,t*.35,(1-underground)*(.16+.42*math.exp(-((t-3.8)/1.2)^2)))
- -- Roots and stone edges pass the lens while the camera follows the silk underground.
- if underground>0 and p.mapAlpha<1 then
-  local alpha=underground*(1-p.mapAlpha)
-  for side=-1,1,2 do
-   for i=1,12 do
-    local rx=(side<0 and .035 or .965)*w+math.sin(i*1.7)*w*.025
-    local ry=(i*.13-.6*p.rappel)*h
-    decor.rock(rx,ry,w*(.055+i%3*.014),i,alpha)
-    g.setColor(.19,.13,.06,alpha);g.setLineWidth(2*scale)
-    g.line(rx,ry,rx-side*w*.06,ry+h*.05,rx-side*w*.065,ry+h*.12)
-   end
-  end
- end
+ decor.caveEdges(w,h,t,p.rappel,underground*(1-p.mapAlpha))
  decor.reveal(canvas,E.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
  local veil=ease((t-2.5)/1.5)*(1-ease((t-7.1)/2))
- decor.mist(w,h,t,veil*.48,0)
- local anchorX,anchorY=w*.5,h*(.31-p.camera)
+ decor.mist(w,h,t,veil*.22,0)
+ local anchorX,anchorY=w*.25,h*(.31-p.camera)
  local ax=w*(.5+math.sin(p.angle)*.035)
  local ay=h*(.31-p.camera+math.cos(p.angle)*p.length)
  if t<1.6 then
   local catchX=w*(.5+math.sin(.10)*.035);local catchY=h*(.31+math.cos(.10)*.24)
-  ax=w*.45+(catchX-w*.45)*p.jump
+  ax=w*.21+(catchX-w*.21)*p.jump
   ay=h*.235+(catchY-h*.235)*p.jump-math.sin(p.jump*math.pi)*h*.13
  end
  ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress-p.lift*scale

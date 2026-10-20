@@ -34,11 +34,18 @@ function S.backdrop(world,w,h,time,alpha,depth)
     c=mix(vec3(.025,.15,.23),vec3(.075,.37,.41),n);
     c+=vec3(.075,.15,.13)*rays+vec3(.025,.065,.055)*smoothstep(.48,.62,waves);
    }else{
-    float sediment=fbm(p*vec2(13.,4.)+drift);
-    float grain=noise(p*190.+drift);
-    c=mix(vec3(.085,.06,.03),vec3(.32,.235,.12),n);
-    c+=vec3(.055,.038,.015)*sediment+(grain-.5)*.018;
-    float side=smoothstep(.23,.7,abs(p.x));c*=1.-side*.48;
+    vec2 stone=p+vec2(0.,depth*.55);
+    float sediment=fbm(stone*vec2(18.,8.));
+    float grain=noise(stone*240.);
+    float strata=sin(stone.y*90.+fbm(stone*7.)*13.);
+    float ridge=pow(1.-abs(strata),5.);
+    float moss=smoothstep(.52,.75,fbm(stone*15.+vec2(7.,3.)));
+    c=mix(vec3(.075,.065,.045),vec3(.39,.245,.115),sediment);
+    c=mix(c,vec3(.16,.29,.12),moss*.65);
+    c+=vec3(.11,.065,.025)*ridge+(grain-.5)*.045;
+    float glow=pow(max(0.,sin(stone.x*21.+stone.y*9.)),30.)*smoothstep(.67,.83,noise(stone*32.));
+    c+=vec3(.12,.40,.30)*glow*(.8+.2*sin(clock*1.2));
+    float side=smoothstep(.23,.8,abs(p.x));c*=1.-side*.35;
    }
    return vec4(c,opacity);
   }
@@ -96,18 +103,50 @@ function S.material(wood)
 end
 function S.rock(x,y,r,seed,alpha)
  local g=love.graphics;local points={}
- for i=0,7 do
-  local a=i*math.pi/4;local radius=r*(.82+.14*math.sin(seed*5+i*3.7))
-  points[#points+1]=x+math.cos(a)*radius;points[#points+1]=y+math.sin(a)*radius*.65
+ for i=0,47 do
+  local a=i*math.pi/24;local radius=r*(.90+.055*math.sin(seed*5+a*3)+.035*math.sin(a*5+seed))
+  points[#points+1]=x+math.cos(a)*radius;points[#points+1]=y+math.sin(a)*radius*.72
  end
- S.material(false);g.setColor(.30,.24,.15,alpha);g.polygon('fill',points);g.setShader()
- g.setColor(.43,.35,.22,(alpha or 1)*.55);g.setLineWidth(1)
- g.line(points[9],points[10],points[11],points[12],points[13],points[14],points[15],points[16])
+ S.material(false);g.setColor(.37,.27,.15,alpha);g.polygon('fill',points);g.setShader()
+ -- Fine mineral seams and patches of moss break up the rounded rock surface.
+ for j=1,4 do
+  local line={}
+  for i=0,16 do
+   local u=i/16;line[#line+1]=x-r*.65+u*r*1.3
+   line[#line+1]=y+r*((j-2.5)*.22+math.sin(u*5+seed+j)*.045)
+  end
+  g.setColor(.61,.41,.20,(alpha or 1)*.30);g.setLineWidth(1);g.line(line)
+ end
+ for i=1,9 do
+  local u=(i*.618+seed*.13)%1
+  g.setColor(.22,.38,.13,(alpha or 1)*.65)
+  g.ellipse('fill',x+(u-.5)*r*1.4,y-r*.38+math.sin(i+seed)*r*.1,r*.10,r*.045,20)
+ end
+end
+function S.caveEdges(w,h,t,depth,alpha)
+ if alpha<=0 then return end
+ local g=love.graphics
+ for side=-1,1,2 do
+  for i=-1,8 do
+   local ry=(i*.18-depth*.38)*h
+   local rx=(side<0 and -.025 or 1.025)*w+math.sin(i*1.7)*w*.025
+   S.rock(rx,ry,w*(.105+.015*math.sin(i)),i+5,alpha)
+   local mx=rx-side*w*.09
+   S.mushroom(mx,ry+h*.015,w*.014,alpha)
+  end
+ end
+ for i=1,26 do
+  local x=w*(.07+((i*.618)%1)*.86)+math.sin(t*.7+i)*5
+  local y=h*((i*.173-t*.018+depth*.2)%1)
+  local pulse=.5+.5*math.sin(t*1.4+i*2)
+  g.setColor(.40,.85,.52,alpha*.07*pulse);g.circle('fill',x,y,7)
+  g.setColor(.65,.94,.47,alpha*.65*pulse);g.circle('fill',x,y,1.4)
+ end
 end
 function S.mushroom(x,y,size,alpha)
  local g=love.graphics
  g.setColor(.55,.43,.23,alpha);g.rectangle('fill',x-size*.11,y,size*.22,size*.6)
- g.setColor(.48,.19,.075,alpha);g.ellipse('fill',x,y,size*.65,size*.30,12)
+ g.setColor(.68,.29,.10,alpha);g.ellipse('fill',x,y,size*.65,size*.30,28)
  g.setColor(.88,.65,.32,alpha*.8)
  for i=1,4 do g.circle('fill',x+(i-2.5)*size*.23,y+math.sin(i*3)*size*.09,size*.06) end
 end
