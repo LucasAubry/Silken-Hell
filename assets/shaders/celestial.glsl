@@ -9,11 +9,17 @@ vec4 effect(vec4 color, Image tex, vec2 uv, vec2 pixel) {
     float bend=sin(r*12.0-time*.35+sin(a*3.0))*.035;
     float mist=sin(p.x*4.0+sin(p.y*5.0+time*.18))*sin(p.y*4.0-time*.12+bend*15.0);
     vec3 c=deep*.15+fog*(mist*.5+.5)*.35;
-    if (biome==1.0) c=mix(vec3(.09,.12,.23),vec3(.30,.34,.46),mist*.5+.5);
+    if (biome==1.0) {
+        // Paradise's champagne marble, with pearl-blue shadows and ivory light.
+        float veil=smoothstep(-.8,.9,mist);
+        c=mix(vec3(.19,.27,.32),vec3(.62,.59,.48),veil);
+        float dawn=exp(-length((p-vec2(-.32,-.3))*vec2(.9,1.25))*1.5);
+        c=mix(c,vec3(.87,.80,.63),dawn*.48);
+    }
     if (biome==1.0 || biome==3.0) {
         float halo=exp(-abs(r-.52-bend)*60.0);
         float rays=pow(max(0.0,sin(a*22.0+time*.045)),14.0)*exp(-r*1.8);
-        c+=(biome==1.0 ? vec3(.83,.80,.99) : accent)*(halo*.65+rays*.3);
+        c+=(biome==1.0 ? vec3(1.,.88,.62) : accent)*(halo*(biome==1.0 ? .40 : .65)+rays*(biome==1.0 ? .16 : .3));
         if (biome==3.0) {
             c+=vec3(.8,.75,.76)*halo*.4;
             float wings=exp(-pow((abs(p.x)-.6)*3.0,2.0)-pow((p.y+.2+abs(p.x)*.25)*4.0,2.0));
@@ -21,8 +27,8 @@ vec4 effect(vec4 color, Image tex, vec2 uv, vec2 pixel) {
         }
         if (biome==1.0) {
             float cloud=smoothstep(.0,.95,mist)*(.4+.6*uv.y);
-            c+=vec3(.82,.88,1.)*cloud*.20;
-            c+=vec3(1.,.92,.80)*exp(-r*2.8)*.12;
+            c+=vec3(.92,.94,1.)*cloud*.13;
+            c+=vec3(1.,.93,.76)*exp(-r*2.8)*.14;
         }
     } else if (biome==6.0) {
         // Open sky currents: elongated, drifting spirals instead of a circular halo.
