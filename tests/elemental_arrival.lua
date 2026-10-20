@@ -15,7 +15,7 @@ function T.run()
   assert(C.arrivalKind==route.kind and Campaign.biome==route.to and player.level==1)
   local S=C.scene();local px,py=player.x,player.y;local rng=love.math.getRandomState();local ticks=0;local shots={}
   assert(S.pose(8.4).actorsAlpha==0 and S.pose(9).actorsAlpha>0)
-  if route.kind=='hell' then assert(S.pose(1).release==0 and S.pose(4).release>0 and S.pose(5).bubble==0,'Bubble and lamp leave together in the steam') end
+  if route.kind=='hell' then assert(S.pose(4).release==0 and S.pose(5.5).release>0 and S.pose(6.2).bubble==0,'Equipment remains attached underwater and fades only inside the hot vapor') end
   for _,t in ipairs({2,3.8,4,5.8,6.2}) do
    for _,key in ipairs({'x','y'}) do
     local dt=.0001;local before=S.pose(t-dt)[key];local at=S.pose(t)[key];local after=S.pose(t+dt)[key]
