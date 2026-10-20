@@ -4,7 +4,8 @@ function T.run()
  LevelLayouts.disabled=true;Replay.disabled=true;Replay.playing=false;Replay.recording=false
  App.practice=nil;App.singleLevel=false;App.preview=false;App.historyPreview=nil;App.hardcore=false;App.sessionLayout=nil;Secret.duel=nil
  Input.speedHeld=function()return false end
- local C=require('run_start');local O=require('ocean_arrival');local bubble=require('breathing_bubble')
+ local C=require('run_start');local O=require('ocean_arrival')
+ local function pose(t)return O.pose(O.timelineTime(t))end;local bubble=require('breathing_bubble')
  local function capture(name)
   local g=love.graphics;local c=g.newCanvas(g.getDimensions());local setCanvas=g.setCanvas
   g.push('all');setCanvas(c);g.setCanvas=function(target,...)if target==nil then return setCanvas(c) end;return setCanvas(target,...)end
@@ -16,17 +17,17 @@ function T.run()
  assert(App.state=='entry' and App.selectedWorld==4 and App.entryFromWorld==5)
  App.draftName='Ocean arrival';App.submit()
  assert(C.arrivalKind=='ocean' and Campaign.world==4 and Campaign.biome==4 and player.level==1)
- assert(not O.pose(1).equipped and O.pose(2.4).equip>0 and O.pose(3.2).equipped and O.pose(3.2).dive==0,'Find and equip the bubble before entering water')
- assert(O.pose(3).grounded and O.pose(3.3).y>0 and O.pose(3.75).y<0,'Feet stay on the bank, then compress and push off into an arc')
- assert(O.pose(5.6).swim>0 and O.pose(5.6).dir=='up','Swims toward the destination after submerging')
+ assert(not pose(1).equipped and pose(2.4).equip>0 and pose(3.2).equipped and pose(3.2).dive==0,'Find and equip the bubble before entering water')
+ assert(pose(3).grounded and pose(3.3).y>0 and pose(3.75).y<0,'Feet stay on the bank, then compress and push off into an arc')
+ assert(pose(5.6).swim>0 and pose(5.6).dir=='up','Swims toward the destination after submerging')
  for _,t in ipairs({1.8,3,3.3,3.75,4.3,4.8,5.2,5.4,6.2}) do
   for _,key in ipairs({'x','y'}) do
-   local dt=.0001;local before=O.pose(t-dt)[key];local at=O.pose(t)[key];local after=O.pose(t+dt)[key]
+   local dt=.0001;local before=pose(t-dt)[key];local at=pose(t)[key];local after=pose(t+dt)[key]
    assert(math.abs((at-before)/dt-(after-at)/dt)<.01,'Continuous velocity from push-off through water entry and swimming')
   end
  end
- assert(O.pose(6.1).underwater==1 and O.pose(8.1).mapAlpha==1)
- assert(O.pose(7.45).actorsAlpha==0 and O.pose(O.duration).actorsAlpha==1,'Creatures appear gradually after landing')
+ assert(pose(6.1).underwater==1 and pose(8.1).mapAlpha==1)
+ assert(O.pose(4.6).actorsAlpha==0 and O.pose(5.3).actorsAlpha==O.pose(5.3).mapAlpha and O.pose(O.duration).actorsAlpha==1,'Creatures and scenery share the reveal')
  local drawAt=bubble.drawAt;local bubbleDrawn=0
  bubble.drawAt=function(...)bubbleDrawn=bubbleDrawn+1;return drawAt(...)end
  local px,py=player.x,player.y;local rng=love.math.getRandomState();local shots={};local ticks=0
@@ -36,7 +37,7 @@ function T.run()
   C.advance(.05);ticks=ticks+1;assert(ticks<250)
   assert(player.x==px and player.y==py and timer==0 and love.math.getRandomState()==rng,'No simulation or RNG changes')
   for _,shot in ipairs({{'discovery',1.4},{'equip',2.4},{'helmet',3.2},{'spring',4.2},{'surface-crossing',4.5},{'submerged',5.2},{'current',5.8},{'ocean',7},{'landed',8},{'creatures',9.2},{'settled',10.3}}) do
-   if C.arrival and C.arrival>=shot[2] and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
+   if C.arrival and C.arrival>=O.timelineTime(shot[2]) and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
   end
  end
  assert(O.environment,'Environment is captured before the creatures are drawn')

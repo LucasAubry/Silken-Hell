@@ -64,4 +64,4 @@ function S.draw(canvas,w,h)
  g.setColor(1,1,1);Characters.draw(ax,ay,size,p.dir,S.actor,3)
  g.pop()
 end
-return S
+return require('arrival_timing').fit(S)

@@ -82,4 +82,4 @@ function S.draw(canvas,w,h)
  decor.mist(w,h,t+.7,steam*.23,.25)
  g.pop()
 end
-return S
+return require('arrival_timing').fit(S)

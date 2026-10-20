@@ -593,8 +593,13 @@ function App.leaveCustom()
     App.hardcore=false;Hardcore.notice=nil;Secret.duel=nil;App.practice=nil;App.sessionLayout=nil; App.singleLevel=false; App.workshopMap=nil; App.state='menu'
 end
 function App.restartCurrent()
+    local trainingRetry=App.state=='customVictory' and App.practice and not Secret.duel
     if Secret.duel then Secret.duel.time=0 end
     App.start(Campaign.world)
+    if trainingRetry then
+        RunStart.arrival=nil;RunStart.arrivalKind=nil;RunStart.arrivalPractice=false
+        RunStart.waitForInput()
+    elseif Secret.duel then RunStart.waitForInput() end
 end
 function App.restartLevel()
     if App.state~='playing' or Replay.playing or RunStart.arrival then return end

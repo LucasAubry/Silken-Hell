@@ -83,4 +83,4 @@ function B.draw(canvas,w,h)
  bubble.drawLantern(lampX,lampY,r,t*(1-p.progress),nil,1,p.dir)
  g.pop()
 end
-return B
+return require('arrival_timing').fit(B)

@@ -119,10 +119,7 @@ function S.reveal(canvas,environment,w,h,mapAlpha,actorsAlpha,shader,offsetX)
  if mapAlpha<=0 then return end
  local g=love.graphics;local scale,x,y=App.viewport(w,h)
  g.push('all');g.translate(offsetX or 0,0);g.setShader(shader);g.setBlendMode('alpha','premultiplied')
- g.setColor(mapAlpha,mapAlpha,mapAlpha,mapAlpha);g.draw(environment or canvas,x,y,0,scale,scale)
- if actorsAlpha>0 then
-  g.setColor(actorsAlpha,actorsAlpha,actorsAlpha,actorsAlpha);g.draw(canvas,x,y,0,scale,scale)
- end
+ g.setColor(mapAlpha,mapAlpha,mapAlpha,mapAlpha);g.draw(canvas,x,y,0,scale,scale)
  g.pop()
 end
 local function grainShader()

@@ -96,7 +96,7 @@ function E.draw(canvas,w,h)
  decor.caveEdges(w,h,t,p.rappel,underground*(1-p.mapAlpha))
  decor.reveal(canvas,E.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
  local veil=ease((t-3.3)/1.5)*(1-ease((t-7.1)/2))
- decor.mist(w,h,t,veil*.22,0)
+ decor.mist(w,h,t,veil*.22*(1-p.mapAlpha),0)
  local tether=E.cloudState(2,t)
  local anchorX,anchorY=w*tether.x,h*(tether.y-p.camera)
  local ax,ay=w*p.x,h*p.y
@@ -115,4 +115,4 @@ function E.draw(canvas,w,h)
  g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,E.actor,p.mapAlpha>0 and 5 or 6);g.pop()
  g.pop()
 end
-return E
+return require('arrival_timing').fit(E)

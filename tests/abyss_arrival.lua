@@ -5,6 +5,7 @@ function T.run()
  App.practice=nil;App.singleLevel=false;App.preview=false;App.historyPreview=nil;App.hardcore=false;App.sessionLayout=nil;Secret.duel=nil
  Input.speedHeld=function()return false end
  local C=require('run_start');local B=require('abyss_arrival')
+ local function pose(t)return B.pose(B.timelineTime(t))end
  local function capture(name)
   local g=love.graphics;local c=g.newCanvas(g.getDimensions());local setCanvas=g.setCanvas
   g.push('all');setCanvas(c);g.setCanvas=function(target,...)if target==nil then return setCanvas(c) end;return setCanvas(target,...)end
@@ -13,11 +14,11 @@ function T.run()
  Profile.complete(4,10,0);App.openEntry(7,false,4);App.draftName='Abyss arrival';App.submit()
  assert(C.arrivalKind=='abyss' and Campaign.world==7 and Campaign.biome==7 and player.level==1)
  assert(Art.images.jelly_right and Art.images.cinematic_tear,'Guide uses the existing jelly PNG and tear asset')
- assert(B.pose(1).equip==0 and B.pose(2.7).equip>0 and B.pose(3.7).equip==1,'Lamp travels from guide to helmet before the dark passage')
- assert(B.pose(0).x<0 and B.pose(5).x<.5,'Enters from the left and remains left during destination reveal')
- assert(B.pose(7.25).actorsAlpha==0 and B.pose(B.duration).actorsAlpha==1,'Creatures appear after the swimmer settles')
+ assert(pose(1).equip==0 and pose(2.7).equip>0 and pose(3.7).equip==1,'Lamp travels from guide to helmet before the dark passage')
+ assert(pose(0).x<0 and pose(5).x<.5,'Enters from the left and remains left during destination reveal')
+ assert(B.pose(4.6).actorsAlpha==0 and B.pose(5.3).actorsAlpha==B.pose(5.3).mapAlpha and B.pose(B.duration).actorsAlpha==1,'Creatures and scenery share the reveal')
  for _,t in ipairs({1.5,3.6,5.6,7.8}) do
-  local dt=.0001;local before=B.pose(t-dt).x;local at=B.pose(t).x;local after=B.pose(t+dt).x
+  local dt=.0001;local before=pose(t-dt).x;local at=pose(t).x;local after=pose(t+dt).x
   assert(math.abs((at-before)/dt-(after-at)/dt)<.01,'Current does not snap swimmer velocity')
  end
  local px,py=player.x,player.y;local rng=love.math.getRandomState();local shots={};local ticks=0
@@ -27,7 +28,7 @@ function T.run()
   C.advance(.05);ticks=ticks+1;assert(ticks<230)
   assert(player.x==px and player.y==py and timer==0 and love.math.getRandomState()==rng)
   for _,shot in ipairs({{'current',1.5},{'lamp-transfer',2.7},{'fissure',3.8},{'entry-left',5.4},{'landing',7.8},{'settled',9.5}}) do
-   if C.arrival and C.arrival>=shot[2] and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
+   if C.arrival and C.arrival>=B.timelineTime(shot[2]) and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
   end
  end
  assert(B.environment and C.active and direction=='up' and B.pose(B.duration).progress==1)

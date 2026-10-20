@@ -113,4 +113,4 @@ function O.draw(canvas,w,h)
  end
  g.pop()
 end
-return O
+return require('arrival_timing').fit(O)
