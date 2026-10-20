@@ -1,7 +1,7 @@
 -- A small bootstrap scene: only the real spider and silk are needed before preload.
 local S={}
 local g=love.graphics
-local anchors={{-100,40},{120,-180},{500,-160},{780,-25},{880,300},{740,500},{370,520},{100,470},{-120,300}}
+local anchors={{55,105},{195,-30},{450,-20},{640,65},{700,290},{600,455},{365,480},{190,420},{100,285}}
 local function glow(x,y,r,c,alpha)
  g.setBlendMode('add')
  g.setColor(c[1],c[2],c[3],alpha*.55);g.draw(S.halo,x,y,0,r,r)
@@ -43,23 +43,20 @@ function S.draw(w,h,time)
  g.push();g.translate(0,sway)
  local cx,cy=355,255
  for _,p in ipairs(anchors) do curve(cx,cy,p[1],p[2],5,.85) end
- for ring=1,6 do
-  local t=ring/7
+ for ring=1,5 do
+  local t=ring/6
   for i,p in ipairs(anchors) do
    local q=anchors[i%#anchors+1]
    curve(cx+(p[1]-cx)*t,cy+(p[2]-cy)*t+math.sin(t*math.pi)*5,cx+(q[1]-cx)*t,cy+(q[2]-cy)*t+math.sin(t*math.pi)*5,12*t,.85)
   end
  end
  -- Single support strands continue out of the web into the rock face.
- curve(780,-25,1450,70,100,.7)
- curve(880,300,1450,185,85,.8)
- curve(740,500,1450,515,45,.8)
- curve(370,520,330,950,8,.8)
- -- Long cross-cavern supports carry the web all the way beneath both rock edges.
- curve(-250,110,1450,240,105,.65)
- curve(-250,290,1450,390,80,.7)
- curve(-250,440,1450,500,35,.6)
- curve(500,-160,1450,370,65,.65)
+ curve(640,65,1280,10,85,.6)
+ curve(700,290,1280,210,80,.75)
+ curve(600,455,1280,560,38,.75)
+ -- Only the two lower spokes are extended, beneath the foreground rocks.
+ curve(365,480,385,930,5,.85)
+ curve(190,420,-250,860,5,.85)
  -- Silk contacts sit under the actual feet, with the same sway as the web.
  local sx,sy=265,167
  for _,v in ipairs({{-48,-20},{-52,5},{-45,30},{46,-20},{51,5},{44,30}}) do
