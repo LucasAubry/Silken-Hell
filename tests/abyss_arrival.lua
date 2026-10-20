@@ -13,8 +13,13 @@ function T.run()
  end
  Profile.complete(4,10,0);App.openEntry(7,false,4);App.draftName='Abyss arrival';App.submit()
  assert(C.arrivalKind=='abyss' and Campaign.world==7 and Campaign.biome==7 and player.level==1)
- assert(Art.images.jelly_right and Art.images.cinematic_tear,'Guide uses the existing jelly PNG and tear asset')
- assert(pose(1).equip==0 and pose(2.7).equip>0 and pose(3.7).equip==1,'Lamp travels from guide to helmet before the dark passage')
+ assert(pose(2).camera==0 and pose(3.6).equip==1,'Camera holds on the visible lamp pickup')
+ assert(pose(5).worldX>.97 and pose(5).camera>0,'Spider crosses the breach with the following camera')
+ assert(require('wreck_scenery').right-pose(6.4).camera<0,'Wreck physically leaves the frame before landing')
+ local entryX=B.position(B.timelineTime(6.4),1200,750,600,375)
+ assert(entryX<600,'Enters the destination from the left')
+ local endX,endY=B.position(B.duration,1200,750,600,375);assert(endX==600 and endY==375,'Ends on the actual gameplay spawn')
+ assert(pose(1).equip==0 and pose(2.7).equip>0 and pose(3.7).equip==1,'Lamp travels from the cabin hook to the helmet before exiting')
  assert(pose(0).x<0 and pose(5).x<.5,'Enters from the left and remains left during destination reveal')
  assert(B.pose(4.6).actorsAlpha==0 and B.pose(5.3).actorsAlpha==B.pose(5.3).mapAlpha and B.pose(B.duration).actorsAlpha==1,'Creatures and scenery share the reveal')
  for _,t in ipairs({1.5,3.6,5.6,7.8}) do
@@ -27,14 +32,14 @@ function T.run()
   assert(not C.press(Profile.keys.dash) and not C.launch())
   C.advance(.05);ticks=ticks+1;assert(ticks<230)
   assert(player.x==px and player.y==py and timer==0 and love.math.getRandomState()==rng)
-  for _,shot in ipairs({{'current',1.5},{'lamp-transfer',2.7},{'fissure',3.8},{'entry-left',5.4},{'landing',7.8},{'settled',9.5}}) do
+  for _,shot in ipairs({{'wreck-approach',1.3},{'lamp-transfer',2.7},{'helmet',3.7},{'breach',4.9},{'entry-left',6.2},{'landing',7.8}}) do
    if C.arrival and C.arrival>=B.timelineTime(shot[2]) and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
   end
  end
  assert(B.environment and C.active and direction=='up' and B.pose(B.duration).progress==1)
  capture('gameplay');assert(C.press(Profile.keys.dash));assert(C.advance(.016)==.016)
  App.openEntry(7,false);App.draftName='Direct abyss';App.submit();assert(C.arrivalKind=='brief')
- print('PASS Abyss arrival: Ocean campaign handoff, left entrance, smooth current, lantern, destination reveal, pause and frozen scoring/RNG')
+ print('PASS Abyss arrival: Ocean campaign handoff, wreck cabin pickup, camera follows breach exit, left entrance, destination reveal, pause and frozen scoring/RNG')
  love.event.quit()
 end
 return T
