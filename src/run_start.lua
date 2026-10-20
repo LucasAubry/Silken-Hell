@@ -102,7 +102,7 @@ function C.advance(dt)
     if C.rememberTransition then
      Profile.transitionsSeen=Profile.transitionsSeen or {};Profile.transitionsSeen[tostring(C.rememberTransition)]=true;Profile.save();C.rememberTransition=nil
     end
-    C.arrival=nil;C.arrivalKind=nil;C.launch();C.goAge=nil
+    C.arrival=nil;C.arrivalKind=nil;C.armed=false;C.elapsed=0;C.goAge=nil
    end
    return 0
   end
@@ -112,7 +112,7 @@ function C.advance(dt)
   if C.arrival>=(C.arrivalBrief and 4.9 or 12.5) and App.historyPreview then require('history').close();return 0 end
   if C.arrival>=(C.arrivalBrief and 4.9 or 12.5) then
    C.arrival=nil;C.armed=false;C.elapsed=0
-   if C.arrivalPractice then C.arrivalPractice=false;C.launch();C.goAge=nil end
+   C.arrivalPractice=false;C.goAge=nil
   end
   return 0
  end

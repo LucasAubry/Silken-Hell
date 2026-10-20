@@ -40,7 +40,7 @@ function T.run()
   if age>S.exitDuration then local pose=S.pose(age);assert(pose.zoom<=lastZoom and pose.zoom>=1 and pose.dir=='up','Full-screen sky and rear view throughout descent');lastZoom=pose.zoom end
  end
  require('prologue').drawPortal=portal
- assert(not C.active and C.goAge==nil,'Landing starts the map automatically')
+ assert(C.active and C.goAge==nil,'Landing waits for the start input')
  local pose=S.pose(S.duration+S.exitDuration)
  assert(pose.zoom==1 and pose.tilt==1 and pose.angle==0 and pose.height==0 and pose.size==1 and direction=='up','Final camera and sprite match gameplay exactly')
  capture('gameplay')

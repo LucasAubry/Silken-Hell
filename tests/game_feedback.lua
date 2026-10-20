@@ -58,7 +58,7 @@ function T.run()
  assert(Replay.play(recording) and not C.active,'Spectator playback starts directly')
  for _=1,2400 do if not Replay.playing then break end;love.update(1/47) end
  assert(Replay.status=='Lecture terminée.','Gameplay feedback keeps replay deterministic: '..Replay.status)
- App.practice=3;App.singleLevel=true;App.sessionLayout=nil;startReady(1);assert(not C.active,'Training starts after its portal')
+ App.practice=3;App.singleLevel=true;App.sessionLayout=nil;startReady(1);assert(C.active,'Training waits after its portal');C.press(Profile.keys.dash)
  App.practice=nil;App.sessionLayout=maps['1:1'];startReady(1);assert(not C.active,'Workshop starts immediately')
  App.singleLevel=false;App.sessionLayout=nil;App.preview=true;startReady(1);assert(not C.active,'Editor preview starts immediately');App.preview=false
  App.hardcore=true;startReady(8);assert(C.active,'Ranked Sanctuary gets the start prompt');C.press(Profile.keys.dash)

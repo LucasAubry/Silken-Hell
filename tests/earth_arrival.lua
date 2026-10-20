@@ -41,9 +41,9 @@ function T.run()
    if C.arrival and C.arrival>=shot[2] and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
   end
  end
- assert(not C.active and C.goAge==nil and direction=='up')
+ assert(C.active and C.goAge==nil and direction=='up')
  local pose=E.pose(E.duration);assert(pose.progress==1 and pose.size==1 and pose.lift==0 and pose.mapAlpha==1)
- capture('gameplay');assert(C.advance(.016)==.016,'Normal gameplay resumes after landing')
+ capture('gameplay');assert(C.press(Profile.keys.dash));assert(C.advance(.016)==.016,'Normal gameplay resumes after landing')
  App.openEntry(5,false);App.draftName='Direct Earth';App.submit();assert(C.arrivalKind=='brief','Repeat Earth launch uses a short rappel')
  print('PASS Earth arrival: correct campaign order, Sky continuation, cloud/jump/web catch/rappel/cave landing, actual Earth landing, pause, frozen scoring/RNG and gameplay resumption')
  love.event.quit()

@@ -16,13 +16,12 @@ function T.run()
   local S=C.scene();local px,py=player.x,player.y;local rng=love.math.getRandomState();local ticks=0;local shots={}
   assert(S.pose(S.duration).actorsAlpha==1,'Creatures are fully revealed at gameplay handoff')
   if route.kind=='hell' then
-   assert(S.pose(7.2).mapAlpha==1,'Hell map is visible before the return reaches the floor')
-   local _,bottom=S.position(6.6,1200,750,600,375);assert(bottom<750 and bottom>533,'Spider turns while still on screen')
-   local _,rise=S.position(8.2,1200,750,600,375);assert(rise<bottom and rise>375,'Spider returns from the visible turn toward its spawn')
+   assert(S.pose(5).mapAlpha>0 and S.pose(8).mapAlpha<1,'Long continuous environment dissolve')
+   local _,early=S.position(4,1200,750,600,375);local _,late=S.position(8,1200,750,600,375);assert(late>early and late<375,'Continuous descent without reversing')
    local ex,ey=S.position(S.duration,1200,750,197,533);assert(ex==197 and ey==533,'Hell finishes at the exact spawn')
   end
   if route.kind=='renaissance' then
-   assert(S.pose(4).silk==0 and S.pose(5.5).silk>0 and S.pose(S.duration).silk==0,'Web catches the fall and releases at landing')
+   assert(S.pose(4).silk==0 and S.pose(8.8).silk>0 and S.pose(S.duration).silk==0,'Web catches the fall and releases at landing')
    local ax,ay=S.position(S.duration,1200,750,197,533);assert(ax==197 and ay==533,'Renaissance lands at the actual spawn, even away from the center')
   end
   if route.kind=='hell' then assert(S.pose(4).release==0 and S.pose(5.5).release>0 and S.pose(6.2).bubble==0,'Equipment remains attached underwater and fades only inside the hot vapor') end
@@ -41,8 +40,8 @@ function T.run()
     if C.arrival and C.arrival>=shot[2] and not shots[shot[1]] then capture(route.kind..'-arrival-'..shot[1]);shots[shot[1]]=true end
    end
   end
-  assert(S.environment and not C.active and direction=='up' and S.pose(S.duration).progress==1)
-  capture(route.kind..'-arrival-gameplay');assert(C.advance(.016)==.016)
+  assert(S.environment and C.active and direction=='up' and S.pose(S.duration).progress==1)
+  capture(route.kind..'-arrival-gameplay');assert(C.advance(.016)==0);assert(C.press(Profile.keys.dash));assert(C.advance(.016)==.016)
   App.openEntry(route.to,false);App.draftName='Direct';App.submit();assert(C.arrivalKind=='brief')
  end
  print('PASS elemental arrivals: both campaign handoffs, destination maps, continuous motion, bubble release, pause and frozen RNG/scoring')

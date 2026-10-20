@@ -54,7 +54,7 @@ function B.draw(canvas,w,h)
   g.line(px,py,px+(4+i%4*3)*scale,py)
  end
  -- The existing ocean jelly carries both the tear and the lamp before handing it over.
- local jx=w*(p.x+.20);local jy=h*(.39+math.sin(t*1.7)*.025);local ja=1-p.mapAlpha
+ local jx=w*(p.x+.20+1.2*ease((t-3.6)/1.1));local jy=h*(.39+math.sin(t*1.7)*.025);local ja=1-p.mapAlpha
  local jellySize=82*scale
  for i=4,1,-1 do g.setColor(.12,.61,.95,ja*.025);g.circle('fill',jx,jy,(24+i*8)*scale) end
  g.setColor(1,1,1,ja);Art.drawFacing('jelly','right',jx,jy,jellySize)

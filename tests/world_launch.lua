@@ -27,6 +27,7 @@ function T.run()
    Profile.transitionsSeen={};App.start(world);C.advance(.05)
    App.start(world);assert(C.arrivalKind==kind,'Interrupted story remains unseen')
    while C.arrival do C.advance(.05) end
+   assert(C.active and C.advance(.1)==0,'Full arrival waits for Space')
    assert(Profile.transitionsSeen[tostring(world)]==true,'Only completed stories are remembered')
    App.start(world);assert(C.arrivalKind=='brief' and C.arrivalDuration<3,'Repeat uses brief arrival')
    local B=C.scene();local w,h=love.graphics.getDimensions();local scale,x,y=App.viewport(w,h)
@@ -40,7 +41,7 @@ function T.run()
     if i==15 then capture('brief-entry-'..world) end
     assert(timer==0 and player.x==px and player.y==py and love.math.getRandomState()==rng,'Brief arrival freezes gameplay')
    end
-   assert(not C.active and not C.arrival,'Final second starts gameplay automatically')
+   assert(C.active and not C.arrival and C.advance(.1)==0,'Short arrival waits for Space');assert(C.press(Profile.keys.dash) and not C.active)
    App.hardcore=true;App.start(world);assert(C.arrivalKind=='brief','Seen stories shared with hardcore');App.hardcore=false
   end
  end
@@ -52,7 +53,7 @@ function T.run()
    C.advance(.05)
    assert(timer==0 and player.x==x and player.y==y and love.math.getRandomState()==rng,'Portal freezes simulation')
   end
-  assert(not C.active and not C.arrival and C.advance(.02)==.02,'Training resumes automatically')
+  assert(C.active and not C.arrival and C.advance(.02)==0,'Training waits for Space');assert(C.press(Profile.keys.dash) and C.advance(.02)==.02)
  end
  local g=love.graphics;local canvas=g.newCanvas(1200,750)
  local function border(t)
@@ -63,8 +64,9 @@ function T.run()
  local middle=border(.2);local _,_,_,top=middle:getPixel(600,1);local _,_,_,side=middle:getPixel(1,375)
  assert(top>side,'Training ignites from the same fronts as hardcore')
  local full=border(.7);local r,green,b,alpha=full:getPixel(600,1)
- assert(green>r*1.5 and green>b and alpha>.5,'Training border is green')
+ assert(r>green and green>b and alpha>.5,'Training border matches warm gold selector text')
  full:encode('png','training-border-test.png')
+ Secret.duel={kind='boss'};local flames=border(.75);local fr,fg,fb=flames:getPixel(600,1);assert(fr>fg and fg>fb and Hardcore.bossVisible());flames:encode('png','boss-border-test.png');Secret.duel=nil
  App.practice=nil;App.singleLevel=false;App.hardcore=true
  local red=border(.8);r,green,b,alpha=red:getPixel(600,1);assert(r>green and r>b,'Hardcore stays red')
  App.hardcore=false;App.preview=true;App.start(6);assert(not C.active and not C.arrival)
@@ -76,7 +78,7 @@ function T.run()
  love.filesystem.read=function(path,...)if path=='profile.txt' then return stored end;return read(path,...) end
  Profile.load();assert(Profile.transitionsSeen['3']==true and Profile.transitionsSeen['7']==true,'Seen transitions survive reload')
  love.filesystem.write=write;love.filesystem.read=read
- print('PASS world launch: all normal/hardcore routes, training portals, frozen simulation, automatic resume, green ignition, red hardcore, preview/replay exclusions')
+ print('PASS world launch: all normal/hardcore routes, training portals, frozen simulation, manual start, gold ignition, boss flames, red hardcore, preview/replay exclusions')
  love.event.quit()
 end
 return T

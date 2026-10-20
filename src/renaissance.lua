@@ -6,7 +6,7 @@ local function body(kind,x,y,size)
     return m
 end
 function N.reset()
-    N.active=Campaign.world==3 and App.singleLevel and not Secret.duel and not App.sessionLayout; N.eggs={}; N.clock=0
+    N.active=Campaign.world==3 and not App.historyPreview and App.singleLevel and not Secret.duel and not App.sessionLayout; N.eggs={}; N.clock=0
     if not N.active then return end
     N.remaining=2
     for i,p in ipairs({{.22,160},{.78,430}}) do

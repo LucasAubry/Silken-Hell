@@ -53,7 +53,7 @@ function E.pose(age)
  return {jump=ease((age-.5)/1.3),rappel=descent,progress=land,mapAlpha=land,actorsAlpha=ease((age-8.25)/.55),
   silk=age>=2.1 and age<8.8,angle=angle,camera=.75*descent,size=1.6-.6*land,
   x=motion.sample(flightX,age)+math.sin(angle)*.035+dx,y=motion.sample(flightY,age)+dy,
-  dir=land>.9 and 'up' or age<2.1 and 'right' or 'down',lift=0}
+  dir=age<2.1 and 'right' or 'up',lift=0}
 end
 local function cloud(w,h,camera,t,opacity,index)
  local g=love.graphics;local c=E.cloudState(index,t)

@@ -29,6 +29,7 @@ function T.run()
  for i,scene in ipairs(H.scenes) do
   H.open();UI.draw();UI.buttons[i].run();assert(App.historyPreview,'Every scene button launches a preview')
   capture(scene.id)
+  if scene.id=='hell_renaissance' then assert(player.level==1 and Ending.active and require('final_spider').active and not Renaissance.active,'History shows the actual level 1 guardian encounter') end
   if scene.id=='story' then P.enterWorld()
   elseif scene.id=='intro' then
    local ticks=0

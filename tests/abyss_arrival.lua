@@ -30,8 +30,8 @@ function T.run()
    if C.arrival and C.arrival>=shot[2] and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
   end
  end
- assert(B.environment and not C.active and direction=='up' and B.pose(B.duration).progress==1)
- capture('gameplay');assert(C.advance(.016)==.016)
+ assert(B.environment and C.active and direction=='up' and B.pose(B.duration).progress==1)
+ capture('gameplay');assert(C.press(Profile.keys.dash));assert(C.advance(.016)==.016)
  App.openEntry(7,false);App.draftName='Direct abyss';App.submit();assert(C.arrivalKind=='brief')
  print('PASS Abyss arrival: Ocean campaign handoff, left entrance, smooth current, lantern, destination reveal, pause and frozen scoring/RNG')
  love.event.quit()
