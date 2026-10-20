@@ -79,7 +79,7 @@ function O.draw(canvas,w,h)
  decor.mist(w,h,t,.08*(1-p.mapAlpha),p.underwater)
  local size=Characters.playerWidth*scale*((1.65-.35*p.dive)*(1-p.progress)+p.progress)
  local groundY=h*(.55+math.sin(p.x/.47*9)*.004)
- local restY=groundY-Characters.playerWidth*scale*1.65*.30
+ local restY=groundY-Characters.playerWidth*scale*1.65*.21
  local ax=w*p.x
  local ay=restY+h*(p.y-p.camera*.35)
  ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress

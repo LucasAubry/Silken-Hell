@@ -49,7 +49,7 @@ function L.snapshot()
     return out
 end
 function L.read()
-    if Replay and Replay.data and (Replay.playing or Replay.recording) then return Replay.data.layouts end
+    if not (App and App.historyPreview) and Replay and Replay.data and (Replay.playing or Replay.recording) then return Replay.data.layouts end
     if L.disabled then return {} end
     if App and App.sessionLayout then local l=App.sessionLayout; return {[l.world..':'..l.level]=l} end
     local data=love.filesystem.read('custom_levels.json')
@@ -172,6 +172,8 @@ MobBehaviors.larva=require('mobs.larva')
 MobBehaviors.blackbird_chick=require('mobs.blackbird_chick')
 function L.current()
     local layout=L.read()[Campaign.world..':'..player.level]
+    -- Story previews must never inherit a different biome from an editor override.
+    if App.historyPreview and layout and (layout.biome or layout.world)~=Worlds.biome(Campaign.world,player.level) then layout=nil end
     if Campaign.world==6 and not App.sessionLayout and not (Replay and (Replay.playing or Replay.recording)) then
         layout=layout and require('sky').prepare(layout) or require('sky').layout(player.level,Arena.width)
     end

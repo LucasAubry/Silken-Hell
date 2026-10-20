@@ -1,0 +1,37 @@
+local T={}
+function T.run()
+ io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Profile.save=function()end;Bestiary.save=function()end
+ LevelLayouts.disabled=true;Replay.disabled=true;Replay.playing=false;Replay.recording=false
+ App.practice=nil;App.singleLevel=false;App.preview=false;App.historyPreview=nil;App.hardcore=false;App.sessionLayout=nil;Secret.duel=nil
+ Input.speedHeld=function()return false end
+ local C=require('run_start');local B=require('abyss_arrival')
+ local function capture(name)
+  local g=love.graphics;local c=g.newCanvas(g.getDimensions());local setCanvas=g.setCanvas
+  g.push('all');setCanvas(c);g.setCanvas=function(target,...)if target==nil then return setCanvas(c) end;return setCanvas(target,...)end
+  love.draw();g.setCanvas=setCanvas;setCanvas();g.pop();c:newImageData():encode('png','abyss-arrival-'..name..'.png');c:release()
+ end
+ Profile.complete(4,10,0);App.openEntry(7,false,4);App.draftName='Abyss arrival';App.submit()
+ assert(C.arrivalKind=='abyss' and Campaign.world==7 and Campaign.biome==7 and player.level==1)
+ assert(B.pose(0).x<0 and B.pose(5).x<.5,'Enters from the left and remains left during destination reveal')
+ assert(B.pose(7.8).actorsAlpha==0 and B.pose(8.8).actorsAlpha>0,'Creatures appear after the swimmer settles')
+ for _,t in ipairs({1.5,3.6,5.6,7.8}) do
+  local dt=.0001;local before=B.pose(t-dt).x;local at=B.pose(t).x;local after=B.pose(t+dt).x
+  assert(math.abs((at-before)/dt-(after-at)/dt)<.01,'Current does not snap swimmer velocity')
+ end
+ local px,py=player.x,player.y;local rng=love.math.getRandomState();local shots={};local ticks=0
+ while C.arrival do
+  if ticks==10 then App.state='pause';local age=C.arrival;C.advance(.05);assert(C.arrival==age);App.state='playing' end
+  assert(not C.press(Profile.keys.dash) and not C.launch())
+  C.advance(.05);ticks=ticks+1;assert(ticks<230)
+  assert(player.x==px and player.y==py and timer==0 and love.math.getRandomState()==rng)
+  for _,shot in ipairs({{'current',1.5},{'fissure',3.8},{'entry-left',5.4},{'landing',7.8},{'settled',9.5}}) do
+   if C.arrival and C.arrival>=shot[2] and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
+  end
+ end
+ assert(B.environment and not C.active and direction=='up' and B.pose(B.duration).progress==1)
+ capture('gameplay');assert(C.advance(.016)==.016)
+ App.openEntry(7,false);App.draftName='Direct abyss';App.submit();assert(C.arrivalKind=='portal')
+ print('PASS Abyss arrival: Ocean campaign handoff, left entrance, smooth current, lantern, destination reveal, pause and frozen scoring/RNG')
+ love.event.quit()
+end
+return T

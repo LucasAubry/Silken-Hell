@@ -91,6 +91,7 @@ function App.submit()
         if Campaign.world==6 then RunStart.beginSkyArrival(App.entryFromWorld==1)
         elseif Campaign.world==5 and App.entryFromWorld==6 then RunStart.beginEarthArrival()
         elseif Campaign.world==4 and App.entryFromWorld==5 then RunStart.beginOceanArrival()
+        elseif Campaign.world==7 and App.entryFromWorld==4 then RunStart.beginAbyssArrival()
         else RunStart.beginArrival(true,true) end
     end
     App.entryFromWorld=nil

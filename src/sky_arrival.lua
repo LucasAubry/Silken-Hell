@@ -37,14 +37,15 @@ local function white(alpha,w,h)
  local g=love.graphics;g.setColor(.91,.96,1,alpha);g.rectangle('fill',0,0,w,h)
 end
 function S.drawDeparture(w,h)
+ local source=not App.historyPreview and S.source or nil
  local g=love.graphics;local t=S.age
- local sw,sh=S.source and S.source:getWidth() or Arena.width,S.source and S.source:getHeight() or Arena.height
+ local sw,sh=source and source:getWidth() or Arena.width,source and source:getHeight() or Arena.height
  local scale=math.min(w/sw,h/sh);local x,y=(w-sw*scale)/2,(h-sh*scale)/2
  require('biome_floor').draw(1,w,h,UI.clock)
  g.push('all');g.translate(x,y);g.scale(scale)
- if S.source then g.setColor(1,1,1);g.setBlendMode('alpha','premultiplied');g.draw(S.source);g.setBlendMode('alpha') end
+ if source then g.setColor(1,1,1);g.setBlendMode('alpha','premultiplied');g.draw(source);g.setBlendMode('alpha') end
  local px,py=sw/2,sh/2
- if not S.source then require('prologue').drawPortal({x=px,y=py},1,t) end
+ if not source then require('prologue').drawPortal({x=px,y=py},1,t) end
  local entering=ease((t-1.05)/.5);local size=Characters.playerWidth*(1-.8*entering)
  local ay=py+90*(1-ease(t/1.05))
  Characters.shadow(px,ay,size,'up',S.actor,1-entering)

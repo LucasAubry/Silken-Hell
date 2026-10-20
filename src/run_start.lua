@@ -23,9 +23,15 @@ function C.beginOceanArrival()
  C.arrivalKind='ocean';C.arrival=0;C.active=true;C.armed=false
  C.arrivalDuration=require('ocean_arrival').begin()
 end
+function C.beginAbyssArrival()
+ direction='up'
+ C.arrivalKind='abyss';C.arrival=0;C.active=true;C.armed=false
+ C.arrivalDuration=require('abyss_arrival').begin()
+end
 function C.scene()
  if C.arrivalKind=='sky' then return require('sky_arrival') end
  if C.arrivalKind=='earth' then return require('earth_arrival') end
+ if C.arrivalKind=='abyss' then return require('abyss_arrival') end
  if C.arrivalKind=='ocean' then return require('ocean_arrival') end
 end
 function C.beginArrival(opening,brief)
