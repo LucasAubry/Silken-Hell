@@ -26,7 +26,7 @@ function T.run()
   end
  end
  assert(O.pose(6.1).underwater==1 and O.pose(8.1).mapAlpha==1)
- assert(O.pose(8).actorsAlpha==0 and O.pose(9).actorsAlpha>0 and O.pose(10).actorsAlpha==1,'Creatures appear gradually after landing')
+ assert(O.pose(7.45).actorsAlpha==0 and O.pose(O.duration).actorsAlpha==1,'Creatures appear gradually after landing')
  local drawAt=bubble.drawAt;local bubbleDrawn=0
  bubble.drawAt=function(...)bubbleDrawn=bubbleDrawn+1;return drawAt(...)end
  local px,py=player.x,player.y;local rng=love.math.getRandomState();local shots={};local ticks=0

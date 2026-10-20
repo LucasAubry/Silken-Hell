@@ -19,7 +19,7 @@ function S.pose(t)
  local land=ease((t-6.8)/3.6)
  return {x=.5+math.sin(t*.8)*.018*(1-land),y=motion.sample(descent,t),progress=land,
   size=1.65-.65*land,depth=ease(t/6.2),heat=ease((t-2.2)/4.2),
-  mapAlpha=ease((t-6.8)/2.4),actorsAlpha=ease((t-8.4)/2),
+  mapAlpha=ease((t-5.8)/1.4),actorsAlpha=ease((t-7.2)/.8),
   bubble=1-ease((t-5.1)/1),release=ease((t-5.1)/1),dir=t>=6.6 and 'up' or 'down'}
 end
 function S.position(t,w,h,sx,sy)

@@ -195,7 +195,7 @@ function A.load(defer)
             A.add('player_skin_'..skin..'_'..pose,'assets/skins/'..skin..'/'..pose..'.png')
         end
     end
-    for _,key in ipairs({'bush','mini_bush','walking_tree','white_spider','white_egg','brown_egg','soil'}) do
+    for _,key in ipairs({'white_spider','white_egg','brown_egg'}) do
         A.add('rebirth_'..key,'assets/sprites/renaissance/'..key..'.png')
     end
     A.add('map_cloud','assets/sprites/map_cloud.png')

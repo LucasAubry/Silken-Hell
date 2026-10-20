@@ -14,17 +14,15 @@ function T.run()
   Profile.complete(route.from,10,0);App.openEntry(route.to,false,route.from);App.draftName='Transition';App.submit()
   assert(C.arrivalKind==route.kind and Campaign.biome==route.to and player.level==1)
   local S=C.scene();local px,py=player.x,player.y;local rng=love.math.getRandomState();local ticks=0;local shots={}
-  assert(S.pose(8.4).actorsAlpha==0 and S.pose(9).actorsAlpha>0)
+  assert(S.pose(S.duration).actorsAlpha==1,'Creatures are fully revealed at gameplay handoff')
   if route.kind=='hell' then
+   assert(S.pose(7.2).mapAlpha==1,'Hell map is visible before the return reaches the floor')
    local _,bottom=S.position(6.6,1200,750,600,375);assert(bottom<750 and bottom>533,'Spider turns while still on screen')
    local _,rise=S.position(8.2,1200,750,600,375);assert(rise<bottom and rise>375,'Spider returns from the visible turn toward its spawn')
    local ex,ey=S.position(S.duration,1200,750,197,533);assert(ex==197 and ey==533,'Hell finishes at the exact spawn')
   end
   if route.kind=='renaissance' then
-   assert(S.pose(3).scroll<S.pose(6).scroll,'Scenery travels throughout the crossing')
-   assert(S.pose(9.4).size>S.pose(10.3).size and S.pose(9.4).progress<S.pose(10.3).progress,'Spider keeps receding through the final second')
-   local _,near=S.position(8.5,1200,750,600,533);local _,far=S.position(10,1200,750,600,533);assert(far<near,'Walking retreats into the scene')
-   S.advance(9.8);S.advance(9.85);assert(S.actor.walkMoving,'Walking continues during retreat');S.begin()
+   assert(S.pose(4).silk==0 and S.pose(5.5).silk>0 and S.pose(S.duration).silk==0,'Web catches the fall and releases at landing')
    local ax,ay=S.position(S.duration,1200,750,197,533);assert(ax==197 and ay==533,'Renaissance lands at the actual spawn, even away from the center')
   end
   if route.kind=='hell' then assert(S.pose(4).release==0 and S.pose(5.5).release>0 and S.pose(6.2).bubble==0,'Equipment remains attached underwater and fades only inside the hot vapor') end

@@ -1,5 +1,5 @@
 -- A luminous guide leads the spider through a lateral current into the deep sea.
-local B={duration=9.6,impact=7.8}
+local B={duration=7.95,impact=7.8}
 local motion=require('cinematic_motion')
 local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
 local path={{0,-.10,0},{1.5,.17,.13},{3.6,.29,.035},{5.6,.38,.06},{7.8,.5,0}}
@@ -23,7 +23,7 @@ end
 function B.pose(t)
  local land=ease((t-5.6)/2.2)
  return {x=motion.sample(path,t),y=.5+math.sin(t*1.4)*.018*(1-land),progress=land,
-  depth=ease((t-1.5)/4),mapAlpha=ease((t-4.8)/3),actorsAlpha=ease((t-7.8)/1.6),
+  depth=ease((t-1.5)/4),mapAlpha=ease((t-4.8)/3),actorsAlpha=ease((t-7.25)/.55),
   equip=ease((t-1.8)/1.8),size=1.5-.5*land,dir=land>.9 and 'up' or 'right'}
 end
 function B.draw(canvas,w,h)

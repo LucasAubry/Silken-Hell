@@ -1,5 +1,5 @@
 -- A cloud departure and silk descent dissolve softly into the cave.
-local E={duration=10.8,impact=8.8}
+local E={duration=8.95,impact=8.8}
 local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
 function E.clearSource()if E.source then E.source:release();E.source=nil end end
 function E.captureSource(canvas,drawFrame)
@@ -50,7 +50,7 @@ function E.pose(age)
  local land=ease((age-6)/2.8)
  local swingTime=math.max(0,age-3.3)
  local angle=.045*math.sin(swingTime*2.1)*ease(swingTime/.7)*math.exp(-swingTime*.45)*(1-land)
- return {jump=ease((age-.5)/1.3),rappel=descent,progress=land,mapAlpha=land,actorsAlpha=ease((age-8.8)/1.6),
+ return {jump=ease((age-.5)/1.3),rappel=descent,progress=land,mapAlpha=land,actorsAlpha=ease((age-8.25)/.55),
   silk=age>=2.1 and age<8.8,angle=angle,camera=.75*descent,size=1.6-.6*land,
   x=motion.sample(flightX,age)+math.sin(angle)*.035+dx,y=motion.sample(flightY,age)+dy,
   dir=land>.9 and 'up' or age<2.1 and 'right' or 'down',lift=0}

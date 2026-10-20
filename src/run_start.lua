@@ -95,7 +95,7 @@ function C.advance(dt)
   if scene then
    scene.advance(C.arrival)
    if App.historyPreview then
-    if C.arrival>=C.arrivalDuration+2 then require('history').close() end
+    if C.arrival>=C.arrivalDuration+.2 then require('history').close() end
     return 0
    end
    if C.arrival>=C.arrivalDuration then

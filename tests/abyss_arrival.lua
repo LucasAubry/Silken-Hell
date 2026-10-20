@@ -15,7 +15,7 @@ function T.run()
  assert(Art.images.jelly_right and Art.images.cinematic_tear,'Guide uses the existing jelly PNG and tear asset')
  assert(B.pose(1).equip==0 and B.pose(2.7).equip>0 and B.pose(3.7).equip==1,'Lamp travels from guide to helmet before the dark passage')
  assert(B.pose(0).x<0 and B.pose(5).x<.5,'Enters from the left and remains left during destination reveal')
- assert(B.pose(7.8).actorsAlpha==0 and B.pose(8.8).actorsAlpha>0,'Creatures appear after the swimmer settles')
+ assert(B.pose(7.25).actorsAlpha==0 and B.pose(B.duration).actorsAlpha==1,'Creatures appear after the swimmer settles')
  for _,t in ipairs({1.5,3.6,5.6,7.8}) do
   local dt=.0001;local before=B.pose(t-dt).x;local at=B.pose(t).x;local after=B.pose(t+dt).x
   assert(math.abs((at-before)/dt-(after-at)/dt)<.01,'Current does not snap swimmer velocity')

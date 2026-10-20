@@ -30,7 +30,7 @@ function T.run()
  end
  assert(E.pose(9).angle==0,'Swing settles on landing')
  assert(E.pose(3).rappel>0 and E.pose(3).mapAlpha==0,'Descends before revealing cave')
- assert(E.pose(8.8).actorsAlpha==0 and E.pose(9.6).actorsAlpha>0,'Soft reveal introduces creatures after landing')
+ assert(E.pose(8.25).actorsAlpha==0 and E.pose(E.duration).actorsAlpha==1,'Soft reveal introduces creatures after landing')
  local x,y=player.x,player.y;local rng=love.math.getRandomState();local shots={};local ticks=0
  while C.arrival do
   assert(not C.press(Profile.keys.dash) and not C.launch())

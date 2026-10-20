@@ -1,5 +1,5 @@
 -- Discover an air pearl in a cave spring, wear it, then ride its underwater current.
-local O={duration=10.6,impact=8}
+local O={duration=8.15,impact=8}
 local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
 function O.begin()
  O.age=0;O.actor={walkMoving=false}
@@ -25,7 +25,7 @@ function O.pose(t)
  return {approach=ease(t/1.8),equip=ease((t-1.8)/1.2),equipped=t>=3,
   x=motion.sample(swimX,t),y=motion.sample(swimY,t),
   swim=ease((t-4.8)/1.4),dive=ease((t-3.3)/2.1),underwater=ease((t-4.4)/1.6),camera=.85*ease((t-4.8)/1.6),
-  progress=ease((t-6.2)/1.8),mapAlpha=ease((t-6)/2),actorsAlpha=ease((t-8)/2),
+  progress=ease((t-6.2)/1.8),mapAlpha=ease((t-6)/2),actorsAlpha=ease((t-7.45)/.55),
   dir=t>=5.2 and 'up' or t>=3.8 and 'down' or 'right',grounded=t<=3.3}
 end
 function O.draw(canvas,w,h)

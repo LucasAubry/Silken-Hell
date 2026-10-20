@@ -260,7 +260,6 @@ function A.drawWall(r,hell)
         localWall.x=-r.w/2;localWall.y=-r.h/2;localWall.rotation=0
         A.drawWall(localWall,hell);g.pop();return
     end
-    if r.renaissanceSoil then Renaissance.drawSoil(r);return end
     if Campaign.world==3 then Meadow.wall(r);return end
     local g=love.graphics
     if Campaign.biome>=4 then Realms.drawWall(r)
