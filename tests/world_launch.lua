@@ -31,16 +31,16 @@ function T.run()
    App.start(world);assert(C.arrivalKind=='brief' and C.arrivalDuration<3,'Repeat uses brief arrival')
    local B=C.scene();local w,h=love.graphics.getDimensions();local scale,x,y=App.viewport(w,h)
    local sx,sy=x+(player.x+15)*scale,y+(player.y+8)*scale
-   local first=B.pose(0,w,h,sx,sy,scale);local last=B.pose(B.duration,w,h,sx,sy,scale)
-   assert(last.x==sx and last.y==sy and last.size==1 and last.dir=='up','Exact gameplay spawn')
-   assert((world==7 or world==3) and first.x<0 or (world~=7 and world~=3 and first.y<0),'Entry comes from the story direction')
+   assert(B.duration==1 and C.arrivalDuration==1,'Exactly one second of the original cinematic')
+   assert(B.scene==require(kind..'_arrival'),'Uses the original scene renderer')
+   assert(math.abs(B.scene.age-B.offset)<.00001,'Original state reconstructed at the final second')
    local rng=love.math.getRandomState();local px,py=player.x,player.y
-   for i=1,51 do
+   for i=1,20 do
     C.advance(.05)
     if i==15 then capture('brief-entry-'..world) end
     assert(timer==0 and player.x==px and player.y==py and love.math.getRandomState()==rng,'Brief arrival freezes gameplay')
    end
-   assert(not C.active and not C.arrival,'Brief arrival starts automatically')
+   assert(not C.active and not C.arrival,'Final second starts gameplay automatically')
    App.hardcore=true;App.start(world);assert(C.arrivalKind=='brief','Seen stories shared with hardcore');App.hardcore=false
   end
  end

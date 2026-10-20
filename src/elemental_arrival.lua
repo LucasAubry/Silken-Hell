@@ -3,7 +3,7 @@ local motion=require('cinematic_motion')
 local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
 local M={}
 function M.new(garden)
- local S={duration=10.4,impact=8.4}
+ local S={duration=10.4,impact=garden and 10.4 or 8.4}
  local ascent={{0,.78,0},{2,.64,-.12},{3.8,.36,0},{5.8,.53,.05},{6.2,.55,0}}
  local crossing={{0,.15,0},{2,.26,.065},{4,.39,.06},{6.2,.5,0}}
  function S.begin()
@@ -19,11 +19,11 @@ function M.new(garden)
   g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1);g.draw(canvas);g.setCanvas(previous);g.pop()
  end
  function S.pose(t)
-  local land=ease((t-6.2)/2.2)
+  local land=garden and ease((t-4.8)/5.6) or ease((t-6.2)/2.2)
   return {x=garden and motion.sample(crossing,t) or .5+math.sin(t*1.3)*.012*(1-land),
-   y=garden and .57 or motion.sample(ascent,t),progress=land,size=1.6-.6*land,
-   scroll=1.25*ease(t/8.4),change=ease((t-1.7)/4.5),mapAlpha=ease((t-5.8)/2.6),actorsAlpha=ease((t-8.4)/1.6),
-   bubble=1-ease((t-4)/1),release=ease((t-3.2)/1.8),dir=land>.9 and 'up' or garden and 'right' or 'down'}
+   y=garden and .87 or motion.sample(ascent,t),progress=land,size=1.6-.6*land,
+   scroll=1.25*ease(t/10.4),change=ease((t-1.7)/4.5),mapAlpha=ease((t-5.8)/2.6),actorsAlpha=ease((t-8.4)/1.6),
+   bubble=1-ease((t-4)/1),release=ease((t-3.2)/1.8),dir=(garden and t>=4.8 or land>.9) and 'up' or garden and 'right' or 'down'}
  end
  function S.position(t,w,h,sx,sy)
   local p=S.pose(t)
@@ -32,7 +32,7 @@ function M.new(garden)
  end
  function S.advance(age)
   local old=S.age;local dt=math.max(0,age-old);S.age=age
-  local distance=garden and (math.abs(S.pose(age).x-S.pose(old).x)+math.abs(S.pose(age).scroll-S.pose(old).scroll))*Arena.width or dt*30*(1-S.pose(age).progress)
+  local distance=garden and (math.abs(S.pose(age).x-S.pose(old).x)+math.abs(S.pose(age).scroll-S.pose(old).scroll)+math.abs(S.pose(age).progress-S.pose(old).progress))*Arena.width or dt*30*(1-S.pose(age).progress)
   require('brown_walk').advance(S.actor,distance,dt)
  end
  function S.draw(canvas,w,h)
@@ -70,21 +70,25 @@ function M.new(garden)
   ]])
   S.scenery:send('dimensions',{w,h});S.scenery:send('clock',t);S.scenery:send('change',p.change);S.scenery:send('garden',garden and 1 or 0);S.scenery:send('scroll',p.scroll)
   g.setShader(S.scenery);g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.setShader()
-  local a=1-p.mapAlpha
+  local a=garden and 1-ease((t-7)/3.4) or 1-p.mapAlpha
   if garden then
    -- A continuous stone causeway becomes a living root bridge beneath the feet.
-   local path={0,h*.61}
-   for i=0,50 do path[#path+1]=w*i/50;path[#path+1]=h*(.61+math.sin(i*.31+p.scroll*15)*.006) end
-   for i=50,0,-1 do path[#path+1]=w*i/50;path[#path+1]=h*(.70+math.sin(i*.23+p.scroll*12)*.018+math.sin(i*.71+p.scroll*36)*.005) end
+   g.push()
+   local retreat=ease((t-4.8)/5.6)
+   -- The bridge recedes toward the same vanishing point as the walking spider.
+   g.translate(sx*retreat,sy*retreat);g.scale(math.max(.0001,1-retreat),math.max(.0001,1-retreat))
+   local path={0,h*.91}
+   for i=0,50 do path[#path+1]=w*i/50;path[#path+1]=h*(.91+math.sin(i*.31+p.scroll*15)*.006) end
+   for i=50,0,-1 do path[#path+1]=w*i/50;path[#path+1]=h*(1.0+math.sin(i*.23+p.scroll*12)*.018+math.sin(i*.71+p.scroll*36)*.005) end
    decor.material(false);g.setColor(.23-.08*p.change,.09+.13*p.change,.055+.035*p.change,a);g.polygon('fill',path);g.setShader()
    for strand=1,7 do
     local points={}
-    for i=0,60 do points[#points+1]=i*w/60;points[#points+1]=h*(.618+strand*.009+math.sin(i*.16+strand*.8+p.scroll*8)*.005) end
+    for i=0,60 do points[#points+1]=i*w/60;points[#points+1]=h*(.918+strand*.009+math.sin(i*.16+strand*.8+p.scroll*8)*.005) end
     g.setColor(.34,.20+.11*p.change,.085,a*.7);g.setLineWidth(scale*(strand%2+1));g.line(points)
    end
    for i=0,155 do
     local px=(i+math.sin(i*2.7)*.35)*w/65-p.scroll*w;local grow=ease((t-2-i*.035)/1.6)*a
-    local height=(15+i%5*5)*scale*grow;local py=h*.61
+    local height=(15+i%5*5)*scale*grow;local py=h*.91
     local bend=math.sin(t*1.1+i)*height*.18
     g.setColor(.22,.43,.13,a);g.setLineWidth(1.5*scale);g.line(px,py,px+bend,py-height)
     if grow>0 then
@@ -92,6 +96,7 @@ function M.new(garden)
      if i%5==0 then g.setColor(.94,.81,.48,grow);g.circle('fill',px+bend,py-height,2.5*scale) end
     end
    end
+   g.pop()
   else
    -- Convection lifts the swimmer through a glowing volcanic chimney.
    decor.grotto(w,h,t*.3,0,(1-p.change)*.55*a,true)
@@ -113,7 +118,7 @@ function M.new(garden)
   decor.reveal(canvas,S.environment,w,h,p.mapAlpha,p.actorsAlpha,shader,garden and w*.35*(1-p.progress) or 0)
   local ax,ay=S.position(t,w,h,sx,sy)
   local size=Characters.playerWidth*scale*p.size
-  if garden or p.change>.7 then Characters.shadow(ax,garden and (h*.61+(sy-h*.61)*p.progress) or ay+size*.23*(1-p.progress),size,p.dir,S.actor,garden and 1 or ease((p.change-.7)/.3)) end
+  if garden or p.change>.7 then Characters.shadow(ax,garden and (h*.91+(sy-h*.91)*p.progress) or ay+size*.23*(1-p.progress),size,p.dir,S.actor,garden and 1 or ease((p.change-.7)/.3)) end
   g.setColor(1,1,1);Characters.draw(ax,ay,size,p.dir,S.actor,garden and 3 or 2)
   if not garden and p.bubble>0 then
    local bubble=require('breathing_bubble');local hx,hy,r=bubble.headPosition(ax,ay,size,p.dir)
