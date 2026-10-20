@@ -89,7 +89,7 @@ function App.submit()
     App.start(App.selectedWorld)
     App.entryFromWorld=nil
 end
-function App.start(world)
+function App.start(world,options)
     if App.hardcore and not Replay.playing and not Hardcore.available(world) then return false end
     if world==8 and not App.hardcore then if Worlds.canEnter(8) then Secret.open(false) end;return end
     if not App.sessionLayout and not Worlds.canEnter(world) and not App.preview and os.getenv('SILKEN_TEST')~='1' and not Replay.playing then return end
@@ -115,7 +115,7 @@ function App.start(world)
     if not App.historyPreview and not App.singleLevel then Online.start(world,Profile.name,App.runSkin,App.hardcore) elseif not App.historyPreview then Online.current=nil end
     if world==1 and not Replay.playing and not App.historyPreview then require('sky_arrival').clearSource() end
     if world==6 and not Replay.playing and not App.historyPreview then require('earth_arrival').clearSource() end
-    GameFeedback.reset();RunStart.begin()
+    GameFeedback.reset();RunStart.begin(options and options.skipArrival)
     require("workshop_stats").begin()
 end
 function love.load()
@@ -594,8 +594,9 @@ function App.leaveCustom()
 end
 function App.restartCurrent()
     local trainingRetry=App.state=='customVictory' and App.practice and not Secret.duel
+    local inLevel=App.state=='playing' or App.state=='pause'
     if Secret.duel then Secret.duel.time=0 end
-    App.start(Campaign.world)
+    App.start(Campaign.world,{skipArrival=inLevel or trainingRetry})
     if trainingRetry then
         RunStart.arrival=nil;RunStart.arrivalKind=nil;RunStart.arrivalPractice=false
         RunStart.waitForInput()
@@ -608,7 +609,7 @@ end
 function App.restartWorld()
     local training=App.practice~=nil or App.singleLevel
     App.practice=training and 1 or nil;App.singleLevel=training;App.sessionLayout=nil;App.workshopMap=nil;Secret.duel=nil
-    App.start(Campaign.world)
+    App.start(Campaign.world,{skipArrival=true})
 end
 function App.practiceWorld(delta)
     if not App.practice and not App.singleLevel then return false end

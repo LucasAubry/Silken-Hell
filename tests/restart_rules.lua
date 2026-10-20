@@ -19,6 +19,21 @@ function T.run()
  Replay.enter();Replay.input={0,0,false,true};App.simulate(Replay.step);Replay.leave()
  assert(player.death==5 and timer>12,'Recorded restart also counts a death')
  App.restartWorld();assert(player.death==0 and timer==0 and player.level==1,'Biome restart clears counters')
+ assert(C.active and not C.arrival and not C.scene(),'Biome restart waits for Space without an entrance')
+ for _,world in ipairs({1,6,5,4,7,2,3}) do
+  for _,seen in ipairs({false,true}) do
+   Profile.transitionsSeen[tostring(world)]=seen
+   App.practice=nil;App.singleLevel=false;App.start(world)
+   timer=42;player.death=7;App.restartWorld()
+   assert(not C.arrival and not C.scene() and not C.rememberTransition,'Neither full nor short entrance on biome retry')
+   assert(timer==0 and player.death==0 and player.level==1 and C.active,'Fresh biome counters and Space gate')
+   App.state='pause';App.restartCurrent()
+   assert(not C.arrival and C.active,'Pause-menu retry also skips entrance')
+  end
+ end
+ App.practice=3;App.singleLevel=true;App.start(5);App.restartWorld()
+ assert(App.practice==1 and not C.arrival and C.active,'Training biome retry skips the portal too')
+ App.practice=nil;App.singleLevel=false;Profile.transitionsSeen['2']=nil
  Secret.launch({kind='boss',name='Test',world=5})
  assert(C.active and not C.countdown and not C.arrival,'Sanctuary waits without countdown')
  for i=1,100 do assert(C.advance(.05)==0) end

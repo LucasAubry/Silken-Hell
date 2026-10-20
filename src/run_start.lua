@@ -2,10 +2,16 @@
 local C={}
 local storyWorlds={[6]=true,[5]=true,[4]=true,[7]=true,[2]=true,[3]=true}
 local function smooth(v)v=math.max(0,math.min(1,v));return v*v*(3-2*v)end
-function C.begin()
+function C.begin(skipArrival)
  C.elapsed=0;C.goAge=nil;C.countdown=nil;C.arrival=nil;C.arrivalActor=nil;C.arrivalKind=nil;C.arrivalPractice=false;C.rememberTransition=nil
  C.active=not (App.practice or App.singleLevel or App.sessionLayout or Secret.duel or Replay.playing or App.preview or os.getenv('SILKEN_PREVIEW_WORLD'))
  C.armed=not Input.speedHeld()
+ -- An in-level biome restart is a fresh run, not a new entrance into the world.
+ if skipArrival then
+  if storyWorlds[Campaign.world] then direction='up' end
+  C.waitForInput()
+  return
+ end
  if App.practice and not (App.preview or App.sessionLayout or Secret.duel or Replay.playing) then
   C.beginArrival(true,true);C.arrivalPractice=true;Hardcore.beginTrainingBorder()
  elseif C.active then
