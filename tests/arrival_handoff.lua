@@ -25,7 +25,7 @@ function T.run()
     assert(p.mapAlpha==p.actorsAlpha,'One reveal for scenery and creatures')
     if C.arrival>6 then assert(p.mapAlpha==1,'Complete destination before handoff') end
    end
-   if i==108 or i==132 then capture():encode('png','handoff-'..world..'-'..i..'.png') end
+   if i==1 or i==65 or i==82 or i==98 or i==108 or i==132 then capture():encode('png','handoff-'..world..'-'..i..'.png') end
    assert(timer==0 and px==player.x and py==player.y and rng==love.math.getRandomState(),'Presentation does not simulate gameplay')
   end
   scene.advance(6.7);C.arrival=6.7

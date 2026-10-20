@@ -27,6 +27,8 @@ function S.draw(canvas,w,h)
  local ax,ay=S.position(t,w,h,sx,sy);local size=Characters.playerWidth*scale*p.size
  g.push('all');g.origin();g.setShader()
  decor.floor(2,w,h,1)
+ -- The meadow is already beneath the falling camera, gaining ground continuously.
+ decor.floor(3,w,h,ease((t-1.6)/6.8))
  decor.reveal(canvas,S.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
  local cliff=1-ease((t-3.4)/1.2)
  if cliff>0 then

@@ -8,7 +8,8 @@ function P.request()
     return r,raw
 end
 function P.update(dt)
-    if not App.preview then return end
+    -- History shares preview rendering, but must never consume editor map requests.
+    if not App.preview or App.historyPreview then return end
     P.clock=P.clock+dt
     if P.clock<.15 then return end
     P.clock=0

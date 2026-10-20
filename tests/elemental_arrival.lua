@@ -17,7 +17,8 @@ function T.run()
   assert(S.pose(S.duration).actorsAlpha==1,'Creatures are fully revealed at gameplay handoff')
   if route.kind=='hell' then
    assert(S.pose(5).mapAlpha>0 and S.pose(5.8).mapAlpha<1,'Same continuous dissolve as Sky')
-   local _,early=S.position(S.timelineTime(4),1200,750,600,375);local _,late=S.position(S.timelineTime(8),1200,750,600,375);assert(late>early and late<375,'Continuous descent without reversing')
+   assert(S.pose(0).dir=='down' and S.pose(3.4).dir=='down' and S.pose(4).dir=='right','Faces the viewer until after halfway, then turns into the gallery')
+   assert(pose(7).x>pose(5).x and pose(8).camera>pose(7).camera,'Walks right into the wall opening while the camera follows')
    local ex,ey=S.position(S.duration,1200,750,197,533);assert(ex==197 and ey==533,'Hell finishes at the exact spawn')
   end
   if route.kind=='renaissance' then

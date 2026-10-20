@@ -45,7 +45,7 @@ function B.draw(canvas,w,h)
  ]])
  B.deep:send('dimensions',{w,h});B.deep:send('clock',t);B.deep:send('depth',p.depth)
  g.setShader(B.deep);g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.setShader()
- decor.grotto(w,h,t,0,p.depth*(1-p.mapAlpha),true)
+ decor.grotto(w,h,t,0,1-p.mapAlpha,true,p.depth)
  -- Plankton streams to the left while the swimmer enters from the left.
  for i=1,55 do
   local px=w*((i*.618-t*(.08+i%3*.025))%1)

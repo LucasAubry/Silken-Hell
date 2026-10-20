@@ -55,16 +55,16 @@ function S.backdrop(world,w,h,time,alpha,depth)
  g.setColor(1,1,1);g.setShader(S.landscape);g.rectangle('fill',0,0,w,h);g.setShader()
 end
 -- Continuous eroded walls: ledges, overhangs and mineral seams instead of stacked stones.
-function S.grotto(w,h,time,camera,alpha,abyss)
+function S.grotto(w,h,time,camera,alpha,abyss,approach)
  local g=love.graphics
  S.grottoShader=S.grottoShader or g.newShader([[
- extern vec2 dimensions;extern float clock;extern float camera;extern float opacity;extern float abyss;
+ extern vec2 dimensions;extern float clock;extern float camera;extern float opacity;extern float abyss;extern float approach;
  float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
  float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
  float fbm(vec2 p){return noise(p)*.6+noise(p*2.1)*.27+noise(p*4.4)*.13;}
  vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel){
   vec2 q=pixel/dimensions+vec2(clock*.045*abyss,camera);
-  float ceiling=.025+.095*fbm(vec2(q.x*9.,2.));
+  float ceiling=.025+.095*fbm(vec2(q.x*9.,2.))+approach*.14;
   for(int i=0;i<6;i++){
    float k=float(i);float x=.04+k*.19;
    ceiling+=exp(-pow((q.x-x)*65.,2.))*(.025+.04*hash(vec2(k,7.)));
@@ -93,7 +93,7 @@ function S.grotto(w,h,time,camera,alpha,abyss)
  }
  ]])
  S.grottoShader:send('dimensions',{w,h});S.grottoShader:send('clock',time);S.grottoShader:send('camera',camera or 0)
- S.grottoShader:send('opacity',alpha);S.grottoShader:send('abyss',abyss and 1 or 0)
+ S.grottoShader:send('approach',approach or 0);S.grottoShader:send('opacity',alpha);S.grottoShader:send('abyss',abyss and 1 or 0)
  g.push('all');g.setShader(S.grottoShader);g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.pop()
 end
 -- Soft depth veil, shared by all cinematic handoffs; no cut or black frame.

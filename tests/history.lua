@@ -20,6 +20,12 @@ function T.run()
   love.draw();g.setCanvas=setCanvas;setCanvas();g.pop();c:newImageData():encode('png','history-'..name..'.png');c:release()
  end
  H.open();capture('menu');assert(#UI.buttons==8 and H.scenes[1].label=='Le début' and H.scenes[2].label=='Paradis → Ciel' and H.scenes[3].label=='Ciel → Terre' and H.scenes[4].label=='Terre → Océan' and H.scenes[5].label=='Océan → Abysse' and H.scenes[6].label=='Abysse → Enfer' and H.scenes[7].label=='Enfer → Renaissance','Beginning, six biome transitions and Return')
+ local bridge=require('preview_bridge');local request=bridge.request
+ local requests=0
+ bridge.request=function()
+  requests=requests+1
+  return {ticket='stale-hell-preview',layout={world=2,biome=2,level=1,width=960,height=600,entities={}}},'stale'
+ end
  local read=LevelLayouts.read
  LevelLayouts.read=function()
   local layouts={}
@@ -28,6 +34,8 @@ function T.run()
  end
  for i,scene in ipairs(H.scenes) do
   H.open();UI.draw();UI.buttons[i].run();assert(App.historyPreview,'Every scene button launches a preview')
+  local world=Campaign.world;bridge.update(.3)
+  assert(requests==0 and Campaign.world==world and not App.sessionLayout,'Pending editor map cannot replace a History destination')
   capture(scene.id)
   if scene.id=='hell_renaissance' then assert(player.level==1 and Ending.active and require('final_spider').active and not Renaissance.active,'History shows the actual level 1 guardian encounter') end
   if scene.id=='story' then P.enterWorld()
@@ -51,6 +59,7 @@ function T.run()
   assert(snapshot({Bestiary.seen,Bestiary.unread})==bestiary and Replay.last==replay,'Bestiary and last replay stay unchanged')
   assert(love.math.getRandomState()==rng,'Preview restores RNG')
  end
+ bridge.request=request
  LevelLayouts.read=read
  App.historyPreview=true;Replay.data={layouts={['5:1']={world=2}}};Replay.recording=true
  assert(next(LevelLayouts.read())==nil,'History ignores replay layouts even if replay state is stale')

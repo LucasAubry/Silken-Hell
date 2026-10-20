@@ -4,12 +4,19 @@ extern float clock;
 extern float depth;
 extern float heat;
 extern float water;
+extern float camera;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){return noise(p)*.57+noise(p*2.13)*.28+noise(p*4.37)*.15;}
 vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel){
  vec2 q=pixel/dimensions;
- vec2 p=(pixel-dimensions*.5)/dimensions.y;
+ vec2 worldQ=q+vec2(camera,0.);
+ vec2 p=(worldQ-.5)*vec2(dimensions.x/dimensions.y,1.);
+ // A permanent side gallery moves into view as the camera descends.
+ vec2 mouth=(worldQ-vec2(.78,1.30-depth*.70))/vec2(.24,.105);
+ float arch=length(mouth)+.045*fbm(worldQ*33.);
+ float sideWall=smoothstep(.60,.67,worldQ.x);
+ float tunnel=(1.-smoothstep(.80,1.03,arch))*sideWall;
  vec2 rock=p+vec2(0.,depth*1.35);
  float n=fbm(rock*7.);
  float channel=exp(-p.x*p.x*18.);
@@ -35,8 +42,15 @@ vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel){
   basalt+=vec3(.65,.085,.008)*cracks*hot*.48;
   float rim=exp(-max(edge,0.)*75.);
   basalt+=mix(vec3(.025,.13,.17),vec3(.38,.075,.015),hot)*rim*(.5+.5*grain);
-  c=mix(c,basalt*(1.-layer*.12),mask);
+  c=mix(c,basalt*(1.-layer*.12),mask*(1.-tunnel));
  }
+ // The lip, floor and illuminated inner wall give the opening real depth.
+ float lip=exp(-pow((arch-1.)*24.,2.))*sideWall;
+ vec3 innerRock=mix(vec3(.009,.006,.008),vec3(.075,.021,.012),fbm(worldQ*vec2(21.,36.)));
+ c=mix(c,innerRock,tunnel*.96);
+ c+=vec3(.23,.065,.018)*lip*heat;
+ float floorLight=smoothstep(-.25,.9,mouth.y)*tunnel;
+ c+=vec3(.16,.055,.018)*floorLight*heat*(.55+.45*fbm(worldQ*42.));
  // The same helmet light reveals the nearby wet rock during the underwater part.
  vec2 delta=(q-lamp)*vec2(dimensions.x/dimensions.y,1.);
  float glow=exp(-dot(delta,delta)*17.)*water;

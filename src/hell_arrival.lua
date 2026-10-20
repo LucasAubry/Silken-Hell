@@ -1,8 +1,6 @@
 -- Descend through a submerged volcanic fissure into a dry geothermal cavern.
 local S={duration=9.95,impact=9.8}
-local motion=require('cinematic_motion')
 local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
-local descent={{0,.35,0},{2,.44,.05},{4,.55,.035},{6.4,.78,0}}
 function S.begin()
  S.age=0;S.actor={walkMoving=false}
  if S.environment then S.environment:release();S.environment=nil end
@@ -16,21 +14,27 @@ function S.captureEnvironment(canvas)
  g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1);g.draw(canvas);g.setCanvas(previous);g.pop()
 end
 function S.pose(t)
- local land=ease(t/9.8)
- return {x=.5+math.sin(t*.8)*.018*(1-land),y=motion.sample(descent,t),progress=land,
+ local land=ease((t-7.8)/2)
+ local walk=ease((t-5.8)/2.4)
+ local turn=ease((t-5.6)/.7)
+ return {x=.5+.34*walk,y=.23+.43*ease(t/6.2),progress=land,
+  camera=.40*ease((t-6.1)/2.4),turn=turn,
   size=1.65-.65*land,depth=ease(t/6.2),heat=ease((t-2.2)/4.2),
-  mapAlpha=ease((t-3.8)/5.7),actorsAlpha=ease((t-8.9)/.9),
-  bubble=1-ease((t-5.1)/1),release=ease((t-5.1)/1),dir='up'}
+  mapAlpha=land,actorsAlpha=land,
+  bubble=1-ease((t-5.1)/1),release=ease((t-5.1)/1),
+  dir=t<5.95 and 'down' or t<9.3 and 'right' or 'up'}
 end
 function S.position(t,w,h,sx,sy)
  local p=S.pose(t)
- if p.progress==1 then return sx,sy end
- local startY=math.min(h*.23,sy-h*.30)
- return w*.5+(sx-w*.5)*p.progress,startY+(sy-startY)*p.progress
+ local x=w*(p.x-p.camera);local y=h*p.y
+ return x+(sx-x)*p.progress,y+(sy-y)*p.progress
 end
 function S.advance(age)
- local dt=math.max(0,age-S.age);S.age=age
- require('brown_walk').advance(S.actor,dt*24*(1-S.pose(age).progress),dt)
+ local old=S.age;local dt=math.max(0,age-old);S.age=age
+ local x,y=S.position(age,Arena.width,Arena.height,player.x+15,player.y+8)
+ local ox,oy=S.position(old,Arena.width,Arena.height,player.x+15,player.y+8)
+ local distance=age>5.8 and math.sqrt((x-ox)^2+(y-oy)^2) or 0
+ require('brown_walk').advance(S.actor,distance,dt)
 end
 function S.draw(canvas,w,h)
  local g=love.graphics;local shader=g.getShader();local t=S.age;local p=S.pose(t)
@@ -41,7 +45,7 @@ function S.draw(canvas,w,h)
  g.push('all');g.origin();g.setShader()
  S.scenery=S.scenery or g.newShader('assets/shaders/abyss_hell_passage.glsl')
  S.scenery:send('dimensions',{w,h});S.scenery:send('clock',t)
- S.scenery:send('depth',p.depth);S.scenery:send('heat',p.heat)
+ S.scenery:send('camera',p.camera);S.scenery:send('depth',p.depth);S.scenery:send('heat',p.heat)
  S.scenery:send('lamp',{ax/w,ay/h});S.scenery:send('water',p.bubble)
  g.setShader(S.scenery);g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.setShader()
  local a=1-p.mapAlpha
@@ -61,7 +65,7 @@ function S.draw(canvas,w,h)
  end
  -- Warm vapor thickens at the submerged throat, covering the change of medium.
  local steam=ease((t-3.8)/1.2)*(1-ease((t-6.1)/1.2))*a
- decor.mist(w,h,t,steam*.65,.5)
+ decor.mist(w,h,t,steam*.35,.5)
  for i=1,35 do
   local px=w*((i*.618+t*.012)%1);local py=h*((i*.173-t*.045)%1)
   g.setColor(1,.38,.10,a*(1-p.bubble)*.55)
@@ -69,7 +73,8 @@ function S.draw(canvas,w,h)
  end
  decor.reveal(canvas,S.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
  Characters.shadow(ax,ay+size*.18*(1-p.progress),size,p.dir,S.actor,ease((t-6)/2))
- g.setColor(1,1,1);Characters.draw(ax,ay,size,p.dir,S.actor,2)
+ g.push();g.translate(ax,ay);g.scale(1-.18*math.sin(p.turn*math.pi),1)
+ g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,S.actor,2);g.pop()
  if p.bubble>0 then
   local bubble=require('breathing_bubble');local hx,hy,r=bubble.headPosition(ax,ay,size,p.dir)
   -- Equipment stays on the swimmer until the hot vapor consumes it, without teleporting away.
