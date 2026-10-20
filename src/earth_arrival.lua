@@ -90,7 +90,7 @@ function E.draw(canvas,w,h)
  if p.mapAlpha>0 then Characters.shadow(sx,sy,Characters.playerWidth*scale,'up',nil,p.mapAlpha) end
  if p.silk then
   local tipX=ax+(anchorX-ax)*p.cast;local tipY=ay+(anchorY-ay)*p.cast
-  g.setColor(.91,.96,1,1-ease((t-7.6)/1.2));g.setLineWidth(1.4*scale);g.line(ax,ay-size*.15,tipX,tipY)
+  require('silk_art').thread(tipX,tipY,ax,ay-size*.15,5.5*scale,.92*(1-ease((t-7.6)/1.2)))
  end
  -- The cloud occludes the anchor, so the silk emerges from behind its underside.
  cloud(w,h,p.camera,t,1-underground)
