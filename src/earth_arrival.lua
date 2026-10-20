@@ -25,24 +25,26 @@ function E.captureEnvironment(canvas)
  g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1);g.draw(canvas);g.setCanvas(previous);g.pop()
 end
 function E.advance(age)E.age=age end
+local motion=require('cinematic_motion')
+local flightX={{0,.21,0},{.5,.21,0},{1.8,.5,0},{2.1,.5,0},{6,.5,0}}
+local flightY={{0,.235,0},{.5,.235,0},{1.12,.105,0},{1.8,.235,0},{1.95,.245,0},{2.1,.235,0},
+ {2.5,.18,0},{3.3,.48,.18},{4.5,.60,.045},{6,.64,0}}
 function E.pose(age)
- local jump=ease((age-.7)/.9)
- local descent=ease((age-1.6)/4.7)
+ local descent=ease((age-2.5)/3.8)
  local land=ease((age-6)/2.8)
- local swingTime=math.max(0,age-1.6)
- local angle=.10*math.cos(swingTime*2.6)*math.exp(-swingTime*.32)*(1-land)
- return {jump=jump,rappel=descent,progress=land,mapAlpha=land,actorsAlpha=ease((age-8.8)/1.6),
-  silk=age>=1.3 and age<8.8,cast=ease((age-1.3)/.3),angle=angle,
-  length=.24+.85*descent,camera=.75*descent,size=1.6-.6*land,
-  dir=land>.9 and 'up' or age<1.6 and 'right' or 'down',
-  lift=age>8.8 and age<9.1 and math.sin((age-8.8)/.3*math.pi)*3 or 0}
+ local swingTime=math.max(0,age-3.3)
+ local angle=.045*math.sin(swingTime*2.1)*ease(swingTime/.7)*math.exp(-swingTime*.45)*(1-land)
+ return {jump=ease((age-.5)/1.3),rappel=descent,progress=land,mapAlpha=land,actorsAlpha=ease((age-8.8)/1.6),
+  silk=age>=2.1 and age<8.8,angle=angle,camera=.75*descent,size=1.6-.6*land,
+  x=motion.sample(flightX,age)+math.sin(angle)*.035,y=motion.sample(flightY,age),
+  dir=land>.9 and 'up' or age<2.1 and 'right' or 'down',lift=0}
 end
-local function cloud(w,h,camera,t,opacity)
+local function cloud(w,h,camera,t,opacity,center)
  local g=love.graphics
  E.cloud=E.cloud or g.newShader(love.filesystem.read('assets/shaders/sky_clouds.glsl')..[[
-  extern vec2 dimensions;extern float camera;extern float clock;extern float opacity;
+  extern vec2 dimensions;extern float camera;extern float clock;extern float opacity;extern float center;
   vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel){
-   vec2 q=(pixel/dimensions-vec2(.21,.31-camera))*vec2(1.,1.);
+   vec2 q=(pixel/dimensions-vec2(center,.31-camera))*vec2(1.,1.);
    float mass=0.;
    for(int i=0;i<5;i++){
     float k=float(i);float crown=1.-abs(k-2.)*.5;
@@ -57,6 +59,7 @@ local function cloud(w,h,camera,t,opacity)
    return vec4(c,a*opacity);
   }
  ]])
+ E.cloud:send('center',center or .21)
  E.cloud:send('opacity',opacity or 1)
  E.cloud:send('dimensions',{w,h});E.cloud:send('camera',camera);E.cloud:send('clock',t)
  g.setColor(1,1,1);g.setShader(E.cloud);g.rectangle('fill',0,0,w,h);g.setShader()
@@ -68,33 +71,29 @@ function E.draw(canvas,w,h)
  g.push('all');g.origin();g.setShader()
  decor.backdrop(6,w,h,t)
  -- Match Paradise-to-Sky: broad atmospheric layers, then a long destination dissolve.
- cloud(w,h,p.camera,t)
- local underground=ease((t-2.9)/3.1)
+ cloud(w,h,p.camera,t,1,.21)
+ cloud(w,h,p.camera,t,1,.5)
+ local underground=ease((t-3.7)/2.3)
  decor.backdrop(5,w,h,t,underground,p.rappel)
  require('sky_arrival').drawClouds(w,h,t*.35,(1-underground)*(.16+.42*math.exp(-((t-3.8)/1.2)^2)))
  decor.caveEdges(w,h,t,p.rappel,underground*(1-p.mapAlpha))
  decor.reveal(canvas,E.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
- local veil=ease((t-2.5)/1.5)*(1-ease((t-7.1)/2))
+ local veil=ease((t-3.3)/1.5)*(1-ease((t-7.1)/2))
  decor.mist(w,h,t,veil*.22,0)
- local anchorX,anchorY=w*.25,h*(.31-p.camera)
- local ax=w*(.5+math.sin(p.angle)*.035)
- local ay=h*(.31-p.camera+math.cos(p.angle)*p.length)
- if t<1.6 then
-  local catchX=w*(.5+math.sin(.10)*.035);local catchY=h*(.31+math.cos(.10)*.24)
-  ax=w*.21+(catchX-w*.21)*p.jump
-  ay=h*.235+(catchY-h*.235)*p.jump-math.sin(p.jump*math.pi)*h*.13
- end
+ local anchorX,anchorY=w*.5,h*(.31-p.camera)
+ local ax,ay=w*p.x,h*p.y
  ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress-p.lift*scale
  local size=Characters.playerWidth*scale*p.size
 
  if p.mapAlpha>0 then Characters.shadow(sx,sy,Characters.playerWidth*scale,'up',nil,p.mapAlpha) end
  if p.silk then
-  local tipX=ax+(anchorX-ax)*p.cast;local tipY=ay+(anchorY-ay)*p.cast
+  local tipX,tipY=anchorX,anchorY
   require('silk_art').thread(tipX,tipY,ax,ay-size*.15,5.5*scale,.92*(1-ease((t-7.6)/1.2)))
  end
  -- The cloud occludes the anchor, so the silk emerges from behind its underside.
- cloud(w,h,p.camera,t,1-underground)
- g.push();g.translate(ax,ay);g.rotate(t<1.6 and math.sin(p.jump*math.pi)*.25 or -p.angle*.65)
+ cloud(w,h,p.camera,t,1-underground,.21)
+ cloud(w,h,p.camera,t,1-underground,.5)
+ g.push();g.translate(ax,ay);g.rotate(t<2.1 and math.sin(p.jump*math.pi)*.12 or -p.angle*.65)
  g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,E.actor,p.mapAlpha>0 and 5 or 6);g.pop()
  g.pop()
 end

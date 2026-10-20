@@ -20,9 +20,14 @@ function T.run()
  assert(C.arrivalKind=='earth' and Campaign.world==5 and Campaign.biome==5 and player.level==1,'Sky continuation loads the actual first Earth map')
  assert(E.pose(.4).jump==0 and not E.pose(.4).silk,'Starts resting on a cloud')
  assert(E.pose(1).jump>0 and not E.pose(1).silk,'Jumps off the cloud before deploying silk')
- assert(E.pose(1.5).silk and E.pose(1.5).cast<1,'Web extends before becoming taut')
- assert(E.pose(2).angle*E.pose(3).angle<0,'Pendulum changes direction')
- assert(math.abs(E.pose(1.6).angle)<=.1,'Gentle swing at the start of rappel')
+ assert(math.abs(E.pose(1.8).x-.5)<.001 and not E.pose(1.8).silk,'Lands on the middle cloud before rappel')
+ assert(E.pose(2.2).silk and E.pose(2.5).y<E.pose(2.1).y,'Second jump pays silk out from the middle cloud')
+ for _,t in ipairs({.5,1.12,1.8,1.95,2.1,2.5,3.3,4.5,6}) do
+  for _,key in ipairs({'x','y'}) do
+   local dt=.0001;local before=E.pose(t-dt)[key];local at=E.pose(t)[key];local after=E.pose(t+dt)[key]
+   assert(math.abs((at-before)/dt-(after-at)/dt)<.01,'Position and velocity join smoothly during both jumps and rappel')
+  end
+ end
  assert(E.pose(9).angle==0,'Swing settles on landing')
  assert(E.pose(3).rappel>0 and E.pose(3).mapAlpha==0,'Descends before revealing cave')
  assert(E.pose(8.8).actorsAlpha==0 and E.pose(9.6).actorsAlpha>0,'Soft reveal introduces creatures after landing')
@@ -32,7 +37,7 @@ function T.run()
   if ticks==10 then App.state='pause';local age=C.arrival;C.advance(.05);assert(C.arrival==age);App.state='playing' end
   C.advance(.05);ticks=ticks+1;assert(ticks<260)
   assert(player.x==x and player.y==y and timer==0 and love.math.getRandomState()==rng,'Cinematic freezes position, scoring and gameplay RNG')
-  for _,shot in ipairs({{'cloud',.4},{'jump',1.1},{'catch',1.65},{'rappel',3.5},{'cave-entrance',5.5},{'cave-interior',6.6},{'impact',8.9},{'creatures',9.6},{'landed',10.5}}) do
+  for _,shot in ipairs({{'cloud',.4},{'jump',1.1},{'middle-cloud',1.8},{'front-jump',2.5},{'catch',3.3},{'rappel',3.5},{'cave-entrance',5.5},{'cave-interior',6.6},{'impact',8.9},{'creatures',9.6},{'landed',10.5}}) do
    if C.arrival and C.arrival>=shot[2] and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
   end
  end

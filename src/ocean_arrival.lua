@@ -14,13 +14,19 @@ function O.captureEnvironment(canvas)
  g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1);g.draw(canvas);g.setCanvas(previous);g.pop()
 end
 function O.advance(age)
- local dt=math.max(0,age-O.age);O.age=age
- require('brown_walk').advance(O.actor,age<1.8 and dt*70 or age>3 and age<3.6 and dt*55 or age>5 and age<8 and dt*45 or 0,dt)
+ local previous=O.age;local dt=math.max(0,age-previous);O.age=age
+ local distance=age<1.8 and math.abs(O.pose(age).x-O.pose(previous).x)*Arena.width or age>4.8 and age<8 and dt*45 or 0
+ require('brown_walk').advance(O.actor,distance,dt)
 end
+local motion=require('cinematic_motion')
+local swimX={{0,.20,0},{1.8,.43,0},{3.3,.43,0},{4.3,.57,.06},{5.2,.61,0},{6.2,.5,0}}
+local swimY={{0,0,0},{3,0,0},{3.3,.012,0},{3.75,-.075,0},{4.3,.075,.40},{4.8,.26,.22},{5.4,.32,0},{6.2,.26,0}}
 function O.pose(t)
  return {approach=ease(t/1.8),equip=ease((t-1.8)/1.2),equipped=t>=3,
-  edge=ease((t-3)/.6),swim=ease((t-5)/1.2),dive=ease((t-3.6)/1.4),underwater=ease((t-4.6)/1.4),camera=.85*ease((t-4.8)/1.3),
-  progress=ease((t-6)/2),mapAlpha=ease((t-6)/2),actorsAlpha=ease((t-8)/2),dir=t>=5 and 'up' or t>=3.6 and 'down' or 'right'}
+  x=motion.sample(swimX,t),y=motion.sample(swimY,t),
+  swim=ease((t-4.8)/1.4),dive=ease((t-3.3)/2.1),underwater=ease((t-4.4)/1.6),camera=.85*ease((t-4.8)/1.6),
+  progress=ease((t-6.2)/1.8),mapAlpha=ease((t-6)/2),actorsAlpha=ease((t-8)/2),
+  dir=t>=5.2 and 'up' or t>=3.8 and 'down' or 'right',grounded=t<=3.3}
 end
 function O.draw(canvas,w,h)
  local g=love.graphics;local shader=g.getShader();local t=O.age;local p=O.pose(t)
@@ -71,13 +77,15 @@ function O.draw(canvas,w,h)
  end
  decor.reveal(canvas,O.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
  decor.mist(w,h,t,.08*(1-p.mapAlpha),p.underwater)
- local ax=w*(.20+.25*p.approach+.10*p.edge-.05*p.swim)
- local ay=h*(.50+.34*p.dive-p.camera*.35)+math.sin(t*4)*h*.006*p.swim*(1-p.progress)
- ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress
  local size=Characters.playerWidth*scale*((1.65-.35*p.dive)*(1-p.progress)+p.progress)
+ local groundY=h*(.55+math.sin(p.x/.47*9)*.004)
+ local restY=groundY-Characters.playerWidth*scale*1.65*.30
+ local ax=w*p.x
+ local ay=restY+h*(p.y-p.camera*.35)
+ ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress
  local rotation=math.sin(t*4)*.045*p.swim*(1-p.progress)
  if p.mapAlpha>0 then Characters.shadow(ax,sy,Characters.playerWidth*scale,p.dir,nil,p.mapAlpha) end
- if cave>0 then Characters.shadow(ax,h*(.53-p.camera),size,p.dir,O.actor,cave*(1-p.dive)) end
+ if cave>0 then Characters.shadow(ax,groundY-p.camera*h,size,p.dir,O.actor,cave*(1-ease((t-3.3)/.8))) end
  g.push();g.translate(ax,ay);g.rotate(rotation)
  g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,O.actor,p.equipped and 4 or 5)
  local hx,hy,r=bubble.headPosition(0,0,size,p.dir)
@@ -109,11 +117,11 @@ function O.draw(canvas,w,h)
   g.setColor(1,1,1);g.setShader(O.water);g.rectangle('fill',0,0,w,h);g.setShader()
  end
  if surface>0 and surface<h then
-  local splash=ease((t-4.15)/.12)*(1-ease((t-4.3)/.6))
+  local splash=ease((t-4.3)/.12)*(1-ease((t-4.5)/.6))
   if splash>0 then
    for i=1,16 do
-    local a=i*2.399;local radius=(t-4.15)*(55+i%4*22)*scale
-    g.setColor(.71,.97,1,splash*.8);g.ellipse('fill',w*.55+math.cos(a)*radius,surface-math.abs(math.sin(a))*radius*.8+(t-4.15)^2*70*scale,1.5*scale,3*scale)
+    local a=i*2.399;local radius=(t-4.3)*(55+i%4*22)*scale
+    g.setColor(.71,.97,1,splash*.8);g.ellipse('fill',w*.57+math.cos(a)*radius,surface-math.abs(math.sin(a))*radius*.8+(t-4.3)^2*70*scale,1.5*scale,3*scale)
    end
   end
  end
