@@ -102,6 +102,22 @@ function E.draw(canvas,w,h)
  local ax,ay=w*p.x,h*p.y
  ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress-p.lift*scale
  local size=Characters.playerWidth*scale*p.size
+ -- Dust and streaks rise past the falling spider, settling before the handoff.
+ local fall=ease((t-2.6)/.55)*(1-ease((t-7.1)/1.3))
+ for i=1,30 do
+  local px=w*((i*.618)%1)
+  local py=h*((i*.173-p.camera*1.7-t*.055)%1)
+  local length=h*(.012+i%4*.006)*fall
+  g.setColor(.76,.85,.88,fall*(.09+i%3*.035));g.setLineWidth(scale)
+  g.line(px,py,px,py-length)
+ end
+ for i=1,18 do
+  local phase=(t*.8+i*.137)%1
+  local px=ax+math.sin(i*2.4)*size*(.6+phase*.25)
+  local py=ay-size*.2-phase*size*2.2
+  g.setColor(.85,.78,.60,fall*(1-phase)*.32)
+  g.circle('fill',px,py,(.6+i%3*.35)*scale)
+ end
 
  if p.mapAlpha>0 then Characters.shadow(sx,sy,Characters.playerWidth*scale,'up',nil,p.mapAlpha) end
  if p.silk then require('silk_art').thread(anchorX,anchorY,ax,ay+size*.12,5.5*scale,.92*(1-ease((t-7.6)/1.2))) end

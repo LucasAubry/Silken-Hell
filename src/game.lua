@@ -100,7 +100,8 @@ function App.start(world,options)
     if Replay.playing then Arena.width=Replay.data.width end
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
     Campaign.starts={{},{},{},{},{},{},{}}; Campaign.lastSide=nil
-    Campaign.select(world); App.selectedWorld=world
+    Campaign.select(world)
+    if not App.historyPreview then App.selectedWorld=world end
     Hardcore.notice=nil;timer=0;RunDetails.reset();UI.showRunDetails=false; player.level=App.practice or (App.sessionLayout and App.sessionLayout.level) or 1; player.death=0; direction='down'
     shader_effect_timer=0;Psyche.reset(); App.state='playing'; love.keyboard.setTextInput(false)
     if Audio.paradise then Audio.paradise:stop() end

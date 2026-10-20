@@ -74,7 +74,13 @@ function S.grotto(w,h,time,camera,alpha,abyss,approach,exit)
   float ledge=min(q.y-top,edge-q.x);
   float wall=.025+.035*fbm(vec2(q.y*9.,4.))-q.x;
   float distance=max(max(ceiling-q.y,wall),ledge);
-  if(abyss<.5){float retreat=passageExit*.72;ledge=min(q.y-top,edge-q.x-retreat);wall-=retreat;distance=max(max(ceiling-q.y,wall),ledge);}
+  if(abyss<.5){
+   // A broad shelf narrows into a submerged spur: shape belongs to the rock,
+   // rather than sliding the whole cliff sideways as time passes.
+   float taper=.66*smoothstep(.60,1.26,q.y);
+   ledge=min(q.y-top,edge-taper-q.x);wall-=taper;
+   distance=max(max(ceiling-q.y,wall),ledge);
+  }
   if(abyss>.5) distance=max(ceiling-passageExit*.25-q.y,q.y-(.94-.05*fbm(vec2(q.x*8.,9.))+passageExit*.14));
   float mask=smoothstep(-.002,.002,distance);
   float strata=sin(q.y*120.+fbm(q*vec2(11.,6.))*10.);

@@ -16,6 +16,8 @@ function H.close()
  if H.saved then
   require('prologue_audio').stop()
   for _,key in ipairs(fields) do App[key]=H.saved[key] end
+  player.level=H.saved.level
+  Campaign.select(H.saved.world);Campaign.biome=H.saved.biome
   love.math.setRandomState(H.saved.rng)
   H.saved=nil
  end
@@ -39,7 +41,8 @@ function H.update(dt)
 end
 function H.play(id)
  if H.saved then H.close() end
- H.saved={rng=love.math.getRandomState()};for _,key in ipairs(fields) do H.saved[key]=App[key] end
+ H.saved={rng=love.math.getRandomState(),world=Campaign.world,biome=Campaign.biome,level=player.level}
+ for _,key in ipairs(fields) do H.saved[key]=App[key] end
  App.historyPreview=true;App.preview=true;Replay.recording=false;Replay.input=nil;UI.buttons={};UI.pressed=nil
  if id=='story' then require('prologue').open(true)
  elseif id=='intro' then require('prologue_mystery').open()

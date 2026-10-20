@@ -10,6 +10,7 @@ function T.run()
  end
  local profile=snapshot({stats=Profile.stats,biomes=Profile.biomeStats,achievements=Profile.achievements,completed=Profile.completed,seen=Profile.prologueSeen,name=Profile.name})
  local bestiary=snapshot({Bestiary.seen,Bestiary.unread});local replay=Replay.last;local rng=love.math.getRandomState()
+ local previousWorld,previousBiome,previousLevel=Campaign.world,Campaign.biome,player.level
  local record,online,begin=Profile.record,Online.start,Replay.begin
  Profile.record=function()error('Preview must not record attempts')end
  Online.start=function()error('Preview must not start an online run')end
@@ -34,6 +35,7 @@ function T.run()
  end
  for i,scene in ipairs(H.scenes) do
   H.open();UI.draw();UI.buttons[i].run();assert(App.historyPreview,'Every scene button launches a preview')
+  assert(App.selectedWorld==5,'History does not change the main-menu selection while playing')
   local world=Campaign.world;bridge.update(.3)
   assert(requests==0 and Campaign.world==world and not App.sessionLayout,'Pending editor map cannot replace a History destination')
   capture(scene.id)
@@ -55,6 +57,7 @@ function T.run()
   if scene.id=='paradise_sky' or scene.id=='sky_earth' or scene.id=='earth_ocean' or scene.id=='ocean_abyss' or scene.id=='abyss_hell' or scene.id=='hell_renaissance' then assert(scene.landed,'Preview holds on the landed destination') end
   assert(App.state=='history' and not C.active and not C.arrival,'Scene automatically returns to the chooser')
   assert(App.selectedWorld==5 and App.hardcore and not App.preview and not App.singleLevel,'Preview restores menu settings')
+  assert(Campaign.world==previousWorld and Campaign.biome==previousBiome and player.level==previousLevel,'History restores the previous campaign biome as well')
   assert(snapshot({stats=Profile.stats,biomes=Profile.biomeStats,achievements=Profile.achievements,completed=Profile.completed,seen=Profile.prologueSeen,name=Profile.name})==profile,'Profile stays unchanged')
   assert(snapshot({Bestiary.seen,Bestiary.unread})==bestiary and Replay.last==replay,'Bestiary and last replay stay unchanged')
   assert(love.math.getRandomState()==rng,'Preview restores RNG')

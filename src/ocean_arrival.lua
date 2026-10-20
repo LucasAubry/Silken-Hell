@@ -24,7 +24,7 @@ local swimY={{0,0,0},{3,0,0},{3.3,.012,0},{3.75,-.075,0},{4.3,.075,.40},{4.8,.26
 function O.pose(t)
  return {approach=ease(t/1.8),equip=ease((t-1.8)/1.2),equipped=t>=3,
   x=motion.sample(swimX,t),y=motion.sample(swimY,t),
-  swim=ease((t-4.8)/1.4),dive=ease((t-3.3)/2.1),underwater=ease((t-4.4)/1.6),camera=.85*ease((t-4.8)/1.6),
+  swim=ease((t-4.8)/1.4),dive=ease((t-3.3)/2.1),underwater=ease((t-4.4)/1.6),camera=1.35*ease((t-4.8)/1.6),
   progress=ease((t-6.2)/1.8),mapAlpha=ease((t-6)/2),actorsAlpha=ease((t-7.45)/.55),
   dir=t>=5.2 and 'up' or t>=3.8 and 'down' or 'right',grounded=t<=3.3}
 end
@@ -42,12 +42,11 @@ function O.draw(canvas,w,h)
   g.setScissor(0,math.max(0,surface),w,h-math.max(0,surface))
   decor.backdrop(4,w,h,t,1,p.camera);g.setScissor()
  end
- if p.camera<.85 or t<7 then
+ do
   local offset=p.camera*h
-  local retreat=ease((t-4.3)/2.4)
-  decor.grotto(w,h,t,p.camera,1,false,0,retreat)
+  decor.grotto(w,h,t,p.camera,1,false)
   for i=1,8 do
-   local rx=w*(.04+i*.043-retreat*.72);local ry=h*(.56+math.sin(i)*.01)-offset
+   local rx=w*(.04+i*.043);local ry=h*(.56+math.sin(i)*.01)-offset
    decor.mushroom(rx,ry,(13+i%3*6)*scale,1)
   end
   for i=1,7 do
@@ -61,7 +60,7 @@ function O.draw(canvas,w,h)
  local groundY=h*(.55+math.sin(p.x/.47*9)*.004)
  local restY=groundY-Characters.playerWidth*scale*1.65*.21
  local ax=w*p.x
- local ay=restY+h*(p.y-p.camera*.35)
+ local ay=restY+h*(p.y-p.camera*(.85*.35/1.35))
  ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress
  local rotation=math.sin(t*4)*.045*p.swim*(1-p.progress)
  if p.mapAlpha>0 then Characters.shadow(ax,sy,Characters.playerWidth*scale,p.dir,nil,p.mapAlpha) end

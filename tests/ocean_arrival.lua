@@ -20,6 +20,16 @@ function T.run()
  assert(not pose(1).equipped and pose(2.4).equip>0 and pose(3.2).equipped and pose(3.2).dive==0,'Find and equip the bubble before entering water')
  assert(pose(3).grounded and pose(3.3).y>0 and pose(3.75).y<0,'Feet stay on the bank, then compress and push off into an arc')
  assert(pose(5.6).swim>0 and pose(5.6).dir=='up','Swims toward the destination after submerging')
+ do
+  local g=love.graphics;local previous=g.getCanvas();local c=g.newCanvas(200,300)
+  g.push('all');g.setCanvas(c);g.origin();g.clear()
+  require('transition_scenery').grotto(200,300,0,0,1,false)
+  g.setCanvas(previous);g.pop()
+  local image=c:newImageData();local _,_,_,upper=image:getPixel(60,195);local _,_,_,lower=image:getPixel(60,285)
+  assert(upper>.99 and lower<.01,'The submerged cliff is physically wider above and narrower below')
+  assert(pose(6.4).camera>=1.3,'Camera moves beyond the bottom of the rock instead of hiding it')
+  c:release()
+ end
  for _,t in ipairs({1.8,3,3.3,3.75,4.3,4.8,5.2,5.4,6.2}) do
   for _,key in ipairs({'x','y'}) do
    local dt=.0001;local before=pose(t-dt)[key];local at=pose(t)[key];local after=pose(t+dt)[key]
