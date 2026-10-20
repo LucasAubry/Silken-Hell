@@ -2,10 +2,20 @@
 local C={}
 local function smooth(v)v=math.max(0,math.min(1,v));return v*v*(3-2*v)end
 function C.begin()
- C.elapsed=0;C.goAge=nil;C.countdown=nil;C.arrival=nil;C.arrivalActor=nil;C.arrivalKind=nil
+ C.elapsed=0;C.goAge=nil;C.countdown=nil;C.arrival=nil;C.arrivalActor=nil;C.arrivalKind=nil;C.arrivalPractice=false
  C.active=not (App.practice or App.singleLevel or App.sessionLayout or Secret.duel or Replay.playing or App.preview or os.getenv('SILKEN_PREVIEW_WORLD'))
  C.armed=not Input.speedHeld()
- if Campaign.world==6 and C.active then C.beginSkyArrival(false) end
+ if App.practice and not (App.preview or App.sessionLayout or Secret.duel or Replay.playing) then
+  C.beginArrival(true,true);C.arrivalPractice=true;Hardcore.beginTrainingBorder()
+ elseif C.active then
+  if Campaign.world==6 then C.beginSkyArrival(true)
+  elseif Campaign.world==5 then C.beginEarthArrival()
+  elseif Campaign.world==4 then C.beginOceanArrival()
+  elseif Campaign.world==7 then C.beginAbyssArrival()
+  elseif Campaign.world==2 then C.beginHellArrival()
+  elseif Campaign.world==3 then C.beginRenaissanceArrival()
+  else C.beginArrival(true,true) end
+ end
 end
 -- The first portal opens onto the real level, held still until the story ends.
 function C.beginSkyArrival(fromParadise)
@@ -89,7 +99,10 @@ function C.advance(dt)
   a.y=a.targetY-75+75*smooth((C.arrival-1.4)/1.9)
   require('brown_walk').advance(a,a.y-oldY,step)
   if C.arrival>=(C.arrivalBrief and 4.9 or 12.5) and App.historyPreview then require('history').close();return 0 end
-  if C.arrival>=(C.arrivalBrief and 4.9 or 12.5) then C.arrival=nil;C.armed=false;C.elapsed=0 end
+  if C.arrival>=(C.arrivalBrief and 4.9 or 12.5) then
+   C.arrival=nil;C.armed=false;C.elapsed=0
+   if C.arrivalPractice then C.arrivalPractice=false;C.launch();C.goAge=nil end
+  end
   return 0
  end
  if not C.active then if C.goAge then C.goAge=C.goAge+dt end;return dt end

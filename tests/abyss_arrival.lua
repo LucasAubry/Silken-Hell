@@ -32,7 +32,7 @@ function T.run()
  end
  assert(B.environment and not C.active and direction=='up' and B.pose(B.duration).progress==1)
  capture('gameplay');assert(C.advance(.016)==.016)
- App.openEntry(7,false);App.draftName='Direct abyss';App.submit();assert(C.arrivalKind=='portal')
+ App.openEntry(7,false);App.draftName='Direct abyss';App.submit();assert(C.arrivalKind=='abyss')
  print('PASS Abyss arrival: Ocean campaign handoff, left entrance, smooth current, lantern, destination reveal, pause and frozen scoring/RNG')
  love.event.quit()
 end

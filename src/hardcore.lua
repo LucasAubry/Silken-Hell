@@ -45,8 +45,16 @@ function H.visible()
  if state=='bossWorld' or state=='skinUnlock' or state=='credits' then return false end
  return App.hardcore==true
 end
+function H.trainingVisible()
+ return App.practice~=nil and not App.historyPreview and not Replay.playing and
+  (App.state=='playing' or App.state=='pause' or App.state=='customVictory')
+end
+function H.beginTrainingBorder()
+ H.borderTraining=true;H.borderState={value=0,at=UI.clock,target=1}
+end
 function H.borderAmount(now)
- local target=H.visible() and 1 or 0
+ local target=(H.visible() or H.trainingVisible()) and 1 or 0
+ if H.trainingVisible() then H.borderTraining=true elseif H.visible() then H.borderTraining=false end
  local s=H.borderState or {value=0,at=now,target=target}
  -- Finish the elapsed portion in the previous direction before reversing.
  local dt=math.max(0,now-s.at)
@@ -61,7 +69,7 @@ function H.drawBorder(w,h)
  H.border=H.border or g.newShader('assets/shaders/hardcore_border.glsl')
  g.push('all');g.origin();g.setScissor();g.setBlendMode('alpha');g.setShader(H.border)
  H.border:send('viewport',{w,h});H.border:send('clock',UI.clock)
- H.border:send('ignition',amount)
+ H.border:send('ignition',amount);H.border:send('training',H.borderTraining and 1 or 0)
  g.setColor(1,1,1);g.draw(UI.pixel,0,0,0,w,h);g.pop()
 end
 return H

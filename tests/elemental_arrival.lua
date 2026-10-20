@@ -33,7 +33,7 @@ function T.run()
   end
   assert(S.environment and not C.active and direction=='up' and S.pose(S.duration).progress==1)
   capture(route.kind..'-arrival-gameplay');assert(C.advance(.016)==.016)
-  App.openEntry(route.to,false);App.draftName='Direct';App.submit();assert(C.arrivalKind=='portal')
+  App.openEntry(route.to,false);App.draftName='Direct';App.submit();assert(C.arrivalKind==route.kind)
  end
  print('PASS elemental arrivals: both campaign handoffs, destination maps, continuous motion, bubble release, pause and frozen RNG/scoring')
  love.event.quit()
