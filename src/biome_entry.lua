@@ -1,5 +1,5 @@
--- Reuse the real cinematic's final second, including scenery, equipment and gait.
-local B={duration=1}
+-- Reuse the real cinematic's final two seconds, including scenery, equipment and gait.
+local B={duration=2}
 local modules={[6]='sky_arrival',[5]='earth_arrival',[4]='ocean_arrival',[7]='abyss_arrival',[2]='hell_arrival',[3]='renaissance_arrival'}
 function B.begin(world)
  B.world=world;B.age=0;B.scene=require(assert(modules[world]))

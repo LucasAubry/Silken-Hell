@@ -70,13 +70,14 @@ function M.new(garden)
   ]])
   S.scenery:send('dimensions',{w,h});S.scenery:send('clock',t);S.scenery:send('change',p.change);S.scenery:send('garden',garden and 1 or 0);S.scenery:send('scroll',p.scroll)
   g.setShader(S.scenery);g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.setShader()
-  local a=garden and 1-ease((t-7)/3.4) or 1-p.mapAlpha
+  if garden then decor.reveal(canvas,S.environment,w,h,p.mapAlpha,p.actorsAlpha,shader,w*.35*(1-p.progress)) end
+  local roadAlpha=1-ease((t-9.5)/.9)
+  local a=garden and roadAlpha or 1-p.mapAlpha
   if garden then
    -- A continuous stone causeway becomes a living root bridge beneath the feet.
-   g.push()
-   local retreat=ease((t-4.8)/5.6)
-   -- The bridge recedes toward the same vanishing point as the walking spider.
-   g.translate(sx*retreat,sy*retreat);g.scale(math.max(.0001,1-retreat),math.max(.0001,1-retreat))
+   local turn=ease((t-4.2)/1.8)
+   local roadOpacity=a
+   a=a*(1-turn)
    local path={0,h*.91}
    for i=0,50 do path[#path+1]=w*i/50;path[#path+1]=h*(.91+math.sin(i*.31+p.scroll*15)*.006) end
    for i=50,0,-1 do path[#path+1]=w*i/50;path[#path+1]=h*(1.0+math.sin(i*.23+p.scroll*12)*.018+math.sin(i*.71+p.scroll*36)*.005) end
@@ -96,7 +97,19 @@ function M.new(garden)
      if i%5==0 then g.setColor(.94,.81,.48,grow);g.circle('fill',px+bend,py-height,2.5*scale) end
     end
    end
-   g.pop()
+   a=roadOpacity
+   -- A continuous tapered path joins the foreground to the actual spawn.
+   local nearY=h*1.06;local farY=sy+Characters.playerWidth*scale*.16
+   local nearWidth=w*.32;local farWidth=Characters.playerWidth*scale*.8
+   local nearX=w*.5
+   decor.material(false);g.setColor(.23,.25,.09,a*turn)
+   g.polygon('fill',nearX-nearWidth,nearY,nearX+nearWidth,nearY,sx+farWidth,farY,sx-farWidth,farY)
+   g.setShader()
+   for strand=1,7 do
+    local f=(strand-4)/4
+    g.setColor(.34,.33,.14,a*turn*.75);g.setLineWidth(scale*(1+strand%2))
+    g.line(nearX+nearWidth*f,nearY,sx+farWidth*f,farY)
+   end
   else
    -- Convection lifts the swimmer through a glowing volcanic chimney.
    decor.grotto(w,h,t*.3,0,(1-p.change)*.55*a,true)
@@ -115,7 +128,7 @@ function M.new(garden)
    g.setColor(.95-.25*green,.28+.52*green,.09+.32*green,a*.5)
    g.ellipse('fill',px,py,(1.2+green)*scale,(2.5-green)*scale,12)
   end
-  decor.reveal(canvas,S.environment,w,h,p.mapAlpha,p.actorsAlpha,shader,garden and w*.35*(1-p.progress) or 0)
+  if not garden then decor.reveal(canvas,S.environment,w,h,p.mapAlpha,p.actorsAlpha,shader) end
   local ax,ay=S.position(t,w,h,sx,sy)
   local size=Characters.playerWidth*scale*p.size
   if garden or p.change>.7 then Characters.shadow(ax,garden and (h*.91+(sy-h*.91)*p.progress) or ay+size*.23*(1-p.progress),size,p.dir,S.actor,garden and 1 or ease((p.change-.7)/.3)) end

@@ -2,7 +2,7 @@
 local S={duration=10.4,impact=10.4}
 local motion=require('cinematic_motion')
 local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
-local descent={{0,.35,0},{2,.44,.05},{4,.55,.035},{6.4,1.22,0}}
+local descent={{0,.35,0},{2,.44,.05},{4,.55,.035},{6.4,.78,0}}
 function S.begin()
  S.age=0;S.actor={walkMoving=false}
  if S.environment then S.environment:release();S.environment=nil end
@@ -16,17 +16,18 @@ function S.captureEnvironment(canvas)
  g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1);g.draw(canvas);g.setCanvas(previous);g.pop()
 end
 function S.pose(t)
- local land=ease((t-7.2)/3.2)
+ local land=ease((t-6.8)/3.6)
  return {x=.5+math.sin(t*.8)*.018*(1-land),y=motion.sample(descent,t),progress=land,
   size=1.65-.65*land,depth=ease(t/6.2),heat=ease((t-2.2)/4.2),
-  mapAlpha=ease((t-6.2)/2.2),actorsAlpha=ease((t-8.4)/2),
-  bubble=1-ease((t-5.1)/1),release=ease((t-5.1)/1),dir=t>=7.2 and 'up' or 'down'}
+  mapAlpha=ease((t-6.8)/2.4),actorsAlpha=ease((t-8.4)/2),
+  bubble=1-ease((t-5.1)/1),release=ease((t-5.1)/1),dir=t>=6.6 and 'up' or 'down'}
 end
 function S.position(t,w,h,sx,sy)
  local p=S.pose(t)
  if p.progress==1 then return sx,sy end
- if t<7.2 then return w*p.x,h*p.y end
- return sx,h*1.22+(sy-h*1.22)*p.progress
+ local turnX=w*(.5+math.sin(6.8*.8)*.018)
+ if t<6.8 then return w*p.x,h*p.y end
+ return turnX+(sx-turnX)*p.progress,h*.78+(sy-h*.78)*p.progress
 end
 function S.advance(age)
  local dt=math.max(0,age-S.age);S.age=age

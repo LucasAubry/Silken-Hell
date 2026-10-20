@@ -16,8 +16,8 @@ function T.run()
   local S=C.scene();local px,py=player.x,player.y;local rng=love.math.getRandomState();local ticks=0;local shots={}
   assert(S.pose(8.4).actorsAlpha==0 and S.pose(9).actorsAlpha>0)
   if route.kind=='hell' then
-   local _,bottom=S.position(6.6,1200,750,600,375);assert(bottom>850,'Spider disappears below the screen')
-   local _,rise=S.position(8.2,1200,750,600,375);assert(rise<bottom and rise>375,'Spider rises from below into Hell')
+   local _,bottom=S.position(6.6,1200,750,600,375);assert(bottom<750 and bottom>533,'Spider turns while still on screen')
+   local _,rise=S.position(8.2,1200,750,600,375);assert(rise<bottom and rise>375,'Spider returns from the visible turn toward its spawn')
    local ex,ey=S.position(S.duration,1200,750,197,533);assert(ex==197 and ey==533,'Hell finishes at the exact spawn')
   end
   if route.kind=='renaissance' then

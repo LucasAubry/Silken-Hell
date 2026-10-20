@@ -1,7 +1,7 @@
 -- A small bootstrap scene: only the real spider and silk are needed before preload.
 local S={}
 local g=love.graphics
-local anchors={{55,105},{195,-30},{450,-20},{640,65},{700,290},{600,455},{365,480},{190,420},{100,285}}
+local anchors={{55,105},{195,-30},{450,-20},{640,65},{700,290},{600,455},{190,420},{100,285}}
 local function glow(x,y,r,c,alpha)
  g.setBlendMode('add')
  g.setColor(c[1],c[2],c[3],alpha*.55);g.draw(S.halo,x,y,0,r,r)
@@ -55,7 +55,6 @@ function S.draw(w,h,time)
  curve(700,290,1280,210,80,.75)
  curve(600,455,1280,560,38,.75)
  -- Only the two lower spokes are extended, beneath the foreground rocks.
- curve(365,480,385,930,5,.85)
  curve(190,420,-250,860,5,.85)
  -- Silk contacts sit under the actual feet, with the same sway as the web.
  local sx,sy=265,167

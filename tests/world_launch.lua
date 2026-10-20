@@ -31,11 +31,11 @@ function T.run()
    App.start(world);assert(C.arrivalKind=='brief' and C.arrivalDuration<3,'Repeat uses brief arrival')
    local B=C.scene();local w,h=love.graphics.getDimensions();local scale,x,y=App.viewport(w,h)
    local sx,sy=x+(player.x+15)*scale,y+(player.y+8)*scale
-   assert(B.duration==1 and C.arrivalDuration==1,'Exactly one second of the original cinematic')
+   assert(B.duration==2 and C.arrivalDuration==2,'Exactly two seconds of the original cinematic')
    assert(B.scene==require(kind..'_arrival'),'Uses the original scene renderer')
    assert(math.abs(B.scene.age-B.offset)<.00001,'Original state reconstructed at the final second')
    local rng=love.math.getRandomState();local px,py=player.x,player.y
-   for i=1,20 do
+   for i=1,40 do
     C.advance(.05)
     if i==15 then capture('brief-entry-'..world) end
     assert(timer==0 and player.x==px and player.y==py and love.math.getRandomState()==rng,'Brief arrival freezes gameplay')
