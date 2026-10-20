@@ -42,12 +42,13 @@ function O.draw(canvas,w,h)
   g.setScissor(0,math.max(0,surface),w,h-math.max(0,surface))
   decor.backdrop(4,w,h,t,1,p.camera);g.setScissor()
  end
- if cave>0 then
+ if p.camera<.85 or t<7 then
   local offset=p.camera*h
-  decor.grotto(w,h,t,p.camera,cave,false)
+  local retreat=ease((t-4.3)/2.4)
+  decor.grotto(w,h,t,p.camera,1,false,0,retreat)
   for i=1,8 do
-   local rx=w*(.04+i*.043);local ry=h*(.56+math.sin(i)*.01)-offset
-   decor.mushroom(rx,ry,(13+i%3*6)*scale,cave)
+   local rx=w*(.04+i*.043-retreat*.72);local ry=h*(.56+math.sin(i)*.01)-offset
+   decor.mushroom(rx,ry,(13+i%3*6)*scale,1)
   end
   for i=1,7 do
    local dx=w*(.50+i*.065);local dy=h*(.18+((t*.16+i*.163)%.37))-offset

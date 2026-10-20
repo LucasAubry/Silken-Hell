@@ -17,15 +17,16 @@ function T.run()
   assert(S.pose(S.duration).actorsAlpha==1,'Creatures are fully revealed at gameplay handoff')
   if route.kind=='hell' then
    assert(S.pose(5).mapAlpha>0 and S.pose(5.8).mapAlpha<1,'Same continuous dissolve as Sky')
-   assert(S.pose(0).dir=='down' and S.pose(3.4).dir=='down' and S.pose(4).dir=='right','Faces the viewer until after halfway, then turns into the gallery')
-   assert(pose(7).x>pose(5).x and pose(8).camera>pose(7).camera,'Walks right into the wall opening while the camera follows')
+   assert(pose(2).dir=='down' and pose(4).dir=='down','Faces the viewer during the fall')
+   assert(not pose(2.6).detached and pose(2.7).detached and not pose(2.7).broken and pose(3).broken,'Lamp detaches then its taut thread breaks at the waterline')
+   assert(pose(4).x==.5 and pose(8).x==.5,'Falls directly rather than entering a side gallery')
    local ex,ey=S.position(S.duration,1200,750,197,533);assert(ex==197 and ey==533,'Hell finishes at the exact spawn')
   end
   if route.kind=='renaissance' then
    assert(pose(4).silk==0 and pose(8.8).silk>0 and S.pose(S.duration).silk==0,'Web catches the fall and releases at landing')
    local ax,ay=S.position(S.duration,1200,750,197,533);assert(ax==197 and ay==533,'Renaissance lands at the actual spawn, even away from the center')
   end
-  if route.kind=='hell' then assert(pose(4).release==0 and pose(5.5).release>0 and pose(6.2).bubble==0,'Equipment remains attached underwater and fades only inside the hot vapor') end
+  if route.kind=='hell' then assert(pose(2.6).release==0 and pose(2.9).release>0 and pose(3.2).bubble==0,'Breathing bubble clears when leaving the water') end
   for _,t in ipairs({2,3.8,4,5.8,6.2}) do
    for _,key in ipairs({'x','y'}) do
     local dt=.0001;local before=pose(t-dt)[key];local at=pose(t)[key];local after=pose(t+dt)[key]
