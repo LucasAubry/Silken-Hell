@@ -108,6 +108,14 @@ function S.updateWall(dt)
   require('achievement_notice').storyProgress(S.progress())
  end
 end
+-- Keep the original rim continuous, curving it around the exact text width.
+function S.drawDecor(draw)
+ if not S.wallAvailable() then draw();return end
+ local x,y,side=S.wallSpot()
+ local line=require('localization').render(S.inscriptions[Campaign.biome])
+ local half=UI.fonts.body:getWidth(line)*.19*.5
+ require('inscription_decor').draw(draw,x,y,side,half)
+end
 function S.drawWallMessage()
  if not S.wallAvailable() then return end
  local g=love.graphics;local x,y,side=S.wallSpot()

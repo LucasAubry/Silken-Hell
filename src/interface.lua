@@ -57,6 +57,20 @@ function U.podiumName(name,x,y,font,rank,world)
  g.setShader(U.podiumShader);U.podiumShader:send('clock',U.clock);U.podiumShader:send('strength',strength)
  U.rawText(name,x,y,font,{c[1],c[2],c[3],1});g.pop()
 end
+-- Shared hit area for player identities in compact and full leaderboards.
+function U.playerTarget(score,x,y,w,h)
+ local mx,my=U.mouse()
+ local hover=Input and Input.active and Input.index==#U.buttons+1
+  or not (Input and Input.active) and mx>=x and mx<=x+w and my>=y and my<=y+h
+ if hover then
+  g.push('all');g.setShader();g.setLineWidth(1.5)
+  g.setColor(gold[1],gold[2],gold[3],.09);g.rectangle('fill',x,y,w,h,5)
+  g.setColor(gold[1],gold[2],gold[3],.9);g.rectangle('line',x,y,w,h,5)
+  g.pop()
+ end
+ U.buttons[#U.buttons+1]={x=x,y=y,w=w,h=h,run=function()require('player_profile').open(score)end,sound='go'}
+ return hover
+end
 function U.panel(x,y,w,h,animated)
     g.setColor(0.018,0.035,0.05,0.88); g.rectangle('fill',x,y,w,h,5)
     g.setColor(0.65,0.61,0.43,0.28); g.rectangle('line',x,y,w,h,5)
@@ -105,7 +119,7 @@ function U.button(label,x,y,w,h,callback,disabled,primary,sound,raw,tint)
         end
     end
     local translated=raw and label or L.render(label)
-    if App.state=='workshop' or App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements' or App.state=='victory' then translated=U.ellipsize(translated,'body',w-24) end
+    if App.state=='workshop' or App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements' or App.state=='victory' or App.state=='history' then translated=U.ellipsize(translated,'body',w-24) end
     local font=U.fonts.body:getWidth(translated)>w-24 and 'small' or 'body'
     local scale=math.min(1,(w-24)/math.max(1,U.fonts[font]:getWidth(translated)))
     g.push();g.translate(x+w/2,y+h/2);g.scale(scale,scale)
@@ -177,6 +191,7 @@ function U.background()
         local y=247+math.sin(U.clock*0.9)*7
         if App.state=='menu' then x,y=U.menuPosition() end
         local selected=Characters.menuIndex()
+        y=y+require('winged_anchors').menuOffset(selected,216)
         if U.lastPortrait~=selected then U.portraitChanged=U.clock;U.lastPortrait=selected end
         local t=math.min(1,math.max(0,(U.clock-(U.portraitChanged or U.clock))/.28))
         if Motion.enabled() then y=y-7*math.sin(t*math.pi)*(1-t) end
@@ -207,11 +222,10 @@ function U.board(x,y,w,country)
     end
     for i=1,math.min(10,#scores) do local score=scores[i]; local yy=y+96+(i-1)*30
         U.text(tostring(i),x+12,yy+3,'small',gold)
+        U.playerTarget(score,x+30,yy,w-150,28)
         g.setColor(1,1,1); Characters.scorePortrait(score,x+43,yy+11,25)
-        local name=score.name
-        while U.fonts.small:getWidth(name)>w-184 do name=name:sub(1,(utf8.offset(name,-1) or 1)-1) end
-        U.buttons[#U.buttons+1]={x=x+30,y=yy,w=w-150,h=28,run=function()require('player_profile').open(score)end,sound='go'}
-        U.podiumName(name,x+61,yy+3,'small',i,U.boardWorld)
+        local name=U.ellipsize(score.name,'body',w-219)
+        U.podiumName(name,x+61,yy+3,'body',i,U.boardWorld)
         U.text(U.time(score.time),x+w-117,yy+3,'small',gold)
         g.setColor(1,1,1); Art.draw('skull',x+w-43,yy+10,14)
         U.text(tostring(score.deaths or 0),x+w-32,yy+3,'small',white)
@@ -252,9 +266,9 @@ function U.rankings()
     U.text('Chrono',724,255,'small',muted); U.text('Morts · pénalité',843,255,'small',muted)
     for i,s in ipairs(data.scores) do local y=287+(i-1)*29
         U.text(tostring((U.boardPage-1)*10+i),226,y,'body',gold)
+        U.playerTarget(s,280,y-2,430,27)
         g.setColor(1,1,1); Characters.scorePortrait(s,300,y+9,26)
-        U.buttons[#U.buttons+1]={x=280,y=y-2,w=430,h=27,run=function()require('player_profile').open(s)end,sound='go'}
-        U.podiumName(s.name,330,y,'body',(U.boardPage-1)*10+i,U.boardWorld); U.text(U.time(s.time),724,y,'body',gold)
+        U.podiumName(U.ellipsize(s.name,'body',368),330,y,'body',(U.boardPage-1)*10+i,U.boardWorld); U.text(U.time(s.time),724,y,'body',gold)
         U.text(tostring(s.deaths)..' ('..Scoring.label(s.deaths)..')',843,y,'small',white)
         U.infoBadge(976,y+10,10)
         U.buttons[#U.buttons+1]={x=966,y=y,w=20,h=22,run=function() RunDetails.openScore(s,U.boardWorld) end,sound='go'}
@@ -264,7 +278,7 @@ function U.rankings()
     U.rawText(T('Page %d / %d  ·  %d records',U.boardPage,math.max(1,math.ceil((data.total or 0)/10)),data.total or 0),370,610,'body',gold,460,'center')
     U.button('Précédente',200,605,160,36,function() U.boardPage=U.boardPage-1 end,U.boardPage==1 or status=='loading')
     U.button('Suivante',840,605,160,36,function() U.boardPage=U.boardPage+1 end,not data.hasMore or status=='loading')
-    U.text(Replay.status or '',190,641,'small',muted,820,'center')
+    U.text(Replay.status or '',190,641,'body',muted,820,'center')
     U.button('Retour',490,675,220,38,U.backRankings)
 end
 function U.countryName()
@@ -316,13 +330,23 @@ function U.menu()
     U.arrow(430,248,-1,function() Characters.cycle(-1) end)
     U.arrow(770,248,1,function() Characters.cycle(1) end)
     require('menu_trophies').draw(gold)
+    local biomeColor=Worlds.color(App.selectedWorld).tear
     U.playGlow(425,496,350,54)
-    U.button(WorldMap.hardcore and 'JOUER · HARDCORE' or 'JOUER',425,496,350,54,function() App.openEntry(App.selectedWorld,WorldMap.hardcore) end,false,true,'selection')
+    U.button(WorldMap.hardcore and 'JOUER · HARDCORE' or 'JOUER',425,496,350,54,function() App.openEntry(App.selectedWorld,WorldMap.hardcore) end,false,true,'selection',false,biomeColor)
     U.button('BESTIAIRE',425,557,170,38,Bestiary.open)
     U.button('SUCCÈS',605,557,170,38,function() require('achievements_screen').open() end)
-    U.button('HISTOIRE',425,603,170,38,function() App.state='story'; U.storyOffset=400 end)
+    U.button('HISTOIRE',425,603,170,38,function() require('history').open() end)
     U.button('WORKSHOP',605,603,170,38,Workshop.open)
-    U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open)
+    U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open,false,false,'go')
+    if Graphics.effects then
+        g.push('all');g.setBlendMode('add')
+        for i=1,7 do
+            local t=(U.clock*.18+i/7)%1;local x=438+t*324
+            g.setColor(biomeColor[1],biomeColor[2],biomeColor[3],math.sin(t*math.pi)*.55)
+            g.circle('fill',x,546+math.sin(U.clock*1.5+i)*1.5,1.1)
+        end
+        g.pop()
+    end
     U.iconButton(1148,54,'settings',function() App.state='settings'; U.returnTo='menu' end)
 end
 function U.skins()
@@ -451,28 +475,7 @@ function U.settings()
 end
 function U.worlds() WorldMap.draw() end
 function U.bestiaryIcon(entry,x,y,size)
-    g.setColor(1,1,1)
-    if entry.electric or entry.id=='electric_gull' then g.setColor(1,.88,.15) end
-    if entry.id=='storm' then
-        require('sky_art').bird('down',x,y,size,U.clock,true)
-    elseif entry.id=='gull' or entry.id=='electric_gull' then
-        require('sky_art').bird('down',x,y,size,U.clock,false,entry.electric or entry.id=='electric_gull')
-    elseif entry.id=='cloud_snare' then
-        g.push('all');g.translate(x,y+size*.3);g.scale(size/90);require('sky_art').tornado({x=0,y=0,cooldown=0},U.clock);g.pop()
-    elseif entry.trapKind then
-        require('trap_art').draw(entry.trapKind,x,y,size,entry.world,false)
-    elseif entry.id=='earth_tunnel' then
-        g.push('all');g.translate(x,y);g.scale(size/104);require('earth_mound').draw(0,0);g.pop()
-    elseif entry.art=='cloud' then
-        g.setColor(.79,.87,.95); g.ellipse('fill',x,y,size*.45,size*.2); g.circle('fill',x-size*.16,y-size*.1,size*.23); g.circle('fill',x+size*.14,y-size*.14,size*.28)
-    elseif entry.art=='rain' then
-        g.setColor(1,.85,.32);g.polygon('fill',x+size*.14,y-size*.42,x-size*.25,y+size*.05,x-size*.04,y+size*.05,x-size*.14,y+size*.42,x+size*.25,y-size*.06,x+size*.04,y-size*.06)
-    else
-        local a=Art.images[entry.art]
-        local width=a and size*a.w/math.max(a.w,a.h) or size
-        require('prism_material').drawPreview(function()Art.draw(entry.art,x,y,width)end)
-    end
-    g.setColor(1,1,1)
+    require('bestiary_animation').draw(entry,x,y,size,U.clock)
 end
 function U.scrollBestiary(amount)
     U.bestScroll=math.max(0,math.min(U.bestScrollMax or 0,(U.bestScroll or 0)+amount))
@@ -491,7 +494,7 @@ function U.bestiary()
     local rows=Bestiary.list(category)
     local known=0; for _,e in ipairs(Bestiary.entries) do if Bestiary.seen[e.id] then known=known+1 end end
     if not Bestiary.levelFilter then
-        U.button(Bestiary.worldFilter and Worlds.names[Bestiary.worldFilter] or 'Tous les mondes',840,107,235,38,function()
+        U.button(Bestiary.worldFilter and (Worlds.canEnter(Bestiary.worldFilter) and Worlds.names[Bestiary.worldFilter] or '?') or 'Tous les mondes',840,107,235,38,function()
             local index=Bestiary.worldFilter and Worlds.rank(Bestiary.worldFilter) or 0
             Bestiary.worldFilter=Worlds.order[index+1];selectCategory(category)
         end)
@@ -516,7 +519,7 @@ function U.bestiary()
         U.bestiaryIcon(appearance,780,245+5*(1-reveal),132*(.94+.06*reveal));g.setShader()
         if appearance.undiscovered then require('locked_art').question(780,245,132) end
         U.rawText(U.ellipsize(appearance.undiscovered and '???' or T(appearance.name),'body',570),490,332,'body',white,570,'center')
-        U.text(Worlds.names[appearance.world],490,373,'body',gold,570,'center')
+        U.text(Worlds.canEnter(appearance.world) and Worlds.names[appearance.world] or '?',490,373,'body',gold,570,'center')
         local content=appearance.undiscovered and '' or L.render(Bestiary.description(appearance,false))
         local font=U.fonts.body;local _,lines=font:getWrap(content,490)
         local height=#lines*font:getHeight()*font:getLineHeight()
@@ -764,24 +767,28 @@ function U.workshop()
         end
         U.button('Retour au Workshop',400,650,400,38,Workshop.open)
     else
-        U.button('Créer une carte',125,149,615,40,function() Creator.open() end)
+        U.button('Créer une carte',125,149,615,40,function() Creator.open() end,not Profile.hasCompleted(1))
         U.button('Actualiser',755,149,315,40,Workshop.refresh,Workshop.busy)
         U.workshopSelect('filterBiome',Workshop.filterBiome==0 and 'Tous les biomes' or Worlds.names[Workshop.filterBiome],125,198,300,40,true)
         U.workshopSelect('filterDifficulty',Workshop.filterDifficulty==0 and 'Toutes difficultés' or 'Difficulté '..Workshop.filterDifficulty,440,198,300,40,true)
         U.button(({stars='Les plus aimées',easy='Faciles → difficiles',hard='Difficiles → faciles'})[Workshop.sort],755,198,315,40,function() Workshop.filter('sort',({stars='easy',easy='hard',hard='stars'})[Workshop.sort]) end,Workshop.busy)
         for i,row in ipairs(Workshop.rows) do
             local y=244+(i-1)*39
-            U.rawText(U.ellipsize(row.title,'body',310),130,y+8,'body',white)
+            local locked=not Worlds.canEnter(row.biome or row.world)
+            g.push('all')
+            if locked then U.lockedMapShader=U.lockedMapShader or g.newShader('vec4 effect(vec4 c, Image t, vec2 uv, vec2 p){vec4 v=Texel(t,uv)*c;float l=dot(v.rgb,vec3(.299,.587,.114));return vec4(vec3(l*.65),v.a); }');g.setShader(U.lockedMapShader) end
+            U.rawText(U.ellipsize(row.title,'body',310),130,y+8,'body',locked and muted or white)
             U.difficulty(row.difficulty,row.difficultyExtra,455,y+14)
             if row.owned then
                 U.button('Statistiques',610,y,145,36,function() Workshop.statistics(row) end,Workshop.busy)
                 U.button('Retirer',765,y,90,36,function() Workshop.removing=row end,Workshop.busy)
             else
-                U.rawText(U.ellipsize(row.author..' · '..T(Worlds.names[row.biome or row.world] or ''),'body',240),610,y+8,'body',muted)
+                U.rawText(U.ellipsize(row.author..' · '..(locked and '???' or T(Worlds.names[row.biome or row.world] or '')),'body',240),610,y+8,'body',muted)
             end
             U.button('   '..row.stars,865,y,85,36,function() Workshop.star(row) end,row.voting or row.owned)
             U.voteStar(row,883,y+18)
-            U.button('Jouer',965,y,105,36,function() Workshop.play(row) end,Workshop.busy)
+            U.button('Jouer',965,y,105,36,function() Workshop.play(row) end,Workshop.busy or locked)
+            g.pop()
         end
         U.button('Précédent',125,565,200,40,function() Workshop.page=Workshop.page-1; Workshop.refresh() end,Workshop.page<=1 or Workshop.busy)
         U.text('Page '..Workshop.page,460,576,'body',white,280,'center')
@@ -793,11 +800,14 @@ function U.workshop()
 end
 function U.draw()
     U.buttons={}
+    if App.state=='prologue' then require('prologue').ui();return end
+    if App.state=='creatorConfirm' then Creator.draw();return end
     if App.state=='skinUnlock' then require('skin_unlock').draw();return end
     if App.state=='playing' then U.gameHud();if Replay and Replay.playing then Replay.controls() end;if Secret.duel and Secret.duel.kind=='mob' then U.text(Secret.duel.name..(Secret.duel.kind=='mob' and (' · Survie '..math.ceil(math.max(0,20-Secret.duel.time))..' s') or ' · Duel'),300,90,'body',white,600,'center') end;return end
     if App.state=='bossWorld' then Secret.draw();return end
     if App.state=='worlds' then U.theme() else U.background() end
     if App.state=='menu' then U.menu()
+    elseif App.state=='history' then require('history').draw()
     elseif App.state=='quitConfirm' then
         U.menu()
         g.setColor(0,0,0,.7); g.rectangle('fill',0,0,1200,750)

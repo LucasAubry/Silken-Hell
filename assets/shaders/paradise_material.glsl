@@ -1,7 +1,6 @@
 extern vec4 sprite_rect;
 extern vec2 texel_step;
 extern number material_kind;
-extern bool skyPalette;
 
 vec4 nearby(Image tex,vec2 uv) {
     return Texel(tex,clamp(uv,sprite_rect.xy+texel_step*.5,sprite_rect.xy+sprite_rect.zw-texel_step*.5));
@@ -31,14 +30,6 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
         result=mix(result,mix(vec3(.035,.075,.085),vec3(.47,.64,.60),value),cool*.65);
     } else if(material_kind>3.5) {
         result=rgb;
-        if(skyPalette) result=mix(vec3(.055,.16,.21),vec3(.84,.96,1.),smoothstep(.05,.95,value));
-    }
-    if(skyPalette && material_kind<3.5) {
-        // Inked cool ivory and petrol preserve the gulls' original feather detail.
-        float neutral=1.-smoothstep(.08,.28,chroma);
-        vec3 sky=mix(vec3(.025,.085,.10),vec3(.95,.95,.86),smoothstep(.015,.95,value));
-        result=mix(result,sky,neutral*.65);
-        result=mix(result,rgb, smoothstep(.04,.18,rgb.r-rgb.b)*.65);
     }
     vec4 left=nearby(tex,uv-vec2(texel_step.x,0.));
     vec4 right=nearby(tex,uv+vec2(texel_step.x,0.));

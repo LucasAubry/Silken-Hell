@@ -1,4 +1,4 @@
-local C={names={'Soie','Perle','Braise','Écume','Royale','Auréole','Zéphyr','Ambre','Corail','Lanterne','Cendre','Renouveau','Gil','Max'},keys={'original','spider','hell_spider','ocean_spider','crown_spider','spider','spider','spider','ocean_spider','spider','hell_spider','crown_spider','crown_spider','crown_spider'}}
+local C={names={'Soie','Perle','Braise','Écume','Royale','Auréole','Zéphyr','Ambre','Corail','Lanterne','Cendre','Renouveau','Gil','C’est que le début'},keys={'original','spider','hell_spider','ocean_spider','crown_spider','spider','spider','spider','ocean_spider','spider','hell_spider','crown_spider','crown_spider','crown_spider'}}
 C.tints={[6]={1,.9,.55},[7]={.58,.83,1},[8]={.8,.49,.21},[9]={.25,1,.82},[10]={.43,.45,1},[11]={1,.25,.12},[12]={1,.63,.78},[13]={1,.68,.12},[14]={.7,1,.6}}
 -- IDs 1–14 stay stable for existing profiles, leaderboards and replays.
 -- Keep legacy reward IDs and lookup names for saved profiles and replays.
@@ -13,7 +13,7 @@ C.names[23]='Cocon';C.keys[23]='cocon'
 C.names[24]='Champagne';C.keys[24]='champagne'
 C.names[25]='Sauge';C.keys[25]='sage'
 C.names[26]='Pétrole';C.keys[26]='petrol'
-C.names[27]='Amir';C.keys[27]='amir'
+C.names[27]='Hardie';C.keys[27]='amir'
 -- Menu silk colors share the authored spider rig, including its gold markings.
 C.materials={
  [24]={body={.98,.85,.65},markings={1,.72,.24},iris={1,.72,.22},effect={.98,.81,.51}},
@@ -37,7 +37,7 @@ C.silkPalettes[7].iris={1,.94,.06}
 C.silkPalettes[13].markings={1,.34,.08}
 C.silkPalettes[13].iris={1,.49,.15}
 function C.material(index) return C.materials[index] or C.silkPalettes[index] end
-C.customSprites={[14]='maxance',[23]='cocon'}
+C.customSprites={[1]='base_marron',[14]='maxance',[23]='cocon'}
 for index,name in pairs(require('integrated_skins').names) do C.customSprites[index]=name end
 -- Retired Braise ID stays readable in old scores/replays, using Cendre artwork.
 C.customSprites[3]='cendre';C.names[3]='Cendre'
@@ -114,7 +114,10 @@ end
 function C.model(dir,index)
     dir=dir or 'down'
     if (C.crowned[index] or index)==12 then
-        return ({down='final_partner',up='final_up_white',left='final_left_white',right='final_left_white'})[dir]
+        for _,name in ipairs({'partner','partner_up','partner_left'}) do
+            local key='final_'..name;if not Art.images[key] then Art.add(key,'assets/sprites/final/'..name..'.png') end
+        end
+        return ({down='final_partner',up='final_partner_up',left='final_partner_left',right='final_partner_left'})[dir]
     end
     local custom=C.customSprites[C.crowned[index] or index]
     return 'player_skin_'..(custom and custom..'_' or '')..((dir=='left' or dir=='right') and 'profil' or dir)
@@ -136,7 +139,7 @@ function C.portrait(index,x,y,size,dir,locked,walk,marineOverlay)
     end
     -- Resolve tiny leaderboard portraits from the complete eye artwork, rather
     -- than letting nearest-neighbour sampling select only their dark pupils.
-    if size<=32 and not walk then
+    if size<=32 and not walk and (C.crowned[index] or index)~=1 then
         C.smallPortraits=C.smallPortraits or {}
         local cacheKey=index..':'..dir..':'..tostring(locked)..':'..tostring(marineOverlay)
         local canvas=C.smallPortraits[cacheKey]
@@ -172,7 +175,11 @@ function C.portrait(index,x,y,size,dir,locked,walk,marineOverlay)
     local g=love.graphics;g.push('all')
     local key=C.model(dir,index)
     local a=Art.images[key];local pose=dir=='right' and 'left' or dir
-    if C.customSprites[index] or index==12 then
+    if index==1 then
+        -- Soie's exported pixel sprites already contain their brown body and amber eyes.
+        g.setShader()
+        if locked then require('locked_art').bind() end
+    elseif C.customSprites[index] or index==12 then
         -- Keep each custom source and accessories, with the same softened ink finish.
         C.customSkinShader=C.customSkinShader or g.newShader('assets/shaders/custom_skin_material.glsl')
         C.customSkinShader:send('brownBody',index==8)
@@ -228,10 +235,10 @@ function C.selectionPortrait(x,y,size)
     g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied')
     local r,green,b,a=g.getColor();g.setColor(r*a,green*a,b*a,a)
     g.draw(C.menuCache,x,y,0,size/pixels,size/pixels,pixels+4,pixels+4);g.pop()
-    if not locked then effects.front(x,y,size) end
-    if not locked then require('skin_extension').draw(x,y,size,'down',false,true) end
+    if not locked then effects.front(x,y,size,nil,'down',selected) end
+    if not locked then require('skin_extension').draw(x,y,size,'down',false,true,selected) end
 end
-function C.shadow(x,y,size,dir,walk)
+function C.shadow(x,y,size,dir,walk,opacity)
     local g=love.graphics
     C.shadowShader=C.shadowShader or g.newShader([[
         vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel) {
@@ -240,7 +247,7 @@ function C.shadow(x,y,size,dir,walk)
             return vec4(.012,.009,.007,shade*color.a);
         }
     ]])
-    g.push('all');g.setShader(C.shadowShader);g.setBlendMode('alpha');g.setColor(1,1,1,.78)
+    g.push('all');g.setShader(C.shadowShader);g.setBlendMode('alpha');g.setColor(1,1,1,.78*(opacity or 1))
     local rx,ry=size*.48,size*.245
     g.draw(UI.pixel,x-rx,y+size*.20-ry,0,rx*2,ry*2)
     g.pop()
@@ -257,9 +264,9 @@ function C.scorePortrait(score,x,y,size)
     local effects=score.effects or {};local fx=require('skin_effects')
     if effects.gold then fx.behind(x,y,size,'gold') end
     C.portrait(score.skin or 1,x,y,size)
-    if effects.hardcore then fx.front(x,y,size,'hardcore') end
+    if effects.hardcore then fx.front(x,y,size,'hardcore','down',score.skin or 1) end
     if effects.gold then fx.front(x,y,size,'gold') end
-    if effects.heartbreak then require('skin_extension').draw(x,y,size,'down',true,true) end
+    if effects.heartbreak then require('skin_extension').draw(x,y,size,'down',true,true,score.skin or 1) end
 end
 -- Crown variants retain the body color of their base skin.
 C.bodyColors={original={.57,.29,.10},spider={.94,.90,.79},hell_spider={1,.20,.055},ocean_spider={.15,.68,.91},crown_spider={.94,.90,.79}}

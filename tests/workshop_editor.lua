@@ -7,7 +7,7 @@ function T.run()
             {kind='tornado',x=300,y=490},{kind='vent',x=750,y=250,rx=30,ry=20},
             {kind='lava',x=780,y=370,rx=25,ry=20}}
         for i,kind in ipairs({'merle','wasp','wasp','hellserpent','hedgehog','octopus','skeleton_fish'}) do entities[#entities+1]={kind='boss',type=kind,x=150+i*85,y=180} end
-        for i,kind in ipairs({'fish','light_jelly','abyss_fish','lanternfish','worm','mole','gull','jelly','crab','imp','spinner'}) do entities[#entities+1]={kind='mob',type=kind,x=100+i*65,y=350,speed=50,electric=kind=='gull'} end
+        for i,kind in ipairs({'fish','light_jelly','abyss_fish','lanternfish','worm','mole','dragonfly','jelly','crab','lava_scorpion','spinner'}) do entities[#entities+1]={kind='mob',type=kind,x=100+i*65,y=350,speed=50,electric=kind=='dragonfly'} end
         return {world=world,level=1,width=960,height=600,entities=entities}
     end
     local kill=Hazards.kill

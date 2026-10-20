@@ -1,6 +1,6 @@
 local T={}
 function T.run()
-    for _,n in ipairs({'spider','imp','serpent','merle','wasp','wasp_ground'}) do
+    for _,n in ipairs({'spider','serpent','merle','wasp','wasp_ground'}) do
         for _,d in ipairs({'down','up','left','right'}) do
             local data=love.image.newImageData('assets/sprites/directional/'..n..'_'..d..'.png')
             local _,_,_,a=data:getPixel(0,0)
@@ -13,7 +13,7 @@ function T.run()
     love.update=function() frames=frames+1; if frames>4 then love.event.quit() end end
     love.draw=function()
         love.graphics.clear(.16,.19,.23)
-        for row,n in ipairs({'spider','imp','serpent','merle','wasp','wasp_ground'}) do
+        for row,n in ipairs({'spider','serpent','merle','wasp','wasp_ground'}) do
             love.graphics.setColor(1,1,1); love.graphics.print(n,20,30+(row-1)*115)
             for col,d in ipairs({'down','up','left','right'}) do
                 local x,y=220+(col-1)*260,65+(row-1)*115

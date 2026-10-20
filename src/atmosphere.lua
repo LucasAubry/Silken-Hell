@@ -2,7 +2,7 @@
 local A={lights={},dimensions={0,600},traveler={0,0}}
 for i=1,8 do A.lights[i]={0,0,1,0} end
 local palettes={
-    [1]={1,.86,.48},[2]={1,.12,.08},[3]={1,.36,.45},
+    [1]={1,.86,.48},[2]={1,.23,.055},[3]={1,.36,.45},
     [4]={.22,.8,1},[5]={.95,.76,.40},[6]={.72,.86,1}
 }
 local function glow(x,y,r,color,alpha)
@@ -56,7 +56,7 @@ function A.draw()
     if Campaign.world==3 then return end
     if Graphics and not Graphics.effects then return end
     local world=Campaign.world==3 and 3 or Campaign.biome
-    if world==7 then return end -- Abyss light also drives gameplay and keeps its own renderer.
+    if world==6 or world==7 then return end -- Abyss light also drives gameplay and keeps its own renderer.
     local g=love.graphics; local t=UI.clock; local c=palettes[world] or palettes[1]
     g.push('all'); g.setShader(); g.setColor(1,1,1)
     local settings=A.settings(world,player.level)
@@ -71,7 +71,7 @@ function A.draw()
         local count=0
         for _,m in ipairs(mobs) do
             if count>=8 then break end
-            local radiant=(m.burnTime or 0)>0 or m.type=='imp' or m.type=='magma_larva' or m.type=='jelly' or (m.type=='gull' and m.electric)
+            local radiant=(m.burnTime or 0)>0 or m.type=='lava_scorpion' or m.type=='magma_larva' or m.type=='jelly'
             if radiant and not m.abyssHeld and not m.spent then
                 count=count+1;local light=A.lights[count]
                 light[1],light[2],light[3],light[4]=m.x,m.y,72+math.sin(t*3+m.x)*8,.65
@@ -94,11 +94,11 @@ function A.draw()
     end
     g.setBlendMode('add')
     -- Bounded, deterministic motes: no growing particle arrays or per-frame random state.
-    local count=(world==1 or world==5 or world==6) and 0 or world==4 and 28 or 76
+    local count=(world==1 or world==5) and 0 or world==4 and 28 or 76
     for i=1,count do
         local seed=i*2.39996323+settings.seed
         local speed=world==2 and 17 or world==4 and 7 or 3
-        local x=(i*137.31+settings.seed*23+math.sin(t*.17+seed)*15+t*(world==6 and 9 or 1.5))%Arena.width
+        local x=(i*137.31+settings.seed*23+math.sin(t*.17+seed)*15+t*1.5)%Arena.width
         local y=(i*79.73+settings.seed*47-t*speed+math.sin(t*.23+seed)*8)%600
         local pulse=.3+.7*(.5+.5*math.sin(seed+t*.8))
         local alpha=(world==1 and .28 or .48)*pulse
@@ -110,10 +110,9 @@ function A.draw()
     end
     for _,m in ipairs(mobs) do
         if not m.abyssHeld and not m.spent then
-            if m.type=='imp' or m.type=='magma_larva' then
+            if m.type=='lava_scorpion' or m.type=='magma_larva' then
                 glow(m.x,m.y+7,28,{1,.2,.025},.22)
             elseif m.type=='jelly' then glow(m.x,m.y,39,{.2,.7,1},.16+.1*math.sin(t*4)^2)
-            elseif m.type=='gull' and m.electric then glow(m.x,m.y,28,{1,.85,.08},.22)
             elseif m.type=='worm' and Realms.wormPhase(m.age)=='surface' then
                 glow(m.x,m.y+4,18,{.8,.5,.2},.09)
             end

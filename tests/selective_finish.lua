@@ -18,7 +18,7 @@ function T.run()
    -- Show corrected source proportions through the actual game draw functions.
    local g=love.graphics;local old=g.getCanvas();local c=g.newCanvas(1200,720)
    g.setCanvas(c);g.clear(.08,.11,.16,1);g.setColor(1,1,1);g.setFont(UI.fonts.body)
-   for row,prefix in ipairs({'merle_flight','gull','lanternfish'}) do
+   for row,prefix in ipairs({'merle_flight','fish','lanternfish'}) do
     for col,dir in ipairs({'down','left','right','up'}) do
      local key=prefix..'_'..dir;if prefix=='merle_flight' and dir=='right' then key='merle_flight' end
      local a=assert(Art.images[key]);local size=145;local k=size/math.max(a.w,a.h)

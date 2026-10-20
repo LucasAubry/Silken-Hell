@@ -13,9 +13,16 @@ function P.snapshot()
  return {name=Profile.name,skin=Characters.selected(),stats=stats,worlds=worlds,achievements=achievements}
 end
 function P.open(score)
- P.returnState=App.state;P.page=1;P.tab='stats';P.data=nil;P.status='Chargement…';P.name=score.name
+ P.returnState=App.state;P.page=1;P.tab='stats';P.data=nil;P.status='Chargement…';P.name=score.name;P.skin=score.skin or 1
  local ticket={};P.ticket=ticket;App.state='playerProfile'
- if not score.runId then P.data=P.snapshot();P.status=nil;return end
+ if not score.runId then
+  -- Old local runs have no verified account identity: only display their recorded facts.
+  local world=score.world or UI.boardWorld
+  P.data={name=score.name,skin=score.skin or 1,source='scores',achievements={},
+   stats={runs=1,deaths=score.deaths or 0,time=score.time or 0},
+   worlds={{world=world,completed=not score.hardcore,hardcore=score.hardcore==true,flawless=(score.deaths or 0)==0}}}
+  P.status=nil;return
+ end
  Online.request('/v1/players/by-run/'..score.runId,nil,function(data,code)
   if P.ticket~=ticket then return end
   if code==200 and type(data)=='table' and type(data.stats)=='table' and type(data.worlds)=='table' and type(data.achievements)=='table' then
@@ -28,7 +35,8 @@ function P.draw()
  local U,g=UI,love.graphics;local white={.94,.94,.9};local gold={1,.83,.43};local muted={.66,.73,.76}
  U.panel(90,55,1020,640)
  U.rawText(U.ellipsize(P.data and P.data.name or P.name or '', 'heading',720),240,78,'heading',gold,720,'center')
- if P.data then g.setColor(1,1,1);Characters.portrait(P.data.skin or 1,170,110,64) end
+ local skin=P.data and P.data.skin or P.skin
+ if skin then g.setColor(1,1,1);Characters.portrait(skin,170,110,64) end
  U.button('Statistiques',280,140,300,40,function()P.tab='stats';P.page=1 end,false,P.tab=='stats','go')
  U.button('Succès',620,140,300,40,function()P.tab='achievements';P.page=1 end,false,P.tab=='achievements','go')
  if P.status then U.text(P.status,180,350,'body',muted,840,'center')
@@ -42,7 +50,7 @@ function P.draw()
   for i,label in ipairs({'Terminé','Hardcore','Sans mourir'}) do U.text(label,490+(i-1)*180,300,'body',muted,175,'center') end
   local rows={};for _,r in ipairs(P.data.worlds) do rows[r.world]=r end
   for i,world in ipairs(Worlds.order) do local row=rows[world] or {};local y=334+(i-1)*38
-   U.text(Worlds.names[world],140,y,'body',white)
+   U.text(Worlds.canEnter(world) and Worlds.names[world] or '???',140,y,'body',white)
    for j,key in ipairs({'completed','hardcore','flawless'}) do U.text(row[key] and 'Oui' or '—',490+(j-1)*180,y,'body',row[key] and gold or muted,175,'center') end
   end
   if P.data.source=='scores' then U.text('Statistiques des parcours classés',140,610,'body',muted,920,'center') end
@@ -53,7 +61,7 @@ function P.draw()
   for i=(P.page-1)*8+1,math.min(P.page*8,#list) do
    local a=list[i];local y=216+(i-1)%8*43
    require('flawless_badge').draw(175,y+12,10)
-   U.rawText(U.ellipsize(require('localization').render(a.name),'body',780),210,y,'body',white)
+   U.rawText(U.ellipsize((a.world and not Worlds.canEnter(a.world)) and '???' or require('localization').render(a.name),'body',780),210,y,'body',white)
   end
   if #list==0 then U.text('Aucun succès obtenu',180,350,'body',muted,840,'center') end
   U.button('←',140,594,64,36,function()P.page=P.page-1 end,P.page<=1,false,'go')

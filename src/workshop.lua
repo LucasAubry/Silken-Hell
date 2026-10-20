@@ -27,7 +27,9 @@ function W.playLayout(layout,row)
     local allowed,message=require('workshop_access').check(layout)
     if not allowed then W.status=message;return false end
     App.hardcore=false;App.practice=nil;App.sessionLayout=layout; App.singleLevel=true; App.workshopMap=row
-    App.start(layout.world);Achievements.workshop('workshop_test'); return true
+    App.start(layout.world)
+    if row and row.id and not row.owned then Achievements.workshop('workshop_test') end
+    return true
 end
 function W.play(row)
     if W.busy then return end

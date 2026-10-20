@@ -1,6 +1,6 @@
 -- Shared victory state: all encounters on this map must be over.
 local A={cleared=false,sparks={}}
-function A.reset() A.cleared=false;A.sparks={};A.lookTime=0 end
+function A.reset() A.cleared=false;A.sparks={};A.lookTime=0;A.portalAge=0 end
 function A.ready()
     local present=Raven.active or Wasp.active or Hedgehog.active or Octopus.active or Storm.active or Abyss.boss or Bosses.hud().active or require('final_spider').active
     return present and Campaign.canCollect()
@@ -30,12 +30,24 @@ function A.update(dt)
     end
     for i=#A.sparks,1,-1 do local s=A.sparks[i];s.age=s.age+dt;if s.age>1.1 then table.remove(A.sparks,i) end end
     if A.cleared then
+        A.portalAge=(A.portalAge or 0)+dt
         A.centerTear()
         local dx,dy=A.x-player.x-15,A.y-player.y-12;local d=math.sqrt(dx*dx+dy*dy)
         A.near=d<115
         A.looking=A.near and (dx*(player.lastMoveX or 0)+dy*(player.lastMoveY or 1))/math.max(1,d)>.65
         A.lookTime=A.looking and A.lookTime+dt or 0
     end
+end
+function A.canEnter()
+    return not A.cleared or (A.portalAge or 0)>=1.8
+end
+function A.portalScale()
+    local t=math.min(1,(A.portalAge or 0)/1.8)
+    return t*t*(3-2*t)
+end
+function A.drawPortal()
+    if not A.cleared then return end
+    require('prologue').drawPortal({x=Arena.width/2,y=Arena.height/2},A.portalScale(),A.portalAge or 0)
 end
 function A.draw()
     local g=love.graphics;local c=Worlds.color(Campaign.biome).tear;g.push('all')
@@ -45,16 +57,6 @@ function A.draw()
             g.setColor(c[1],c[2],c[3],1-t);local x,y=s.x+math.cos(a)*d,s.y+math.sin(a)*d-t*18
             g.rectangle('fill',x,y,2,2)
         end
-    end
-    if A.cleared then
-        -- Victory reward is drawn after darkness and all boss/terrain effects.
-        g.setShader();g.setBlendMode('add')
-        for i=4,1,-1 do
-            g.setColor(c[1],c[2],c[3],.045)
-            g.circle('fill',Arena.width/2,Arena.height/2,18+i*10)
-        end
-        g.setBlendMode('alpha')
-
     end
     g.pop()
 end

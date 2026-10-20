@@ -1,20 +1,33 @@
 local G={active=false}
 function G.reset()
- G.active=Campaign.world==7 and player.level==9 and not App.sessionLayout and not Secret.duel
- G.age=0;G.closing=false;G.ready=false;G.fade=0;G.ambient=nil
+ local layout=LevelLayouts and LevelLayouts.activeLayout
+ local head,tear
+ for _,e in ipairs(layout and layout.entities or {}) do
+  if e.kind=='abyss_gate' then head=e elseif e.kind=='tear' and not tear then tear=e end
+ end
+ G.active=head~=nil or (Campaign.world==7 and player.level==9 and not App.sessionLayout and not Secret.duel and not layout)
+ G.age=0;G.closing=false;G.ready=false;G.fade=0;G.ambient=nil;G.authored=head~=nil
  if not G.active then return end
- mobs={};Bosses.reset();Abyss.active=true;Abyss.boss=false;Abyss.giant=false;Abyss.head=nil;Abyss.bones={};Abyss.lightSites={};Abyss.threads={};AbyssTerrain.reset()
- Hazards.lava={};Realms.vents={};Realms.holes={};Realms.tornadoes={};Realms.current={};Realms.rainSites={}
- player.x=Arena.width*.18-15;player.y=288;objet.larme.taken=true
- G.x=Arena.width-105;G.y=300;G.width=math.min(540,Arena.width*.58)
- G.tx=G.x-G.width*.18;G.ty=350
+ if not head then
+  mobs={};Bosses.reset();Abyss.active=true;Abyss.boss=false;Abyss.giant=false;Abyss.head=nil;Abyss.bones={};Abyss.lightSites={};Abyss.threads={};AbyssTerrain.reset()
+  Hazards.lava={};Realms.vents={};Realms.holes={};Realms.tornadoes={};Realms.current={};Realms.rainSites={}
+  player.x=Arena.width*.82-15;player.y=288
+ end
+ objet.larme.taken=true
+ local scale=layout and Arena.width/layout.width or 1
+ G.x=head and head.x*scale or 105;G.y=head and head.y or 300
+ G.width=head and (head.w or 540) or math.min(540,Arena.width*.58)
+ G.height=head and (head.h or G.width*1.2) or G.width*1.2
+ G.tx=tear and tear.x*scale or G.x+G.width*.18;G.ty=tear and tear.y or G.y+50
+ G.arenaWidth=Arena.width
  G.ambient={bones={},width=Arena.width};require('mobs.bosses.abyss.tooth_wake').setup(G.ambient)
  for i=#G.ambient.lumenParticles,161,-1 do table.remove(G.ambient.lumenParticles,i) end
 end
 function G.resize()
  if not G.active then return end
  if G.ambient then local ratio=Arena.width/(G.ambient.width or Arena.width);for _,p in ipairs(G.ambient.lumenParticles) do p.x=p.x*ratio;if p.starHomeX then p.starHomeX=p.starHomeX*ratio end end;G.ambient.width=Arena.width end
- G.x=Arena.width-105;G.width=math.min(540,Arena.width*.58);G.tx=G.x-G.width*.18
+ local ratio=Arena.width/(G.arenaWidth or Arena.width)
+ G.x=G.x*ratio;G.tx=G.tx*ratio;G.arenaWidth=Arena.width
 end
 function G.update(dt)
  if not G.active then return end
@@ -49,10 +62,10 @@ function G.draw()
  }]])
  G.shader:send('eye',{(x+spot.u*w)/iw,(y+spot.v*h)/ih});G.shader:send('span',{w/iw,h/ih});G.shader:send('origin',{x/iw,y/ih})
  local openSpot=Art.images.skeleton_open.glow or {u=.5,v=.5}
- local cx=G.x-G.width*(openSpot.u-spot.u);local cy=G.y+G.width*1.2*(openSpot.v-spot.v)
- g.setShader(G.shader);g.setColor(.75,.85,.95);Art.draw(key,cx,cy,-G.width,0,G.width*1.2);g.setShader()
+ local cx=G.x+G.width*(openSpot.u-spot.u);local cy=G.y+G.height*(openSpot.v-spot.v)
+ g.setShader(G.shader);g.setColor(.75,.85,.95);Art.draw(key,cx,cy,G.width,0,G.height);g.setShader()
  if not G.closing then
-  local tint=Worlds.color(7).tear
+  local tint=Worlds.color(Campaign.biome).tear
   require('tear_fx').draw(G.tx,G.ty,tint,UI.clock)
   G.tearShader=G.tearShader or g.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
    vec4 p=Texel(tex,uv);float light=max(p.r,max(p.g,p.b));

@@ -55,7 +55,7 @@ function A.encounterActive()
 end
 -- Reserve the full left column occupied by the giant head, including its tips.
 function A.playerMinX(y)
- local x=23
+ local x=require('sky').openEdges() and -math.huge or 23
  if A.active and A.boss then x=math.max(x,Cycle.playerMinX(A,y)) end
  if Bosses then for _,item in ipairs(Bosses.items) do
   if item.kind=='skeleton_fish' and item.boss.boss then x=math.max(x,Cycle.playerMinX(item.boss,y)) end
@@ -425,7 +425,7 @@ function A.playerBrightness()
     return .26*math.min(charge,3)+.22*(1-math.exp(-math.max(0,charge-3)*.4))
 end
 function A.playerVisibility()
-    if not A.encounterActive() then return 1 end
+    if Campaign.biome~=7 and not A.encounterActive() then return 1 end
     if A.playerHidden() then return 0 end
     return .22+.78*A.playerBrightness()
 end
@@ -556,7 +556,7 @@ function A.drawLights()
             g.setColor(.65,.9,1,.8); g.circle('fill',x,y,1.4)
         end end
         -- The broad light pool grows separately from the close charge outline.
-        if A.boss and (player.charges or 0)>0 and not A.playerHidden() then
+        if (Campaign.biome==7 or A.boss) and (player.charges or 0)>0 and not A.playerHidden() then
             local brightness=A.playerBrightness()
             require('abyss_charge_light').draw(player.x+15,player.y+12,player.charges,brightness,A.clock)
             g.setColor(.35,.9,1,.38*brightness); g.ellipse('fill',player.x+15,player.y+12,35,27)

@@ -5,21 +5,7 @@ function P.draw()
  g.push('all');g.origin();g.setCanvas();g.setShader();g.setScissor()
  if P.font then g.setFont(P.font) end
  local w,h=g.getDimensions();local time=love.timer.getTime()-(P.started or 0)
- g.clear(.06,.05,.04)
- g.setShader(P.shader);P.shader:send('time',time);P.shader:send('biome',1)
- P.shader:send('deep',{.91,.81,.65});P.shader:send('fog',{.96,.86,.70});P.shader:send('accent',{1,.97,.89})
- g.setColor(1,1,1);g.draw(P.pixel,0,0,0,w,h);g.setShader()
- local scale=math.min(w/1200,h/750);g.translate(w/2,h/2);g.scale(scale,scale)
- g.setColor(.025,.028,.03,.88);g.rectangle('fill',-300,-98,600,208,8)
- g.setColor(.82,.72,.49,.55);g.rectangle('line',-300,-98,600,208,8)
- for _,x in ipairs({-300,300}) do g.polygon('fill',x,-7,x+5,0,x,7,x-5,0) end
- g.setColor(.94,.91,.82);g.printf('Chargement des assets…',-300,-55,600,'center')
- g.setColor(.7,.72,.67);g.printf('Préparation du jeu',-300,-17,600,'center')
- -- A moving silk knot signals activity without inventing a percentage.
- g.setColor(.82,.72,.49,.25);g.setLineWidth(1);g.line(-225,60,225,60)
- local knot=math.sin(time*1.8)*202
- for i=1,5 do local radius=i*3;g.setColor(.94,.87,.68,.22/i);g.circle('line',knot,60,radius,8) end
- g.setColor(.96,.89,.72);g.polygon('fill',knot,54,knot+5,60,knot,66,knot-5,60)
+ require('loading_scenery').draw(w,h,time)
  g.pop()
 end
 function P.screen()
@@ -29,14 +15,14 @@ function P.screen()
 end
 function P.begin()
  P.font=love.graphics.newFont(24)
- P.started=love.timer.getTime();P.shader=love.graphics.newShader('assets/shaders/celestial.glsl');P.pixel=love.graphics.newImage(love.image.newImageData(1,1))
+ P.started=love.timer.getTime();require('loading_scenery').load()
  P.screen()
  local last=love.timer.getTime()
  Art.onLoad=function()
   if love.timer.getTime()-last>=.05 then P.screen();last=love.timer.getTime() end
  end
 end
-function P.load()
+function P.load(layout)
  local extra={
   earth_mound='assets/monstres/terre/taupe/earth_mound.png',
   octopus_mantle='assets/monstres/ocean/poulpe/mantle.png',
@@ -51,7 +37,15 @@ function P.load()
   local name=path:match('^assets/sprites/final/(.+)%.png$')
   if name then extra['final_'..name]=path end
  end
- for key,path in pairs(extra) do if not Art.images[key] then Art.add(key,path) end end
+ extra.silk_strand='assets/effects/silk/strand.png'
+ for key,path in pairs(extra) do
+  if layout then Art.register(key,path) elseif not Art.images[key] then Art.add(key,path) end
+ end
+ if layout then
+  require('servant_art').load(true)
+  require('map_assets').load(layout)
+  P.finish();return
+ end
  local image=require('art_filter').image
  for _,kind in ipairs({'ange','serpent'}) do
   for _,dir in ipairs({'up','down','left','right'}) do
@@ -66,9 +60,12 @@ function P.load()
  local borders=require('biome_borders');borders.images=borders.images or {}
  for _,biome in ipairs({3,4,7}) do borders.images[biome]=image('assets/environments/ink/wall-'..biome..'.png') end
  image('assets/icons/biome-backgrounds.png')
+ P.finish()
+end
+function P.finish()
  Art.onLoad=nil
  P.font:release();P.font=nil
- P.shader:release();P.pixel:release();P.shader=nil;P.pixel=nil
+ require('loading_scenery').release()
  P.ready=true
 end
 return P

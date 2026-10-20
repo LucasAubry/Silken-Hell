@@ -3,30 +3,18 @@ local S={enabled=true,tear={1,.84,.46},kinds={border=1,nest=2,bird=3,black_feath
 local g=love.graphics
 local rect,step={0,0,0,0},{0,0}
 function S.active()
-    return S.enabled and Campaign and (Campaign.biome==1 or Campaign.biome==6) and not (Secret and Secret.inArena())
+    return S.enabled and Campaign and Campaign.biome==1 and not (Secret and Secret.inArena())
 end
 function S.load()
     S.shader=S.shader or g.newShader('assets/shaders/paradise_material.glsl')
-    S.skyShader=S.skyShader or g.newShader('assets/shaders/sky_material.glsl')
-    require('sky_lightning').load()
+    require('storm_lightning').load()
 end
 function S.bind(frame,kind)
     local previous=g.getShader()
-    -- Sky recoloring samples only the source pixel: retain crisp sprites and smooth projectiles.
-    if S.active() and Campaign.biome==6 then
-        if previous and previous~=S.skyShader then return previous end
-        S.load()
-        local material=type(kind)=='number' and kind or S.kinds[kind] or 0
-        if S.skyMaterial~=material then S.skyMaterial=material;S.skyShader:send('material_kind',material) end
-        g.setShader(S.skyShader)
-        return previous
-    end
     if require('art_filter').pixelArt[require('prism_material').paths[frame.image]] then return previous end
     -- Attack flashes, white boss feathers and the collectible retain their own material.
     if not S.active() or previous and previous~=S.shader then return previous end
     S.load()
-    local sky=Campaign.biome==6
-    if S.sky~=sky then S.sky=sky;S.shader:send('skyPalette',sky) end
     local x,y,w,h=frame.quad:getViewport();local iw,ih=frame.image:getDimensions()
     local rx,ry,rw,rh=x/iw,y/ih,w/iw,h/ih
     if rect[1]~=rx or rect[2]~=ry or rect[3]~=rw or rect[4]~=rh then
@@ -42,14 +30,12 @@ end
 function S.ring(x,y,width)
     local a=require('paradise_ink').frame('tear_ring')
     local w=width*1.14;local h=w*a.h/a.w
-    local sky=Campaign.biome==6
     g.push('all');g.setShader();g.setBlendMode('alpha')
-    Art.contactShadow(x,y+1,w*.57,h*.61,.25)
     if not Graphics or Graphics.effects then
-        if sky then g.setColor(.43,.80,1,.07) else g.setColor(1,.74,.23,.09) end;g.setLineWidth(7);g.ellipse('line',x,y,w*.45,h*.37)
-        if sky then g.setColor(.68,.90,1,.14) else g.setColor(1,.88,.40,.17) end;g.setLineWidth(3.5);g.ellipse('line',x,y,w*.44,h*.36)
+        g.setColor(1,.74,.23,.09);g.setLineWidth(7);g.ellipse('line',x,y,w*.45,h*.37)
+        g.setColor(1,.88,.40,.17);g.setLineWidth(3.5);g.ellipse('line',x,y,w*.44,h*.36)
     end
-    if sky then g.setColor(.025,.09,.12,1) else g.setColor(.07,.045,.018,1) end;g.ellipse('fill',x,y,w*.40,h*.40)
+    g.setColor(.07,.045,.018,1);g.ellipse('fill',x,y,w*.40,h*.40)
     g.setColor(1,1,1);S.bind(a,'ring')
     g.draw(a.image,a.quad,x,y,0,w/a.w,h/a.h,a.w/2,a.h/2)
     g.pop()

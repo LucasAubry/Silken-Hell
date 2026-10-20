@@ -49,6 +49,8 @@ function M.wall(r)
  g.setColor(.12,.23,.24);g.rectangle('fill',r.x,r.y,r.w,r.h,3)
  g.setColor(.32,.43,.38);g.setLineWidth(2);g.line(r.x+2,r.y+2,r.x+r.w-2,r.y+2)
  for x=r.x+5,r.x+r.w-3,10 do g.setColor(.32,.44,.16);g.polygon('fill',x-3,r.y+2,x-2,r.y-4,x+1,r.y,x+4,r.y-3,x+3,r.y+3) end
+ local length=math.max(r.w,r.h);local count=math.max(1,math.floor(length/35))
+ for i=1,count do require('foliage').bush(r.x+r.w*(r.w>=r.h and (i-.5)/count or .5),r.y+r.h*(r.w>=r.h and .5 or (i-.5)/count),14,i+r.x) end
  g.setLineWidth(1);g.setColor(1,1,1)
 end
 return M

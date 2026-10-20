@@ -1,4 +1,4 @@
-local G={quality=2,effects=true,showFPS=true,vsync=0,limit=120,psychedelic=2}
+local G={quality=2,effects=true,showFPS=true,vsync=0,limit=60,psychedelic=2}
 local json=require 'json'
 local T=require('localization').text
 function G.load()
@@ -8,15 +8,25 @@ function G.load()
   G.limit=(v.limit==0 or v.limit==60) and v.limit or 120
   G.vsync=(v.vsync==1 or v.vsync==-1) and v.vsync or 0
   G.psychedelic=(v.psychedelic==0 or v.psychedelic==1) and v.psychedelic or 2
+  if v.thermalRevision~=1 then G.limit=60;G.save() end
  end
  love.window.setVSync(G.vsync)
 end
-function G.save() love.filesystem.write('graphics.json',json.encode({quality=G.quality,effects=G.effects,showFPS=G.showFPS,vsync=G.vsync,limit=G.limit,psychedelic=G.psychedelic})) end
+function G.save() love.filesystem.write('graphics.json',json.encode({thermalRevision=1,quality=G.quality,effects=G.effects,showFPS=G.showFPS,vsync=G.vsync,limit=G.limit,psychedelic=G.psychedelic})) end
 function G.floorHeight() return ({240,360,600})[G.quality] end
 function G.backgroundHz() return G.quality==1 and 30 or 60 end
-function G.pace()
- if os.getenv('SILKEN_TEST')=='1' or G.limit==0 then G.lastFrame=love.timer.getTime();return end
- local now=love.timer.getTime();local wait=1/G.limit-(now-(G.lastFrame or now))
+function G.targetRate(editor)
+ if editor then return love.window.hasFocus() and 30 or 10 end
+ if not love.window.hasFocus() then return 10 end
+ if App and (App.preview or App.state~='playing') then return 60 end
+ return G.limit
+end
+function G.pace(editor)
+ local rate=G.targetRate(editor)
+ local sync=(editor or App and (App.preview or App.state~='playing')) and 0 or G.vsync
+ if G.appliedSync~=sync then love.window.setVSync(sync);G.appliedSync=sync end
+ if os.getenv('SILKEN_TEST')=='1' or os.getenv('SILKEN_DESIGNER_TEST')=='1' or rate==0 then G.lastFrame=love.timer.getTime();return end
+ local now=love.timer.getTime();local wait=1/rate-(now-(G.lastFrame or now))
  if wait>0 then love.timer.sleep(wait) end
  G.lastFrame=love.timer.getTime()
 end

@@ -29,15 +29,6 @@ function T.run()
     local mesh=Art.images.abyss_octopus.swimMesh; local x,y=mesh:getVertex(1)
     swimmer.age=swimmer.age+.4; MobBehaviors.light_jelly.draw(swimmer)
     local xx,yy=mesh:getVertex(1); assert(x~=xx or y~=yy,'Animation ondulante')
-    level(6,3); local gull
-    for _,m in ipairs(mobs) do if m.type=='gull' then gull=m; break end end
-    gull.electric=true; gull.x=200; gull.y=250; player.x=700; player.y=500
-    Realms.moveGull(gull,.1); assert(#Realms.electricTrails>0)
-    local trace=Realms.electricTrails[1]; player.x=(trace.x+trace.tx)/2-15; player.y=(trace.y+trace.ty)/2-12
-    gull.x=600; gull.y=100; player.reset=false
-    Realms.updateElectricTrails(.1); assert(player.reset,'La traînée tue même loin de la mouette')
-    player.reset=false; Realms.updateElectricTrails(3); assert(#Realms.electricTrails==0 and not player.reset,'Traînée expirée inoffensive')
-    reset_level(); assert(#Realms.electricTrails==0,'Traînées effacées au recommencement')
     level(4,4); local crab
     for _,m in ipairs(mobs) do if m.type=='crab' then crab=m end end
     assert(crab,'Crabes dans les niveaux Océan')
@@ -88,7 +79,7 @@ function T.visual()
     love.update=function()
         tick=tick+1
         if tick==1 then level(7,2); player.illuminated=6; for _,m in ipairs(mobs) do if m.type=='light_jelly' then m.x=player.x+100; m.y=player.y; m.age=1 elseif m.type=='abyss_fish' then m.x=player.x+180; m.y=player.y+40 end end; App.capture='abyss-swimmer-eyes.png'
-        elseif tick==5 then level(6,3); player.x=700; player.y=500; for _,m in ipairs(mobs) do if m.type=='gull' then m.electric=true; for _=1,70 do Realms.moveGull(m,.016) end end end; App.capture='sky-electric-trails.png'
+        elseif tick==5 then level(6,3);require('sky_weather').trail(200,250,300,300);App.capture='sky-electric-trails.png'
         elseif tick==9 then level(7,10); player.illuminated=6; App.capture='expansion-abyss.png'
         elseif tick==13 then love.event.quit() end
     end

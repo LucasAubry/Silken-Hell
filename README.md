@@ -4,7 +4,9 @@ Jeu d’esquive en Lua avec LÖVE 11.5, éditeur de niveaux et classements/Works
 
 ## Lancer le jeu
 
-- **macOS** : double-cliquer **Jouer à Silken Hell.app** ou **Lancer Silken Hell.command**.
+- **Version officielle** : la version issue de `new-deccors` est désormais sur `main`.
+- **macOS** : double-cliquer **Silken Hell.app** ou **Lancer Silken Hell.command**. Le jeu utilise une seule archive, `dist/game.love`, copiée hors du Bureau au lancement. Les sauvegardes restent inchangées.
+- Reconstruction du lanceur macOS : `python3 tools/build_launcher.py`.
 - **Windows 10/11** : installer [LÖVE 11.5](https://love2d.org), puis ouvrir **Lancer Silken Hell.cmd**. Le lanceur cherche aussi `runtime/love.exe`.
 - **Linux** : installer LÖVE 11.5 et `curl`, puis lancer `./Lancer Silken Hell.sh`. La variable `SILKEN_LOVE` peut désigner un autre exécutable LÖVE.
 - **Les trois systèmes** : `love dist/game.love` lance le jeu ; `love dist/game.love --editor` lance l’éditeur intégré. Les aperçus et validations réutilisent le même exécutable et le même paquet.
@@ -25,7 +27,7 @@ sont dans [docs/STEAM-DISTRIBUTION.md](docs/STEAM-DISTRIBUTION.md).
 Ordre : **Paradis → Ciel → Terre → Océan → Abysse → Enfer → Renaissance**. Les six premiers mondes ont dix niveaux ; Renaissance enchaîne leurs six boss, dans cet ordre, avec une ambiance rouge, noire et blanche.
 
 - **Paradis** : anges, serpents, captures et roues. Attirer un porteur de larme dans un piège la libère. Le Merle noir reste au centre et tire des plumes en continu. Guider ses plumes vers l’œuf d’un nid le blesse ; ses salves s’accélèrent et deviennent triples à quatre PV.
-- **Ciel** : vent variable, trous et rebords mortels, tornades, pluie et foudre. Les mouettes électrifiées deviennent jaunes et laissent une traînée dangereuse. Boss : le Merle noir des orages. Récolter les étincelles puis toucher un paratonnerre le blesse (1 / 2 / 4 dégâts pour 1 / 2 / 3 charges). Trois charges surchargent le joueur après quatre secondes ; la foudre et les plumes noires accélèrent avec la charge. Après une décharge, son bec annonce une traversée de l’arène. Le sol nuageux et les particules reprennent le rendu `335e89f`, avec les découpes de rebords conservées.
+- **Ciel** : libellules électriques aux traînées permanentes, papillons parcourant la carte et cachant le joueur dans leur brouillard, chauves-souris des bourrasques en vol stationnaire, éclairs annoncés au sol qui percent la brume et creusent des trous dans les nuages. Pluie légère et particules décoratives. Boss : le Merle noir des orages.
 - **Terre** : tunnels empruntables par le joueur et les monstres, vers et taupes. Le Hérisson a sept PV, quatorze piques par salve, deux rebonds et cinq taupes au maximum. Il est étourdi lorsqu’il perd une vie.
 - **Océan** : poissons-lames, méduses et crabes. Le Poulpe lance des crabes et de l’encre. Les crabes noirs errent et peuvent être propulsés en fonçant dessus. Un impact de crabe sur un tentacule étourdit le boss trois secondes : attraper une extrémité puis la tirer dans un coin arrache le bras et retire une vie. À quatre PV, le boss accélère et lance une rafale d’encre. Les flaques durent sept secondes.
 - **Abysse** : obscurité, lueurs bleues, poissons-lanternes et pieuvres lumineuses. Les fils bleus chargent l’araignée sans la tuer. Les poissons la poursuivent lorsqu’elle est éclairée. La queue du Léviathan apparaît au niveau 8, ses os au niveau 9 et sa tête au niveau 10. Entrer chargé dans sa bouche pendant l’aspiration lui retire une vie lorsqu’il recrache le joueur. Les cercles éclairent uniquement lorsqu’on reste dessus. Aucun oxygène à gérer.

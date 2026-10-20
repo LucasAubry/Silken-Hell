@@ -1,0 +1,17 @@
+{
+  "generator": "built-in image_gen",
+  "assets": [
+    {
+      "path": "assets/monstres/ciel/chauve_souris/wind_bat.png",
+      "prompt": "Use case: stylized-concept. Create one transparent PNG game monster sprite: a small storm BAT, FRONT VIEW facing bottom, top-down slight elevated camera. STRICT pixel-art style of reference spider: chunky square pixels, bold stepped near-black outline, limited flat shading, expressive golden-yellow eyes. This is a bat, NOT a spider: short furry slate-blue body, two pointed ears, small snout, two broad symmetrical membranous wings spread sideways, blue-grey wing membranes with pale silver vein accents, tiny feet. Compact readable silhouette for 80-pixel game display. No cloud, no electricity, no breath, no scenery, no ground, no cast shadow, no words. Whole single bat centered, genuine transparent background. Reference spider is STYLE ONLY, not anatomy."
+    },
+    {
+      "path": "assets/monstres/ciel/chauve_souris/wind_bat_up.png",
+      "prompt": "Edit reference into one directional game sprite of EXACT same storm bat character. BACK VIEW facing north, away from viewer. Back of furry head and two ears at top, tiny feet at bottom, two open symmetrical membranous wings spread left and right. No face, eyes or snout on back. Preserve chunky pixel art, stepped black outlines, slate-blue furry body, silver-blue wing veins and membranes, same proportions and pixel size. Whole single creature centered, no environment, no text, no wind or electricity, no shadow. Transparent background."
+    },
+    {
+      "path": "assets/monstres/ciel/chauve_souris/wind_bat_right.png",
+      "prompt": "Edit reference into one directional game sprite of EXACT same storm bat character. RIGHT PROFILE facing right. Snout and one yellow eye on right, two pointed ears. One broad open near-side membranous wing extends to left and above behind the body, partial farther wing visible behind. Clearly oriented right, not front-facing. Preserve chunky pixel art, stepped black outlines, slate-blue furry body, silver-blue wing veins and membranes, same proportions and pixel size. Whole single creature centered, no environment, no text, no wind or electricity, no shadow. Transparent background."
+    }
+  ]
+}

@@ -31,6 +31,19 @@ vec2 cells(vec2 p) {
  }
  return vec2(sqrt(first),sqrt(second)-sqrt(first));
 }
+float cloudPuffs(vec2 p) {
+ vec2 base=floor(p),f=fract(p);
+ float mass=0.0;
+ // Overlapping rounded lobes, with no stretched grass-like grain.
+ for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++) {
+  vec2 cell=vec2(float(x),float(y)),id=base+cell;
+  vec2 center=vec2(.22)+vec2(hash(id),hash(id+vec2(31,73)))*.56;
+  vec2 d=(cell+center-f)*vec2(1.0,1.18);
+  float radius=.30+hash(id+vec2(14,5))*.20;
+  mass+=exp(-dot(d,d)/(radius*radius))*(.75+hash(id+19.)*.35);
+ }
+ return mass;
+}
 vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
  vec2 p=pixel/dimensions.y;
  float grain=noise(p*350.0), terrain=fbm(p*7.0);
@@ -49,7 +62,30 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
    c+=vec3(.065,.14,.13)*shaft*(1.0-pixel.y/dimensions.y*.55)+vec3(.14,.22,.18)*glimmer*.3;
   }
   if(biome==7.0) c=mix(vec3(.009,.018,.035),vec3(.035,.085,.12),terrain)+vec3(.035,.07,.09)*caustic*.17;
- } else if(biome==3.0 || biome==5.0 || biome==6.0) {
+ } else if(biome==6.0) {
+  // Match the falling cinematic's blue-grey sky and soft white cloud pattern.
+  c=skyCloudColor(pixel,dimensions,clock*.25,0.0);
+ } else if(biome==5.0) {
+  // The meadow's broad, softly blended relief becomes dry underground soil.
+  // Warped sediment, compact clods and mineral grains replace grassy streaks.
+  vec2 soil=p+vec2(fbm(p*3.1+7.0),fbm(p*3.1+31.0))*.27;
+  float bed=fbm(soil*5.5);
+  float clods=fbm(soil*24.0);
+  vec2 position=pixel/dimensions;
+  vec2 center=(position-vec2(.51,.48))*vec2(2.4,2.0);
+  float clearing=exp(-dot(center,center));
+  c=mix(vec3(.105,.062,.035),vec3(.38,.245,.135),smoothstep(.22,.77,bed));
+  c=mix(c,vec3(.49,.335,.195),clearing*(.20+bed*.39));
+  float sediment=sin(soil.x*21.0+soil.y*34.0+fbm(soil*7.0)*18.0)*.5+.5;
+  c+=vec3(.040,.028,.015)*(sediment-.5);
+  c+=vec3(.10,.073,.043)*(clods-.5);
+  vec2 crust=cells(soil*16.0);
+  float cracks=(1.0-smoothstep(.006,.035,crust.y))*smoothstep(.48,.68,clods);
+  c*=1.0-cracks*.24;
+  float grit=pow(noise(soil*vec2(190.0,175.0)),7.0);
+  c+=vec3(.15,.115,.075)*grit;
+  c+=(grain-.5)*.024;
+ } else if(biome==3.0 || biome==9.0) {
   vec2 flow=p+vec2(fbm(p*2.0),fbm(p*2.0+19.0))*.36;
   float pigment=fbm(flow*18.0)-.5;
   float meadow=fbm(p*4.5);
@@ -63,33 +99,20 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   float tufts=pow(noise(flow*vec2(110.0,55.0)),4.0);
   c+=vec3(.075,.085,.025)*tufts;
   c+=vec3(.045,.055,.025)*pigment;
-  if(biome==5.0) {
-   // Renaissance's exact painted pattern, recolored in warm earth browns.
-   c=mix(vec3(.10,.055,.035),vec3(.32,.18,.09),canopy);
-   c=mix(c,vec3(.58,.40,.23),clearing*(.24+canopy*.48));
-   c+=vec3(.075,.050,.025)*tufts;
-   c+=vec3(.055,.035,.020)*pigment;
+  if(biome==9.0) {
+   // Same flowing moss/earth material as Renaissance, in autumn ochre.
+   c=mix(vec3(.15,.17,.075),vec3(.40,.31,.13),canopy);
+   c=mix(c,vec3(.54,.43,.22),clearing*(.28+canopy*.40));
+   c+=vec3(.065,.048,.02)*tufts+vec3(.045,.035,.018)*pigment;
   }
- } else if(biome==2.0) {
-  // Broad fractured volcanic plates, cut by thin dark seams and red heat.
-  vec2 rock=p*7.8+vec2(fbm(p*3.1),fbm(p*3.1+17.))*.60;
-  vec2 fracture=cells(rock);
-  float seam=1.-smoothstep(.012,.055,fracture.y);
-  float bevel=smoothstep(.018,.09,fracture.y);
-  float layers=sin(p.x*52.+p.y*34.+fbm(p*10.)*5.);
-  float grit=noise(p*185.);
-  c=mix(vec3(.18,.012,.025),vec3(.47,.045,.055),fbm(p*12.));
-  c*=.78+bevel*.22;
-  c+=vec3(.055,.008,.012)*layers+vec3(.025,.009,.012)*(grit-.5);
-  c=mix(c,vec3(.045,.006,.014),seam*.82);
-  float heat=exp(-fracture.y*65.)*smoothstep(.42,.73,noise(p*9.));
-  c+=vec3(.34,.025,.012)*heat*(.85+.15*sin(clock*.7+p.y*9.));
- } else if(biome==8.0) {
+ } else if(biome==2.0 || biome==8.0) {
   float fissure=1.0-smoothstep(.009,.045,cells(p*8.0+terrain).y);
   c=mix(vec3(.055,.028,.030),vec3(.14,.075,.062),terrain)+(grain-.5)*.025;
-  c=mix(c,vec3(.085,.075,.085),.3);
-  c+=vec3(.62,.65,.70)*fissure*(.65+.10*sin(clock*.6+p.x*4.0));
-  c+=vec3(.11,.12,.15)*pow(max(0.0,sin(p.x*5.0+terrain*1.5)),12.0);
+  if(biome==8.0) {
+    c=mix(c,vec3(.085,.075,.085),.3);
+    c+=vec3(.62,.65,.70)*fissure*(.65+.10*sin(clock*.6+p.x*4.0));
+    c+=vec3(.11,.12,.15)*pow(max(0.0,sin(p.x*5.0+terrain*1.5)),12.0);
+  } else c+=vec3(.34,.055,.007)*fissure*(.65+.15*sin(clock*.8+p.x*4.0));
  } else if(biome==1.0) {
   c=champagneMarble(p);
   c+=vec3(.027,.024,.018)*pow(noise(p*8.0+clock*.009),3.0);
@@ -101,6 +124,6 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   c+=(grain-.5)*.012;
   c+=vec3(.025,.024,.02)*pow(noise(p*8.0+clock*.009),3.0);
  }
- float vignette=1.0-.13*length((pixel/dimensions-.5)*1.4);
+ float vignette=biome==6.0 ? 1.0 : 1.0-.13*length((pixel/dimensions-.5)*1.4);
  return vec4(c*vignette,1.0)*tint;
 }

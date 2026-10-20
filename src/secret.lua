@@ -72,7 +72,7 @@ function S.launch(p)
     App.hardcore=false;Hardcore.notice=nil;App.practice=nil;App.workshopMap=nil;App.preview=false
     local function start(world)
         App.start(world)
-        if App.state=='playing' and not Replay.playing then require('run_start').startCountdown() end
+        if App.state=='playing' and not Replay.playing then require('run_start').waitForInput() end
     end
     if p.hardcore then S.duel=nil;App.singleLevel=false;App.sessionLayout=nil;start(p.world);return end
     if p.kind=='boss' then
@@ -111,18 +111,21 @@ function S.open(demon)
     App.selectedWorld=8;WorldMap.hardcore=false;UI.boardHardcore=false
     App.sessionLayout=nil;App.singleLevel=false;App.workshopMap=nil;App.custom=false
     S.duel=nil;S.page=back and back.page or 1;S.category=back and back.category or 'boss';S.charge=0;S.charging=nil;S.refresh()
-    Ending.active=false;require('final_spider').active=false;Replay.input=nil;S.facing='down'
+    Ending.active=false;require('final_spider').active=false;Replay.input=nil;S.facing='down';S.walkMoving=false;S.walkPhase=0
     S.x=back and back.x or S.position(1);S.y=510;S.cameraX=math.max(0,math.min(S.hallWidth-Arena.width,S.x-Arena.width*.5));S.cooldown=.3;S.upReady=false;S.pending=nil;App.state='bossWorld'
 end
 function S.update(dt)
     local dx,dy=Input.move()
     if S.pending then
+        S.walkMoving=false
         if dx<-.5 then S.confirmYes=true elseif dx>.5 then S.confirmYes=false end
         return
     end
     S.cooldown=math.max(0,S.cooldown-dt)
-    local speed=Input.slow() and 240 or 380
+    local speed=Input.slow() and 260 or 1050
+    local oldX=S.x
     S.x=math.max(55,math.min(S.hallWidth-55,S.x+dx*speed*math.min(dt,.05)));S.y=510
+    S.sanctuaryPlayer=true;require('brown_walk').advance(S,math.abs(S.x-oldX),dt)
     if dx~=0 then S.facing=dx>0 and 'right' or 'left' end
     local camera=math.max(0,math.min(S.hallWidth-Arena.width,S.x-Arena.width*.5))
     S.cameraX=(S.cameraX or 0)+(camera-(S.cameraX or 0))*math.min(1,dt*9)
@@ -136,6 +139,7 @@ function S.drawWorld() require('sanctuary_scene').draw(S) end
 function S.draw()
     UI.text('LE SANCTUAIRE',300,24,'heading',{1,1,.94},600,'center')
     if S.pending then
+        S.walkMoving=false
         local g=love.graphics;g.push('all');g.origin();g.setColor(.005,.008,.015,.78);g.rectangle('fill',0,0,g.getWidth(),g.getHeight());g.pop()
         UI.panel(275,235,650,280)
         local L=require('localization')

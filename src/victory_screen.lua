@@ -105,11 +105,12 @@ function V.draw()
   return
  end
  local replay=r.replayData
+ if Replay.status and Replay.status~='' then UI.text(Replay.status,70,578,'body',muted,1060,'center') end
  UI.button('Voir ma traversée',70,617,250,47,function() Replay.play(replay) end,not (replay and replay.completed))
  UI.button('Classement',334,617,210,47,function() UI.boardReturn='victory';UI.boardWorld=r.world;UI.boardHardcore=r.hardcore==true;UI.boardCountry=false;UI.boardLocal=false;UI.boardPage=1;App.state='rankings' end)
  UI.button('Recommencer',560,617,220,47,function() V.restart(r) end)
  UI.button(r.continuation and 'Continuer' or r.hardcore and 'Choix des mondes' or Worlds.next(r.world) and 'Monde suivant' or 'Rejouer ce monde',796,617,334,47,function()
-  if r.continuation then r.continuation() elseif r.hardcore then App.selectedWorld=r.world;WorldMap.hardcore=true;WorldMap.open() else App.openEntry(r.hardcore and r.world or Worlds.next(r.world) or r.world,r.hardcore) end
+  if r.continuation then r.continuation() elseif r.hardcore then App.selectedWorld=r.world;WorldMap.hardcore=true;WorldMap.open() else App.openEntry(r.hardcore and r.world or Worlds.next(r.world) or r.world,r.hardcore,r.world) end
  end,false,true,nil,nil,palettes[Worlds.biome((not r.hardcore and Worlds.next(r.world)) or r.world)] or c)
  UI.button('Retour au menu',450,685,300,33,function() if Worlds.isSecret(r.world) then Secret.open() else App.state='menu' end end)
  local scope=r.rankScope or 'global'

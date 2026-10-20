@@ -9,10 +9,14 @@ add('wall',nil,'Mur',nil,0,{w=100,h=24,rotation=0})
 for _,v in ipairs({
  {'waspling','Petite guêpe','waspling_down',2,95},{'larva','Petit ver','worm_down',5,72},{'blackbird_chick','Petit merle','merle_down',1,77},
  {'ange','Ange gardien','catalog_ange',1,2},{'snake','Serpent céleste','catalog_snake',1,2},
- {'imp','Goule de braise','imp_down',2,85},{'spinner','Serpent tournoyant','serpent_down',2,105},
+ {'lava_scorpion','Scorpion de lave',false,2,85},{'spinner','Serpent tournoyant','serpent_down',2,105},
  {'fish','Poisson-lame','fish_down',4,110},{'jelly','Méduse électrique','jelly_down',4,50},{'crab','Crabe','crab_open',4,100},
  {'worm','Ver de terre','worm_down',5,90},{'mole','Taupe','mole_down',5,145},
- {'gull','Mouette','gull_down',6,140},{'light_jelly','Pieuvre abyssale','abyss_octopus',7,40},
+ {'cloud_beast','Bête des nuages',false,6,330},
+ {'cloud_snail','Escargot des nuages',false,6,66},
+ {'wind_bat','Chauve-souris du Ciel',false,6,210},
+ {'dragonfly','Libellule électrique',false,6,90},{'mist_moth','Papillon des vents',false,6,55},
+ {'light_jelly','Pieuvre abyssale','abyss_octopus',7,40},
  {'abyss_fish','Gueule des profondeurs','abyss_fish',7,75},{'lanternfish','Poisson-lanterne','lanternfish_down',7,55}
 }) do add('mob',v[1],v[2],v[3],v[4],{speed=v[5]}) end
 add('mob','piege','Piège de capture','catalog_trap',1)
@@ -20,6 +24,7 @@ add('mob','scie','Roue enchaînée','wheel',1,{speed=2,rota=1,radius=60})
 add('mob','magma_larva','Larve de magma','magma_larva',2,{speed=245})
 add('magma_spawner',nil,'Nid de larves','magma_nest',2,{rx=31,ry=23,spawnDelay=1,spawnInterval=3})
 add('lava',nil,'Dessiner la lave',nil,2,{radius=28,points={0,0}})
+add('electric_ground',nil,'Dessiner l’électricité',nil,6,{radius=16,points={0,0}})
 add('vent',nil,'Anémone électrique','electric_anemone',7,{rx=30,ry=23})
 add('tunnel',nil,'Tunnel (par paire)','earth_tunnel',5)
 add('hole',nil,'Dessiner un trou',nil,6,{radius=28,points={0,0}})
@@ -29,6 +34,7 @@ add('current',nil,'Courant marin',nil,4,{rx=50,ry=150,dx=1})
 add('light',nil,'Source de lumière','tear_ring',7)
 add('nest',nil,'Nid du Merle','nest',1,{rx=34,ry=25})
 for _,v in ipairs({{'storm','Merle noir','merle_flight_down',6},{'merle','L’Œuf du Merle','merle_down',1},{'wasp','Les Guêpes brûlées','wasp_down',2},{'hedgehog','Hérisson Brise-Roche','hedgehog_down',5},{'octopus','Pieuvre des Larmes Noires','octopus_extended_down',4},{'skeleton_head','Le Monstre d’os','skeleton_head',7}}) do add('boss',v[1],v[2],v[3],v[4],{movementRate=1,attackRate=1}) end
+add('abyss_gate',nil,'Tête du passage','skeleton_open',7,{w=540,h=648})
 add('abyss_part','skeleton_tail','Queue du Léviathan','skeleton_tail',7,{w=100,h=145,rotation=0})
 add('abyss_part','skeleton_rib','Côte du Léviathan','skeleton_rib',7,{w=18,h=110,rotation=0})
 add('abyss_part','skeleton_spine','Vertèbre du Léviathan','skeleton_spine',7,{w=22,h=28,rotation=0})

@@ -33,6 +33,24 @@ function T.run()
    assert(#L.lights<= (quality==1 and 8 or 16),'Light budget must remain bounded')
   end
   UI.clock=12;local data=draw();data:release()
+  if world==1 or world==2 or world==3 or world==5 then
+   local frame=require(world==1 and 'paradise_frame' or world==2 and 'hell_frame' or world==3 and 'renaissance_frame' or 'earth_frame');local canvas=g.newCanvas(Arena.width,600)
+   local function foliage(time,effects)
+    UI.clock=time;Graphics.effects=effects
+    g.push('all');g.setCanvas(canvas);g.origin();g.clear(0,0,0,0)
+    frame.draw();g.pop()
+    return canvas:newImageData()
+   end
+   local first=foliage(0,true);local baked=frame.canvas
+   local second=foliage(2,true)
+   assert(first:getString()~=second:getString(),'Foreground foliage must sway with time')
+   assert(frame.canvas==baked,'Animation must reuse baked foliage')
+   first:release();second:release()
+   first=foliage(0,false);second=foliage(2,false)
+   assert(first:getString()==second:getString(),'Disabled effects must keep foliage still')
+   first:release();second:release();canvas:release();Graphics.effects=true
+   print('PASS biome '..world..' foreground: animated, cached, stationary with effects disabled')
+  end
   print('PASS biome '..world..': visible lights, three quality levels, animation and simulation isolation')
  end
  -- Restore the pre-radiance renderer in every Abyss level, not just the boss.
@@ -73,7 +91,7 @@ function T.run()
  print('PASS visible Abyss bosses bypass decorative light at every quality, including custom encounters')
  for _,world in ipairs(Worlds.order) do Profile.completed[world]=true end
  Secret.open(false);love.draw();local hall=rendered:newImageData();hall:encode('png','radiance-sanctuary.png');hall:release()
- assert(B.biome()==8 and #L.lights==2,'Sanctuary lobby receives its own lights without stale gameplay sources')
+ assert(B.biome()==8 and #L.lights==5,'Sanctuary lobby receives its own lights without stale gameplay sources')
  L.apply=apply;Graphics.quality=2
  print('PASS other biomes and Sanctuary lighting; original Abyss rendering across all ten levels, three qualities, boss defeat and custom encounters');love.event.quit()
 end

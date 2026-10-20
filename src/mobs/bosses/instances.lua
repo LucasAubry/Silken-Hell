@@ -119,7 +119,7 @@ function B.resize(ratio)
         if b.x then b.x=b.x*ratio end
         if b.head then b.head.x=b.head.x*ratio end
         if b.origin then b.origin.x=b.origin.x*ratio; b.buildBones() end
-        for _,key in ipairs({'projectiles','strikes','nests','eggs','chicks','minions','pools','shots','skins','crabs','wounds','lightSites','waves','mines','octopuses','lures','orbs','vortices','sparks','rifts','counterShots','trail','ambient','threads','plankton','corpses','inkPools','blasts','eruptions'}) do
+        for _,key in ipairs({'projectiles','strikes','nests','eggs','chicks','minions','pools','shots','skins','crabs','wounds','lightSites','waves','mines','octopuses','lures','orbs','vortices','sparks','rifts','counterShots','trail','ambient','threads','plankton','corpses','inkPools','blasts'}) do
             for _,p in ipairs(b[key] or {}) do if p.x then p.x=p.x*ratio end; if p.cx then p.cx=p.cx*ratio end; if p.tx then p.tx=p.tx*ratio end; if p.fromX then p.fromX=p.fromX*ratio end end
         end
         end

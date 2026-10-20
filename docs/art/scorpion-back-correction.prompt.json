@@ -1,0 +1,5 @@
+{
+  "generator": "built-in image_gen",
+  "path": "assets/monstres/enfer/scorpion/lava_scorpion_up.png",
+  "prompt": "Edit the referenced lava scorpion game sprite. Correct its BACK VIEW anatomy. The scorpion walks NORTH toward the TOP of image, viewed from above. Head and TWO pincers at TOP. Six legs to either side of compact central armored body. Its TAIL attaches to the REAR of the abdomen at the BOTTOM of the body and extends DOWN toward BOTTOM of image, curling slightly sideways with orange-yellow stinger in the LOWER third. CRITICAL: no tail rising above the head, no tail at top; tail must clearly be at bottom, closest to viewer. No eyes visible on back. Keep exact chunky pixel art style, dark charcoal and burnt-red armor, orange molten cracks, black stepped outlines. Single creature centered, whole anatomy visible, transparent background, no floor or shadow, no text. Do not just remove the face: redraw rear-facing anatomy with head top and tail bottom."
+}

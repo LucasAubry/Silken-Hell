@@ -39,7 +39,7 @@ function T.run()
     W.update(.01);assert((b.x-x)^2+(b.y-y)^2<3^2,'Redécollage continu')
     W.roundActive=true;b.phase='charge';b.x=100;b.y=100;b.tx=500;b.ty=100;W.hitGrace=0;player.x=150;player.y=88;player.reset=false
     W.update(.12);assert(player.reset,'Charge mortelle sans traverser le joueur')
-    T.defeat(W);assert(W.defeated and Campaign.canCollect() and W.hp==0 and #W.projectiles==0 and #W.eruptions==0)
+    T.defeat(W);assert(W.defeated and Campaign.canCollect() and W.hp==0 and #W.projectiles==0 and W.eruptions==nil)
     assert(#W.minions==2,'Mini-abeilles persistantes');local mx=W.minions[1].x;player.x=-1000;player.y=-1000;W.update(.01);assert(W.minions[1].x~=mx)
     W.update(1);for _,bee in ipairs(W.bees) do assert(bee.deadTime>=.6,'Disparition des corps après victoire') end
     reset_level();assert(#W.bees==3 and W.hp==9 and #W.minions==0,'Mort réinitialise le trio')

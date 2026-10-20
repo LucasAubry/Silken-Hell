@@ -1,0 +1,25 @@
+{
+  "tool": "ImageGen intégré",
+  "sources": [
+    "assets/araignee_marron_renaissance.png",
+    "assets/araignee_marron_base_dos.png",
+    "assets/araignee_marron_base_profil.png"
+  ],
+  "up": "Use case: style-transfer. Image 1 is the existing UP/BACK pose sprite to edit; preserve its exact pose and composition, body shape, proportions, layout of markings rotated as shown, head WITHOUT eyes at top and large abdomen below, looking away toward top. Image 2 is the approved FRONT painted sprite: match its precise rich brown palette, softly hand-painted texture, dark organic ink outlines and rounded organic forms, matte brown dark markings. Replace pixel stair steps in image 1 by smooth painted contours. Critical anatomy: exactly EIGHT long walking legs, FOUR separately visible on each side, matching the four pairs in image 1 one-for-one. Keep clear transparent gaps between all four legs on each side, no merged legs, no extra limbs. This is the back view of the SAME character in image 2, not a front view: NO eyes or face visible. Same dark chocolate warm brown and amber highlights in shell as image 2, no green or gold paint. Transparent background, no ground shadow, no accessories, no text, all tips uncropped, sprite full frame with small transparent margin.",
+  "profil": "Use case: style-transfer. Image 1 is existing LEFT PROFILE spider sprite edit target. Image 2 is approved hand-painted front sprite STYLE AND COLOR reference of the SAME character. Keep left-facing profile orientation and three-quarter side-view composition from image 1: head in lower left with ONE large amber eye, abdomen upper right, original body markings and proportions. Redraw in exact softly hand-painted matte brown texture, organic dark ink outlines, shading, rounded forms and dark brown markings of image 2. No blocky pixels. Critical anatomy must correct any obscured source legs: EIGHT long walking legs total, FOUR attached to near flank and FOUR to far flank. Show FOUR distinct near legs across lower silhouette and FOUR individually discernible far legs behind the body, their arches and tips staggered with transparent gaps so none merge; keep side view rather than turning spider to face viewer. Do not count the two small mouth palps as legs. Match original brown and amber eye colors and the painted reference, no green, no golden accessories, no blue. Transparent background, no floor shadow, no extra items, no text, centered full body, all eight tips uncropped and inside canvas with small margins. Preserve recognizable pose of image 1 and character identity of image 2.",
+  "profilSelection": {
+    "source": "codex-clipboard-a45ef438-23e0-49fb-986c-bc8f0f3ab850.png",
+    "note": "Profil fourni et choisi par Lucas ; remplace le profil précédent sans retouche. Droite obtenue par miroir en jeu.",
+    "sha256": "2d5a805a052a155d6164180e0ed9b4b0cf7b604ce87aea2565763811da2a4cb1"
+  },
+  "currentRevision": {
+    "branch": "new-deccors",
+    "description": "Ancien modèle marron en pixel art, exporté du matériau Soie du jeu sans retouche.",
+    "sources": {
+      "down": "assets/araignee_marron_base.png",
+      "up": "assets/araignee_marron_base_dos.png",
+      "profil": "assets/araignee_marron_base_profil.png"
+    },
+    "exporter": "tests/export_base_skin.lua"
+  }
+}

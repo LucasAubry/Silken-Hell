@@ -9,6 +9,44 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_ARRIVAL_HANDOFF_TEST')=='1' then require('tests.arrival_handoff').run();return end
+    if os.getenv('SILKEN_RESTART_RULES_TEST')=='1' then require('tests.restart_rules').run();return end
+    if os.getenv('SILKEN_WORLD_LAUNCH_TEST')=='1' then require('tests.world_launch').run();return end
+    if os.getenv('SILKEN_ELEMENTAL_ARRIVAL_TEST')=='1' then require('tests.elemental_arrival').run();return end
+    if os.getenv('SILKEN_ABYSS_ARRIVAL_TEST')=='1' then require('tests.abyss_arrival').run();return end
+    if os.getenv('SILKEN_LOADING_SCENERY_TEST')=='1' then require('tests.loading_scenery').run();return end
+    if os.getenv('SILKEN_OCEAN_ARRIVAL_TEST')=='1' then require('tests.ocean_arrival').run();return end
+    if os.getenv('SILKEN_EARTH_ARRIVAL_TEST')=='1' then require('tests.earth_arrival').run();return end
+    if os.getenv('SILKEN_HISTORY_TEST')=='1' then require('tests.history').run();return end
+    if os.getenv('SILKEN_SKY_ARRIVAL_TEST')=='1' then require('tests.sky_arrival').run();return end
+    if os.getenv('SILKEN_PROLOGUE_TEST')=='1' then require('tests.prologue').run();return end
+    if os.getenv('SILKEN_QUEEN_NEST_ESCAPE_TEST')=='1' then require('tests.queen_nest_escape').run();return end
+    if os.getenv('SILKEN_WIND_PERFORMANCE_TEST')=='1' then require('tests.wind_performance').run();return end
+    if os.getenv('SILKEN_LEADERBOARD_PROFILE_TEST')=='1' then require('tests.leaderboard_profile').run();return end
+    if os.getenv('SILKEN_NEST_PREVIEW_TEST')=='1' then require('tests.nest_and_preview').run();return end
+    if os.getenv('SILKEN_QUEEN_POLISH_TEST')=='1' then require('tests.queen_polish').run();return end
+    if os.getenv('SILKEN_QUEEN_HEIRS_TEST')=='1' then require('tests.queen_heirs').run();return end
+    if os.getenv('SILKEN_QUEEN_REPLAY_TEST')=='1' then require('tests.queen_replay').run();return end
+    if os.getenv('SILKEN_QUEEN_REVISION_TEST')=='1' then require('tests.queen_revision').run();return end
+    if os.getenv('SILKEN_EDGE_REFINEMENT_TEST')=='1' then require('tests.edge_refinement').run();return end
+    if os.getenv('SILKEN_BIOME_LIFE_REVISION_TEST')=='1' then require('tests.biome_life_revision').run();return end
+    if os.getenv('SILKEN_MENU_FREEZE_TEST')=='1' then require('tests.menu_freeze').run();return end
+    if os.getenv('SILKEN_WORLD_SELECTOR_TEST')=='1' then require('tests.world_selector').run();return end
+    if os.getenv('SILKEN_CELESTIAL_REVISION_TEST')=='1' then require('tests.celestial_revision').run();return end
+    if os.getenv('SILKEN_ECOSYSTEM_REVISION_TEST')=='1' then require('tests.ecosystem_revision').run();return end
+    if os.getenv('SILKEN_CONTENT_CLEANUP_TEST')=='1' then require('tests.content_cleanup').run();return end
+    if os.getenv('SILKEN_SKY_REPLAY_TEST')=='1' then require('tests.sky_replay').run();return end
+    if os.getenv('SILKEN_CLOUD_BEAST_TEST')=='1' then require('tests.cloud_beast').run();return end
+    if os.getenv('SILKEN_CLOUD_SNAIL_TEST')=='1' then require('tests.cloud_snail').run();return end
+    if os.getenv('SILKEN_MOTH_GUST_TEST')=='1' then require('tests.moth_gust').run();return end
+    if os.getenv('SILKEN_SKY_WEATHER_TEST')=='1' then require('tests.sky_weather').run();return end
+    if os.getenv('SILKEN_MAP_PREVIEW_TEST')=='1' then require('tests.map_preview').run();return end
+    if os.getenv('SILKEN_SKY_EDGES_TEST')=='1' then require('tests.sky_edges').run();return end
+    if os.getenv('SILKEN_BASE_SKIN_TEST')=='1' then require('tests.base_skin').run();return end
+    if os.getenv('SILKEN_BASE_SKIN_EXPORT_TEST')=='1' then require('tests.export_base_skin').run();return end
+    if os.getenv('SILKEN_HELL_READABILITY_TEST')=='1' then require('tests.hell_readability').run();return end
+    if os.getenv('SILKEN_BIOME_REBUILD_TEST')=='1' then require('tests.biome_rebuild').run();return end
+    if os.getenv('SILKEN_SKY_PERFORMANCE_TEST')=='1' then require('tests.sky_performance').run();return end
     if os.getenv('SILKEN_REPLAY_AUDIT_TEST')=='1' then require('tests.replay_audit').run();return end
     if os.getenv('SILKEN_SKY_OVERHAUL_TEST')=='1' then require('tests.sky_overhaul').run();return end
     if os.getenv('SILKEN_REPLAY_HISTORY_TEST')=='1' then require('tests.replay_history').run();return end
@@ -21,7 +59,7 @@ function T.run()
     if os.getenv('SILKEN_ABYSS_CHARGE_VISIBILITY_TEST')=='1' then require('tests.abyss_charge_visibility').run();return end
     if os.getenv('SILKEN_RETRY_WAIT_TEST')=='1' then require('tests.retry_wait').run();return end
     if os.getenv('SILKEN_TORNADO_DIRECTION_TEST')=='1' then require('tests.tornado_direction').run();return end
-    if os.getenv('SILKEN_TERRAIN_ZONES_TEST')=='1' then require('tests.terrain_zones').run();return end
+    if os.getenv('SILKEN_TERRAIN_ZONES_TEST')=='1' or os.getenv('SILKEN_LAVA_STYLE_TEST')=='1' then require('tests.terrain_zones').run();return end
     if os.getenv('SILKEN_STORM_GROUNDING_TEST')=='1' then require('tests.storm_grounding').run();return end
     if os.getenv('SILKEN_BIOME_RADIANCE_TEST')=='1' then require('tests.biome_radiance').run();return end
     if os.getenv('SILKEN_WORLD_LIGHTING_TEST')=='1' then require('tests.world_lighting').run();return end
@@ -69,7 +107,6 @@ function T.run()
     if os.getenv('SILKEN_STORY_DISCOVERY_TEST')=='1' then require('tests.story_discovery').run();return end
     if os.getenv('SILKEN_BOSS_SPIDER_MOTION_TEST')=='1' then require('tests.boss_spider_motion').run();return end
     if os.getenv('SILKEN_MENU_ABYSS_TEST')=='1' then require('tests.menu_abyss_revision').run();return end
-    if os.getenv('SILKEN_SKY_CENTER_TEST')=='1' then require('tests.sky_center').run();return end
     if os.getenv('SILKEN_VISUAL_NOTICE_TEST')=='1' then require('tests.visual_notice').run();return end
     if os.getenv('SILKEN_GAME_FEEDBACK_TEST')=='1' then require('tests.game_feedback').run();return end
     if os.getenv('SILKEN_UI_FEEDBACK_TEST')=='1' then require('tests.ui_feedback').run();return end
@@ -86,7 +123,6 @@ function T.run()
     if os.getenv('SILKEN_ORGANIZATION_TEST')=='1' then require('tests.asset_organization').run();return end
     if os.getenv('SILKEN_UI_REVISION_TEST')=='1' then require('tests.ui_revision').run();return end
     if os.getenv('SILKEN_SPIDER_FEATHER_TEST')=='1' then require('tests.spider_feathers').run();return end
-    if os.getenv('SILKEN_RAIN_REVISION_TEST')=='1' then require('tests.rain_revision').run();return end
     if os.getenv('SILKEN_INK_MATERIAL_TEST')=='1' then require('tests.ink_material').run();return end
     if os.getenv('SILKEN_STORM_DASH_TEST')=='1' then require('tests.storm_dash_revision').run();return end
     if os.getenv('SILKEN_LIBERATION_TEST')=='1' then require('tests.boss_liberation').run();return end
@@ -197,7 +233,7 @@ function T.run()
         local d=love.image.newImageData(require('asset_paths').resolve('assets/sprites/'..name..'.png'))
         local _,_,_,a=d:getPixel(0,0); assert(a==0,'PNG transparent '..name); d:release()
     end
-    for _,name in ipairs({'spider','imp','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','gull'}) do
+    for _,name in ipairs({'spider','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole'}) do
         for _,dir in ipairs({'down','up','left','right'}) do
             local d=Art.imageData('assets/sprites/directional/'..name..'_'..dir..'.png')
             local _,_,_,a=d:getPixel(0,0); assert(a==0,'Alpha directionnel '..name..'_'..dir); d:release()

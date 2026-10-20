@@ -14,6 +14,14 @@ function T.run()
   assert(json.encode(Arena.walls)==walls and player.x==x and player.y==y,'Original arena layout: '..w)
  end
  Secret.duel=nil
+ Secret.open();Secret.x=Secret.position(2)
+ local move,slow=Input.move,Input.slow;Input.move=function()return 1,0 end;Input.slow=function()return true end
+ local start=Secret.x;Secret.update(.05);local walking=Secret.x-start
+ assert(Secret.walkMoving and Secret.walkPhase>0,'Sanctuary walking animates legs')
+ Input.slow=function()return false end;start=Secret.x;Secret.update(.05)
+ assert(Secret.x-start>walking*3 and Secret.x-start>50,'Sanctuary running is much faster')
+ Input.move=function()return 0,0 end;Secret.update(.05);assert(not Secret.walkMoving,'Legs stop at rest')
+ Input.move,Input.slow=move,slow
  local g=love.graphics;local canvas=g.newCanvas(1200,750)
  g.push('all');g.setCanvas(canvas);g.origin();g.clear(.01,.01,.01,1)
  for i=1,14 do g.setColor(1,1,1);Characters.portrait(i,45+i*70,100,25) end

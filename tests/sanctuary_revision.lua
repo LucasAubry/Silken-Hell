@@ -72,15 +72,15 @@ function T.run()
  Secret.key('escape');Secret.update(.05);assert(not Secret.pending,'Holding up after cancel does not reopen dialog')
  dy=0;Secret.update(.02);dy=-1;Secret.cooldown=0;Secret.update(.02);Secret.confirm();assert(not Secret.pending and App.state=='bossWorld','No cancels without entering battle')
  dy=0;Secret.update(.02);dy=-1;Secret.cooldown=0;Secret.update(.02);Secret.key('left');Secret.key('return')
- assert(App.state=='playing' and Campaign.world==Secret.portals[4].world and C.countdown==3,'Yes loads chosen boss with countdown')
+ assert(App.state=='playing' and Campaign.world==Secret.portals[4].world and C.active and not C.countdown,'Yes loads chosen boss waiting for Space')
  Input.move,Input.slow=move,slow
  local before=timer;local bx,by=player.x,player.y;local oldFrame=Replay.frame
- C.press(Profile.keys.dash);assert(C.countdown==3,'Speed input cannot skip countdown')
  for _=1,120 do love.update(1/60)end
- assert(C.active and timer==before and player.x==bx and player.y==by and Replay.frame==oldFrame,'World and replay stay frozen during 3–2–1')
- local remaining=C.countdown;App.state='pause';love.update(.2);assert(C.countdown==remaining,'Pause freezes countdown');App.state='playing'
+ assert(C.active and timer==before and player.x==bx and player.y==by and Replay.frame==oldFrame,'World and replay stay frozen while waiting for Space')
+ App.state='pause';love.update(.2);assert(C.active,'Pause preserves start gate');App.state='playing'
  for _=1,62 do love.update(1/60)end
- assert(not C.active and timer>before,'Combat starts automatically after 1')
+ assert(C.active and timer==before,'Combat waits indefinitely for Space')
+ C.press(Profile.keys.dash);love.update(1/60);assert(not C.active and timer>before,'Space starts combat')
  Secret.returnToSanctuary();assert(App.state=='bossWorld' and math.abs(Secret.x-Secret.position(4))<1,'Return restores the selected throne')
  local oldPad,oldBindings=Input.pad,Profile.padBindings
  local pad={buttons={}}
@@ -91,15 +91,15 @@ function T.run()
  Input.pad=pad;Profile.padBindings=require('pad_controls').load()
  Secret.ask(1);Input.press(pad,'b');assert(not Secret.pending and App.state=='bossWorld','Gamepad B cancels confirmation')
  Secret.ask(1);pad.buttons.dpleft=true;Secret.update(.02);pad.buttons={};Input.press(pad,'a')
- assert(App.state=='playing' and C.countdown==3,'Gamepad direction and A confirm the selected boss')
+ assert(App.state=='playing' and C.active and not C.countdown,'Gamepad direction and A confirm the selected boss')
  Input.pad=oldPad;Profile.padBindings=oldBindings;Input.active=false
  Secret.returnToSanctuary();Secret.ask(2);UI.buttons={};Secret.draw();UI.click(440,440)
- assert(App.state=='playing' and Campaign.world==6 and C.countdown==3,'Mouse Yes launches exactly the named boss')
+ assert(App.state=='playing' and Campaign.world==6 and C.active and not C.countdown,'Mouse Yes launches exactly the named boss')
  level(7);cycle.enter(Abyss,'bones');Abyss.resize(.8);Abyss.resize(1.25);love.draw()
  Bosses.load({{type='skeleton_head',x=200,y=300}},{},{})
  local instance=Bosses.items[1].boss;cycle.enter(instance,'bones');instance.resize(.8);instance.resize(1.25);instance.drawLights()
  assert(instance.phase=='bones' and instance.hp==18,'Authored boss instances render and resize the same new attacks')
- print('PASS all boss inscriptions after death, sanctuary/hardcore/rush messages, stationary wasp wall pauses, 13-HP queen and cracked eggs, restored Abyss cycle and proportional charged damage, seven-throne horizontal gallery, confirmation/cancel and frozen 3–2–1 countdown')
+ print('PASS all boss inscriptions after death, sanctuary/hardcore/rush messages, stationary wasp wall pauses, 13-HP queen and cracked eggs, restored Abyss cycle and proportional charged damage, seven-throne horizontal gallery, confirmation/cancel and Space start gate')
  local frame=0
  love.update=function()
   frame=frame+1;UI.clock=UI.clock+.016;require('achievement_notice').active=nil;require('achievement_notice').queue={};require('discovery_notice').active=nil;require('discovery_notice').queue={}

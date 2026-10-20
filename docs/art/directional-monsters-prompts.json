@@ -1,0 +1,30 @@
+{
+  "generator": "built-in image_gen",
+  "assets": [
+    {
+      "path": "assets/monstres/enfer/scorpion/lava_scorpion_up.png",
+      "reference": "assets/monstres/enfer/scorpion/lava_scorpion.png",
+      "prompt": "Edit the referenced lava scorpion game sprite. Correct its BACK VIEW anatomy. The scorpion walks NORTH toward the TOP of image, viewed from above. Head and TWO pincers at TOP. Six legs to either side of compact central armored body. Its TAIL attaches to the REAR of the abdomen at the BOTTOM of the body and extends DOWN toward BOTTOM of image, curling slightly sideways with orange-yellow stinger in the LOWER third. CRITICAL: no tail rising above the head, no tail at top; tail must clearly be at bottom, closest to viewer. No eyes visible on back. Keep exact chunky pixel art style, dark charcoal and burnt-red armor, orange molten cracks, black stepped outlines. Single creature centered, whole anatomy visible, transparent background, no floor or shadow, no text. Do not just remove the face: redraw rear-facing anatomy with head top and tail bottom."
+    },
+    {
+      "path": "assets/monstres/enfer/scorpion/lava_scorpion_right.png",
+      "reference": "assets/monstres/enfer/scorpion/lava_scorpion.png",
+      "prompt": "Use case: identity-preserve. Asset type: one directional game sprite. Input image is edit target and exact character/style reference. Create the RIGHT SIDE VIEW of this exact lava scorpion, walking toward RIGHT. Genuine profile anatomy: head and two pincers pointing right, abdomen left, curved segmented tail rising behind at left and arching toward right with yellow glowing stinger. Eye visible only on head at right. Legs arranged naturally below sides. Style: match reference chunky crisp pixel art, stepped near-black pixel outlines, limited discrete shading colors. Same character and proportions, suitable for top-down game camera with slight elevation. Center entire single creature on genuinely transparent background, with comfortable margin. No environment, no ground, no cast shadow, no text, no labels, no sprite sheet."
+    },
+    {
+      "path": "assets/monstres/ciel/nuage/wind_cloud.png",
+      "reference": "assets/monstres/ciel/nuage/wind_cloud.png",
+      "prompt": "Use case: identity-preserve. Asset type: one directional game sprite. Input image is edit target and exact character/style reference. Edit this exact cloud monster FRONT VIEW. Remove completely the large wind curl/stream coming out of its mouth on image right. Keep only the compact fluffy cloud body, the yellow eyes, and small O shaped mouth. No emitted breath, wind curls, vapor streaks or separate particles anywhere. Preserve body design, facial identity, colors and facing. Style: match reference chunky crisp pixel art, stepped near-black pixel outlines, limited discrete shading colors. Same character and proportions, suitable for top-down game camera with slight elevation. Center entire single creature on genuinely transparent background, with comfortable margin. No environment, no ground, no cast shadow, no text, no labels, no sprite sheet."
+    },
+    {
+      "path": "assets/monstres/ciel/nuage/wind_cloud_up.png",
+      "reference": "assets/monstres/ciel/nuage/wind_cloud.png",
+      "prompt": "Use case: identity-preserve. Asset type: one directional game sprite. Input image is edit target and exact character/style reference. Create the BACK VIEW of this exact fluffy white cloud monster facing away NORTH. Genuine back view of its compact rounded fluffy white body with pale blue shading and dark blue underside. No face, no eyes, no mouth visible on back. Remove completely all wind emitted from mouth: no curls, streaks or separate particles, just cloud body. Style: match reference chunky crisp pixel art, stepped near-black pixel outlines, limited discrete shading colors. Same character and proportions, suitable for top-down game camera with slight elevation. Center entire single creature on genuinely transparent background, with comfortable margin. No environment, no ground, no cast shadow, no text, no labels, no sprite sheet."
+    },
+    {
+      "path": "assets/monstres/ciel/nuage/wind_cloud_right.png",
+      "reference": "assets/monstres/ciel/nuage/wind_cloud.png",
+      "prompt": "Use case: identity-preserve. Asset type: one directional game sprite. Input image is edit target and exact character/style reference. Create the RIGHT SIDE PROFILE VIEW of this exact cloud monster, facing RIGHT. Compact white fluffy rounded cloud body, pale blue shading, dark blue underside. Show one yellow eye on right side of head and small O mouth at the right edge pointing right. No emitted wind, no curls, no breath, no vapor streaks, no separate particles. Genuine side pose, not a rotated front image. Style: match reference chunky crisp pixel art, stepped near-black pixel outlines, limited discrete shading colors. Same character and proportions, suitable for top-down game camera with slight elevation. Center entire single creature on genuinely transparent background, with comfortable margin. No environment, no ground, no cast shadow, no text, no labels, no sprite sheet."
+    }
+  ]
+}

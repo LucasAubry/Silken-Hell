@@ -1,21 +1,19 @@
--- The catalogue and gameplay share the same PNG frames and biome material.
+-- Shared metal render in gameplay and the editor.
 local T={}
 function T.draw(kind,x,y,size,biome,active,angle)
- if biome==6 then return require('sky_art').trap(kind,x,y,size,active,angle) end
- local g=love.graphics;local art=require('paradise_ink')
  local key=kind=='scie' and 'wheel' or active and 'trap_closed' or 'trap_open'
- g.push('all');g.setColor(1,1,1)
- if biome==5 then
-  local a=art.frame(key)
-  T.shader=T.shader or g.newShader([[
-   vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
-    vec4 p=Texel(tex,uv);float l=dot(p.rgb,vec3(.299,.587,.114));
-    vec3 earth=mix(vec3(.075,.029,.009),vec3(.76,.47,.22),l);
-    return vec4(earth,p.a)*color;
-   }
-  ]])
-  g.setShader(T.shader);g.draw(a.image,a.quad,x,y,angle or 0,size/a.w,size/a.w,a.w/2,a.h/2)
- else art.draw(key,x,y,size,angle) end
+ local g=love.graphics;g.push('all');g.setColor(1,1,1)
+ local frame=require('paradise_ink').frame(key)
+ if kind=='scie' then
+  -- A rotating blade is seen straight from above, without projection or relief.
+  if biome==5 then require('sprite_relief').bind(frame,true) end
+  g.draw(frame.image,frame.quad,x,y,angle or 0,size/frame.w,size/frame.w,frame.w/2,frame.h/2)
+  g.pop();return
+ end
+ -- Jaw traps stay planted even when the editor supplies its animation clock.
+ local height=size*frame.h/frame.w*.62
+ local depth=math.max(1,math.min(3,size*.035))
+ require('sprite_relief').draw(frame,x,y,size,0,height,depth,biome==5,nil,nil,true)
  g.pop()
 end
 return T

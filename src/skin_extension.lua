@@ -12,9 +12,10 @@ function E.icon(x,y,size,alpha,active)
  g.polygon(mode,3,-9,8,-12,14,-6,13,0,0,12,3,3,-1,-1,4,-5)
  g.pop()
 end
-function E.draw(x,y,size,dir,force,bothEyes)
+function E.draw(x,y,size,dir,force,bothEyes,index)
  if not force and not require('skin_effects').enabled('heartbreak') then return end
  dir=dir or 'down';if dir=='up' then return end
+ index=index or (App.state=='menu' and Characters.menuIndex() or Characters.selected())
  local a=Art.images[Characters.model(dir)];if not a then return end
  local qx,qy=a.quad:getViewport();local iw,ih=a.image:getDimensions()
  local scale=size/math.max(a.w,a.h)
@@ -26,6 +27,9 @@ function E.draw(x,y,size,dir,force,bothEyes)
  for eye=1,(bothEyes and not side and 2 or 1) do
  local ex=((side and .22 or eye==2 and .60 or .40)*iw-qx-a.w/2)*scale
  if dir=='right' then ex=-ex end
+ if require('winged_anchors').winged(index) then
+  local ax,ay=require('winged_anchors').eye(dir,eye);ex,ey=ax*size,ay*size
+ end
  g.setColor(.38,.75,1,alpha*.55);g.setLineWidth(math.max(1,size*.008))
  g.line(x+ex,y+ey,x+ex,y+ey+size*.12)
  -- Overlapping drops keep the stream visible across the animation wrap.

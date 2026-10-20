@@ -6,6 +6,11 @@ function T.run()
  Profile.name='Start QA';Profile.language='fr';Profile.completed={};Profile.levels={}
  for _,w in ipairs(Worlds.order) do Profile.completed[w]=true;Profile.levels[w]=10 end
  App.hardcore=false;App.preview=false;App.practice=nil;App.singleLevel=false;App.sessionLayout=nil;Secret.duel=nil
+ local function startReady(world)
+  App.start(world)
+  while C.arrival do C.advance(.05) end
+  C.advance(0)
+ end
  local maps={}
  for n=1,10 do maps['1:'..n]={world=1,level=n,width=960,height=600,entities={{kind='spawn',x=80,y=300},{kind='tear',x=300,y=300},{kind='mob',type='ange',x=800,y=450}}} end
  local read,move,slow=LevelLayouts.read,Input.move,Input.slow
@@ -13,7 +18,7 @@ function T.run()
  Input.move=function()if Replay.input then return Replay.input[1],Replay.input[2] end;return 1,0 end
  Input.slow=function()return false end
  local speedHeld=Input.speedHeld;local held=false;Input.speedHeld=function()return held end
- App.start(1);assert(C.active)
+ startReady(1);assert(C.active)
  local px,mx,my,rng=player.x,mobs[1].x,mobs[1].y,Replay.rng:getState()
  love.update(.4);love.draw()
  assert(timer==0 and player.x==px and mobs[1].x==mx and mobs[1].y==my,'Player, clock and enemies stay frozen')
@@ -25,27 +30,27 @@ function T.run()
  love.keypressed(Profile.keys.dash);assert(not C.active and timer==0 and Replay.frame==0,'Fresh speed press starts without counting waiting time')
  love.update(.05);assert(timer>0 and timer<.051 and player.x>px and Replay.frame==3,'Held movement starts immediately')
  -- The menu's held speed button must be released before polling can start a run.
- held=true;App.start(1);love.update(.5);assert(C.active)
+ held=true;startReady(1);love.update(.5);assert(C.active)
  held=false;love.update(.01);held=true;love.update(.01);assert(not C.active)
  held=false
  local oldKey=Profile.keys.dash
- Profile.keys.dash='lshift';App.start(1);love.keypressed('space');assert(C.active);love.keypressed('lshift');assert(not C.active and C.keyLabel()=='LSHIFT')
- Profile.keys.dash='mouse:2';App.start(1);love.mousepressed(0,0,1);assert(C.active);love.mousepressed(0,0,2);assert(not C.active)
+ Profile.keys.dash='lshift';startReady(1);love.keypressed('space');assert(C.active);love.keypressed('lshift');assert(not C.active and C.keyLabel()=='LSHIFT')
+ Profile.keys.dash='mouse:2';startReady(1);love.mousepressed(0,0,1);assert(C.active);love.mousepressed(0,0,2);assert(not C.active)
  Profile.keys.dash=oldKey
  local pad={buttons={},axes={}}
  function pad:isConnected()return true end
  function pad:isGamepad()return true end
  function pad:isGamepadDown(...)for _,key in ipairs({...})do if self.buttons[key]then return true end end;return false end
  function pad:getGamepadAxis(key)return self.axes[key]or 0 end
- local oldPad=Input.pad;Input.pad=pad;Input.speedHeld=speedHeld
- App.start(1);Input.press(pad,'a');assert(not C.active and C.keyLabel()=='A')
- App.start(1);pad.axes.triggerright=.8;love.update(.01);assert(not C.active,'Analog acceleration trigger starts')
+ local oldPad=Input.pad;Input.pad=pad;Input.speedHeld=speedHeld;Profile.padBindings=require('pad_controls').load()
+ startReady(1);Input.press(pad,'a');assert(not C.active and C.keyLabel()=='A')
+ startReady(1);pad.axes.triggerright=.8;love.update(.01);assert(not C.active,'Analog acceleration trigger starts')
  pad.axes={};Input.pad=oldPad;Input.active=false;Input.speedHeld=function()return held end
- App.start(1);love.keypressed(Profile.keys.dash)
+ startReady(1);love.keypressed(Profile.keys.dash)
  local p=timer;player.death=player.death+1;player.reset=true;App.resolveDeath();F.update(0)
  assert(not C.active and timer==p and F.events[#F.events].kind=='respawn','Death returns immediately, without start prompt')
  -- Replay an actual completed ranked run recorded through the gated update loop.
- App.start(1);love.keypressed(Profile.keys.dash)
+ startReady(1);love.keypressed(Profile.keys.dash)
  for _=1,2400 do if App.state~='playing' then break end;love.update(1/60) end
  assert(App.state=='victory' and Replay.last and Replay.last.completed,'Ranked run completes normally')
  local recording=json.decode(json.encode(Replay.last))
@@ -53,12 +58,12 @@ function T.run()
  assert(Replay.play(recording) and not C.active,'Spectator playback starts directly')
  for _=1,2400 do if not Replay.playing then break end;love.update(1/47) end
  assert(Replay.status=='Lecture terminée.','Gameplay feedback keeps replay deterministic: '..Replay.status)
- App.practice=3;App.singleLevel=true;App.sessionLayout=nil;App.start(1);assert(not C.active,'Training starts immediately')
- App.practice=nil;App.sessionLayout=maps['1:1'];App.start(1);assert(not C.active,'Workshop starts immediately')
- App.singleLevel=false;App.sessionLayout=nil;App.preview=true;App.start(1);assert(not C.active,'Editor preview starts immediately');App.preview=false
- App.hardcore=true;App.start(8);assert(C.active,'Ranked Sanctuary gets the start prompt');C.press(Profile.keys.dash)
+ App.practice=3;App.singleLevel=true;App.sessionLayout=nil;startReady(1);assert(C.active,'Training waits after its portal');C.press(Profile.keys.dash)
+ App.practice=nil;App.sessionLayout=maps['1:1'];startReady(1);assert(not C.active,'Workshop starts immediately')
+ App.singleLevel=false;App.sessionLayout=nil;App.preview=true;startReady(1);assert(not C.active,'Editor preview starts immediately');App.preview=false
+ App.hardcore=true;startReady(8);assert(C.active,'Ranked Sanctuary gets the start prompt');C.press(Profile.keys.dash)
  player.level=2;reset_level();assert(not C.active,'Next boss never restarts start prompt')
- App.hardcore=false;App.practice=1;App.singleLevel=true;App.start(1);F.reset()
+ App.hardcore=false;App.practice=1;App.singleLevel=true;startReady(1);F.reset()
  local mob=mobs[1];local before=json.encode({x=mob.x,y=mob.y,hp=player.death})
  mob.is_frozen=true;F.update(.01);assert(#F.events==1 and F.events[1].kind=='capture')
  F.update(.01);assert(#F.events==1,'One capture pulse per freeze')
@@ -88,7 +93,7 @@ function T.run()
  local tick=0
  love.update=function()
   tick=tick+1;UI.clock=30+tick*.15
-  if tick==1 then App.practice=nil;App.singleLevel=false;App.sessionLayout=nil;App.hardcore=false;App.start(1);C.elapsed=.2;App.capture='game-start-prompt-3.png'
+  if tick==1 then App.practice=nil;App.singleLevel=false;App.sessionLayout=nil;App.hardcore=false;startReady(1);C.elapsed=.2;App.capture='game-start-prompt-3.png'
   elseif tick==2 then C.elapsed=.85;App.capture='game-start-prompt-2.png'
   elseif tick==3 then C.elapsed=1.5;App.capture='game-start-prompt-1.png'
   elseif tick==4 then C.press(Profile.keys.dash);App.capture='game-start-prompt-go.png'

@@ -1,2 +1,2 @@
 require 'mobs.spinner'
-require 'mobs.imp'
+require 'mobs.lava_scorpion'

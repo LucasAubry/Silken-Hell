@@ -8,10 +8,10 @@ function load_player()
 	player.speed = 1
 	player.has_moved = true
 	player.last_mouve = "player.y+"
-	player.img_up = require("art_filter").image("assets/skins/soie/up.png")
-	player.img_down = require("art_filter").image("assets/skins/soie/down.png")
-	player.img_left = require("art_filter").image("assets/skins/soie/profil.png")
-	player.img_right = require("art_filter").image("assets/skins/soie/profil.png")
+	player.img_up = require("art_filter").image("assets/skins/base_marron/up.png")
+	player.img_down = require("art_filter").image("assets/skins/base_marron/down.png")
+	player.img_left = require("art_filter").image("assets/skins/base_marron/profil.png")
+	player.img_right = require("art_filter").image("assets/skins/base_marron/profil.png")
 	player.hitBox_width = 60
 	player.hitBox_height = 30
 	player.hitBox_offset_x = 5
@@ -22,6 +22,7 @@ end
 
 
 local function drawPlayer(direction)
+    if require('sky_weather').playerHidden() then return end
     if Abyss and (Abyss.playerHidden() or Abyss.playerVisibility()==0) then return end
     if player.abyssHeld then
         local s=player.abyssHeld.swallowed; local scale=math.max(0,1-(s and s.time or 0)/.25)
@@ -51,7 +52,7 @@ local function drawPlayer(direction)
     else love.graphics.setColor(1,1,1) end
     local g=love.graphics
     local r,green,b,alpha=g.getColor()
-    local visibility=Abyss.playerVisibility()
+    local visibility=Abyss.playerVisibility()*require('sky_weather').playerVisibility()
     g.setColor(r*visibility,green*visibility,b*visibility,alpha)
     Characters.draw(player.x+15,player.y+8,Characters.playerWidth,direction,player,Campaign.biome)
     love.graphics.setColor(1,1,1)
@@ -62,8 +63,9 @@ function draw_player(direction)
 end
 
 local function drawBeacon()
+    if require('sky_weather').playerHidden() then return end
     if Abyss and Abyss.playerHidden() then return end
-    if Abyss.encounterActive() then
+    if Campaign.biome==7 or Abyss.encounterActive() then
         local x,y,r=Ocean.bubblePosition()
         if x then Ocean.drawLantern(x,y,r,Ocean.clock,nil,nil,direction) end
         return

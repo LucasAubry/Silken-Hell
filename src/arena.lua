@@ -25,12 +25,15 @@ function A.direct(sx,sy,tx,ty,walls)
     end
     return true
 end
-function A.build(spawn,targets,boss)
+function A.build(spawn,targets,boss,authored)
     A.walls={{x=0,y=0,w=A.width,h=22},{x=0,y=578,w=A.width,h=22},{x=0,y=0,w=22,h=600},{x=A.width-22,y=0,w=22,h=600}}
     A.interior={}
+    Walls=A.walls
+    A.navigationVersion=(A.navigationVersion or 0)+1
+    if authored then return end
     if Campaign.biome==2 or (Campaign.biome==5 and not boss) then
         local function wall(x,y,w,h)
-            local r={x=x,y=y,w=w,h=h}; A.interior[#A.interior+1]=r; A.walls[#A.walls+1]=r
+            local r=A.thickenHellWall({x=x,y=y,w=w,h=h}); A.interior[#A.interior+1]=r; A.walls[#A.walls+1]=r
         end
         if boss then
             wall(A.width/2-55,430,110,18)
@@ -239,11 +242,15 @@ function A.navigate(m,tx,ty,speed,dt)
         end
     end
 end
+function A.thickenHellWall(r)
+ if Campaign.biome~=2 then return r end
+ if r.w<26 then r.x=r.x-(26-r.w)/2;r.w=26 end
+ if r.h<26 then r.y=r.y-(26-r.h)/2;r.h=26 end
+ return r
+end
 function A.drawFloor(hell)
     local g=love.graphics
     if Campaign.world==3 then BiomeFloor.draw(3,A.width,600,UI.clock)
-    elseif Campaign.biome==6 then
-        g.setColor(1,1,1); g.draw(Realms.floorTexture(),0,0)
     else BiomeFloor.draw(Campaign.biome,A.width,600,UI.clock) end
 end
 function A.drawWall(r,hell)
@@ -253,14 +260,11 @@ function A.drawWall(r,hell)
         localWall.x=-r.w/2;localWall.y=-r.h/2;localWall.rotation=0
         A.drawWall(localWall,hell);g.pop();return
     end
-    if r.renaissanceSoil then Renaissance.drawSoil(r);return end
     if Campaign.world==3 then Meadow.wall(r);return end
     local g=love.graphics
     if Campaign.biome>=4 then Realms.drawWall(r)
     elseif hell then
-        g.setColor(1,1,1)
-        if r.w>=r.h then Art.draw('wall',r.x+r.w/2,r.y+r.h/2,r.w,0,r.h+8)
-        else Art.draw('wall',r.x+r.w/2,r.y+r.h/2,r.h,math.pi/2,r.w+8) end
+        require('hell_rocks').draw(r)
     elseif require('paradise_style').active() then
         require('paradise_ink').wall(r)
     else

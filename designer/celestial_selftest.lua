@@ -1,0 +1,29 @@
+local T={}
+function T.run(M,state,select)
+ io.stdout:setvbuf('no');M.draftFilename='celestial-test-drafts.json';M.drafts={};M.applied={version=1,levels={}}
+ select(6,1);state.category='Terrain';state.all=false;love.draw()
+ local before=#M.layout.entities
+ for _,e in ipairs(require('catalog')) do if e.kind=='electric_ground' then state.tool=e end end
+ assert(state.tool,'Electric brush exists')
+ local view=state.canvas
+ local function point(x,y)return view.x+x*view.s,view.y+y*view.s end
+ local x,y=point(320,180);love.mousepressed(x,y,1)
+ x,y=point(320,400);love.mousemoved(x,y);love.draw();love.mousereleased(x,y,1)
+ assert(#M.layout.entities==before+1 and M.validate(M.layout),'Electric brush paints a valid zone')
+ local zone=M.layout.entities[#M.layout.entities];assert(zone.kind=='electric_ground' and #zone.points==4)
+ M.undo(false);assert(#M.layout.entities==before);M.undo(true);assert(#M.layout.entities==before+1)
+ state.tool=nil;local bat=M.add({kind='mob',type='wind_bat',speed=210},220,200)
+ love.draw()
+ -- x, y, speed occupy three rows; direction is the first control below them.
+ local w=love.graphics.getWidth();love.mousepressed(w-227+80,280+3*39+16,1)
+ assert(bat.dx==-1,'Direction button selects right to left')
+ love.draw();love.mousepressed(w-227+80,280+3*39+16,1);assert(bat.dx==1,'Direction button selects left to right')
+ assert(M.validate(M.layout));local saved=require('json').decode(love.filesystem.read(M.draftFilename))['6:1']
+ assert(saved.entities[#saved.entities].dx==1,'Direction persists in drafts')
+ local frames=0;state.testUpdate=function()
+  frames=frames+1
+  if frames==2 then love.graphics.captureScreenshot('celestial-editor.png') end
+  if frames==4 then print('PASS celestial editor: electric drawing, undo/redo, direction controls and persistence');love.event.quit() end
+ end
+end
+return T

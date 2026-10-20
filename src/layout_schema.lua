@@ -2,6 +2,14 @@
 local S={}
 function S.migrate(layout)
     if type(layout)=='table' and type(layout.entities)=='table' then
+        for i=#layout.entities,1,-1 do
+            local e=layout.entities[i]
+            if e.kind=='mob' and e.type=='wind_cloud' then e.type='wind_bat' end
+            if e.kind=='mob' and e.type=='imp' then e.type='lava_scorpion' end
+            if e.kind=='mob' and e.type=='gull' then
+                if e.has_larme then e.kind='tear';e.type=nil else table.remove(layout.entities,i) end
+            end
+        end
         for _,e in ipairs(layout.entities) do if e.kind=='boss' and e.type=='hellserpent' then e.type='wasp' end end
         if (layout.biome or layout.world)==6 or (layout.biome or layout.world)==2 then
             for i=#layout.entities,1,-1 do
@@ -13,8 +21,8 @@ function S.migrate(layout)
     return layout
 end
 -- The retired identifier remains readable for old saves and Workshop maps only.
-local kinds={abyss_part=true,magma_spawner=true,spawn=true,tear=true,wall=true,mob=true,boss=true,nest=true,light=true,lava=true,vent=true,hole=true,tunnel=true,tornado=true,current=true,rain=true}
-local mobs={magma_larva=true,ange=true,snake=true,piege=true,scie=true,spinner=true,imp=true,crab=true,abyss_fish=true,light_jelly=true,lanternfish=true,waspling=true,larva=true,blackbird_chick=true,fish=true,mole=true,worm=true,gull=true,jelly=true}
+local kinds={abyss_gate=true,abyss_part=true,magma_spawner=true,spawn=true,tear=true,wall=true,mob=true,boss=true,nest=true,light=true,lava=true,electric_ground=true,vent=true,hole=true,tunnel=true,tornado=true,current=true,rain=true}
+local mobs={cloud_beast=true,cloud_snail=true,wind_bat=true,dragonfly=true,mist_moth=true,magma_larva=true,ange=true,snake=true,piege=true,scie=true,spinner=true,lava_scorpion=true,crab=true,abyss_fish=true,light_jelly=true,lanternfish=true,waspling=true,larva=true,blackbird_chick=true,fish=true,mole=true,worm=true,jelly=true}
 local bosses={skeleton_head=true,storm=true,merle=true,hellserpent=true,wasp=true,hedgehog=true,octopus=true,skeleton_fish=true}
 function S.validate(l)
     if type(l)~='table' or not ({[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true})[l.world] or type(l.level)~='number' or l.level%1~=0 or l.level<1 or l.level>(l.world==3 and 6 or 10) then return false,'Monde ou niveau invalide.' end
@@ -22,7 +30,7 @@ function S.validate(l)
     if l.biome~=nil and not ({[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true})[l.biome] then return false,'Biome invalide.' end
     if l.difficulty~=nil and (type(l.difficulty)~='number' or l.difficulty%1~=0 or l.difficulty<1 or l.difficulty>5) then return false,'Difficulté entre 1 et 5.' end
     if l.difficultyExtra~=nil and (type(l.difficultyExtra)~='number' or l.difficultyExtra%1~=0 or l.difficultyExtra<0 or l.difficultyExtra>999 or (l.difficultyExtra>0 and l.difficulty~=5)) then return false,'Bonus rouge entre 0 et 999, au niveau 5.' end
-    local spawn=0
+    local spawn,gate=0,0
     for _,e in ipairs(l.entities) do
         if type(e)~='table' or not kinds[e.kind] or (e.kind=='mob' and not mobs[e.type]) or (e.kind=='boss' and not bosses[e.type]) or (e.kind=='abyss_part' and not ({skeleton_tail=true,skeleton_rib=true,skeleton_spine=true})[e.type]) then return false,'Objet inconnu.' end
         for _,key in ipairs({'x','y','speed','w','h','rx','ry','radius','phase','dx','rota','seed','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage','rotation'}) do
@@ -35,7 +43,7 @@ function S.validate(l)
         for _,key in ipairs({'w','h','rx','ry','radius'}) do if e[key] and e[key]<1 then return false,'Les dimensions doivent être positives.' end end
         if e.kind=='wall' and (not e.w or not e.h) then return false,'Dimensions du mur manquantes.' end
         if e.points~=nil then
-            if (e.kind~='hole' and e.kind~='lava') or type(e.points)~='table' or #e.points<2 or #e.points>512 or #e.points%2~=0 then return false,'Dessin de zone invalide.' end
+            if (e.kind~='hole' and e.kind~='lava' and e.kind~='electric_ground') or type(e.points)~='table' or #e.points<2 or #e.points>512 or #e.points%2~=0 then return false,'Dessin de zone invalide.' end
             local count=0
             for i,v in pairs(e.points) do
                 count=count+1
@@ -46,10 +54,14 @@ function S.validate(l)
             if count~=#e.points then return false,'Dessin de zone incomplet.' end
             if not e.radius or e.radius<4 or e.radius>120 then return false,'Taille du pinceau entre 4 et 120.' end
         end
+        if e.kind=='electric_ground' and not e.points then return false,'Dessine la zone électrique.' end
+        if e.type=='wind_bat' and e.dx~=nil and e.dx~=1 and e.dx~=-1 then return false,'Sens de traversée invalide.' end
         if e.customName~=nil and (type(e.customName)~='string' or #e.customName>60) then return false,'Nom de créature invalide.' end
         for _,key in ipairs({'electric','has_larme','elite','startUnderground'}) do if e[key]~=nil and type(e[key])~='boolean' then return false,'Option invalide.' end end
         if e.kind=='spawn' then spawn=spawn+1 end
+        if e.kind=='abyss_gate' then gate=gate+1 end
     end
+    if gate>1 then return false,'Une seule tête de passage par carte.' end
     if spawn~=1 then return false,'Il faut exactement un départ du joueur.' end
     return true
 end

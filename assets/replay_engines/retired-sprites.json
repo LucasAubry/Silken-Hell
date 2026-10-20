@@ -1,0 +1,18 @@
+{
+  "assets/monstres/ciel/oiseau/gull_down.png": "assets/replay_engines/replaced/43ec5380d4113a39b75962b6ee88e39a9aaac905.png",
+  "assets/sprites/directional/gull_down.png": "assets/replay_engines/replaced/43ec5380d4113a39b75962b6ee88e39a9aaac905.png",
+  "assets/monstres/ciel/oiseau/gull_right.png": "assets/replay_engines/replaced/53150ebcba76ef98e671543aa3a6e967a3d64cb6.png",
+  "assets/sprites/directional/gull_right.png": "assets/replay_engines/replaced/53150ebcba76ef98e671543aa3a6e967a3d64cb6.png",
+  "assets/monstres/ciel/oiseau/gull_up.png": "assets/replay_engines/replaced/51292d34f304f1d424cf922fa54e0798d2a5110e.png",
+  "assets/sprites/directional/gull_up.png": "assets/replay_engines/replaced/51292d34f304f1d424cf922fa54e0798d2a5110e.png",
+  "assets/monstres/ciel/oiseau/gull_left.png": "assets/replay_engines/replaced/1a9bee0e2e06f07709b27e294460eb5b54397e84.png",
+  "assets/sprites/directional/gull_left.png": "assets/replay_engines/replaced/1a9bee0e2e06f07709b27e294460eb5b54397e84.png",
+  "assets/monstres/enfer/goule/imp_right.png": "assets/replay_engines/replaced/70e59311e719cd2d2112efca84a0330301405354.png",
+  "assets/sprites/directional/imp_right.png": "assets/replay_engines/replaced/70e59311e719cd2d2112efca84a0330301405354.png",
+  "assets/monstres/enfer/goule/imp_left.png": "assets/replay_engines/replaced/303443b6d23c391b12b12221584f766dc4d3b993.png",
+  "assets/sprites/directional/imp_left.png": "assets/replay_engines/replaced/303443b6d23c391b12b12221584f766dc4d3b993.png",
+  "assets/monstres/enfer/goule/imp_down.png": "assets/replay_engines/replaced/c06d8f4e1ab74a1aa0e04d864c55a355a8d30aec.png",
+  "assets/sprites/directional/imp_down.png": "assets/replay_engines/replaced/c06d8f4e1ab74a1aa0e04d864c55a355a8d30aec.png",
+  "assets/monstres/enfer/goule/imp_up.png": "assets/replay_engines/replaced/022eb4ec7b0992d08605f5af7a6588c274521bf5.png",
+  "assets/sprites/directional/imp_up.png": "assets/replay_engines/replaced/022eb4ec7b0992d08605f5af7a6588c274521bf5.png"
+}

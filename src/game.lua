@@ -71,7 +71,8 @@ function activateShaderEffect()
     Psyche.death(player.x+15,player.y+12)
 end
 function isShaderActive() return shader_effect_timer>0 end
-function App.openEntry(world,hardcore)
+function App.openEntry(world,hardcore,fromWorld)
+    App.entryFromWorld=fromWorld
     if hardcore and world~=8 and not Hardcore.available(world) then return false end
     App.hardcore=hardcore==true;WorldMap.hardcore=App.hardcore;UI.boardHardcore=App.hardcore;Hardcore.notice=nil
     if world==8 and not hardcore then if Worlds.canEnter(8) then Secret.open(false) end;return end
@@ -86,14 +87,15 @@ function App.submit()
     if name=='' then App.error='Entre un pseudo pour commencer.'; return end
     Profile.name=name; Profile.country=Online.country; Profile.save()
     App.start(App.selectedWorld)
+    App.entryFromWorld=nil
 end
-function App.start(world)
+function App.start(world,options)
     if App.hardcore and not Replay.playing and not Hardcore.available(world) then return false end
     if world==8 and not App.hardcore then if Worlds.canEnter(8) then Secret.open(false) end;return end
     if not App.sessionLayout and not Worlds.canEnter(world) and not App.preview and os.getenv('SILKEN_TEST')~='1' and not Replay.playing then return end
     require('demo_progress').played()
     Achievements.level=nil
-    Profile.record('attempts',world)
+    if not App.historyPreview then Profile.record('attempts',world) end
     Arena.configure(love.graphics.getDimensions())
     if Replay.playing then Arena.width=Replay.data.width end
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
@@ -103,15 +105,17 @@ function App.start(world)
     shader_effect_timer=0;Psyche.reset(); App.state='playing'; love.keyboard.setTextInput(false)
     if Audio.paradise then Audio.paradise:stop() end
     local notices=require('discovery_notice');notices.queue={};notices.active=nil
-    Replay.begin(world)
+    if not App.historyPreview then Replay.begin(world) end
     reset_level()
     Replay.leave()
     App.runSkin=Characters.selected();App.runEffects=require('skin_effects').snapshot()
     App.custom=os.getenv('SILKEN_PREVIEW_WORLD')~=nil or require('platform').flag('--preview')
     for _,layout in pairs(LevelLayouts.read()) do if layout.world==world then App.custom=true end end
     if Worlds.isSecret(world) then App.custom=false end
-    if not App.singleLevel then Online.start(world,Profile.name,App.runSkin,App.hardcore) else Online.current=nil end
-    GameFeedback.reset();RunStart.begin()
+    if not App.historyPreview and not App.singleLevel then Online.start(world,Profile.name,App.runSkin,App.hardcore) elseif not App.historyPreview then Online.current=nil end
+    if world==1 and not Replay.playing and not App.historyPreview then require('sky_arrival').clearSource() end
+    if world==6 and not Replay.playing and not App.historyPreview then require('earth_arrival').clearSource() end
+    GameFeedback.reset();RunStart.begin(options and options.skipArrival)
     require("workshop_stats").begin()
 end
 function love.load()
@@ -121,9 +125,13 @@ function love.load()
     if os.getenv('SILKEN_TEST')=='1' then love.filesystem.setIdentity('silken-hell-tests')
     elseif os.getenv('SILKEN_ONLINE_TEST')=='1' then love.filesystem.setIdentity('silken-hell-online-tests')
     elseif os.getenv('SILKEN_WORKSHOP_LIVE_TEST')=='1' then love.filesystem.setIdentity('silken-hell-workshop-tests') end
+    App.preview=tonumber(os.getenv('SILKEN_PREVIEW_WORLD'))~=nil or require('platform').flag('--preview')
+    local request=App.preview and PreviewBridge.request()
+    local previewLayout=request and request.layout
+    if previewLayout then App.sessionLayout=previewLayout;App.singleLevel=true;App.custom=true end
     Profile.load();require('app_icon').install();Hardcore.load();Graphics.load(); Input.load(); Bestiary.load(); Audio.load(); Audio.focus(love.window.hasFocus()); UI.load()
     load_level(); load_world(); load_player(); load_objet(); load_mob(); load_particles()
-    local assetStart=love.timer.getTime(); Art.load();preload.load()
+    local assetStart=love.timer.getTime(); Art.load(not not previewLayout);preload.load(previewLayout)
     if os.getenv('SILKEN_EXPORT_ICONS') then require('tools.export_icons').run(os.getenv('SILKEN_EXPORT_ICONS'));return end
     if os.getenv('SILKEN_BENCH')=='1' then print(string.format('ASSET_LOAD_SECONDS=%.3f',love.timer.getTime()-assetStart)) end
     if os.getenv('SILKEN_EXPORT_ART')=='1' then local f=assert(io.open(os.getenv('SILKEN_ART_PATH'),'wb')); f:write(require('json').encode(Art.metadata)); f:close(); love.event.quit(); return end
@@ -131,7 +139,8 @@ function love.load()
     Campaign.install()
     local resetReplayLevel=reset_level
     reset_level=function(options) require('render_motion').reset();Replay.beforeLevelReset();Achievements.enterLevel();return resetReplayLevel(options) end
-    Campaign.select(1);reset_level()
+    Campaign.select(previewLayout and previewLayout.world or 1)
+    if previewLayout then player.level=previewLayout.level;App.state='playing' else reset_level() end
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
     polishShader=love.graphics.newShader('assets/shaders/polish.glsl')
     OldTV.load()
@@ -140,12 +149,14 @@ function love.load()
     App.selectedWorld=1
     require('skin_unlock').init()
     require('achievement_notice').init()
+    require('menu_preload').load()
     Online.init()
     if os.getenv('SILKEN_EXPORT_LEVELS')=='1' then require('designer.export').run(); love.event.quit(); return end
     local preview=tonumber(os.getenv('SILKEN_PREVIEW_WORLD'))
     if preview or require('platform').flag('--preview') then
         App.preview=true;PreviewBridge.update(.2)
     end
+    if os.getenv('SILKEN_TEST')~='1' and os.getenv('SILKEN_ONLINE_TEST')~='1' and os.getenv('SILKEN_WORKSHOP_LIVE_TEST')~='1' and require('prologue').shouldStart() then require('prologue').open(false) end
     if os.getenv('SILKEN_WORKSHOP_LIVE_TEST')=='1' then require('tests.workshop_live').run()
     elseif os.getenv('SILKEN_TEST')=='1' then require('tests.runtime').run()
     elseif os.getenv('SILKEN_ONLINE_TEST')=='1' then require('tests.online').run() end
@@ -175,9 +186,10 @@ function App.move(dt)
     player.moveX=dx; player.moveY=dy
     -- Substeps prevent a dash from crossing a thin wall on a slow frame.
     local steps=math.max(1,math.ceil(speed*dt/8))
+    local openEdges=require('sky').openEdges()
     for _=1,steps do
-        local x=math.max(23,math.min(Arena.width-53,player.x+dx*speed*dt/steps))
-        local y=math.max(23,math.min(553,player.y+dy*speed*dt/steps))
+        local x,y=player.x+dx*speed*dt/steps,player.y+dy*speed*dt/steps
+        if not openEdges then x=math.max(23,math.min(Arena.width-53,x));y=math.max(23,math.min(553,y)) end
         if not willCollide(x,player.y) then player.x=x end
         if not willCollide(player.x,y) then player.y=y end
         Hazards.contact();Octopus.contact()
@@ -228,6 +240,7 @@ function love.update(dt)
     end
     Audio.update(Profile,App.selectedWorld==2 and App.state~='credits')
     if App.state=='credits' then Ending.updateCredits(dt);return end
+    if App.state=='prologue' then require('prologue').update(dt);return end
     if App.state=='bossWorld' then Secret.update(dt);return end
     if App.state~='playing' then
         RunStart.suspend()
@@ -242,6 +255,12 @@ function love.update(dt)
     GameFeedback.update(dt)
 end
 function App.simulate(dt)
+    if (Replay.input and Replay.input[4]) or Replay.restartRequested then
+        Replay.restartRequested=nil
+        if not player.reset then player.death=player.death+1;Profile.record('deaths');RunDetails.death();require('workshop_stats').death() end
+        App.respawn()
+        require('retry_wait').reset()
+    end
     require('render_motion').capture()
     Psyche.update(dt)
     if require('retry_wait').update(dt) then return end
@@ -305,7 +324,7 @@ function App.simulate(dt)
     if liberation.busy() or App.resolveDeath() then return end
     if Ending.checkHellVictory() then return end
     local collected=require('abyss_gate').ready or (Renaissance.active and Renaissance.collect())
-    if not player.tunnelTravel and (collected or (not Renaissance.active and Campaign.canCollect() and isTouching(player,objet.larme))) then
+    if not player.tunnelTravel and (collected or (not Renaissance.active and Campaign.canCollect() and Aftermath.canEnter() and isTouching(player,objet.larme))) then
         Psyche.collect(Renaissance.active and player.x+15 or objet.larme.x+15,
             Renaissance.active and player.y+12 or objet.larme.y+20,player.x+15,player.y+12)
         Achievements.finishLevel()
@@ -350,6 +369,9 @@ function love.draw()
         love.graphics.setCanvas(gameCanvas); love.graphics.clear(); love.graphics.origin(); love.graphics.setColor(1,1,1)
         Prism.beginScene(gameCanvas)
         draw_level()
+        if RunStart.arrival and RunStart.scene() and RunStart.scene().captureEnvironment then RunStart.scene().captureEnvironment(gameCanvas) end
+        local queenScene=Ending.active and require('final_spider').active
+        if queenScene then require('final_spider').drawGround() end
 
         if not Secret.inArena() then Atmosphere.drawDrops() end
         -- Draw all floor traps first, regardless of their spawn order.
@@ -363,16 +385,32 @@ function love.draw()
             Campaign.drawTear()
         end
         for _,m in ipairs(mobs) do if m~=droppedCarrier and m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
-        Renaissance.drawBlasts(); Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false)
+        Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false)
         Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
+        require('sky_weather').drawAtmosphere()
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end;require('biome_radiance').motes()
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies(); Realms.drawAnemoneElectric() end
-        Abyss.drawLights(); Bosses.drawLights();require('earth_light').draw();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw();Story.drawWallMessage()
+        Abyss.drawLights(); Bosses.drawLights();require('earth_light').draw();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw()
         -- Boss rewards remain readable above the arena effects.
-        if not Campaign.tearCarried() and not droppedCarrier and not Renaissance.active then Campaign.drawTear(true) end
+        if not queenScene and not Campaign.tearCarried() and not droppedCarrier and not Renaissance.active then Campaign.drawTear(true) end
+        local function drawFrame()
+        Story.drawDecor(function()
+            require('renaissance_frame').draw()
+            require('earth_frame').draw()
+            require('paradise_frame').draw()
+            require('hell_frame').draw()
+            require('biome_edge_life').draw()
+        end)
+        end
+        if queenScene then drawFrame() end
+        require('sky_arrival').captureSource(gameCanvas,not queenScene and drawFrame or nil)
+        require('earth_arrival').captureSource(gameCanvas,not queenScene and drawFrame or nil)
         love.graphics.setColor(1,1,1)
-        if Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
-        if not (require('abyss_gate').active and require('abyss_gate').closing) then draw_player_beacon() end;if not Abyss.playerHidden() then Replay.drawGhost() end
+        if RunStart.arrival then RunStart.drawArrivalActor();if Ending.active then Ending.drawFamily() end elseif Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
+        if not (RunStart.arrival and RunStart.scene()) and not (require('abyss_gate').active and require('abyss_gate').closing) then draw_player_beacon() end;if not Abyss.playerHidden() then Replay.drawGhost() end
+        if not queenScene then drawFrame() end
+        if queenScene then Campaign.drawTear(true) end
+        Story.drawWallMessage()
         Prism.endScene();love.graphics.setCanvas()
         sceneCanvas=require('world_lighting').apply(gameCanvas)
     elseif App.state=='bossWorld' then
@@ -388,18 +426,16 @@ function love.draw()
         -- The arena normally covers the desktop. Render its backdrop only
         -- when letterboxing or camera shake actually exposes it.
         if x>.5 or y>.5 or shakeX~=0 or shakeY~=0 then
-            if App.state=='playing' and Campaign.world==6 then
-                local backdrop=Realms.floorTexture()
-                local fill=math.max(w/backdrop:getWidth(),h/backdrop:getHeight())
-                love.graphics.setColor(1,1,1)
-                love.graphics.draw(backdrop,(w-backdrop:getWidth()*fill)/2,(h-backdrop:getHeight()*fill)/2,0,fill,fill)
-            else BiomeFloor.draw(App.state=='bossWorld' and 8 or (Campaign.world==3 and 3 or Campaign.biome),w,h,UI.clock) end
+            BiomeFloor.draw(App.state=='bossWorld' and 8 or (Campaign.world==3 and 3 or Campaign.biome),w,h,UI.clock)
         end
         love.graphics.setColor(1,1,1)
         local psychedelic=App.state=='playing' and Psyche.bind()
         if not psychedelic and Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
-        love.graphics.draw(sceneCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale); love.graphics.setShader()
-        if App.state=='playing' then Realms.drawWind(w,h); Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
+        if RunStart.arrival and RunStart.scene() and App.state=='playing' then RunStart.scene().draw(sceneCanvas,w,h)
+        else love.graphics.draw(sceneCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale) end; love.graphics.setShader()
+        if App.state=='playing' then Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
+    elseif App.state=='prologue' then
+        require('prologue').draw(w,h)
     elseif App.state=='skinUnlock' then
         love.graphics.clear(.008,.015,.027)
     elseif App.state=='credits' then
@@ -417,8 +453,11 @@ function love.draw()
     end
     local s=math.min(w/1200,h/750)
     love.graphics.push(); love.graphics.translate((w-1200*s)/2,(h-750*s)/2); love.graphics.scale(s)
-    if App.state~='credits' then UI.draw();Input.draw();require('discovery_notice').draw();RunStart.draw() end
-    require('achievement_notice').draw();require('skin_unlock').drawToast();love.graphics.pop()
+    local sceneArrival=App.state=='playing' and RunStart.arrival and RunStart.scene()~=nil
+    if sceneArrival or App.historyPreview and App.state=='playing' then UI.buttons={};RunStart.draw()
+    elseif App.state~='credits' then UI.draw();Input.draw();if App.state~='prologue' then require('discovery_notice').draw();RunStart.draw() end end
+    if App.historyPreview then require('history').drawBack()
+    elseif App.state~='prologue' then require('achievement_notice').draw();require('skin_unlock').drawToast() end;love.graphics.pop()
     -- The final collectible also celebrates over the results screen.
     if App.state=='victory' or App.state=='customVictory' then
         local scale,x,y=App.viewport(w,h)
@@ -427,9 +466,9 @@ function love.draw()
     end
     if App.state=='playing' then Ending.drawOverlay(w,h) end
     Hardcore.drawBorder(w,h)
-    if App.state~='credits' and App.state~='skinUnlock' and not Ending.active then
+    if App.state~='credits' and App.state~='skinUnlock' and App.state~='prologue' and not Ending.active and not sceneArrival then
         love.graphics.push('all');love.graphics.origin();love.graphics.setShader()
-        local cleanScreen=App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements'
+        local cleanScreen=App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements' or App.state=='history'
         love.graphics.setFont(cleanScreen and UI.fonts.body or UI.fonts.tiny)
         if not cleanScreen then love.graphics.setColor(.78,.78,.71,.7);love.graphics.print('v'..require('version'),12,h-18) end
         if Graphics.showFPS then love.graphics.setColor(.7,1,.8,.8);love.graphics.print(tostring(love.timer.getFPS())..' FPS',12,h-(cleanScreen and 26 or 33)) end
@@ -446,6 +485,7 @@ function love.draw()
 end
 function love.mousepressed(x,y,button)
     Input.active=false
+    if App.historyPreview and button==1 then local vx,vy=UI.mouse(x,y);if UI.click(vx,vy) then return end end
     if UI.binding then if UI.bindingDevice~='pad' then Input.bind('mouse:'..button) elseif button==1 then local vx,vy=UI.mouse(x,y);UI.click(vx,vy) end;return end
     if Replay.playing then
         if button==1 then local vx,vy=UI.mouse(x,y);if UI.click(vx,vy) then return end end
@@ -471,6 +511,9 @@ function love.keypressed(key,scancode,isrepeat)
         return
     end
     if key=='escape' and not isrepeat then Audio.play('back') end
+    if App.historyPreview and key=='escape' then require('history').close();return end
+    if App.state=='history' and require('history').key(key) then return end
+    if App.state=='prologue' then require('prologue').key(key);return end
     if App.state=='bossWorld' and Secret.key(key,isrepeat) then return end
     if key=='escape' and App.state=='victory' and require('podium_celebration').closePreview() then return end
     if App.state=='skinUnlock' then
@@ -535,6 +578,7 @@ end
 function love.focus(focused)
     if focused and App.state=='workshop' then Workshop.reloadLocal() end
     Audio.focus(focused)
+    if not focused and App.state=='prologue' then require('prologue').paused=true end
     if not focused and App.state=='playing' then if Replay.playing then if not Replay.recovery then Replay.paused=true end else App.state='pause' end end
 end
 
@@ -549,17 +593,23 @@ function App.leaveCustom()
     App.hardcore=false;Hardcore.notice=nil;Secret.duel=nil;App.practice=nil;App.sessionLayout=nil; App.singleLevel=false; App.workshopMap=nil; App.state='menu'
 end
 function App.restartCurrent()
+    local trainingRetry=App.state=='customVictory' and App.practice and not Secret.duel
+    local inLevel=App.state=='playing' or App.state=='pause'
     if Secret.duel then Secret.duel.time=0 end
-    App.start(Campaign.world)
+    App.start(Campaign.world,{skipArrival=inLevel or trainingRetry})
+    if trainingRetry then
+        RunStart.arrival=nil;RunStart.arrivalKind=nil;RunStart.arrivalPractice=false
+        RunStart.waitForInput()
+    elseif Secret.duel then RunStart.waitForInput() end
 end
 function App.restartLevel()
-    App.hardcore=false;App.practice=player.level;App.singleLevel=true;Online.current=nil
-    App.start(Campaign.world)
+    if App.state~='playing' or Replay.playing or RunStart.arrival then return end
+    Replay.restartRequested=true
 end
 function App.restartWorld()
     local training=App.practice~=nil or App.singleLevel
     App.practice=training and 1 or nil;App.singleLevel=training;App.sessionLayout=nil;App.workshopMap=nil;Secret.duel=nil
-    App.start(Campaign.world)
+    App.start(Campaign.world,{skipArrival=true})
 end
 function App.practiceWorld(delta)
     if not App.practice and not App.singleLevel then return false end
@@ -622,6 +672,7 @@ function love.resize(w,h)
         for _,m in ipairs(Raven.chicks) do m.cx=m.cx*ratio; m.x=m.x*ratio end
     end
     for _,p in ipairs(Hazards.lava) do require('ground_holes').resize(p,ratio) end
+    for _,p in ipairs(Hazards.electric) do require('ground_holes').resize(p,ratio) end
     if Wasp.active then Wasp.resize(ratio) end
     if not custom then Arena.reconcile() end
     if Hedgehog.active then
@@ -635,11 +686,11 @@ function love.resize(w,h)
     end
     for _,b in ipairs(Ocean.bubbles) do b.x=b.x*ratio end
     if Campaign.biome>=4 or custom then
-        local wind=Realms.wind; local illuminated=player.illuminated; local lightning=Realms.lightning; local lightningClock=Realms.lightningClock
+        local illuminated=player.illuminated
         local rain,clock,bolts,eggs,larvae=Realms.rain,Realms.clock,Realms.bolts,Realms.eggs,Realms.larvae
         for _,list in ipairs({rain,bolts,eggs,larvae}) do for _,p in ipairs(list) do p.x=p.x*ratio end end
         Realms.reset(Campaign.biome,(Campaign.world==3 or Worlds.isSecret(Campaign.world)) and 10 or player.level); Realms.custom=custom
-        Realms.wind=wind; Realms.rain=rain; Realms.clock=clock; Realms.bolts=bolts; Realms.eggs=eggs; Realms.larvae=larvae
+        Realms.rain=rain; Realms.clock=clock; Realms.bolts=bolts; Realms.eggs=eggs; Realms.larvae=larvae
         if custom then
             for key,list in pairs(zones) do for _,p in ipairs(list) do require('ground_holes').resize(p,ratio) end; Realms[key]=list end
         end
@@ -647,11 +698,12 @@ function love.resize(w,h)
             Abyss.resize(ratio)
         end
         Ocean.relayout()
-        player.illuminated=illuminated; Realms.lightning=lightning; Realms.lightningClock=lightningClock
+        player.illuminated=illuminated
         if Abyss.giant then Abyss.buildBones() end
     end
     local spit=player.abyssSpit; if spit then spit.fromX=spit.fromX*ratio; spit.toX=spit.toX*ratio end
     Renaissance.resize(ratio)
+    require('sky_weather').resize(ratio)
     Magma.resize(ratio); Burning.resize(ratio)
     if Storm.active then Storm.resize(ratio) end
     AbyssTerrain.resize(ratio or 1)

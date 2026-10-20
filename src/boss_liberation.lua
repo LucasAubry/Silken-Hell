@@ -45,7 +45,7 @@ function L.start(boss,kind,complete)
  actors(mobs);actors(Realms.larvae)
  for _,key in ipairs({'minions','chicks','freedChicks','crabs','babies','corpses','octopuses'}) do actors(boss[key]) end
  -- Remove attack projectiles while preserving bodies and their existing PNGs.
- for _,key in ipairs({'projectiles','rain','strikes','trails','eruptions','webs','threads','beam','beams','pressure','mines'}) do
+ for _,key in ipairs({'projectiles','rain','strikes','trails','webs','threads','beam','beams','pressure','mines'}) do
   if boss[key] then
    if key=='beam' or key=='pressure' then boss[key]=nil else boss[key]={} end
   end
@@ -56,9 +56,11 @@ function L.start(boss,kind,complete)
 end
 function L.update(dt)
  if not L.busy() then return end
+ BossFX.advance(dt)
  objet.larme.taken=true
  for i=#L.events,1,-1 do
   local e=L.events[i];e.age=e.age+dt
+  if e.kind=='final_spider' then e.boss.settle(dt) end
   if e.age>=L.duration then
    table.remove(L.events,i);e.boss.liberating=nil;e.complete()
   end

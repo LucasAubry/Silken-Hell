@@ -42,7 +42,7 @@ function M.explode(m)
     if m.spent then return end
     m.spent=true
     -- A custom carrier must release its tear before its body is removed.
-    if m.has_larme and not objet.larme_dropped then objet.larme_dropped=true; objet.larme.x=m.x-15; objet.larme.y=m.y+35 end
+    Campaign.dropTear(m)
     M.bursts[#M.bursts+1]={x=m.x,y=m.y,age=0}
     if (player.x+15-m.x)^2+(player.y+12-m.y)^2<43^2 then Hazards.kill() end
 end

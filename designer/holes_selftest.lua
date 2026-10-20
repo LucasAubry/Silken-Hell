@@ -27,7 +27,7 @@ function T.run(M,state,select)
  local ok,msg=M.apply();assert(ok,msg)
  local saved=require('json').decode(love.filesystem.read(M.filename));assert(M.validate(saved.levels['6:1']))
  select(2,1);state.category='Terrain';love.draw()
- for _,item in ipairs(M.layout.entities) do assert(item.kind~='lava','Old puddles are absent from the editor') end
+ for _,item in ipairs(M.layout.entities) do assert(item.kind~='lava' or item.points,'Old elliptical puddles are absent; painted lava is retained') end
  for _,entry in ipairs(catalog) do if entry.kind=='lava' then state.tool=entry end end
  assert(state.tool and state.tool.points,'Lava uses the same brush tool')
  view=state.canvas;local count=#M.layout.entities

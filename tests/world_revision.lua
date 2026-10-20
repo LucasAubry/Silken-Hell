@@ -11,16 +11,6 @@ function T.run()
     player.x=450; player.y=250; player.has_moved=true; m.path={}; m.navTime=100
     move_when_player_moves(m,player,.02); assert(m.x>200,'Chemin épuisé : aucune pause artificielle')
     local x=m.x; player.has_moved=false; move_when_player_moves(m,player,.02); assert(m.x==x,'Arrêt seulement avec le joueur')
-    for n=1,4 do level(6,n); Realms.rainClock=0; Realms.update(.1); assert(#Realms.rain==0,'Pas de pluie avant le niveau cinq') end
-    level(6,5); Realms.rainClock=0; Realms.update(.01); assert(#Realms.rain>0)
-    local p=Realms.rain[1]; player.x=p.x-15; player.y=p.y-12; p.age=.7; Realms.update(.01); assert(player.reset,'Pluie inflige un dégât mortel')
-    level(6,5); m=mobs[1]; Realms.lightning={{x=m.x,y=m.y,age=.79,target=m}}; Realms.updateLightning(.02)
-    assert(m.electric and Bestiary.seen.electric_gull,'Foudre transforme la mouette')
-    player.x=m.x+25; player.y=m.y-12; Realms.moveGull(m,0); assert(not player.reset,'Ancien rayon désormais sûr')
-    player.x=m.x+10; Realms.moveGull(m,0); assert(player.reset,'Petite aura électrique dangereuse')
-    level(6,5); m=mobs[1]; m.x=80; m.y=300; objet.larme.x=500; objet.larme.y=300
-    local old=(m.x-515)^2+(m.y-320)^2; Realms.moveGull(m,.2)
-    assert((m.x-515)^2+(m.y-320)^2<old,'Mouette poursuit la larme')
     level(5,3); local earth={}; for _,v in ipairs(mobs) do earth[#earth+1]=v; v.x=Arena.width/2; v.y=300 end
     Realms.separateEarth()
     for i=1,#earth do for j=i+1,#earth do assert(math.abs(earth[i].x-earth[j].x)>=32 or math.abs(earth[i].y-earth[j].y)>=30,'Corps Terre séparés') end end
@@ -52,7 +42,7 @@ function T.run()
     for _,key in ipairs({'skeleton_head','skeleton_open','skeleton_rib','skeleton_spine','skeleton_tail','abyss_fish'}) do
         local data=love.image.newImageData(require('asset_paths').resolve('assets/sprites/'..key..'.png')); local _,_,_,a=data:getPixel(0,0); assert(a==0,key..' transparent'); data:release()
     end
-    print('PASS révision mondes: poursuite, pièges/cercles, météo niveau 5, foudre/mouettes, séparation Terre, hérisson, lumière/poissons, squelette et aspiration')
+    print('PASS révision mondes: poursuite, pièges/cercles, séparation Terre, hérisson, lumière/poissons, squelette et aspiration')
 end
 function T.visual()
     local tick=0

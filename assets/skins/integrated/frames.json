@@ -1,6 +1,5 @@
 {
   "aureole": {
-    "path": "assets/skins/integrated/aureole.png",
     "frames": {
       "down": {
         "path": "assets/skins/integrated/aureole_down.png",

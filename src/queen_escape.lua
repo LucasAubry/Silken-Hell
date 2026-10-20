@@ -1,4 +1,4 @@
-local Q={required=12,window=1.5}
+local Q={required=5,window=1.5}
 function Q.reset(f)
  f.enraged=false;f.silkBits={};f.webShake=0;f.escapeTaps={};f.escapeHeld={};f.cornerPending=false;f.cornerLay=false;f.cornerSlots=nil
 end
@@ -72,9 +72,9 @@ function Q.point(f)
  end
 end
 function Q.lay(f,dt,move)
- if not f.cornerReady then
+ if not f.cornerReady and (f.cast or 0)<=0 and f.shot>.10 then
   if move(f,f.nest.x,f.nest.y,270*f.surge,dt)<5 then f.cornerReady=true;f.cornerTimer=0 end
- else
+ elseif f.cornerReady then
   f.cornerElapsed=f.cornerElapsed+dt
   f.cornerTimer=f.cornerTimer+dt
   if f.cornerTimer>=.18 then f.cornerTimer=f.cornerTimer-.18;f.layEgg() end

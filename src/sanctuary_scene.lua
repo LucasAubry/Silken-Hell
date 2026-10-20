@@ -29,6 +29,10 @@ function R.dimensions(p)
 end
 local function sprite(p,x,y)
  local g=love.graphics;local size,height=R.dimensions(p)
+ if p.type=='cloud_beast' then require('mobs.cloud_beast').art(x,y,size,UI.clock,0);return end
+ if p.type=='cloud_snail' then require('cloud_snail').art(x,y,size,UI.clock,0);return end
+ if p.type=='dragonfly' or p.type=='mist_moth' or p.type=='wind_bat' or p.type=='lava_scorpion' then require('sky_insect_art').draw(p.type,x,y,size,UI.clock);return end
+ if p.type=='octopus' then require('octopus_preview').draw(x,y,size,UI.clock);return end
  if p.type=='final_spider' then g.setColor(1,1,1);require('final_art').spider('queen',x,y,62,0);require('final_art').clutch(x,y,62,24);return end
  if p.type=='merle' then require('mobs.bosses.raven.egg').draw(x,y,60,0);return end
  local a=Art.images[p.art]
@@ -55,7 +59,7 @@ function R.boss(p,x,y)
   sprite(p,x+210,y);g.pop()
  else sprite(p,x,y) end
 end
-function R.hall(demon)
+local function hallGeometry()
  local g=love.graphics;local w=Arena.width
  g.setColor(.009,.014,.022);g.rectangle('fill',0,0,w,600)
  -- Tall stone arches, recessed alcoves and a perspective processional floor.
@@ -68,6 +72,24 @@ function R.hall(demon)
  g.setColor(.10,.14,.17,.27);g.setLineWidth(1)
  for i=0,12 do g.line(w/2+(i-6)*22,350,(i-2)*w/8,600) end
  for i=1,7 do local y=350+(i/7)^1.8*250;g.line(0,y,w,y) end
+end
+
+-- Bake the distant architecture once; characters, thrones and labels stay crisp.
+function R.hall(demon)
+ local g=love.graphics;local w=Arena.width
+ if R.hallWidth~=w then
+  if R.hallCanvas then R.hallCanvas:release() end
+  R.hallWidth=w;R.hallCanvas=g.newCanvas(w,600);R.hallCanvas:setFilter('linear','linear')
+  local raw=g.newCanvas(w,600);local temp=g.newCanvas(w,600)
+  local previous=g.getCanvas();g.push('all');g.origin();g.setScissor();g.setShader()
+  g.setCanvas(raw);g.clear();hallGeometry()
+  R.blurShader=R.blurShader or g.newShader('assets/shaders/soft_background.glsl')
+  g.setShader(R.blurShader);g.setColor(1,1,1);g.setBlendMode('replace','premultiplied')
+  g.setCanvas(temp);g.clear();R.blurShader:send('stepUV',{1.35/w,0});g.draw(raw)
+  g.setCanvas(R.hallCanvas);g.clear();R.blurShader:send('stepUV',{0,1.35/600});g.draw(temp)
+  g.setCanvas(previous);g.pop();raw:release();temp:release()
+ end
+ g.push('all');g.setShader();g.setColor(1,1,1);g.draw(R.hallCanvas);g.pop()
  R.fog(false,demon)
 end
 -- Static veins: stable between encounters and independent of gameplay RNG.
@@ -100,9 +122,26 @@ local function throne(x,c,selected)
  local g=love.graphics
  local function stone(light,alpha) g.setColor(c[1]*light,c[2]*light,c[3]*light,alpha or 1) end
  g.setBlendMode('add')
+ local t=UI.clock or 0;local breath=.94+.06*math.sin(t*1.1+x)
+ for i=12,1,-1 do
+  g.setColor(c[1],c[2],c[3],(.012+(selected and .008 or 0))*breath)
+  g.ellipse('fill',x,275,48+i*10,95+i*13)
+ end
+ -- Tall coloured shafts frame the silhouette and illuminate the raised dais.
+ for side=-1,1,2 do
+  for i=4,1,-1 do
+   g.setColor(c[1],c[2],c[3],.018*breath)
+   g.polygon('fill',x+side*40-i*3,70,x+side*40+i*3,70,x+side*105+i*9,435,x+side*105-i*9,435)
+  end
+ end
  for i=7,1,-1 do
-  g.setColor(c[1],c[2],c[3],selected and .023 or .01)
-  g.ellipse('fill',x,280,55+i*12,100+i*12)
+  g.setColor(c[1],c[2],c[3],.025*breath)
+  g.ellipse('fill',x,438,75+i*9,4+i*2)
+ end
+ for i=1,14 do
+  local y=420-(t*12+i*31)%330;local px=x+math.sin(i*7.1+t*.18)*103
+  g.setColor(c[1],c[2],c[3],.26+.16*math.sin(i+t))
+  g.circle('fill',px,y,1.2)
  end
  g.setBlendMode('alpha')
  -- A pointed stone back, carved ribs, raised arms and three broad steps.
@@ -129,6 +168,9 @@ local function throne(x,c,selected)
   g.line(x+side*77,217,x+side*108,159,x+side*118,236)
   g.line(x+side*77,217,x+side*100,185,x+side*116,212)
  end
+end
+function R.emptyThrone(x,color)
+ throne(x,color or {.65,.72,.85},true)
 end
 function R.draw(S)
  local g=love.graphics;local w=Arena.width;local camera=S.cameraX or 0
@@ -161,7 +203,7 @@ function R.draw(S)
   end
  end
  g.setColor(0,0,0,.6);g.ellipse('fill',S.x,S.y+24,24,8)
- g.setColor(1,1,1);Characters.draw(S.x,S.y,62,S.facing or 'right')
+ g.setColor(1,1,1);Characters.draw(S.x,S.y,62,S.facing or 'right',S)
  g.pop()
  R.fog(true,false)
  g.setColor(.008,.013,.023,.8);g.rectangle('fill',0,584,w,16)

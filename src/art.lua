@@ -1,5 +1,15 @@
 -- Transparent PNG assets. Alpha bounds are used as sprite quads, without altering files.
-local A={images={},metadata={}}
+local A={images={},metadata={},pending={}}
+function A.register(key,loader)
+    if not rawget(A.images,key) then A.pending[key]=loader end
+end
+setmetatable(A.images,{__index=function(_,key)
+    local loader=A.pending[key]
+    if not loader then return end
+    A.pending[key]=nil
+    if type(loader)=='function' then A.images[key]=loader() else A.add(key,loader) end
+    return rawget(A.images,key)
+end})
 local cached={}
 local raw=love.filesystem.read('assets/art-metadata.json')
 if raw and os.getenv('SILKEN_EXPORT_ART')~='1' then local ok,data=pcall(require('json').decode,raw); if ok then cached=data end end
@@ -27,6 +37,9 @@ function A.imageData(path)
     return data
 end
 function A.add(key,path)
+    if rawget(A.images,key) then return end
+    if A.defer then A.register(key,path);return end
+    A.pending[key]=nil
     if A.onLoad then A.onLoad() end
     path=require("asset_paths").resolve(path)
     local saved=cached[path]
@@ -66,7 +79,12 @@ function A.add(key,path)
     data:release()
 end
 -- Subtle contact shadow copied from the actual transparent sprite/mesh.
+function A.shadowAllowed()
+    local actor=require('servant_art').current
+    return not (actor and actor.has_larme)
+end
 function A.shadow(...)
+    if not A.shadowAllowed() then return end
     if not App or App.state~='playing' then return end
     local g=love.graphics;local r,green,b,alpha=g.getColor()
     if math.max(r,green,b)<.25 then return end -- Do not shadow existing dark silhouettes.
@@ -91,6 +109,7 @@ function A.shadow(...)
 end
 -- A single feathered contact ellipse; no stacked solid oval outlines.
 function A.contactShadow(x,y,rx,ry,opacity)
+    if not A.shadowAllowed() then return end
     if not App or App.state~='playing' then return end
     local g=love.graphics;g.push('all');g.setShader();g.setBlendMode('alpha')
     local _,_,_,alpha=g.getColor()
@@ -166,16 +185,17 @@ function A.drawLarva(x,y,size,angle,time)
     end
     g.pop()
 end
-function A.load()
+function A.load(defer)
+    A.defer=defer
     require('integrated_skins').load(A)
     A.add('ocean_coral_wall','assets/environments/ocean/coral-wall.png')
     for _,pose in ipairs({'down','up','profil'}) do
         A.add('player_skin_'..pose,'assets/skins/commun/'..pose..'.png')
-        for _,skin in ipairs({'maxance','cocon'}) do
+        for _,skin in ipairs({'base_marron','maxance','cocon'}) do
             A.add('player_skin_'..skin..'_'..pose,'assets/skins/'..skin..'/'..pose..'.png')
         end
     end
-    for _,key in ipairs({'bush','mini_bush','walking_tree','white_spider','white_egg','brown_egg','soil'}) do
+    for _,key in ipairs({'white_spider','white_egg','brown_egg'}) do
         A.add('rebirth_'..key,'assets/sprites/renaissance/'..key..'.png')
     end
     A.add('map_cloud','assets/sprites/map_cloud.png')
@@ -187,7 +207,7 @@ function A.load()
     A.add('octopus_extended_down','assets/monstres/ocean/poulpe/octopus_extended_down.png')
     A.add('abyss_octopus','assets/monstres/abysse/pieuvre/abyss_octopus.png')
     for _,name in ipairs({'nest','lava','black_feather','wheel','wall','feather'}) do A.add(name,'assets/sprites/'..name..'.png') end
-    for _,name in ipairs({'spider','imp','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','gull','waspling','hedgehog','hedgehog_ball','lanternfish'}) do
+    for _,name in ipairs({'spider','serpent','merle','wasp','wasp_ground','hell_spider','ocean_spider','crown_spider','jelly','fish','worm','mole','waspling','hedgehog','hedgehog_ball','lanternfish'}) do
         for _,dir in ipairs({'up','down','left','right'}) do
             A.add(name..'_'..dir,'assets/sprites/directional/'..name..'_'..dir..'.png')
         end
@@ -195,21 +215,25 @@ function A.load()
     for _,name in ipairs({'cloud_snare','ink_splatter'}) do A.add(name,'assets/sprites/'..name..'.png') end
     A.add('skull','assets/textures/hud/death.png'); A.add('clock','assets/textures/hud/time.png')
     A.add('catalog_ange','assets/monstres/paradis/ange/ange_down.png'); A.add('catalog_snake','assets/monstres/paradis/serpent/snake_down.png'); A.add('catalog_trap','assets/monstres/paradis/pieges/piege.png')
-    A.add('original','assets/skins/soie/down.png')
+    A.add('original','assets/skins/base_marron/down.png')
     A.add('earth_tunnel','assets/monstres/terre/taupe/earth_tunnel.png')
     for _,key in ipairs({'skeleton_head','skeleton_open','skeleton_rib','skeleton_spine','skeleton_tail','abyss_fish'}) do A.add(key,'assets/sprites/'..key..'.png') end
     for _,pose in ipairs({'open','closed','dead'}) do A.add('crab_'..pose,'assets/sprites/crab_'..pose..'.png') end
     A.add('electric_anemone','assets/sprites/electric_anemone.png')
     A.add('tear_ring','assets/textures/aureole.png')
+    A.defer=false
 end
 function A.drawAnemone(x,y,width,height,time)
     require('anemone_art').draw(A.images.electric_anemone,x,y,width,height,time)
 end
-function A.draw(key,x,y,width,angle,height)
-    if key:match('^gull_') then return require('sky_art').bird(key:match('gull_(%a+)'),x,y,width,(UI and UI.clock) or 0) end
+function A.fishPalette()
+ A.fishShader=A.fishShader or love.graphics.newShader('assets/shaders/fish_palette.glsl');love.graphics.setShader(A.fishShader)
+end
+function A.draw(key,x,y,width,angle,height,time)
+    if key=='earth_tunnel' or key=='earth_mound' then return require('earth_mound').draw(x,y,width,height,angle,true) end
     if key=='electric_anemone' then
         local a=A.images[key]
-        local h=height or width*a.h/a.w;local time=(UI and UI.clock) or love.timer.getTime()
+        local h=height or width*a.h/a.w;time=time or (UI and UI.clock) or love.timer.getTime()
         A.drawAnemone(x,y,width,h,time)
         return require('anemone_art').electric(x,y,width,h,time)
     end
@@ -217,10 +241,14 @@ function A.draw(key,x,y,width,angle,height)
     if not servants.variant(key) and require('paradise_ink').art(key,x,y,width,angle,height) then return end
     local a=assert(servants.image(key),key)
     local sx=width/a.w; local sy=height and height/a.h or sx
+    if key=='wheel' or key=='wall' or key=='nest' or key=='magma_nest' or key=='final_web_shot' or key=='final_egg' or key:match('^final_egg_crack') then
+        return require('sprite_relief').draw(a,x,y,width,angle,height)
+    end
     if creature(key) then A.shadow(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2) end
     local previous=love.graphics.getShader()
-    if key=='black_feather' or key:match('^merle_') or key=='cloud_snare' and Campaign and Campaign.biome==6 then
-        require('paradise_style').bind(a,key=='cloud_snare' and 'cloud' or 'bird')
+    if key:match('^fish_') then A.fishPalette() end
+    if key=='black_feather' or key:match('^merle_') then
+        require('paradise_style').bind(a,'bird')
     end
     love.graphics.draw(a.image,a.quad,x,y,angle or 0,sx,sy,a.w/2,a.h/2)
     love.graphics.setShader(previous)
@@ -246,14 +274,14 @@ function A.direction(dx,dy,previous)
     return dy>0 and 'down' or 'up'
 end
 function A.drawFacing(name,dir,x,y,size)
-    if name=='gull' then return require('sky_art').bird(dir,x,y,size,(UI and UI.clock) or 0) end
     local key=name..'_'..(dir or 'down');local servants=require('servant_art')
     if not servants.variant(key) and require('paradise_ink').facing(name,dir,x,y,size) then return end
     local a=assert(servants.image(key),key)
     local scale=size/math.max(a.w,a.h)
     if not name:find('spider') then A.shadow(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2) end
     local previous=love.graphics.getShader()
-    if name=='merle' or name=='gull' and Campaign and Campaign.biome==6 then require('paradise_style').bind(a,'bird') end
+    if name=='fish' then A.fishPalette() end
+    if name=='merle' then require('paradise_style').bind(a,'bird') end
     love.graphics.draw(a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)
     love.graphics.setShader(previous)
     require('servant_art').web(a,a.image,a.quad,x,y,0,scale,scale,a.w/2,a.h/2)

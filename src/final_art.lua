@@ -23,35 +23,31 @@ function A.spider(name,x,y,width,angle,walk)
  local servants=require('servant_art');local context=servants.current
  servants.current={type='queen_child',bossServant=name~='queen'}
  local dir,turn=A.pose(angle)
+ if name~='queen' then turn=0 end
  local graphics=love.graphics
  local function body(sprite)
   local key='final_'..sprite
   if not Art.images[key] then Art.add(key,'assets/sprites/final/'..sprite..'.png') end
   local a=Art.images[key]
-  if name=='queen' and walk and walk.enraged then
-   A.rageShader=A.rageShader or graphics.newShader([[vec4 effect(vec4 color,Image tex,vec2 uv,vec2 px) {
-    vec4 p=Texel(tex,uv);
-    float iris=smoothstep(.25,.45,p.g)*smoothstep(.15,.35,p.r-p.b)*(1.-smoothstep(.22,.4,p.b));
-    p.rgb=mix(p.rgb,vec3(max(p.r,p.g),.015,.025),iris);
-    return p*color;
-   }]])
-   graphics.setShader(A.rageShader)
+  local function pose(x,y)
+   if not (walk and require('brown_walk').draw(a.image,dir,x,y,width,walk,a.quad)) then
+    graphics.draw(a.image,a.quad,x,y,0,width/a.w,width/a.w,a.w/2,a.h/2)
+   end
   end
-  if not (walk and require('brown_walk').draw(a.image,dir,0,0,width,walk,a.quad)) then A.draw(sprite,0,0,width,0) end
+  require('sprite_relief').draw(a,0,0,width,0,nil,math.max(1,width*.038),false,pose,
+   name=='baby_white' or name=='queen' and walk and walk.enraged,walk and (walk.jumpHeight or 0)>0)
+
  end
- Art.contactShadow(x,y+width*.18,width*.31,width*.095,.065)
+ if not walk or (walk.jumpHeight or 0)<=0 then Art.contactShadow(x,y+width*.18,width*.34,width*.12,.24) end
  graphics.push('all');graphics.translate(x,y);graphics.rotate(turn)
  x,y=0,0
  if dir~='down' then
   local variant=(name=='queen' or name=='baby_red') and 'red' or name=='baby_black' and 'black' or 'white'
   local g=love.graphics;g.push('all');g.translate(x,y)
-  if name=='baby_white' then
-   A.babyEyeShader=A.babyEyeShader or g.newShader([[vec4 effect(vec4 color, Image tex, vec2 uv, vec2 pos) {
-    vec4 p=Texel(tex,uv);if(p.r>p.g*1.4 && p.g>.12 && p.b<.25) p.rgb=vec3(p.r,.035,.045);return p*color;
-   }]])
-   g.setShader(A.babyEyeShader)
-  end
-  body((dir=='right' and 'side_' or dir..'_')..variant)
+  if name=='partner' then
+   if dir=='right' then g.scale(-1,1) end
+   body(dir=='up' and 'partner_up' or 'partner_left')
+  else body((dir=='right' and 'side_' or dir..'_')..variant) end
   g.pop()
  else
   body(name)

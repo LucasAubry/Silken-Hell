@@ -1,5 +1,11 @@
 # Skins du joueur
 
+Le skin de base **Soie** utilise désormais les dessins peints dans `base_marron/` : `down.png` (face), `up.png` (dos), `profil.png` (gauche et miroir pour la droite). Les huit pattes, le corps marron et les yeux ambrés sont dessinés dans les PNG. Ces poses gardent l’animation de marche et les identifiants Soie des sauvegardes. Les autres skins continuent d’utiliser leurs modèles existants.
+
+Les exports de référence de Soie avant la retouche peinte, sans accessoires ni effets équipés, sont conservés dans `assets/araignee_marron_base.png` (face), `assets/araignee_marron_base_dos.png` et `assets/araignee_marron_base_profil.png`. Ces PNG transparents reproduisent la couleur appliquée en jeu au modèle `commun/`. Pour les réexporter : `python3 tools/test_background.py SILKEN_BASE_SKIN_EXPORT_TEST`, puis copier les PNG du dossier `base-skin-export` indiqué vers ces trois fichiers. Ces références ne sont plus chargées pour Soie ; les trois PNG actifs sont dans `base_marron/`.
+
+Nettoyage des anciens dessins : la planche `integrated/aureole.png`, inutilisée et comportant des poses à trois pattes par côté, a été supprimée. Auréole charge exclusivement ses trois PNG dédiés via `frames.json`. Les chemins de cette ancienne planche dans les fichiers de prompts restent des références historiques, sans chargement dans le jeu. Les autres dessins encore utilisés sont conservés.
+
 État actuel : Braise a été retiré du sélecteur et ses PNG supprimés. Son ancien ID 3 reste réservé aux scores/replays et utilise le dessin de Cendre. Ambre reçoit une teinte légèrement plus brune dans `custom_skin_material.glsl`, appliquée uniquement au corps pour conserver les piques ivoire et les motifs dorés. L’ombre du joueur est une ellipse douce au sol, indépendante des pixels du sprite.
 
 Les skins classiques utilisent les trois PNG de `commun/` : `down.png` (face), `up.png` (dos) et `profil.png` (gauche, affiché en miroir pour la droite). Ils contiennent directement les motifs, les ombres et les yeux. La silhouette de face/dos reste celle de Perle et celle du profil reste celle de Soie.

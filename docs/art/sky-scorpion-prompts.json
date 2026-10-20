@@ -1,0 +1,16 @@
+{
+  "generator": "built-in image_gen",
+  "references": [
+    "assets/skins/base_marron/down.png"
+  ],
+  "assets": [
+    {
+      "path": "assets/monstres/ciel/nuage/wind_cloud.png",
+      "prompt": "Transparent PNG, a single playful grumpy cloud character for a pixel-art fantasy game. Compact fluffy white cloud, pale blue highlights, dark slate blue shaded underside, small bright eyes and a round mouth blowing a small curl of air. Entire character centered, generous transparent margins. Bold near-black stair-step pixel outlines, large square pixel clusters and limited color palette, cute retro game sprite. Match the pixel size and eye style of the attached spider as an art reference only. No scenery, no ground, no text. One character."
+    },
+    {
+      "path": "assets/monstres/enfer/scorpion/lava_scorpion.png",
+      "prompt": "Create a transparent PNG game enemy sprite for Silken Hell. Attached player spider is a STRICT STYLE REFERENCE only: chunky visible square pixel clusters, near-black stepped outlines, limited color ramps, bold readable yellow eyes, same simple retro pixel-art monster detail level. Subject: a LAVA SCORPION facing BOTTOM in a top-down/front three-quarter game view like reference. Entire single creature centered: squat dark charcoal and burnt red armored body, six small angular walking legs, two large powerful orange-red pincers spread left and right, jointed tail curving up above its back with a glowing golden stinger, cracks of glowing ember orange in black shell. Clearly a scorpion, not a spider, not humanoid. No ambient flames/background/ground/cast shadow/text. True transparent alpha and generous margins. Crisp pixels, NOT smooth painting, NOT realistic, NOT 3D."
+    }
+  ]
+}

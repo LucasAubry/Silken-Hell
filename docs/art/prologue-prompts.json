@@ -1,0 +1,19 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "use_case": "stylized-concept",
+  "assets": [
+    {
+      "path": "assets/prologue/queen_carrying_partner.png",
+      "references": ["assets/monstres/renaissance/reine/queen.png", "assets/monstres/renaissance/reine/partner.png"],
+      "prompt": "Create a single transparent PNG game sprite for Silken Hell. Image 1 is the exact red spider queen character reference; image 2 is the exact ivory white female spider partner reference. Match their coarse square pixel-art clusters, dark stepped outlines, amber eyes, four legs on EACH side, and slightly overhead front view. Full red queen body and all eight legs visible, facing down toward viewer, same red/cream spotted abdomen and proportions as reference 1. Add the smaller ivory female spider lying sideways across the upper abdomen on the queen's BACK, carried securely by a few thin white silk strands. The passenger must clearly be the same white spider with eyelashes and amber eyes, not a human. Passenger about 40 percent of queen width, her face visible, resting with legs gently folded, unharmed, no blood. Queen's face remains fully unobstructed below. Keep clear separation of their silhouettes. Centered entire combined creature, 12 percent transparent margin. Exact existing game sprite aesthetic, no ground, no shadow, no scene, no text, no crown, no shiny 3D finish, no additional characters. Real transparent background."
+    },
+    {
+      "path": "assets/prologue/autumn_forest.png",
+      "prompt": "A beautiful finished background for a 2D top-down pixel-art adventure game, landscape aspect 16:10. Entire scene seen from a high overhead 3/4 RPG camera, no horizon and NO sky. Warm peaceful autumn forest clearing, amber and burnt orange fallen leaves on mossy ochre earth, tiny mushrooms and ferns, rounded mossy stones, beautiful golden trees framing the OUTER edges only. A narrow clear turquoise stream winds vertically down the LEFT QUARTER of the scene (x about 20 percent), from top to bottom; small old wooden footbridge crossing this stream at 65 percent of image height. Big spacious walkable clearing occupies the middle and right two thirds, its floor has beautiful delicate leaf scatter and soft shafts of warm afternoon sunlight, but NO large tree or obstacle in the centre. Keep the centre-right at 65 percent width and 55 percent height empty for a separately animated tree and game characters. Dense painterly PIXEL ART foliage around edges, clearly visible square pixel clusters, dark warm outline accents, beautiful polished indie RPG environment, cozy pleasant gentle autumn mood, muted copper/amber/olive against cool turquoise stream. Ground plane fills entire image, outer trunks clipped naturally by canvas edges. No characters, no animals, no text, no interface, no frame, no logos. Crisp pixel detail, not photoreal, not 3D, not isometric tiles. Make it feel like a real playable place, inviting and exquisitely detailed."
+    },
+    {
+      "path": "assets/prologue/autumn_tree.png",
+      "prompt": "Single transparent PNG sprite asset for a 2D top-down / high 3/4-view pixel art autumn forest RPG. One magnificent medium-sized crooked deciduous tree, full trunk and canopy visible. Wide lush asymmetrical crown of amber gold, copper orange and a few russet leaves, chunky crisp pixel clusters and warm dark outlines, beautifully layered foliage. Strong dark umber trunk with a fork and a weathered knot, visible roots at the very bottom. Trunk base at bottom centre, canopy above, branches leaning very slightly left. The tree will be rotated around its root to animate it falling, so render the tree ALONE, no ground, no drop shadow, no surrounding bushes or scenery, no rocks, no text. Exquisite indie pixel-art RPG sprite, organic handcrafted silhouette, not photoreal or 3D. Entire tree fits in frame with 10 percent transparent padding. Real transparent background."
+    }
+  ]
+}

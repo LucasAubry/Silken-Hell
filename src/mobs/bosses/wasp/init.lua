@@ -4,7 +4,6 @@ function W.reset(active)
     W.x=Arena.width/2; W.y=180; W.anchorX=W.x; W.anchorY=W.y; W.elapsed=0
     W.combo=nil; W.bees={}; W.round=0; W.roundClock=0; W.roundActive=false; W.rest=.25
     for i=1,3 do W.bees[i]={id=i,x=W.x+(i-2)*150,y=W.y+(i==2 and -35 or 25),hp=3,phase='ready',dir='down',flash=0} end
-    W.eruptions={}; W.lavaClock=1.4; W.lavaIndex=0
     W.projectiles={}; W.minions={}; W.blasts={}; W.summon=1.4; W.hitGrace=0
 end
 function W.aliveCount()
@@ -25,7 +24,7 @@ function W.syncAnchor()
 end
 function W.resize(ratio)
     W.x=W.x*ratio;W.anchorX=W.anchorX*ratio
-    for _,list in ipairs({W.bees,W.projectiles,W.minions,W.eruptions}) do for _,b in ipairs(list) do
+    for _,list in ipairs({W.bees,W.projectiles,W.minions}) do for _,b in ipairs(list) do
         b.x=b.x*ratio;if b.tx then b.tx=b.tx*ratio end
     end end
 end
@@ -51,7 +50,7 @@ function W.contact()
             if b.hp==0 then W.rest=math.min(W.rest,.08);W.summon=1.4 end
             if W.hp==0 then
                 require('boss_liberation').start(W,'wasp',function()
-                    W.defeated=true;W.projectiles={};W.eruptions={};objet.larme.taken=false
+                    W.defeated=true;W.projectiles={};objet.larme.taken=false
                     W.dropTear()
                 end)
             end
@@ -78,24 +77,6 @@ function W.fire(kind)
     local spread=kind=='venom' and {-0.22,0,0.22} or (W.hp<=5 and {-.15,0,.15} or {0})
     for _,offset in ipairs(spread) do local angle=a+offset
         W.projectiles[#W.projectiles+1]={x=W.x,y=W.y,vx=math.cos(angle)*speed,vy=math.sin(angle)*speed,kind=kind,life=7}
-    end
-end
-function W.updateLava(dt)
-    if W.defeated then W.eruptions={}; return end
-    W.lavaClock=W.lavaClock-dt*(W.attackRate or 1)
-    if W.lavaClock<=0 and #Hazards.lava>0 then
-        W.lavaIndex=W.lavaIndex%#Hazards.lava+1
-        local p=Hazards.lava[W.lavaIndex]
-        W.eruptions[#W.eruptions+1]={x=p.x,y=p.y,rx=p.rx,ry=p.ry,age=0,aim=math.atan2(player.y+12-p.y,player.x+15-p.x)}
-        W.lavaClock=3.1-(1-W.hp/W.maxHp)*.9
-    end
-    for i=#W.eruptions,1,-1 do local p=W.eruptions[i]; p.age=p.age+dt
-        if p.age>=1 then
-            for j=-2,2 do local a=p.aim+j*.3
-                W.projectiles[#W.projectiles+1]={x=p.x,y=p.y,vx=math.cos(a)*205,vy=math.sin(a)*205,kind='ember',life=3}
-            end
-            BossFX.burst(p.x,p.y,{1,.25,.02},2); table.remove(W.eruptions,i)
-        end
     end
 end
 function W.landingSpot(bee)
@@ -260,7 +241,7 @@ function W.update(dt)
 
     if not W.active then return end
     W.syncAnchor();W.hitGrace=math.max(0,W.hitGrace-dt);W.elapsed=W.elapsed+dt;W.flash=math.max(0,W.flash-dt)
-    if not W.defeated then W.updateBees(dt);W.updateLava(dt)
+    if not W.defeated then W.updateBees(dt)
     else
         for _,b in ipairs(W.bees) do b.deadTime=(b.deadTime or 0)+dt;b.contactGrace=math.max(0,(b.contactGrace or 0)-dt) end
         W.contact()
@@ -297,10 +278,6 @@ function W.drawGround()
             g.circle('line',x,y,38);g.line(x-10,y,x+10,y);g.line(x,y-10,x,y+10)
             g.setFont(UI.fonts.small);g.printf(require('localization').text('INVOCATION'),x-65,y+42,130,'center')
         end
-    end
-    for _,p in ipairs(W.eruptions) do
-        g.setColor(1,.7,.12,.45+p.age*.4);g.setLineWidth(2)
-        g.ellipse('line',p.x,p.y,p.rx+8+p.age*8,p.ry+8+p.age*8)
     end
     g.pop()
 end
@@ -364,10 +341,7 @@ function W.draw(airborne)
         for _,p in ipairs(W.blasts) do g.setColor(1,.45,.1,p.life/.35);g.circle('line',p.x,p.y,48*(1-p.life/.35)) end
         for _,m in ipairs(W.minions) do require('monster_fx').halo(m.x,m.y,34);g.setColor(1,1,1); Art.drawFacing('waspling',m.dir,m.x,m.y,34) end
         for _,p in ipairs(W.projectiles) do
-            if p.kind=='ember' then
-                g.setColor(1,.18,.01,.3); g.circle('fill',p.x,p.y,12)
-                g.setColor(1,.62,.08); g.circle('fill',p.x,p.y,5)
-            elseif p.kind=='venom' then
+            if p.kind=='venom' then
                 g.setColor(0.2,0.9,0.13,0.3); g.circle('fill',p.x,p.y,12)
                 g.setColor(0.55,1,0.12); g.circle('fill',p.x,p.y,6)
             else

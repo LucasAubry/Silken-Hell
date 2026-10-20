@@ -52,11 +52,12 @@ function E.icon(kind,x,y,size,alpha,active)
  end
  g.pop()
 end
-function E.halo(x,y,size,dir)
+function E.halo(x,y,size,dir,index)
  local g=love.graphics;local _,_,_,alpha=g.getColor()
  dir=dir or 'down'
  if alpha<.95 or size<20 then return end
  E.shader=E.shader or g.newShader('assets/shaders/skin_halo.glsl')
+ index=index or (App.state=='menu' and Characters.menuIndex() or Characters.selected())
  local art=Art.images[Characters.model(dir)];local qx,qy=art.quad:getViewport()
  local iw,ih=art.image:getDimensions();local scale=size/math.max(art.w,art.h)
  -- Anchor the floating ring to the head in each authored pose, including the
@@ -71,6 +72,10 @@ function E.halo(x,y,size,dir)
  end
  local cx=x+(headX*iw-qx-art.w/2)*scale*facing
  local cy=y+(headY*ih-qy-art.h/2)*scale-size*.035
+ if require('winged_anchors').winged(index) then
+  local ax,ay,arx,ary=require('winged_anchors').halo(dir)
+  cx,cy,rx,ry=x+ax*size,y+ay*size,arx*size,ary*size
+ end
  -- Add light to the head instead of painting an opaque red band over it.
  g.push('all');g.setShader(E.shader);g.setBlendMode('add')
  E.shader:send('clock',UI.clock)
@@ -83,8 +88,8 @@ function E.behind(x,y,size,forced)
   local fx=require('skin_reward_fx');fx.rays(x,y,size);fx.orbit(x,y,size,false,false)
  end
 end
-function E.front(x,y,size,forced,dir)
- if forced=='hardcore' or not forced and E.enabled('hardcore') then E.halo(x,y,size,dir) end
+function E.front(x,y,size,forced,dir,index)
+ if forced=='hardcore' or not forced and E.enabled('hardcore') then E.halo(x,y,size,dir,index) end
  if forced=='gold' or not forced and E.enabled('gold') then require('skin_reward_fx').orbit(x,y,size,true,false) end
 end
 return E

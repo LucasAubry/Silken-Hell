@@ -15,7 +15,7 @@ with tempfile.TemporaryDirectory(prefix='silken-icons-') as temp:
     env = dict(os.environ, SILKEN_TEST='1', SILKEN_EXPORT_ICONS=str(folder))
     subprocess.run([str(RUNTIME), str(ROOT)], env=env, check=True)
     for kind, app, resource, canonical, fallback, version in [
-        ('game', 'Jouer à Silken Hell.app', 'SilkenGame-v2.icns', 'SilkenHell.icns', 'GameIcon.icns', '4'),
+        ('game', 'Silken Hell.app', 'SilkenGame-v2.icns', 'SilkenHell.icns', 'GameIcon.icns', '4'),
         ('editor', 'Concepteur Silken Hell.app', 'SilkenEditor-v2.icns', 'SilkenEditor.icns', 'applet.icns', '3'),
     ]:
         iconset = folder / (kind + '.iconset')
