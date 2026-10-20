@@ -104,14 +104,14 @@ function E.draw(canvas,w,h)
  local size=Characters.playerWidth*scale*p.size
  -- Dust and streaks rise past the falling spider, settling before the handoff.
  local fall=ease((t-2.6)/.55)*(1-ease((t-7.1)/1.3))
- for i=1,30 do
+ for i=1,76 do
   local px=w*((i*.618)%1)
   local py=h*((i*.173-p.camera*1.7-t*.055)%1)
   local length=h*(.012+i%4*.006)*fall
   g.setColor(.76,.85,.88,fall*(.09+i%3*.035));g.setLineWidth(scale)
   g.line(px,py,px,py-length)
  end
- for i=1,18 do
+ for i=1,42 do
   local phase=(t*.8+i*.137)%1
   local px=ax+math.sin(i*2.4)*size*(.6+phase*.25)
   local py=ay-size*.2-phase*size*2.2

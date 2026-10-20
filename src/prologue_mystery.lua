@@ -30,14 +30,14 @@ function M.update(p,dt)
  if p.phase=='dusk' then
   -- Three quiet seconds together before several slow pulses of light.
   local age=math.max(0,t-3)
-  p.glow=ease(age/.7)*(.15+1.05*(.5+.5*math.cos(age*2.1)))
+  p.glow=ease(age/.7)*(.15+1.05*(.5+.5*math.sin(p.clock*2)))
   p.darkness=.38*ease(age/3)
   if t>=10 then p.transition('portal_open') end
  elseif p.phase=='portal_open' then
-  p.glow=.2+.9*(.5+.5*math.cos((p.clock-3)*2.1))
+  p.glow=.2+.9*(.5+.5*math.sin(p.clock*2))
   p.portalAmount=ease(t);if t>=1 then p.transition('arrival') end
  elseif p.phase=='arrival' then
-  p.glow=.2+.9*(.5+.5*math.cos((p.clock-3)*2.1))
+  p.glow=.2+.9*(.5+.5*math.sin(p.clock*2))
   move(p.queen,p.victim.x+15,p.victim.y+8,240,dt)
   if t>=2 then p.queen.x=p.victim.x+15;p.queen.y=p.victim.y+8;p.transition('lift') end
  elseif p.phase=='lift' then

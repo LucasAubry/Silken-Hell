@@ -62,7 +62,7 @@ function O.draw(canvas,w,h)
  local ax=w*p.x
  local ay=restY+h*(p.y-p.camera*(.85*.35/1.35))
  ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress
- local rotation=math.sin(t*4)*.045*p.swim*(1-p.progress)
+ local rotation=math.pi*2*ease((t-4.6)/1.6)+math.sin(t*4)*.045*p.swim*(1-p.progress)
  if p.mapAlpha>0 then Characters.shadow(ax,sy,Characters.playerWidth*scale,p.dir,nil,p.mapAlpha) end
  if cave>0 then Characters.shadow(ax,groundY-p.camera*h,size,p.dir,O.actor,cave*(1-ease((t-3.3)/.8))) end
  g.push();g.translate(ax,ay);g.rotate(rotation)

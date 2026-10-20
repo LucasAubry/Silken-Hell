@@ -24,7 +24,7 @@ function S.pose(t)
  local release=ease((t-3.1)/.45)
  return {x=x,y=y,progress=land,size=1.65-.65*land,
   waterline=.25+.95*ease((t-2.8)/3),opening=ease((t-3.3)/3.5),
-  silk=ease((t-3.65)/.55)*(1-ease((t-6.8)/.4)),angle=angle,
+  silk=t<5.3 and ease((t-3.65)/.55) or 0,angle=angle,
   anchorX=.53,anchorY=.105-.2*ease((t-7.2)/1.2),
   mapAlpha=land,actorsAlpha=land,bubble=1-release,release=release,
   blur=14*(1-ease((t-2.65)/7.15)),
@@ -32,7 +32,16 @@ function S.pose(t)
 end
 function S.position(t,w,h,sx,sy)
  local p=S.pose(t);local x,y=w*p.x,h*p.y
- return x+(sx-x)*p.progress,y+(sy-y)*p.progress
+ if t>=5.3 then
+  local release=S.pose(5.3);local previous=S.pose(5.299)
+  local u=math.min(1,(t-5.3)/4.5)
+  local rx,ry=w*release.x,h*release.y
+  local vx,vy=w*(release.x-previous.x)/.001,h*(release.y-previous.y)/.001
+  -- Preserve the launch tangent and absorb vertical speed at the actual floor.
+  local h00=2*u^3-3*u^2+1;local h10=u^3-2*u^2+u;local h01=-2*u^3+3*u^2
+  return h00*rx+h10*4.5*vx+h01*sx,h00*ry+h10*4.5*vy+h01*sy
+ end
+ return x,y
 end
 function S.advance(age)
  local old=S.age;S.age=age
@@ -74,6 +83,13 @@ function S.draw(canvas,w,h)
  -- A ceiling spur is present before the shot; it moves out of frame after release.
  local attachX,attachY=w*p.anchorX,h*p.anchorY
  local top=attachY-h*.13
+ decor.material(false)
+ for i=0,12 do
+  local cx=w*i/12;local depth=h*(.045+.025*(1+math.sin(i*2.7)))
+  g.setColor(.10+i%3*.014,.055,.043)
+  g.polygon('fill',cx-w*.09,top-h*.15,cx+w*.09,top-h*.15,
+   cx+w*.07,top+h*.045,cx+w*.018,top+depth,cx-w*.035,top+h*.035)
+ end
  decor.material(false)
  g.setColor(.13,.075,.055)
  g.polygon('fill',attachX-w*.064,top,attachX+w*.065,top,

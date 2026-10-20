@@ -19,18 +19,18 @@ function B.pose(t)
  local land=ease((t-6.4)/1.4)
  local worldX=motion.sample(route,t)
  local slide=math.max(0,t-3.6)
- local camera=slide*slide*.16
+ local camera=slide*slide*.10
  local leave=ease((t-5.1)/1.3)
- local rockX=.43-.95*ease((t-5.1)/2)
- local drop=.16*ease(slide/.85)
- local rockY=.60+drop+1.05*ease((t-5.1)/2)
+ local rockX=.43-.65*ease((t-5.1)/2.7)
+ local drop=.18*ease(slide/1.65)
+ local rockY=.60+drop+.15*slide*slide
  local crack=ease((t-3.25)/.35)
  local jolt=ease(slide/.045)*(1-ease((slide-.10)/.55))*crack
  return {worldX=worldX,camera=camera,x=worldX,y=.538+drop-.203*leave,
   crack=crack,jolt=jolt,tilt=.24*ease(slide/.7)*(1-leave),
   rockX=rockX,rockY=rockY,leave=leave,slide=slide,progress=land,
   depth=ease((t-3.6)/3.5),mapAlpha=land,actorsAlpha=land,
-  equip=ease((t-2.1)/1.3),size=1.5-.5*land,dir=land>.9 and 'up' or 'right'}
+  equip=ease((t-2.1)/1.3),size=1.5-.5*land,dir=t>=3.6 and 'up' or 'right'}
 end
 function B.position(t,w,h,sx,sy)
  local p=B.pose(t);local x,y=w*p.x,h*p.y
@@ -72,7 +72,7 @@ function B.draw(canvas,w,h)
  if p.equip<1 then
   for i=5,1,-1 do g.setColor(1,.72,.28,.025);g.circle('fill',lx,ly,(12+i*13)*scale) end
  end
- g.push();g.translate(ax,ay);g.rotate(p.tilt);g.translate(-ax,-ay)
+ g.push();g.translate(ax,ay);g.rotate(p.tilt);g.scale(1-.65*math.exp(-((t-3.6)/.16)^2),1);g.translate(-ax,-ay)
  g.setColor(1,1,1);Characters.draw(ax,ay,size,p.dir,B.actor,7)
  if not require('integrated_skins').bubble(Characters.selected()) then bubble.drawAt(hx,hy,r,t*(1-p.progress),false,nil,nil,1,p.dir) end
  if p.equip>0 and p.equip<1 then

@@ -113,7 +113,7 @@ function F.bake(width,height)
  end
  g.pop()
 end
-function F.draw()
+function F.draw(alpha)
  if Campaign.biome~=3 or Secret.inArena() then return end
  local g=love.graphics;local target=g.getCanvas()
  local density=target and target:getDPIScale() or 1
@@ -129,7 +129,7 @@ function F.draw()
   F.bake(Arena.width/scale,600/scale)
   g.pop();F.key=key
  end
- g.push('all');g.setShader();g.setColor(1,1,1)
+ g.push('all');g.setShader();local a=alpha or 1;g.setColor(a,a,a,a)
  if Graphics.effects then
   F.shader=F.shader or g.newShader('assets/shaders/renaissance_foliage.glsl')
   F.shader:send('clock',UI.clock)

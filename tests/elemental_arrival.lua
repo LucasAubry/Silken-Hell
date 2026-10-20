@@ -22,6 +22,7 @@ function T.run()
    assert(pose(2).y<pose(1).y and pose(3.5).y<pose(2).y,'Current lifts the spider before launching it out of the water')
    assert(not pose(3).detached and pose(3.2).detached and not pose(3.2).broken and pose(3.4).broken,'Lantern detaches at the surface then the thread breaks')
    assert(pose(3.5).silk==0 and pose(4.3).silk==1 and pose(7.3).silk==0,'Silk launches, catches and releases before landing')
+   assert(pose(5.31).silk==0,'Silk releases sharply before the fall')
    assert(pose(5.6).x>pose(4.3).x+.4,'Swings across the cavern over the lava')
    local ex,ey=S.position(S.duration,1200,750,197,533);assert(ex==197 and ey==533,'Hell finishes at the exact spawn')
   end

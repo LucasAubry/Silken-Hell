@@ -67,6 +67,10 @@ function S.draw(canvas,w,h)
  local air=ease(fallTime/.45)*(1-ease((t-8.2)/1.2))
  g.push();g.translate(ax,ay);g.rotate(math.sin(fallTime*5)*.1*air)
  g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,S.actor,3);g.pop()
+ local foliage=ease((t-8.1)/.5)*(1-ease((t-10.8)/.4))
+ if foliage>0 then
+  g.push();g.translate(x,y);g.scale(scale);require('renaissance_frame').draw(foliage);g.pop()
+ end
  g.pop()
 end
 return require('arrival_timing').fit(S)
