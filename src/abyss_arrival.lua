@@ -2,7 +2,7 @@
 local B={duration=7.95,impact=7.8}
 local motion=require('cinematic_motion')
 local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
-local route={{0,-.10,0},{1.8,.43,0},{5.1,.43,0},{6.4,.25,0},{7.95,.25,0}}
+local route={{0,-.10,0},{1.8,.43,0},{7.95,.43,0}}
 function B.begin()
  B.age=0;B.actor={walkMoving=false}
  if B.environment then B.environment:release();B.environment=nil end
@@ -25,7 +25,7 @@ function B.pose(t)
  local drop=.16*ease(slide/.85)
  local rockY=.60+drop+1.05*ease((t-5.1)/2)
  local crack=ease((t-3.25)/.35)
- local jolt=math.sin(slide*math.pi/.55)*math.exp(-slide*7)*crack
+ local jolt=ease(slide/.045)*(1-ease((slide-.10)/.55))*crack
  return {worldX=worldX,camera=camera,x=worldX,y=.538+drop-.203*leave,
   crack=crack,jolt=jolt,tilt=.24*ease(slide/.7)*(1-leave),
   rockX=rockX,rockY=rockY,leave=leave,slide=slide,progress=land,
@@ -47,7 +47,7 @@ function B.draw(canvas,w,h)
  local scale,x,y=App.viewport(w,h);local sx,sy=x+(player.x+15)*scale,y+(player.y+8)*scale
  local ax,ay=B.position(t,w,h,sx,sy);local size=Characters.playerWidth*scale*p.size
  g.push('all');g.origin();g.setShader()
- g.translate(math.sin(t*63)*p.jolt*5*scale,math.sin(t*47)*p.jolt*7*scale)
+ g.translate(math.sin(t*63)*p.jolt*11*scale,math.sin(t*47)*p.jolt*15*scale)
  decor.backdrop(4,w,h,t,1,p.camera*.6)
  g.setColor(.002,.009,.025,p.depth*.85);g.rectangle('fill',0,0,w,h)
  for i=1,45 do

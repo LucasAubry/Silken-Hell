@@ -29,6 +29,14 @@ function H.startWorld(world)
  App.preview=true;App.hardcore=false;App.practice=nil;App.singleLevel=true;App.sessionLayout=nil;App.workshopMap=nil;Secret.duel=nil
  App.start(world)
 end
+function H.update(dt)
+ if not App.historyPreview then return end
+ if App.state=='prologue' then require('prologue').update(dt);return end
+ if App.state=='pause' then return end
+ local C=require('run_start')
+ if App.state=='playing' and C.arrival then C.advance(dt)
+ else H.close() end
+end
 function H.play(id)
  if H.saved then H.close() end
  H.saved={rng=love.math.getRandomState()};for _,key in ipairs(fields) do H.saved[key]=App[key] end

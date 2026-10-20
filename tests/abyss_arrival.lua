@@ -18,6 +18,8 @@ function T.run()
  assert(pose(3.45).crack>0 and pose(3.45).slide==0,'Crack opens before the ledge falls')
  assert(pose(4.45).y-pose(3.6).y>.15 and pose(4.2).tilt>.1,'Rider visibly drops and tips with the breaking rock')
  assert(pose(7.8).tilt==0 and math.abs(pose(7.8).jolt)<.0001,'Landing has no residual shake or tilt')
+ assert(pose(3.75).jolt>.9,'Rock break has a readable short camera impulse')
+ for t=1.8,6.4,.1 do assert(math.abs(pose(t).x-.43)<.0001,'Rider stays on one lateral axis before landing') end
  assert(pose(7.1).rockY>1.5 and pose(7.1).rockX<0,'Rock continues down and left out of frame before landing')
  local entryX=B.position(B.timelineTime(6.4),1200,750,600,375)
  assert(entryX<600,'Enters the destination from the left')

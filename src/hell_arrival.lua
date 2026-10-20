@@ -17,14 +17,15 @@ end
 function S.pose(t)
  local land=ease((t-6.8)/3)
  local angle=motion.sample({{4.2,-.68,0},{5.6,.58,0},{6.8,0,0}},t)
- local startX,startY=.53+.42*math.sin(-.68),-.08+.57*math.cos(-.68)
+ local startX,startY=.53+.42*math.sin(-.68),.105+.32*math.cos(-.68)
  local x=motion.sample({{0,.28,0},{1.3,.32,0},{2.8,.32,0},{3.5,.28,-.05},{4.2,startX,0}},t)
- local y=motion.sample({{0,.70,0},{1.3,.64,-.12},{2.8,.40,-.24},{3.5,.18,0},{4.2,startY,0}},t)
- if t>=4.2 then x=.53+.42*math.sin(angle);y=-.08+.57*math.cos(angle) end
+ local y=motion.sample({{0,1.16,-.24},{1.3,.64,-.12},{2.8,.40,-.24},{3.5,.18,0},{4.2,startY,0}},t)
+ if t>=4.2 then x=.53+.42*math.sin(angle);y=.105+.32*math.cos(angle) end
  local release=ease((t-3.1)/.45)
  return {x=x,y=y,progress=land,size=1.65-.65*land,
   waterline=.25+.95*ease((t-2.8)/3),opening=ease((t-3.3)/3.5),
   silk=ease((t-3.65)/.55)*(1-ease((t-6.8)/.4)),angle=angle,
+  anchorX=.53,anchorY=.105-.2*ease((t-7.2)/1.2),
   mapAlpha=land,actorsAlpha=land,bubble=1-release,release=release,
   blur=14*(1-ease((t-2.65)/7.15)),
   detached=t>=3.1,broken=t>=3.35,dir=t<3.1 and 'up' or t<5.6 and 'right' or t<6.8 and 'left' or 'up'}
@@ -70,6 +71,19 @@ function S.draw(canvas,w,h)
  S.scenery:send('dimensions',{w,h});S.scenery:send('clock',t)
  S.scenery:send('waterline',p.waterline);S.scenery:send('opening',p.opening)
  g.setShader(S.scenery);g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.setShader()
+ -- A ceiling spur is present before the shot; it moves out of frame after release.
+ local attachX,attachY=w*p.anchorX,h*p.anchorY
+ local top=attachY-h*.13
+ decor.material(false)
+ g.setColor(.13,.075,.055)
+ g.polygon('fill',attachX-w*.064,top,attachX+w*.065,top,
+  attachX+w*.035,attachY-h*.045,attachX+w*.009,attachY+h*.008,
+  attachX-w*.019,attachY-h*.016,attachX-w*.04,attachY-h*.065)
+ g.setColor(.33,.20,.13)
+ g.polygon('fill',attachX-w*.064,top,attachX-w*.012,top,
+  attachX+w*.009,attachY+h*.008,attachX-w*.019,attachY-h*.016,attachX-w*.04,attachY-h*.065)
+ g.setShader();g.setColor(.74,.32,.10,.7);g.setLineWidth(scale)
+ g.line(attachX-w*.012,top,attachX-w*.008,attachY-h*.05,attachX+w*.009,attachY+h*.008)
  -- Bubbles accelerate up the vent and break at the receding surface.
  for i=1,70 do
   local speed=.12+i%5*.035
@@ -90,9 +104,24 @@ function S.draw(canvas,w,h)
   end
  end
  if p.silk>0 then
-  local attachX,attachY=w*.53,-h*.08
   local thread=ease((t-3.65)/.55)
   silk.thread(ax,ay+size*.12,ax+(attachX-ax)*thread,ay+(attachY-ay)*thread,3.5*scale,p.silk)
+  if thread==1 then
+   for i=1,3 do
+    silk.thread(attachX-6*scale,attachY+(i-2)*3*scale,attachX+7*scale,attachY+(i-2)*2*scale,scale,p.silk)
+   end
+  end
+ end
+ -- Sample the actual flight path: dust trails follow the swing and the final fall.
+ local flight=ease((t-4.2)/.3)*(1-ease((t-9.3)/.5))
+ for i=1,22 do
+  local lag=.04+i*.018
+  local tx,ty=S.position(math.max(4.2,t-lag),w,h,sx,sy)
+  local bx,by=S.position(math.max(4.2,t-lag-.035),w,h,sx,sy)
+  local dx=math.sin(i*2.4)*size*.44;local dy=math.cos(i*1.7)*size*.22
+  g.setColor(.91,.65,.37,flight*(1-i/25)*.36);g.setLineWidth(scale)
+  g.line(tx+dx,ty+dy,bx+dx,by+dy-3*scale)
+  g.circle('fill',tx+dx,ty+dy,(.6+i%3*.25)*scale)
  end
  Characters.shadow(sx,sy,Characters.playerWidth*scale,p.dir,S.actor,p.mapAlpha)
  g.setColor(1,1,1);Characters.draw(ax,ay,size,p.dir,S.actor,2)

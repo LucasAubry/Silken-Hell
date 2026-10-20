@@ -50,7 +50,7 @@ function T.run()
     assert(Campaign.biome==(scene.id=='hell_renaissance' and 3 or scene.id=='abyss_hell' and 2 or scene.id=='ocean_abyss' and 7 or scene.id=='earth_ocean' and 4 or scene.id=='sky_earth' and 5 or 6),'Arrival stays on the real destination biome')
     if not scene.landed then capture(scene.id..'-landed');scene.landed=true end
    end
-   C.advance(.05);ticks=ticks+1;assert(ticks<300)
+   love.update(.05);ticks=ticks+1;assert(ticks<300)
   end
   if scene.id=='paradise_sky' or scene.id=='sky_earth' or scene.id=='earth_ocean' or scene.id=='ocean_abyss' or scene.id=='abyss_hell' or scene.id=='hell_renaissance' then assert(scene.landed,'Preview holds on the landed destination') end
   assert(App.state=='history' and not C.active and not C.arrival,'Scene automatically returns to the chooser')
@@ -70,6 +70,10 @@ function T.run()
  assert(back);back.run();assert(App.state=='history','Visible return button works')
  UI.draw();Input.index=2;love.keypressed('return');assert(App.historyPreview and require('sky_arrival').fromParadise,'Keyboard launches the selected transition')
  H.close();love.keypressed('escape');assert(App.state=='menu')
+ H.play('abyss_hell');C.arrival=nil;C.arrivalKind=nil;love.update(.05)
+ assert(App.state=='history' and not App.historyPreview,'Ended playback cannot leave History in a playable level')
+ for i=1,5 do love.update(.05) end
+ assert(App.state=='history','Chooser remains open after automatic return')
  Profile.record,Online.start,Replay.begin=record,online,begin
  print('PASS History: all seven scene buttons, automatic return, Escape, return button, keyboard, no progression/bestiary/online/replay/RNG changes')
  love.event.quit()

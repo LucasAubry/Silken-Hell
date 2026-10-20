@@ -239,6 +239,8 @@ function love.update(dt)
         UI.storyOffset=math.min(UI.storyLimit or math.huge,(UI.storyOffset or 0)+dt*Story.speed)
     end
     Audio.update(Profile,App.selectedWorld==2 and App.state~='credits')
+    -- History owns playback through completion, never handing off to gameplay.
+    if App.historyPreview then require('history').update(dt);return end
     if App.state=='credits' then Ending.updateCredits(dt);return end
     if App.state=='prologue' then require('prologue').update(dt);return end
     if App.state=='bossWorld' then Secret.update(dt);return end
