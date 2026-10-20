@@ -16,9 +16,18 @@ function R.draw(w,h,p,t)
   g.setColor(.14,.46,.44,.85);g.setLineWidth(2)
   g.line(x,y,x+math.sin(t*1.3+i)*w*.004,y-h*(.015+i%4*.009))
  end
+ -- A load-bearing neck visibly splits before the entire shelf gives way.
+ if p.crack>0 then
+  local x=w*.245;local y=h*.63
+  g.setLineWidth(2+p.crack*6);g.setColor(.006,.018,.024,.95)
+  g.line(x,y-h*.022,x+w*.014*p.crack,y+h*.009,x-w*.009,y+h*.047*p.crack,
+   x+w*.026,y+h*.087*p.crack)
+  g.setLineWidth(1);g.setColor(.39,.57,.55,p.crack*.7)
+  g.line(x-4,y-h*.022,x+w*.014*p.crack-4,y+h*.009,x-w*.009-4,y+h*.047*p.crack)
+ end
  g.pop();g.push('all')
  g.translate(p.rockX*w,p.rockY*h)
- g.rotate(.16*p.depth+.12*p.leave)
+ g.rotate(p.tilt+.28*p.leave)
  decor.material(false)
  g.setColor(.11,.24,.29)
  g.polygon('fill',-.19*w,0,-.10*w,-.013*h,.09*w,-.008*h,.17*w,.01*h,.145*w,.08*h,.06*w,.13*h,-.08*w,.11*h,-.16*w,.065*h)
@@ -40,6 +49,25 @@ function R.draw(w,h,p,t)
  g.pop()
  -- Gravel and trapped bubbles break free only once the ledge detaches.
  if p.slide>0 then
+  for i=1,14 do
+   local age=p.slide;local spread=.035+age*.075
+   local x=w*(.285+math.sin(i*2.4)*spread)
+   local y=h*(.65+age*age*(.20+i%4*.035)-p.camera)
+   local radius=(5+i%4*3)*(1+.15*age)
+   g.push();g.translate(x,y);g.rotate(i+age*(i%2==0 and 1 or -1))
+   g.setColor(.10,.23,.27,.9)
+   g.polygon('fill',-radius,-radius*.6,radius*.3,-radius,radius,radius*.25,0,radius,-radius*.8,radius*.4)
+   g.setColor(.25,.40,.41,.9);g.polygon('fill',-radius,-radius*.6,radius*.3,-radius,0,0)
+   g.pop()
+  end
+  -- Sediment hangs at the break and spreads while the camera drops past it.
+  for i=1,12 do
+   local age=p.slide
+   local x=w*(.28+math.sin(i*2.1)*age*.05)
+   local y=h*(.65+math.cos(i*1.7)*age*.035-p.camera)
+   g.setColor(.19,.31,.32,math.max(0,1-age/2)*.065)
+   g.ellipse('fill',x,y,w*(.015+age*.025),h*(.012+age*.018))
+  end
   for i=1,20 do
    local age=p.slide*(.5+i%5*.13)
    local x=w*(.27+(i*.061)% .27-.16*age)

@@ -19,11 +19,15 @@ function B.pose(t)
  local land=ease((t-6.4)/1.4)
  local worldX=motion.sample(route,t)
  local slide=math.max(0,t-3.6)
- local camera=slide*slide*.085
+ local camera=slide*slide*.16
  local leave=ease((t-5.1)/1.3)
  local rockX=.43-.95*ease((t-5.1)/2)
- local rockY=.60+.055*ease(slide/1.5)+1.05*ease((t-5.1)/2)
- return {worldX=worldX,camera=camera,x=worldX,y=.538+.055*ease(slide/1.5)-.098*leave,
+ local drop=.16*ease(slide/.85)
+ local rockY=.60+drop+1.05*ease((t-5.1)/2)
+ local crack=ease((t-3.25)/.35)
+ local jolt=math.sin(slide*math.pi/.55)*math.exp(-slide*7)*crack
+ return {worldX=worldX,camera=camera,x=worldX,y=.538+drop-.203*leave,
+  crack=crack,jolt=jolt,tilt=.24*ease(slide/.7)*(1-leave),
   rockX=rockX,rockY=rockY,leave=leave,slide=slide,progress=land,
   depth=ease((t-3.6)/3.5),mapAlpha=land,actorsAlpha=land,
   equip=ease((t-2.1)/1.3),size=1.5-.5*land,dir=land>.9 and 'up' or 'right'}
@@ -43,11 +47,19 @@ function B.draw(canvas,w,h)
  local scale,x,y=App.viewport(w,h);local sx,sy=x+(player.x+15)*scale,y+(player.y+8)*scale
  local ax,ay=B.position(t,w,h,sx,sy);local size=Characters.playerWidth*scale*p.size
  g.push('all');g.origin();g.setShader()
+ g.translate(math.sin(t*63)*p.jolt*5*scale,math.sin(t*47)*p.jolt*7*scale)
  decor.backdrop(4,w,h,t,1,p.camera*.6)
  g.setColor(.002,.009,.025,p.depth*.85);g.rectangle('fill',0,0,w,h)
  for i=1,45 do
   local px=w*((i*.618-p.camera*.3-t*.018)%1);local py=h*((.12+i*.137-p.camera*.6)%1)
   g.setColor(.25,.65,.80,(1-p.mapAlpha)*.20);g.circle('fill',px,py,(.6+i%3*.4)*scale)
+ end
+ -- The water rushes upward relative to the sinking rider, at several depths.
+ local rush=ease(p.slide/.65)*(1-ease((t-5.4)/1.3))
+ for i=1,26 do
+  local px=w*((i*.618)%1);local py=h*((i*.173-p.camera*(.8+i%3*.35))%1)
+  g.setColor(.42,.72,.80,rush*(.06+i%3*.025));g.setLineWidth((.7+i%2*.6)*scale)
+  g.line(px,py,px,py+h*(.015+p.slide*.012)*rush)
  end
  decor.reveal(canvas,B.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
  -- Both layers stay solid and leave the screen with the following camera.
@@ -60,13 +72,14 @@ function B.draw(canvas,w,h)
  if p.equip<1 then
   for i=5,1,-1 do g.setColor(1,.72,.28,.025);g.circle('fill',lx,ly,(12+i*13)*scale) end
  end
+ g.push();g.translate(ax,ay);g.rotate(p.tilt);g.translate(-ax,-ay)
  g.setColor(1,1,1);Characters.draw(ax,ay,size,p.dir,B.actor,7)
  if not require('integrated_skins').bubble(Characters.selected()) then bubble.drawAt(hx,hy,r,t*(1-p.progress),false,nil,nil,1,p.dir) end
  if p.equip>0 and p.equip<1 then
   require('silk_art').thread(ax+size*.22,ay+size*.08,lx,ly,3*scale,math.sin(p.equip*math.pi))
  end
  bubble.drawLantern(lampX,lampY,r,t*(1-p.progress),nil,1,p.dir)
-
+ g.pop()
  g.pop()
 end
 return require('arrival_timing').fit(B)

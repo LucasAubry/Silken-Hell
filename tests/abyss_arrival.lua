@@ -15,6 +15,9 @@ function T.run()
  assert(C.arrivalKind=='abyss' and Campaign.world==7 and Campaign.biome==7 and player.level==1)
  assert(pose(2).camera==0 and pose(3.6).equip==1,'Camera holds on the visible lamp pickup')
  assert(pose(5).camera>0 and pose(5).leave==0,'Camera follows the rider before she leaves the sliding platform')
+ assert(pose(3.45).crack>0 and pose(3.45).slide==0,'Crack opens before the ledge falls')
+ assert(pose(4.45).y-pose(3.6).y>.15 and pose(4.2).tilt>.1,'Rider visibly drops and tips with the breaking rock')
+ assert(pose(7.8).tilt==0 and math.abs(pose(7.8).jolt)<.0001,'Landing has no residual shake or tilt')
  assert(pose(7.1).rockY>1.5 and pose(7.1).rockX<0,'Rock continues down and left out of frame before landing')
  local entryX=B.position(B.timelineTime(6.4),1200,750,600,375)
  assert(entryX<600,'Enters the destination from the left')
@@ -32,7 +35,7 @@ function T.run()
   assert(not C.press(Profile.keys.dash) and not C.launch())
   C.advance(.05);ticks=ticks+1;assert(ticks<230)
   assert(player.x==px and player.y==py and timer==0 and love.math.getRandomState()==rng)
-  for _,shot in ipairs({{'ledge-approach',1.3},{'lamp-transfer',2.7},{'helmet',3.7},{'rockslide',4.9},{'entry-left',6.2},{'landing',7.8}}) do
+  for _,shot in ipairs({{'ledge-approach',1.3},{'lamp-transfer',2.7},{'crack',3.5},{'helmet',3.7},{'break',4.1},{'rockslide',4.9},{'entry-left',6.2},{'landing',7.8}}) do
    if C.arrival and C.arrival>=B.timelineTime(shot[2]) and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
   end
  end
