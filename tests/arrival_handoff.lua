@@ -29,7 +29,20 @@ function T.run()
    assert(timer==0 and px==player.x and py==player.y and rng==love.math.getRandomState(),'Presentation does not simulate gameplay')
   end
   scene.advance(6.7);C.arrival=6.7
-  local before=capture();C.arrival=nil;C.arrivalKind=nil
+  local before=capture()
+  if world==4 then
+   local bubble=require('breathing_bubble');local draw=bubble.drawAt;local calls=0;local actual
+   bubble.drawAt=function(bx,by,r,...)
+    local gx,gy=g.transformPoint(bx,by);calls=calls+1;actual={gx,gy,r}
+    return draw(bx,by,r,...)
+   end
+   capture();bubble.drawAt=draw
+   local scale,x,y=App.viewport(g.getDimensions())
+   local bx,by,r=bubble.headPosition(player.x+15,player.y+8,Characters.playerWidth,direction)
+   assert(calls==1,'One bubble only during the Ocean arrival')
+   assert(math.abs(actual[1]-(x+bx*scale))<.001 and math.abs(actual[2]-(y+by*scale))<.001 and math.abs(actual[3]-r*scale)<.001,'Cinematic bubble matches gameplay position and radius exactly')
+  end
+  C.arrival=nil;C.arrivalKind=nil
   local after=capture();local w,h=after:getDimensions();local scale,x,y=App.viewport(w,h)
   local sx,sy=x+(player.x+15)*scale,y+(player.y+8)*scale
   local sum,count=0,0

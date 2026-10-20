@@ -17,8 +17,9 @@ function S.pose(t)
  local land=ease((t-7.8)/2)
  local walk=ease((t-5.8)/2.4)
  local turn=ease((t-5.6)/.7)
- return {x=.5+.34*walk,y=.23+.43*ease(t/6.2),progress=land,
-  camera=.40*ease((t-6.1)/2.4),turn=turn,
+ local crossing=.86*ease((t-7.2)/2.6)
+ return {x=.5+.34*walk+crossing,y=.23+.43*ease(t/6.2),progress=land,
+  camera=.40*ease((t-6.1)/2.4)+crossing,turn=turn,
   size=1.65-.65*land,depth=ease(t/6.2),heat=ease((t-2.2)/4.2),
   mapAlpha=land,actorsAlpha=land,
   bubble=1-ease((t-5.1)/1),release=ease((t-5.1)/1),
@@ -44,7 +45,7 @@ function S.draw(canvas,w,h)
  local size=Characters.playerWidth*scale*p.size
  g.push('all');g.origin();g.setShader()
  S.scenery=S.scenery or g.newShader('assets/shaders/abyss_hell_passage.glsl')
- S.scenery:send('dimensions',{w,h});S.scenery:send('clock',t)
+ S.scenery:send('foreground',0);S.scenery:send('dimensions',{w,h});S.scenery:send('clock',t)
  S.scenery:send('camera',p.camera);S.scenery:send('depth',p.depth);S.scenery:send('heat',p.heat)
  S.scenery:send('lamp',{ax/w,ay/h});S.scenery:send('water',p.bubble)
  g.setShader(S.scenery);g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.setShader()
@@ -72,6 +73,11 @@ function S.draw(canvas,w,h)
   g.ellipse('fill',px,py,scale,(1.5+i%3)*scale,12)
  end
  decor.reveal(canvas,S.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
+ -- Pass the last solid rock jamb; it leaves the frame with the travelling camera.
+ if t>6.1 then
+  S.scenery:send('foreground',1);g.setShader(S.scenery);g.setColor(1,1,1)
+  g.rectangle('fill',0,0,w,h);g.setShader()
+ end
  Characters.shadow(ax,ay+size*.18*(1-p.progress),size,p.dir,S.actor,ease((t-6)/2))
  g.push();g.translate(ax,ay);g.scale(1-.18*math.sin(p.turn*math.pi),1)
  g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,S.actor,2);g.pop()

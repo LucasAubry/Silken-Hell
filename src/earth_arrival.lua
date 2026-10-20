@@ -104,15 +104,20 @@ function E.draw(canvas,w,h)
  local size=Characters.playerWidth*scale*p.size
 
  if p.mapAlpha>0 then Characters.shadow(sx,sy,Characters.playerWidth*scale,'up',nil,p.mapAlpha) end
- if p.silk then
-  local tipX,tipY=anchorX,anchorY
-  require('silk_art').thread(tipX,tipY,ax,ay-size*.15,5.5*scale,.92*(1-ease((t-7.6)/1.2)))
- end
+ if p.silk then require('silk_art').thread(anchorX,anchorY,ax,ay+size*.12,5.5*scale,.92*(1-ease((t-7.6)/1.2))) end
  -- The cloud occludes the anchor, so the silk emerges from behind its underside.
  cloud(w,h,p.camera,t,1-underground,1)
  cloud(w,h,p.camera,t,1-underground,2)
  g.push();g.translate(ax,ay);g.rotate(t<2.1 and math.sin(p.jump*math.pi)*.12 or -p.angle*.65)
  g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,E.actor,p.mapAlpha>0 and 5 or 6);g.pop()
+ -- Seen from behind, the attachment and thread pass in front of the body.
+ if p.silk then
+  g.push('all');g.setScissor(ax-size*.55,ay-size*.4,size*1.1,size*.7)
+  local tipX,tipY=anchorX,anchorY
+  require('silk_art').thread(tipX,tipY,ax,ay+size*.12,5.5*scale,.92*(1-ease((t-7.6)/1.2)))
+  g.pop()
+ end
+
  g.pop()
 end
 return require('arrival_timing').fit(E)

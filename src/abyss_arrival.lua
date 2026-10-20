@@ -45,7 +45,6 @@ function B.draw(canvas,w,h)
  ]])
  B.deep:send('dimensions',{w,h});B.deep:send('clock',t);B.deep:send('depth',p.depth)
  g.setShader(B.deep);g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.setShader()
- decor.grotto(w,h,t,0,1-p.mapAlpha,true,p.depth)
  -- Plankton streams to the left while the swimmer enters from the left.
  for i=1,55 do
   local px=w*((i*.618-t*(.08+i%3*.025))%1)
@@ -63,6 +62,8 @@ function B.draw(canvas,w,h)
  g.setColor(.025,.07,.15,ja);Art.drawTinted('cinematic_tear',tx,ty,22*scale)
  g.setColor(.72,.96,1,ja);Art.drawTinted('cinematic_tear',tx,ty,17*scale)
  decor.reveal(canvas,B.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
+ -- The rock stays opaque: the camera clears the roof and floor of the passage.
+ decor.grotto(w,h,t,0,1,true,0,ease((t-5.6)/2.2))
  local ax=w*p.x;local ay=h*p.y
  ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress
  local size=Characters.playerWidth*scale*p.size

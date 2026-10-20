@@ -5,6 +5,7 @@ extern float depth;
 extern float heat;
 extern float water;
 extern float camera;
+extern float foreground;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){return noise(p)*.57+noise(p*2.13)*.28+noise(p*4.37)*.15;}
@@ -58,5 +59,7 @@ vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel){
  float rays=pow(max(0.,sin(q.x*25.+q.y*4.+clock*.12)),16.);
  c+=vec3(.012,.035,.045)*rays*(1.-q.y)*water;
  c*=1.-smoothstep(.3,1.,length(p))*.4;
- return vec4(c,1.);
+ float jamb=smoothstep(.60,.67,worldQ.x)*(1.-smoothstep(1.15,1.23,worldQ.x));
+ float solid=jamb*(1.-tunnel);
+ return vec4(c,foreground>.5 ? solid : 1.);
 }

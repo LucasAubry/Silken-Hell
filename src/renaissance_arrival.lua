@@ -63,7 +63,10 @@ function S.draw(canvas,w,h)
    silk.thread(lx,py,rx,py,1.5*scale,p.silk*.65)
   end
  end
- g.setColor(1,1,1);Characters.draw(ax,ay,size,p.dir,S.actor,3)
+ local fallTime=math.max(0,t-1.3)*6/11.2
+ local air=ease(fallTime/.45)*(1-ease((t-8.2)/1.2))
+ g.push();g.translate(ax,ay);g.rotate(math.sin(fallTime*5)*.1*air)
+ g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,S.actor,3);g.pop()
  g.pop()
 end
 return require('arrival_timing').fit(S)
