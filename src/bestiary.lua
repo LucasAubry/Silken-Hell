@@ -77,7 +77,7 @@ end
 function B.save() if B.dirty then love.filesystem.write('bestiary.json',json.encode({seen=B.seen,unread=B.unread})); B.dirty=false end end
 function B.discover(id)
     if id=='skeleton_head' then id='skeleton_fish' end
-    if Replay and Replay.playing then return false end
+    if App.historyPreview or Replay and Replay.playing then return false end
     if App.state=='playing' then B.levelIds=B.levelIds or {};B.levelIds[id]=true end
     for _,e in ipairs(B.entries) do if e.id==id and not B.seen[id] then B.seen[id]=true; B.unread[id]=true; B.latest=id; B.dirty=true;require('discovery_notice').enqueue(e);return true end end
 end

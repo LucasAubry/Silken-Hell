@@ -119,7 +119,7 @@ function U.button(label,x,y,w,h,callback,disabled,primary,sound,raw,tint)
         end
     end
     local translated=raw and label or L.render(label)
-    if App.state=='workshop' or App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements' or App.state=='victory' then translated=U.ellipsize(translated,'body',w-24) end
+    if App.state=='workshop' or App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements' or App.state=='victory' or App.state=='history' then translated=U.ellipsize(translated,'body',w-24) end
     local font=U.fonts.body:getWidth(translated)>w-24 and 'small' or 'body'
     local scale=math.min(1,(w-24)/math.max(1,U.fonts[font]:getWidth(translated)))
     g.push();g.translate(x+w/2,y+h/2);g.scale(scale,scale)
@@ -335,10 +335,9 @@ function U.menu()
     U.button(WorldMap.hardcore and 'JOUER · HARDCORE' or 'JOUER',425,496,350,54,function() App.openEntry(App.selectedWorld,WorldMap.hardcore) end,false,true,'selection',false,biomeColor)
     U.button('BESTIAIRE',425,557,170,38,Bestiary.open)
     U.button('SUCCÈS',605,557,170,38,function() require('achievements_screen').open() end)
-    U.button('HISTOIRE',425,603,170,38,function() require('prologue').open(true) end)
+    U.button('HISTOIRE',425,603,170,38,function() require('history').open() end)
     U.button('WORKSHOP',605,603,170,38,Workshop.open)
     U.button(Worlds.names[App.selectedWorld]:upper(),425,650,350,36,WorldMap.open,false,false,'go')
-    U.button('Tester la nouvelle intro',425,695,350,36,function() require('prologue_mystery').open() end)
     if Graphics.effects then
         g.push('all');g.setBlendMode('add')
         for i=1,7 do
@@ -808,6 +807,7 @@ function U.draw()
     if App.state=='bossWorld' then Secret.draw();return end
     if App.state=='worlds' then U.theme() else U.background() end
     if App.state=='menu' then U.menu()
+    elseif App.state=='history' then require('history').draw()
     elseif App.state=='quitConfirm' then
         U.menu()
         g.setColor(0,0,0,.7); g.rectangle('fill',0,0,1200,750)

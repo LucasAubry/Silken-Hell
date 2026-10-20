@@ -238,7 +238,7 @@ function C.selectionPortrait(x,y,size)
     if not locked then effects.front(x,y,size,nil,'down',selected) end
     if not locked then require('skin_extension').draw(x,y,size,'down',false,true,selected) end
 end
-function C.shadow(x,y,size,dir,walk)
+function C.shadow(x,y,size,dir,walk,opacity)
     local g=love.graphics
     C.shadowShader=C.shadowShader or g.newShader([[
         vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel) {
@@ -247,7 +247,7 @@ function C.shadow(x,y,size,dir,walk)
             return vec4(.012,.009,.007,shade*color.a);
         }
     ]])
-    g.push('all');g.setShader(C.shadowShader);g.setBlendMode('alpha');g.setColor(1,1,1,.78)
+    g.push('all');g.setShader(C.shadowShader);g.setBlendMode('alpha');g.setColor(1,1,1,.78*(opacity or 1))
     local rx,ry=size*.48,size*.245
     g.draw(UI.pixel,x-rx,y+size*.20-ry,0,rx*2,ry*2)
     g.pop()

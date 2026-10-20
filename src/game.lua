@@ -71,7 +71,8 @@ function activateShaderEffect()
     Psyche.death(player.x+15,player.y+12)
 end
 function isShaderActive() return shader_effect_timer>0 end
-function App.openEntry(world,hardcore)
+function App.openEntry(world,hardcore,fromWorld)
+    App.entryFromWorld=fromWorld
     if hardcore and world~=8 and not Hardcore.available(world) then return false end
     App.hardcore=hardcore==true;WorldMap.hardcore=App.hardcore;UI.boardHardcore=App.hardcore;Hardcore.notice=nil
     if world==8 and not hardcore then if Worlds.canEnter(8) then Secret.open(false) end;return end
@@ -86,6 +87,13 @@ function App.submit()
     if name=='' then App.error='Entre un pseudo pour commencer.'; return end
     Profile.name=name; Profile.country=Online.country; Profile.save()
     App.start(App.selectedWorld)
+    if App.state=='playing' and RunStart.active then
+        if Campaign.world==6 then RunStart.beginSkyArrival(App.entryFromWorld==1)
+        elseif Campaign.world==5 and App.entryFromWorld==6 then RunStart.beginEarthArrival()
+        elseif Campaign.world==4 and App.entryFromWorld==5 then RunStart.beginOceanArrival()
+        else RunStart.beginArrival(true,true) end
+    end
+    App.entryFromWorld=nil
 end
 function App.start(world)
     if App.hardcore and not Replay.playing and not Hardcore.available(world) then return false end
@@ -93,7 +101,7 @@ function App.start(world)
     if not App.sessionLayout and not Worlds.canEnter(world) and not App.preview and os.getenv('SILKEN_TEST')~='1' and not Replay.playing then return end
     require('demo_progress').played()
     Achievements.level=nil
-    Profile.record('attempts',world)
+    if not App.historyPreview then Profile.record('attempts',world) end
     Arena.configure(love.graphics.getDimensions())
     if Replay.playing then Arena.width=Replay.data.width end
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
@@ -103,14 +111,16 @@ function App.start(world)
     shader_effect_timer=0;Psyche.reset(); App.state='playing'; love.keyboard.setTextInput(false)
     if Audio.paradise then Audio.paradise:stop() end
     local notices=require('discovery_notice');notices.queue={};notices.active=nil
-    Replay.begin(world)
+    if not App.historyPreview then Replay.begin(world) end
     reset_level()
     Replay.leave()
     App.runSkin=Characters.selected();App.runEffects=require('skin_effects').snapshot()
     App.custom=os.getenv('SILKEN_PREVIEW_WORLD')~=nil or require('platform').flag('--preview')
     for _,layout in pairs(LevelLayouts.read()) do if layout.world==world then App.custom=true end end
     if Worlds.isSecret(world) then App.custom=false end
-    if not App.singleLevel then Online.start(world,Profile.name,App.runSkin,App.hardcore) else Online.current=nil end
+    if not App.historyPreview and not App.singleLevel then Online.start(world,Profile.name,App.runSkin,App.hardcore) elseif not App.historyPreview then Online.current=nil end
+    if world==1 and not Replay.playing and not App.historyPreview then require('sky_arrival').clearSource() end
+    if world==6 and not Replay.playing and not App.historyPreview then require('earth_arrival').clearSource() end
     GameFeedback.reset();RunStart.begin()
     require("workshop_stats").begin()
 end
@@ -359,6 +369,7 @@ function love.draw()
         love.graphics.setCanvas(gameCanvas); love.graphics.clear(); love.graphics.origin(); love.graphics.setColor(1,1,1)
         Prism.beginScene(gameCanvas)
         draw_level()
+        if RunStart.arrivalKind=='ocean' and RunStart.arrival then require('ocean_arrival').captureEnvironment(gameCanvas) end
         local queenScene=Ending.active and require('final_spider').active
         if queenScene then require('final_spider').drawGround() end
 
@@ -392,6 +403,8 @@ function love.draw()
         end)
         end
         if queenScene then drawFrame() end
+        require('sky_arrival').captureSource(gameCanvas,not queenScene and drawFrame or nil)
+        require('earth_arrival').captureSource(gameCanvas,not queenScene and drawFrame or nil)
         love.graphics.setColor(1,1,1)
         if RunStart.arrival then RunStart.drawArrivalActor() elseif Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
         if not (require('abyss_gate').active and require('abyss_gate').closing) then draw_player_beacon() end;if not Abyss.playerHidden() then Replay.drawGhost() end
@@ -418,7 +431,8 @@ function love.draw()
         love.graphics.setColor(1,1,1)
         local psychedelic=App.state=='playing' and Psyche.bind()
         if not psychedelic and Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
-        love.graphics.draw(sceneCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale); love.graphics.setShader()
+        if RunStart.arrival and RunStart.scene() and App.state=='playing' then RunStart.scene().draw(sceneCanvas,w,h)
+        else love.graphics.draw(sceneCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale) end; love.graphics.setShader()
         if App.state=='playing' then Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
     elseif App.state=='prologue' then
         require('prologue').draw(w,h)
@@ -439,8 +453,11 @@ function love.draw()
     end
     local s=math.min(w/1200,h/750)
     love.graphics.push(); love.graphics.translate((w-1200*s)/2,(h-750*s)/2); love.graphics.scale(s)
-    if App.state~='credits' then UI.draw();Input.draw();if App.state~='prologue' then require('discovery_notice').draw();RunStart.draw() end end
-    if App.state~='prologue' then require('achievement_notice').draw();require('skin_unlock').drawToast() end;love.graphics.pop()
+    local sceneArrival=App.state=='playing' and RunStart.arrival and RunStart.scene()~=nil
+    if sceneArrival or App.historyPreview and App.state=='playing' then UI.buttons={};RunStart.draw()
+    elseif App.state~='credits' then UI.draw();Input.draw();if App.state~='prologue' then require('discovery_notice').draw();RunStart.draw() end end
+    if App.historyPreview then require('history').drawBack()
+    elseif App.state~='prologue' then require('achievement_notice').draw();require('skin_unlock').drawToast() end;love.graphics.pop()
     -- The final collectible also celebrates over the results screen.
     if App.state=='victory' or App.state=='customVictory' then
         local scale,x,y=App.viewport(w,h)
@@ -449,9 +466,9 @@ function love.draw()
     end
     if App.state=='playing' then Ending.drawOverlay(w,h) end
     Hardcore.drawBorder(w,h)
-    if App.state~='credits' and App.state~='skinUnlock' and App.state~='prologue' and not Ending.active then
+    if App.state~='credits' and App.state~='skinUnlock' and App.state~='prologue' and not Ending.active and not sceneArrival then
         love.graphics.push('all');love.graphics.origin();love.graphics.setShader()
-        local cleanScreen=App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements'
+        local cleanScreen=App.state=='settings' or App.state=='graphics' or App.state=='bestiary' or App.state=='bossWorld' or App.state=='achievements' or App.state=='history'
         love.graphics.setFont(cleanScreen and UI.fonts.body or UI.fonts.tiny)
         if not cleanScreen then love.graphics.setColor(.78,.78,.71,.7);love.graphics.print('v'..require('version'),12,h-18) end
         if Graphics.showFPS then love.graphics.setColor(.7,1,.8,.8);love.graphics.print(tostring(love.timer.getFPS())..' FPS',12,h-(cleanScreen and 26 or 33)) end
@@ -468,6 +485,7 @@ function love.draw()
 end
 function love.mousepressed(x,y,button)
     Input.active=false
+    if App.historyPreview and button==1 then local vx,vy=UI.mouse(x,y);if UI.click(vx,vy) then return end end
     if UI.binding then if UI.bindingDevice~='pad' then Input.bind('mouse:'..button) elseif button==1 then local vx,vy=UI.mouse(x,y);UI.click(vx,vy) end;return end
     if Replay.playing then
         if button==1 then local vx,vy=UI.mouse(x,y);if UI.click(vx,vy) then return end end
@@ -493,6 +511,8 @@ function love.keypressed(key,scancode,isrepeat)
         return
     end
     if key=='escape' and not isrepeat then Audio.play('back') end
+    if App.historyPreview and key=='escape' then require('history').close();return end
+    if App.state=='history' and require('history').key(key) then return end
     if App.state=='prologue' then require('prologue').key(key);return end
     if App.state=='bossWorld' and Secret.key(key,isrepeat) then return end
     if key=='escape' and App.state=='victory' and require('podium_celebration').closePreview() then return end

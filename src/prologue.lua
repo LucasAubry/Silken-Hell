@@ -36,6 +36,7 @@ function P.open(replay)
  require('run_start').active=false;require('run_start').suspend();love.keyboard.setTextInput(false)
 end
 function P.close()
+ if App.historyPreview then require('history').close();return end
  Sound.stop();App.selectedWorld=P.saved.selectedWorld;App.hardcore=P.saved.hardcore
  App.state='menu';UI.buttons={};Input.index=1;P.paused=false
 end
@@ -101,6 +102,9 @@ end
 function P.enterWorld()
  if P.entering then return end;P.entering=true;Sound.stop()
  if P.replay and not P.mystery then P.close();return end
+ if App.historyPreview then
+  require('history').startWorld(1);require('run_start').beginArrival(P.mystery);return
+ end
  if not P.mystery then
  Profile.prologueSeen=true
  if Profile.name=='' then Profile.name='Joueur' end
@@ -111,16 +115,15 @@ function P.enterWorld()
  if App.state=='playing' then require('run_start').beginArrival(P.mystery) end
 end
 -- Intro tears belong to the scene, never campaign progression or replay state.
+P.passengerEyes={down={{735,416},{820,425}},left={{820,422},{904,411}},up={{535,648}},right={}}
+function P.carrierPoint(q,width,x,y)
+ local dir=ArtSet.facing(q.angle);local a=Art.images['prologue_carrier_'..dir]
+ return require('brown_walk').point(a.image,dir,q.x,q.y,width,q,a.quad,x,y)
+end
 function P.partnerEye()
  local q=P.queen;local dir=ArtSet.facing(q.angle)
- local a=Art.images['prologue_carrier_'..dir]
- -- Closed eyelid coordinates in the original directional PNGs.
- local eye=({down={820,425},left={820,422},up={535,648},right={480,137}})[dir]
- local qx,qy=a.quad:getViewport();local scale=Characters.playerWidth/a.w
- local x,y=(eye[1]-qx-a.w/2)*scale,(eye[2]-qy-a.h/2)*scale
- local phase=q.walkPhase or 0;local turn=q.walkMoving and math.sin(phase)*.012 or 0
- local bob=q.walkMoving and math.cos(phase*2)*.55*Characters.playerWidth/62 or 0
- return q.x+x*math.cos(turn)-y*math.sin(turn),q.y+x*math.sin(turn)+y*math.cos(turn)+bob
+ local eyes=P.passengerEyes[dir];local eye=eyes[#eyes] or {480,137}
+ return P.carrierPoint(q,Characters.playerWidth,eye[1],eye[2])
 end
 function P.updateTears(dt)
  for _,tear in ipairs(P.tears) do
@@ -145,10 +148,20 @@ function P.drawTears(airborne)
    local x=tear.eyeX;local y=tear.eyeY+32*falling*falling
    local img=objet.larme.img;local filter=require('art_filter')
    local iw,ih=filter.sourceSize(img);local fullHeight=ih*objet.larme.size
-   local size=tear.age<.4 and 1+5*ease(tear.age/.4) or 6+(fullHeight-6)*ease(falling)
-   if not airborne then x,y=tear.x,tear.y;require('tear_fx').draw(x,y,{.68,.86,1},P.clock+i) end
+   local height=P.mystery and 12 or fullHeight
+   local seed=P.mystery and 5 or 6
+   local size=tear.age<.4 and 1+(seed-1)*ease(tear.age/.4) or seed+(height-seed)*ease(falling)
+   if not airborne then
+    x,y=tear.x,tear.y
+    g.push();g.translate(x,y);g.scale(P.mystery and .35 or 1);require('tear_fx').draw(0,0,{.68,.86,1},P.clock+i);g.pop()
+   end
+   if P.mystery then
+    g.push('all');g.setShader();g.setBlendMode('add')
+    for r=3,1,-1 do g.setColor(.55,.85,1,.10);g.circle('fill',x,y,size*.35+r*1.3) end
+    g.pop()
+   end
    local scale=objet.larme.size*(size/fullHeight)
-   g.setColor(.78,.93,1);filter.drawSource(img,x,y,0,scale,scale,iw/2,ih/2)
+   if P.mystery then g.setColor(.94,.98,1) else g.setColor(.78,.93,1) end;filter.drawSource(img,x,y,0,scale,scale,iw/2,ih/2)
   elseif tear.collected and not airborne and tear.pickupAge<.55 then
    local age=tear.pickupAge/.55
    for n=1,8 do local a=n*2.399
@@ -278,7 +291,7 @@ function P.draw(w,h)
   g.setColor(.76+i%3*.07,.28+i%4*.055,.055,.7)
   g.ellipse('fill',0,0,3,1.4);g.pop()
  end
- P.drawTears()
+ if not P.mystery then P.drawTears() end
  P.drawNest()
  P.drawPortal()
  local actors={
@@ -308,11 +321,10 @@ function P.draw(w,h)
   end},
   {y=P.queen.y,draw=function()
  if (P.phase=='arrival' or P.phase=='lift' or P.carrying) and not P.queenGone then
-  local q=P.queen;local fade=P.phase=='queen_enter' and 1-ease((P.time-.35)/1.45) or 1
+  local q=P.queen;local fade=P.phase=='queen_enter' and 1-ease(P.mystery and P.time/.65 or (P.time-.35)/1.45) or 1
   shadow(q.x,q.y,Characters.playerWidth);g.setColor(1,1,1,fade)
   if P.carrying then
    P.drawCarrier(q,Characters.playerWidth*(.7+.3*fade))
-   P.drawTears(true)
   else
    local facing=({down=0,up=math.pi,left=math.pi/2,right=-math.pi/2})[ArtSet.facing(q.angle)]
    local kneel=P.mystery and P.kneel or 0
@@ -323,7 +335,10 @@ function P.draw(w,h)
   end}
  }
  Trees.drawScene(actors,P.width,P.height,P.clock)
+ -- Keep the falling tear readable above foliage during the escape.
+ if not P.mystery then P.drawTears(true) end
  g.setColor(.008,.005,.016,P.darkness);g.rectangle('fill',0,0,P.width,P.height)
+ if P.mystery then P.drawTears();P.drawTears(true) end
  if P.mystery and not P.queenGone then
   local x,y=P.partner.x,P.partner.y;if P.carrying then x,y=P.partnerEye() end
   require('prologue_mystery').halo(P,x,y)
@@ -340,7 +355,7 @@ function P.ui()
  local g=love.graphics;g.setColor(.01,.008,.016,.72);g.rectangle('fill',0,0,1200,750)
  UI.panel(375,275,450,210)
  UI.button('Reprendre',410,312,380,48,function()P.paused=false end,false,true)
- UI.button('Retour au menu',410,393,380,48,P.close)
+ UI.button(App.historyPreview and 'Retour à l’histoire' or 'Retour au menu',410,393,380,48,P.close)
 end
 function P.key(key)
  if key=='escape' or key==Profile.keys.pause then P.paused=not P.paused;Input.index=1 end

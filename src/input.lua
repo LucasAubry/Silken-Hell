@@ -184,6 +184,7 @@ function I.press(j,b)
         return
     end
     if Replay and Replay.playing then if not I.padAction(b) and b=='b' then Replay.stop() end;return end
+    if App.historyPreview and (b=='b' or b=='start') then require('history').close();return end
     if App.state=='prologue' and not require('prologue').paused then if b=='start' or b=='b' then require('prologue').key('escape') end;return end
     if App.state=='playing' then I.padAction(b);return end
     if App.state=='pause' and b==Profile.padBindings.pause then I.padAction(b);return end

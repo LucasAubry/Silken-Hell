@@ -63,43 +63,8 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   }
   if(biome==7.0) c=mix(vec3(.009,.018,.035),vec3(.035,.085,.12),terrain)+vec3(.035,.07,.09)*caustic*.17;
  } else if(biome==6.0) {
-  // Soft cloud banks drift across blue gaps; rounded tops catch pearly light.
-  vec2 drift=vec2(clock*.009,-clock*.003);
-  vec2 sky=p*3.8+drift;
-  float detail=cloudPuffs(sky*1.85+vec2(7.4,3.1))*.24;
-  float mass=cloudPuffs(sky)+detail;
-  float cloud=smoothstep(.23,.86,mass);
-  float top=clamp((cloudPuffs(sky+vec2(-.07,.13))-cloudPuffs(sky-vec2(-.07,.13)))*1.8+.5,0.0,1.0);
-  vec3 air=mix(vec3(.10,.23,.38),vec3(.24,.42,.59),terrain);
-  // A slower, faint layer stays far below the original drifting cloud banks.
-  float distant=smoothstep(.49,.76,fbm(p*3.1+drift*.35+vec2(3.,8.)));
-  air=mix(air,vec3(.34,.46,.59),distant*.32);
-  vec2 below=sky-vec2(.10,.21);
-  float shadowMass=cloudPuffs(below)+cloudPuffs(below*1.85+vec2(7.4,3.1))*.24;
-  float shadow=smoothstep(.16,.98,shadowMass);
-  air*=1.0-shadow*.43;
-  // The blue-grey underside projects below the white cap, giving it thickness.
-  float lowerMass=cloudPuffs(sky-vec2(.025,.085))+detail;
-  float body=smoothstep(.23,.86,lowerMass);
-  vec3 underside=mix(vec3(.19,.30,.44),vec3(.41,.54,.67),top*.55+.15);
-  air=mix(air,underside,body*.88);
-  float dome=smoothstep(.35,1.10,mass);
-  vec3 vapor=mix(vec3(.28,.42,.58),vec3(.94,.97,1.0),smoothstep(.06,.94,top));
-  vapor+=vec3(.060,.055,.040)*dome*top;
-  vapor*=1.0-(1.0-top)*(1.0-dome)*.16;
-  vapor+=vec3(.025,.030,.035)*(noise(sky*7.0)-.5);
-  c=mix(air,vapor,cloud);
-  // The former 22-unit perimeter is open sky, matching the falling boundary.
-  vec2 q=pixel*600.0/dimensions.y;
-  float width=dimensions.x*600.0/dimensions.y;
-  float topEdge=23.+8.*sin(q.x*.037+1.7)+4.*sin(q.x*.091+.8);
-  float bottom=23.+8.*sin(q.x*.037+3.4)+4.*sin(q.x*.091+1.6);
-  float left=23.+8.*sin(q.y*.037+5.1)+4.*sin(q.y*.091+2.4);
-  float right=23.+8.*sin(q.y*.037+6.8)+4.*sin(q.y*.091+3.2);
-  float edge=min(min(q.x-left,width-q.x-right),min(q.y-topEdge,600.-q.y-bottom));
-  vec3 voidColor=mix(vec3(.007,.018,.047),c*vec3(.23,.31,.44),smoothstep(-20.,-2.,edge));
-  vec3 lip=c+vec3(.07,.08,.09)*exp(-pow((edge-2.)/3.,2.));
-  c=mix(voidColor,lip,smoothstep(-1.,2.,edge));
+  // Match the falling cinematic's blue-grey sky and soft white cloud pattern.
+  c=skyCloudColor(pixel,dimensions,clock*.25,0.0);
  } else if(biome==5.0) {
   // The meadow's broad, softly blended relief becomes dry underground soil.
   // Warped sediment, compact clods and mineral grains replace grassy streaks.
@@ -159,6 +124,6 @@ vec4 effect(vec4 tint,Image tex,vec2 uv,vec2 pixel) {
   c+=(grain-.5)*.012;
   c+=vec3(.025,.024,.02)*pow(noise(p*8.0+clock*.009),3.0);
  }
- float vignette=1.0-.13*length((pixel/dimensions-.5)*1.4);
+ float vignette=biome==6.0 ? 1.0 : 1.0-.13*length((pixel/dimensions-.5)*1.4);
  return vec4(c*vignette,1.0)*tint;
 }

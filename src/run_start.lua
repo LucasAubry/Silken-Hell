@@ -2,16 +2,39 @@
 local C={}
 local function smooth(v)v=math.max(0,math.min(1,v));return v*v*(3-2*v)end
 function C.begin()
- C.elapsed=0;C.goAge=nil;C.countdown=nil;C.arrival=nil;C.arrivalActor=nil
+ C.elapsed=0;C.goAge=nil;C.countdown=nil;C.arrival=nil;C.arrivalActor=nil;C.arrivalKind=nil
  C.active=not (App.practice or App.singleLevel or App.sessionLayout or Secret.duel or Replay.playing or App.preview or os.getenv('SILKEN_PREVIEW_WORLD'))
  C.armed=not Input.speedHeld()
+ if Campaign.world==6 and C.active then C.beginSkyArrival(false) end
 end
 -- The first portal opens onto the real level, held still until the story ends.
-function C.beginArrival(opening)
+function C.beginSkyArrival(fromParadise)
+ direction='up'
+ C.arrivalKind='sky';C.arrival=0;C.active=true;C.armed=false
+ C.arrivalDuration=require('sky_arrival').begin(fromParadise)
+end
+function C.beginEarthArrival()
+ direction='up'
+ C.arrivalKind='earth';C.arrival=0;C.active=true;C.armed=false
+ C.arrivalDuration=require('earth_arrival').begin()
+end
+function C.beginOceanArrival()
+ direction='up'
+ C.arrivalKind='ocean';C.arrival=0;C.active=true;C.armed=false
+ C.arrivalDuration=require('ocean_arrival').begin()
+end
+function C.scene()
+ if C.arrivalKind=='sky' then return require('sky_arrival') end
+ if C.arrivalKind=='earth' then return require('earth_arrival') end
+ if C.arrivalKind=='ocean' then return require('ocean_arrival') end
+end
+function C.beginArrival(opening,brief)
+ C.arrivalKind='portal'
  C.arrivalOpening=opening==true
+ C.arrivalBrief=brief==true
  C.arrival=0;C.active=true;C.armed=false
- C.arrivalActor={x=player.x+15,y=player.y+12-75,targetY=player.y+12,walkMoving=false}
- C.arrivalPortal={x=player.x+15,y=player.y+12-75}
+ C.arrivalActor={x=player.x+15,y=player.y+8-75,targetY=player.y+8,walkMoving=false}
+ C.arrivalPortal={x=player.x+15,y=player.y+8-75}
 end
 function C.startCountdown()
  C.active=true;C.elapsed=0;C.goAge=nil;C.countdown=3;C.armed=false
@@ -19,7 +42,7 @@ end
 function C.launch()
  if C.arrival or not C.active or App.state~='playing' or Replay.playing then return false end
  C.active=false;C.goAge=0;C.countdown=nil;Audio.play('startRun')
- require('game_feedback').emit('start',player.x+15,player.y+12)
+ require('game_feedback').emit('start',player.x+15,player.y+8)
  return true
 end
 function C.press(binding,isrepeat)
@@ -36,10 +59,21 @@ function C.advance(dt)
  if App.state~='playing' then C.suspend();return 0 end
  if C.arrival then
   local step=math.min(dt,.05);C.arrival=C.arrival+step
+  local scene=C.scene()
+  if scene then
+   scene.advance(C.arrival)
+   if App.historyPreview then
+    if C.arrival>=C.arrivalDuration+2 then require('history').close() end
+    return 0
+   end
+   if C.arrival>=C.arrivalDuration then C.arrival=nil;C.arrivalKind=nil;C.launch();C.goAge=nil end
+   return 0
+  end
   local a=C.arrivalActor;local oldY=a.y
   a.y=a.targetY-75+75*smooth((C.arrival-1.4)/1.9)
   require('brown_walk').advance(a,a.y-oldY,step)
-  if C.arrival>=12.5 then C.arrival=nil;C.armed=false;C.elapsed=0 end
+  if C.arrival>=(C.arrivalBrief and 4.9 or 12.5) and App.historyPreview then require('history').close();return 0 end
+  if C.arrival>=(C.arrivalBrief and 4.9 or 12.5) then C.arrival=nil;C.armed=false;C.elapsed=0 end
   return 0
  end
  if not C.active then if C.goAge then C.goAge=C.goAge+dt end;return dt end
@@ -63,6 +97,7 @@ function C.keyLabel()
 end
 -- Visual proxy only: campaign position and replay state never move during arrival.
 function C.drawArrivalActor()
+ if C.scene() then return end
  local t=C.arrival;local a=C.arrivalActor;local g=love.graphics
  local closing=smooth((t-3.3)/1.1);local amount=(1-closing)*(C.arrivalOpening and smooth((t-.2)/1.1) or 1)
  if amount>0 then require('prologue').drawPortal(C.arrivalPortal,amount,t) end
@@ -77,18 +112,20 @@ function C.drawArrivalActor()
  end
  local emerge=smooth((t-1.4)/.55)
  if emerge>0 then
-  g.push('all');g.setColor(1,1,1,emerge)
+  g.push('all');Characters.shadow(a.x,a.y,Characters.playerWidth*(.55+.45*emerge),'down',a,emerge);g.setColor(1,1,1,emerge)
   Characters.draw(a.x,a.y,Characters.playerWidth*(.55+.45*emerge),'down',a)
   g.pop()
  end
 end
 function C.drawArrival()
+ if C.scene() then return end
  local g=love.graphics;local t=C.arrival
  local reveal=smooth((t-.2)/(C.arrivalOpening and .6 or 1.6));local out=1-smooth((t-10.9)/1.6)
  g.push('all');g.setShader()
  -- Cover letterboxing as well as the arena during the black-to-daylight fade.
  g.setColor(.008,.005,.016,1-reveal);g.rectangle('fill',-4000,-4000,9200,8750)
  g.setColor(1,.88,.58,math.sin(reveal*math.pi)*.13);g.rectangle('fill',-4000,-4000,9200,8750)
+ if C.arrivalBrief then g.pop();return end
  local title=smooth((t-.8)/1.2)*out
  UI.text('Paradis',371,83,'medium',{.05,.07,.04,.8*title},460,'center')
  UI.text('Paradis',370,82,'medium',{1,.94,.74,title},460,'center')

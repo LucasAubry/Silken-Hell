@@ -129,19 +129,32 @@ function T.run()
  for i=1,80 do
   assert(startGate.advance(.05)==0)
   if i==44 then
-   assert(startGate.arrivalActor.y<py+12 and startGate.arrivalActor.y>startGate.arrivalPortal.y and startGate.arrivalActor.walkMoving,'Spider walks out of portal')
+   assert(startGate.arrivalActor.y<py+8 and startGate.arrivalActor.y>startGate.arrivalPortal.y and startGate.arrivalActor.walkMoving,'Spider walks out of portal')
    arrivalCapture('emergence')
   end
  end
  assert(player.x==px and player.y==py and startGate.active,'Arrival keeps the level safe and frozen')
- assert(startGate.arrivalActor.y==py+12 and not startGate.arrivalActor.walkMoving,'Visual arrival matches campaign spawn')
+ assert(startGate.arrivalActor.y==py+8 and not startGate.arrivalActor.walkMoving,'Visual arrival matches campaign spawn')
  arrivalCapture('closing')
  App.state='pause';local arrivalTime=startGate.arrival;startGate.advance(.5);assert(startGate.arrival==arrivalTime);App.state='playing'
  for i=1,172 do startGate.advance(.05);if i==25 then arrivalCapture('arrival') elseif i==95 then arrivalCapture('tear-story') end end
  assert(not startGate.arrival and startGate.active,'Arrival returns directly to normal start prompt')
+ for attempt=1,2 do
+  App.openEntry(1,false);App.draftName='Portal test';App.submit()
+  assert(startGate.arrival==0 and startGate.arrivalOpening and startGate.arrivalBrief,'Every menu start opens the arrival portal')
+  local x,y=player.x,player.y
+  for i=1,100 do
+   assert(startGate.advance(.05)==0,'Gameplay waits until arrival ends')
+   if i==44 then
+    assert(startGate.arrivalActor.y>startGate.arrivalPortal.y and startGate.arrivalActor.y<y+8,'Player emerges before reaching spawn')
+    arrivalCapture('menu-emergence-'..attempt)
+   end
+  end
+  assert(not startGate.arrival and startGate.active and player.x==x and player.y==y,'Short menu arrival finishes at the frozen spawn')
+ end
  P.close();love.draw();local button
  for _,b in ipairs(UI.buttons) do if b.y==603 and b.x==425 then button=b end end
- assert(button,'History menu button present');button.run();assert(App.state=='prologue' and P.phase=='wander' and P.replay)
+ assert(button,'History menu button present');button.run();assert(App.state=='history');require('prologue').open(true);assert(App.state=='prologue' and P.phase=='wander' and P.replay)
  local savedSeen=Profile.prologueSeen;local selected=App.selectedWorld;local hardcore=P.saved.hardcore
  local starts=0;local saves=0;local startApp=App.start
  App.start=function()starts=starts+1 end;Profile.save=function()saves=saves+1 end
@@ -150,11 +163,12 @@ function T.run()
  assert(App.state=='menu' and starts==0 and saves==0,'History ends at menu without launching or saving campaign')
  assert(Profile.prologueSeen==savedSeen and App.selectedWorld==selected and App.hardcore==hardcore,'History preserves progress and menu selection')
  App.start=startApp
- love.draw();local mysteryButton
- for _,b in ipairs(UI.buttons) do if b.y==695 and b.x==425 then mysteryButton=b end end
- assert(mysteryButton,'New cinematic preview button exists');mysteryButton.run()
+ require('history').open();love.draw();local mysteryButton
+ for _,b in ipairs(UI.buttons) do if b.y==220 and b.x==340 then mysteryButton=b end end
+ assert(mysteryButton,'Cinematic preview lives in History');require('prologue_mystery').open()
  assert(P.mystery and P.phase=='dusk' and not P.canMove())
  local elapsed=0;local shots={};local beforeSaves=saves;local glowMin,glowMax=2,0
+ local chaseGap,largestGap=0,0
  P.paused=true;P.update(.05);assert(P.time==0);P.paused=false
  while App.state=='prologue' do
   P.update(.05);elapsed=elapsed+.05;assert(elapsed<32)
@@ -163,12 +177,30 @@ function T.run()
    if P.time>4 then glowMin=math.min(glowMin,P.glow);glowMax=math.max(glowMax,P.glow) end
    if P.time>6 and not shots.glow then capture('mystery-glow');shots.glow=true end
   end
+  if P.phase=='wake' and P.time==0 then assert((P.hero.x-P.portal.x)^2+(P.hero.y-P.portal.y)^2>80^2,'Queen disappears before the player can reach her') end
   if P.phase=='lift' and P.time>.7 and not shots.lift then capture('mystery-lift');shots.lift=true end
   if P.phase=='confront' and P.time>1 and not shots.dialogue then capture('mystery-dialogue');shots.dialogue=true end
+  if P.phase=='departure' then
+   local gap=math.sqrt((P.queen.x-P.hero.x)^2+(P.queen.y-P.hero.y)^2)
+   if P.time==0 then chaseGap=gap end
+   largestGap=math.max(largestGap,gap)
+   local tear=P.tears[1]
+   if tear and tear.age>=.7 and tear.age<1.05 and not shots.falling then
+    assert(not tear.collected and tear.released,'Tear visibly falls while the queen is still fleeing')
+    capture('mystery-falling-before-portal');shots.falling=true
+   end
+   if tear and tear.age>=1.05 then shots.landedBeforePortal=true end
+   if tear and tear.age<.4 then
+    local x,y=P.partnerEye();assert(math.abs(tear.eyeX-x)<.001 and math.abs(tear.eyeY-y)<.001,'Small tear stays attached to the animated eye before falling')
+    if not shots.eye then capture('mystery-eye');shots.eye=true end
+   end
+  end
   if P.phase=='departure' and P.time>1.3 and not shots.look then
    assert(P.eyeOpen>.9 and #P.tears==1 and P.hero.walkMoving,'Automatic animated chase');capture('mystery-look');shots.look=true
   end
  end
+ assert(shots.falling and shots.landedBeforePortal,'Tear falls and lands before portal entry')
+ assert(largestGap>chaseGap+150,'Fast escape leaves the pursuing player far behind: '..chaseGap..' -> '..largestGap)
  assert(App.state=='playing' and Campaign.world==1 and saves==beforeSaves,'Preview reaches Paradise')
  assert(glowMax-glowMin>.7 and P.tearsCollected==1 and P.tears[1].collected,'Pulsing light and automatic single tear pickup')
  assert(startGate.arrivalOpening and startGate.arrival==0)

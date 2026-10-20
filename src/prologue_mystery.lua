@@ -11,7 +11,7 @@ function M.open()
  p.hero.x=p.nest.x-18;p.hero.y=p.nest.y-9
  p.victim={x=p.nest.x+18,y=p.nest.y-9}
  p.partner.x=p.victim.x;p.partner.y=p.victim.y;p.partner.angle=math.pi
- p.camera={x=p.nest.x,y=p.nest.y};p.glow=0;p.eyeOpen=0;p.kneel=0
+ p.camera={x=p.nest.x,y=p.nest.y};p.chaseZoom=0;p.glow=0;p.eyeOpen=0;p.kneel=0
 end
 local function chase(p,dt,speed)
  local h,q=p.hero,p.queen;local tear=p.tears[1]
@@ -49,17 +49,18 @@ function M.update(p,dt)
   p.queen.angle=0
   if t>=1.4 then p.transition('departure') end
  elseif p.phase=='departure' then
-  local speed=p.departureDistance/4.5
+  p.chaseZoom=ease(t/.45)
+  local speed=p.departureDistance/1.4
   move(p.queen,p.portal.x,p.portal.y,speed,dt)
-  p.eyeOpen=ease(t/.65)
-  if t>=.85 and #p.tears==0 then
+  p.eyeOpen=ease(t/.2)
+  if t>=.15 and #p.tears==0 then
    local x,y=p.partnerEye();p.tears[1]={x=x,y=y+32,eyeX=x,eyeY=y,age=0}
   end
-  chase(p,dt,speed*1.3)
-  if t>=4.5 then p.queen.x=p.portal.x;p.queen.y=p.portal.y;p.queen.angle=0;p.transition('queen_enter') end
+  chase(p,dt,135)
+  if t>=1.4 then p.queen.x=p.portal.x;p.queen.y=p.portal.y;p.queen.angle=0;p.transition('queen_enter') end
  elseif p.phase=='queen_enter' then
-  p.eyeOpen=1-ease(t/1.8);p.glow=.5*(1-ease(t/1.8));chase(p,dt,165)
-  if t>=1.8 then p.queenGone=true;p.transition('wake') end
+  p.eyeOpen=1-ease(t/.65);p.glow=.5*(1-ease(t/.65));chase(p,dt,165)
+  if t>=.65 then p.queenGone=true;p.transition('wake') end
  elseif p.phase=='wake' then
   chase(p,dt,170)
   if (p.hero.x-p.portal.x)^2+(p.hero.y-p.portal.y)^2<6^2 and p.tearsCollected==1 then p.transition('enter') end
@@ -68,12 +69,12 @@ function M.update(p,dt)
   if t>=.85 then p.enterWorld();return end
  end
  p.updateTears(dt)
- local target=p.carrying and not p.queenGone and p.queen or p.hero
+ local target=p.carrying and not p.queenGone and {x=(p.queen.x+p.hero.x)/2,y=(p.queen.y+p.hero.y)/2} or p.hero
  if p.phase=='dusk' or p.phase=='portal_open' or p.phase=='arrival' or p.phase=='lift' then target=p.partner end
- local f=1-math.exp(-dt*2.5);p.camera.x=p.camera.x+(target.x-p.camera.x)*f;p.camera.y=p.camera.y+(target.y-p.camera.y)*f
+ local f=1-math.exp(-dt*(p.chaseZoom>0 and 6 or 2.5));p.camera.x=p.camera.x+(target.x-p.camera.x)*f;p.camera.y=p.camera.y+(target.y-p.camera.y)*f
 end
 function M.camera(p)
- local zoom=2.7;local x=math.max(p.width/(2*zoom),math.min(p.width-p.width/(2*zoom),p.camera.x))
+ local zoom=2.7-p.chaseZoom;local x=math.max(p.width/(2*zoom),math.min(p.width-p.width/(2*zoom),p.camera.x))
  local y=math.max(p.height/(2*zoom),math.min(p.height-p.height/(2*zoom),p.camera.y))
  love.graphics.translate(p.width/2,p.height/2);love.graphics.scale(zoom);love.graphics.translate(-x,-y)
 end
@@ -88,14 +89,22 @@ function M.halo(p,x,y)
 end
 function M.eyes(p,q,width)
  if p.eyeOpen<=0 then return end
- local a=Art.images.prologue_carrier_down;local qx,qy=a.quad:getViewport();local s=width/a.w
- local g=love.graphics;g.push('all');g.translate(q.x,q.y)
- -- Reveal the eyes over the closed eyelids of the existing passenger sprite.
- for _,eye in ipairs({{735,416},{820,425}}) do
-  local x,y=(eye[1]-qx-a.w/2)*s,(eye[2]-qy-a.h/2)*s
-  g.setColor(.91,.89,.81,p.eyeOpen);g.ellipse('fill',x,y,29*s,15*s*p.eyeOpen)
-  g.setColor(.10,.08,.10,p.eyeOpen);g.ellipse('fill',x-5*s,y,20*s,13*s*p.eyeOpen)
-  g.setColor(.9,.96,1,p.eyeOpen);g.circle('fill',x-10*s,y-4*s,4*s)
+ local dir=require('final_art').facing(q.angle)
+ local g=love.graphics;local _,_,_,alpha=g.getColor();g.push('all')
+ -- Each eye follows its source pixels, including mesh deformation and body sway.
+ local function ellipse(eye,dx,dy,rx,ry)
+  local vertices={}
+  for i=0,19 do
+   local angle=i*math.pi/10
+   local x,y=p.carrierPoint(q,width,eye[1]+dx+math.cos(angle)*rx,eye[2]+dy+math.sin(angle)*ry)
+   vertices[#vertices+1]=x;vertices[#vertices+1]=y
+  end
+  g.polygon('fill',vertices)
+ end
+ for _,eye in ipairs(p.passengerEyes[dir]) do
+  g.setColor(.91,.89,.81,p.eyeOpen*alpha);ellipse(eye,0,0,24,12*p.eyeOpen)
+  g.setColor(.10,.08,.10,p.eyeOpen*alpha);ellipse(eye,-4,0,16,10*p.eyeOpen)
+  g.setColor(.9,.96,1,p.eyeOpen*alpha);ellipse(eye,-8,-3,3,3)
  end
  g.pop()
 end
