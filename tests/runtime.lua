@@ -12,6 +12,7 @@ function T.run()
     if os.getenv('SILKEN_WORLD_LAUNCH_TEST')=='1' then require('tests.world_launch').run();return end
     if os.getenv('SILKEN_ELEMENTAL_ARRIVAL_TEST')=='1' then require('tests.elemental_arrival').run();return end
     if os.getenv('SILKEN_ABYSS_ARRIVAL_TEST')=='1' then require('tests.abyss_arrival').run();return end
+    if os.getenv('SILKEN_LOADING_SCENERY_TEST')=='1' then require('tests.loading_scenery').run();return end
     if os.getenv('SILKEN_OCEAN_ARRIVAL_TEST')=='1' then require('tests.ocean_arrival').run();return end
     if os.getenv('SILKEN_EARTH_ARRIVAL_TEST')=='1' then require('tests.earth_arrival').run();return end
     if os.getenv('SILKEN_HISTORY_TEST')=='1' then require('tests.history').run();return end
