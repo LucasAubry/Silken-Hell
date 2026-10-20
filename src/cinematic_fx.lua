@@ -2,6 +2,7 @@
 local F={}
 function F.draw(scene,canvas,w,h)
  local g=love.graphics;local t=scene.age or 0;local duration=scene.duration or 6.7
+ if scene.offset and scene.scene then t=t+scene.offset;duration=scene.scene.duration end
  local fade=math.min(1,t/.35)*math.max(0,math.min(1,(duration-.45-t)/.8))
  local pulse=math.exp(-((t-2.8)/.18)^2)+.6*math.exp(-((t-5.65)/.14)^2)
  if not F.canvas or F.canvas:getWidth()~=w or F.canvas:getHeight()~=h then

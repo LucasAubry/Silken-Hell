@@ -60,6 +60,7 @@ function S.confirm()
     S.pending=nil;S.launch(entry)
 end
 function S.key(key,isrepeat)
+    if S.intro then return key~='escape' end
     if not S.pending then return false end
     if key=='escape' then S.cancel()
     elseif key=='left' or key==Profile.keys.left then S.confirmYes=true
@@ -113,8 +114,13 @@ function S.open(demon)
     S.duel=nil;S.page=back and back.page or 1;S.category=back and back.category or 'boss';S.charge=0;S.charging=nil;S.refresh()
     Ending.active=false;require('final_spider').active=false;Replay.input=nil;S.facing='down';S.walkMoving=false;S.walkPhase=0
     S.x=back and back.x or S.position(1);S.y=510;S.cameraX=math.max(0,math.min(S.hallWidth-Arena.width,S.x-Arena.width*.5));S.cooldown=.3;S.upReady=false;S.pending=nil;App.state='bossWorld'
+    S.intro=not back and require('sanctuary_arrival').begin() or nil
 end
 function S.update(dt)
+    if S.intro then
+        if require('sanctuary_arrival').update(S.intro,dt) then S.intro=nil;S.cooldown=.3;S.upReady=false end
+        return
+    end
     local dx,dy=Input.move()
     if S.pending then
         S.walkMoving=false
@@ -135,8 +141,11 @@ function S.update(dt)
     if dy>-.3 then S.upReady=true end
     if dy<-.55 and S.upReady and S.cooldown<=0 and math.abs(S.x-S.position(index))<58 then S.ask(index) end
 end
-function S.drawWorld() require('sanctuary_scene').draw(S) end
+function S.drawWorld()
+    if S.intro then require('sanctuary_arrival').draw(S) else require('sanctuary_scene').draw(S) end
+end
 function S.draw()
+    if S.intro then return end
     UI.text('LE SANCTUAIRE',300,24,'heading',{1,1,.94},600,'center')
     if S.pending then
         S.walkMoving=false

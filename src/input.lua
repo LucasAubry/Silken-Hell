@@ -194,6 +194,7 @@ function I.press(j,b)
         require('achievements_screen').step(b=='leftshoulder' and -1 or 1);Audio.play('go');return
     end
     if App.state=='bossWorld' then
+        if Secret.intro then return end
         if Secret.pending then if b=='a' then Secret.confirm() end;return end
         if b=='y' then Secret.switchCategory()
         elseif b=='rightshoulder' then Secret.turnPage(1) elseif b=='leftshoulder' then Secret.turnPage(-1) end
