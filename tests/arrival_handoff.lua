@@ -18,12 +18,18 @@ function T.run()
  for _,world in ipairs({6,5,4,7,2,3}) do
   App.start(world);assert(math.abs(C.arrivalDuration-6.7)<.00001,'Same full duration as Paradise to Sky')
   local scene=C.scene();local px,py=player.x,player.y;local rng=love.math.getRandomState()
+  local previousBlur=math.huge
   for i=1,133 do
    C.advance(.05)
    if world~=6 then
     local p=scene.pose(C.arrival)
     assert(p.mapAlpha==p.actorsAlpha,'One reveal for scenery and creatures')
     if C.arrival>6 then assert(p.mapAlpha==1,'Complete destination before handoff') end
+    if world==2 then
+     assert(p.blur>=0 and p.blur<=previousBlur,'Hell scene sharpens continuously throughout descent')
+     previousBlur=p.blur
+     if C.arrival>=6 then assert(p.blur==0,'Hell is fully sharp on landing') end
+    end
    end
    if world==2 and (i==30 or i==36 or i==42) or i==1 or i==65 or i==82 or i==98 or i==108 or i==132 then capture():encode('png','handoff-'..world..'-'..i..'.png') end
    assert(timer==0 and px==player.x and py==player.y and rng==love.math.getRandomState(),'Presentation does not simulate gameplay')
