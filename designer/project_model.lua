@@ -37,12 +37,12 @@ function X.install(M)
   M.currentProject=nil;M.devMode=true;M.workshop=false;M.filename='custom_levels.json';M.draftFilename='dev-drafts.json'
   M.applied=require('campaign_order').migrate(require('abyss_sequence').migrate(P.read(M.save,'custom_levels.json') or {version=1,levels={}}))
   local raw=love.filesystem.read(M.draftFilename);local ok,data=pcall(require('json').decode,raw or '{}');M.drafts=ok and data or {}
-  if M.drafts._abyssSequence~=3 or M.drafts._hellOrder~=1 then
+  if M.drafts._abyssSequence~=3 or M.drafts._hellOrder~=2 then
    if raw then love.filesystem.write('dev-drafts.before-abyss-sequence.json',raw) end
    local hadGateDraft=M.drafts['7:9']~=nil
    require('campaign_order').migrate(require('abyss_sequence').migrate({levels=M.drafts,abyssSequence=M.drafts._abyssSequence,hellOrder=M.drafts._hellOrder}))
    if not hadGateDraft then M.drafts['7:9']=nil end
-   M.drafts._abyssSequence=3;M.drafts._hellOrder=1
+   M.drafts._abyssSequence=3;M.drafts._hellOrder=2
    love.filesystem.write(M.draftFilename,require('json').encode(M.drafts))
   end
   oldSelect(1,1);return true

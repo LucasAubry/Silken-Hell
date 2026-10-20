@@ -72,7 +72,7 @@ function S.launch(p)
     App.hardcore=false;Hardcore.notice=nil;App.practice=nil;App.workshopMap=nil;App.preview=false
     local function start(world)
         App.start(world)
-        if App.state=='playing' and not Replay.playing then require('run_start').startCountdown() end
+        if App.state=='playing' and not Replay.playing then require('run_start').waitForInput() end
     end
     if p.hardcore then S.duel=nil;App.singleLevel=false;App.sessionLayout=nil;start(p.world);return end
     if p.kind=='boss' then

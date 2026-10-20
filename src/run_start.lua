@@ -68,8 +68,8 @@ function C.beginArrival(opening,brief)
  C.arrivalActor={x=player.x+15,y=player.y+8-75,targetY=player.y+8,walkMoving=false}
  C.arrivalPortal={x=player.x+15,y=player.y+8-75}
 end
-function C.startCountdown()
- C.active=true;C.elapsed=0;C.goAge=nil;C.countdown=3;C.armed=false
+function C.waitForInput()
+ C.active=true;C.elapsed=0;C.goAge=nil;C.countdown=nil;C.armed=false
 end
 function C.launch()
  if C.arrival or not C.active or App.state~='playing' or Replay.playing then return false end

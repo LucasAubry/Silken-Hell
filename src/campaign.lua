@@ -53,7 +53,7 @@ function C.reset(options)
     local layout=LevelLayouts and (C.world~=3 or App.sessionLayout) and C.world~=8 and not Worlds.isSecret(C.world) and LevelLayouts.current()
     if layout then C.biome=layout.biome or layout.world end
     local world=C.biome; local n=(Worlds.isSecret(C.world) or C.world==8) and (world==3 and 1 or 10) or player.level
-    if world==2 and not layout then n=n==4 and 7 or n==7 and 4 or n end
+    if world==2 and not layout then n=n==1 and 3 or n==3 and 1 or n==4 and 7 or n==7 and 4 or n end
     if world==7 and n>=6 and n<=8 and not App.sessionLayout then n=n+1 end
     require("mobs.bosses.abyss.arrival").current=nil
     BossFX.reset()

@@ -42,7 +42,7 @@ function R.fail(err)
     R.stop('Lecture interrompue : enregistrement incompatible ou endommagé.')
 end
 function R.begin(world)
-    R.accumulator=0;R.frame=0;R.eventIndex=1;R.eventLeft=0;R.checkIndex=1;R.pendingFinish=nil;R.pendingScore=nil
+    R.restartRequested=nil;R.accumulator=0;R.frame=0;R.eventIndex=1;R.eventLeft=0;R.checkIndex=1;R.pendingFinish=nil;R.pendingScore=nil
     if not R.playing then
         R.data=nil
         local layouts=LevelLayouts.read()
@@ -82,18 +82,18 @@ function R.update(dt,tick)
     local limit=0
     while R.accumulator>=R.step and App.state=='playing' and limit<((R.job or R.recovery) and 240 or 32) and (not deadline or love.timer.getTime()<deadline) do
         R.accumulator=R.accumulator-R.step;limit=limit+1
-        local x,y,slow
+        local x,y,slow,restart
         if R.playing then
             if R.frame>=(R.playbackEnd or R.data.frames) then R.endPlayback();break end
             if R.eventLeft<=0 then local e=R.data.inputs[R.eventIndex];if not e then R.stop('Replay incomplet.');break end;R.event=e;R.eventLeft=e[1];R.eventIndex=R.eventIndex+1 end
-            x,y,slow=R.event[2],R.event[3],R.event[4]==1;R.eventLeft=R.eventLeft-1
+            x,y,slow,restart=R.event[2],R.event[3],R.event[4]==1,R.event[5]==1;R.eventLeft=R.eventLeft-1
         else
-            x,y=Input.move();slow=Input.slow()
+            x,y=Input.move();slow=Input.slow();restart=R.restartRequested;R.restartRequested=nil
             local list=R.data.inputs;local previous=list[#list];local s=slow and 1 or 0
-            if previous and previous[2]==x and previous[3]==y and previous[4]==s then previous[1]=previous[1]+1 else list[#list+1]={1,x,y,s} end
+            if previous and previous[2]==x and previous[3]==y and previous[4]==s and not restart and not previous[5] then previous[1]=previous[1]+1 else list[#list+1]={1,x,y,s,restart and 1 or nil} end
         end
         R.frame=R.frame+1;R.data.frames=R.playing and R.data.frames or R.frame
-        R.enter();R.input={x,y,slow};local ok,err=xpcall(function() if App.state=='playing' then tick(R.step) end end,debug.traceback);R.leave();if not ok then if R.playing then R.fail(err);break else error(err) end end
+        R.enter();R.input={x,y,slow,restart};local ok,err=xpcall(function() if App.state=='playing' then tick(R.step) end end,debug.traceback);R.leave();if not ok then if R.playing then R.fail(err);break else error(err) end end
         if R.playing then
             local expected=R.data.checks[R.checkIndex]
             if expected and expected[1]==R.frame then
@@ -150,7 +150,7 @@ function R.validate(data)
     if data.duel and (type(data.duel)~='table' or (data.duel.kind~='mob' and data.duel.kind~='boss') or type(data.duel.name)~='string' or #data.duel.name>200) then return false,'Duel invalide.' end
     local total=0
     for _,e in ipairs(data.inputs) do
-        if type(e)~='table' or type(e[1])~='number' or e[1]<1 or e[1]%1~=0 or type(e[2])~='number' or type(e[3])~='number' or e[2]~=e[2] or e[3]~=e[3] or math.abs(e[2])>1 or math.abs(e[3])>1 or (e[4]~=0 and e[4]~=1) then return false,'Commandes invalides.' end
+        if type(e)~='table' or type(e[1])~='number' or e[1]<1 or e[1]%1~=0 or type(e[2])~='number' or type(e[3])~='number' or e[2]~=e[2] or e[3]~=e[3] or math.abs(e[2])>1 or math.abs(e[3])>1 or (e[4]~=0 and e[4]~=1) or (e[5]~=nil and (e[5]~=1 or e[1]~=1)) then return false,'Commandes invalides.' end
         total=total+e[1]
     end
     if total~=data.frames or total>5184000 then return false,'Durée de replay invalide.' end

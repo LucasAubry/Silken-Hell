@@ -255,6 +255,12 @@ function love.update(dt)
     GameFeedback.update(dt)
 end
 function App.simulate(dt)
+    if (Replay.input and Replay.input[4]) or Replay.restartRequested then
+        Replay.restartRequested=nil
+        if not player.reset then player.death=player.death+1;Profile.record('deaths');RunDetails.death();require('workshop_stats').death() end
+        App.respawn()
+        require('retry_wait').reset()
+    end
     require('render_motion').capture()
     Psyche.update(dt)
     if require('retry_wait').update(dt) then return end
@@ -591,8 +597,8 @@ function App.restartCurrent()
     App.start(Campaign.world)
 end
 function App.restartLevel()
-    App.hardcore=false;App.practice=player.level;App.singleLevel=true;Online.current=nil
-    App.start(Campaign.world)
+    if App.state~='playing' or Replay.playing or RunStart.arrival then return end
+    Replay.restartRequested=true
 end
 function App.restartWorld()
     local training=App.practice~=nil or App.singleLevel
