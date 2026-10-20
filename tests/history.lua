@@ -19,7 +19,7 @@ function T.run()
   g.push('all');setCanvas(c);g.setCanvas=function(target,...)if target==nil then return setCanvas(c) end;return setCanvas(target,...)end
   love.draw();g.setCanvas=setCanvas;setCanvas();g.pop();c:newImageData():encode('png','history-'..name..'.png');c:release()
  end
- H.open();capture('menu');assert(#UI.buttons==6 and H.scenes[1].label=='Le début' and H.scenes[2].label=='Paradis → Ciel' and H.scenes[3].label=='Ciel → Terre' and H.scenes[4].label=='Terre → Océan' and H.scenes[5].label=='Océan → Abysse','Beginning, four biome transitions and Return')
+ H.open();capture('menu');assert(#UI.buttons==8 and H.scenes[1].label=='Le début' and H.scenes[2].label=='Paradis → Ciel' and H.scenes[3].label=='Ciel → Terre' and H.scenes[4].label=='Terre → Océan' and H.scenes[5].label=='Océan → Abysse' and H.scenes[6].label=='Abysse → Enfer' and H.scenes[7].label=='Enfer → Renaissance','Beginning, six biome transitions and Return')
  local read=LevelLayouts.read
  LevelLayouts.read=function()
   local layouts={}
@@ -38,12 +38,12 @@ function T.run()
   local ticks=0
   while App.historyPreview do
    if C.scene() and C.arrival>=C.arrivalDuration then
-    assert(Campaign.biome==(scene.id=='ocean_abyss' and 7 or scene.id=='earth_ocean' and 4 or scene.id=='sky_earth' and 5 or 6),'Arrival stays on the real destination biome')
+    assert(Campaign.biome==(scene.id=='hell_renaissance' and 3 or scene.id=='abyss_hell' and 2 or scene.id=='ocean_abyss' and 7 or scene.id=='earth_ocean' and 4 or scene.id=='sky_earth' and 5 or 6),'Arrival stays on the real destination biome')
     if not scene.landed then capture(scene.id..'-landed');scene.landed=true end
    end
    C.advance(.05);ticks=ticks+1;assert(ticks<300)
   end
-  if scene.id=='paradise_sky' or scene.id=='sky_earth' or scene.id=='earth_ocean' or scene.id=='ocean_abyss' then assert(scene.landed,'Preview holds on the landed destination') end
+  if scene.id=='paradise_sky' or scene.id=='sky_earth' or scene.id=='earth_ocean' or scene.id=='ocean_abyss' or scene.id=='abyss_hell' or scene.id=='hell_renaissance' then assert(scene.landed,'Preview holds on the landed destination') end
   assert(App.state=='history' and not C.active and not C.arrival,'Scene automatically returns to the chooser')
   assert(App.selectedWorld==5 and App.hardcore and not App.preview and not App.singleLevel,'Preview restores menu settings')
   assert(snapshot({stats=Profile.stats,biomes=Profile.biomeStats,achievements=Profile.achievements,completed=Profile.completed,seen=Profile.prologueSeen,name=Profile.name})==profile,'Profile stays unchanged')
@@ -61,7 +61,7 @@ function T.run()
  UI.draw();Input.index=2;love.keypressed('return');assert(App.historyPreview and require('sky_arrival').fromParadise,'Keyboard launches the selected transition')
  H.close();love.keypressed('escape');assert(App.state=='menu')
  Profile.record,Online.start,Replay.begin=record,online,begin
- print('PASS History: all five scene buttons, automatic return, Escape, return button, keyboard, no progression/bestiary/online/replay/RNG changes')
+ print('PASS History: all seven scene buttons, automatic return, Escape, return button, keyboard, no progression/bestiary/online/replay/RNG changes')
  love.event.quit()
 end
 return T

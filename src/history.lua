@@ -5,6 +5,8 @@ H.scenes={
  {id='sky_earth',label='Ciel → Terre'},
  {id='earth_ocean',label='Terre → Océan'},
  {id='ocean_abyss',label='Océan → Abysse'},
+ {id='abyss_hell',label='Abysse → Enfer'},
+ {id='hell_renaissance',label='Enfer → Renaissance'},
 }
 local fields={'selectedWorld','hardcore','preview','practice','singleLevel','sessionLayout','workshopMap','entryFromWorld','custom','runSkin','runEffects'}
 function H.open()
@@ -33,6 +35,8 @@ function H.play(id)
  App.historyPreview=true;App.preview=true;Replay.recording=false;Replay.input=nil;UI.buttons={};UI.pressed=nil
  if id=='story' then require('prologue').open(true)
  elseif id=='intro' then require('prologue_mystery').open()
+ elseif id=='abyss_hell' then H.startWorld(2);require('run_start').beginHellArrival()
+ elseif id=='hell_renaissance' then H.startWorld(3);require('run_start').beginRenaissanceArrival()
  elseif id=='ocean_abyss' then H.startWorld(7);require('run_start').beginAbyssArrival()
  elseif id=='earth_ocean' then H.startWorld(4);require('run_start').beginOceanArrival()
  elseif id=='sky_earth' then H.startWorld(5);require('run_start').beginEarthArrival()
@@ -42,9 +46,9 @@ end
 function H.draw()
  UI.text('Histoire',340,90,'heading',{.96,.94,.86},520,'center')
  for i,scene in ipairs(H.scenes) do
-  UI.button(scene.label,340,185+(i-1)*80,520,60,function()H.play(scene.id)end)
+  UI.button(scene.label,150+((i-1)%2)*480,190+math.floor((i-1)/2)*95,420,64,function()H.play(scene.id)end)
  end
- UI.button('Retour',450,620,300,48,function()App.state='menu';Input.index=1 end)
+ UI.button('Retour',450,640,300,48,function()App.state='menu';Input.index=1 end)
 end
 function H.drawBack()
  UI.button('Retour',28,24,180,48,H.close)

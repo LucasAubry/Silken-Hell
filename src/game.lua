@@ -92,6 +92,8 @@ function App.submit()
         elseif Campaign.world==5 and App.entryFromWorld==6 then RunStart.beginEarthArrival()
         elseif Campaign.world==4 and App.entryFromWorld==5 then RunStart.beginOceanArrival()
         elseif Campaign.world==7 and App.entryFromWorld==4 then RunStart.beginAbyssArrival()
+        elseif Campaign.world==2 and App.entryFromWorld==7 then RunStart.beginHellArrival()
+        elseif Campaign.world==3 and App.entryFromWorld==2 then RunStart.beginRenaissanceArrival()
         else RunStart.beginArrival(true,true) end
     end
     App.entryFromWorld=nil

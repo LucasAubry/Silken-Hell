@@ -28,7 +28,17 @@ function C.beginAbyssArrival()
  C.arrivalKind='abyss';C.arrival=0;C.active=true;C.armed=false
  C.arrivalDuration=require('abyss_arrival').begin()
 end
+function C.beginHellArrival()
+ direction='up';C.arrivalKind='hell';C.arrival=0;C.active=true;C.armed=false
+ C.arrivalDuration=require('hell_arrival').begin()
+end
+function C.beginRenaissanceArrival()
+ direction='up';C.arrivalKind='renaissance';C.arrival=0;C.active=true;C.armed=false
+ C.arrivalDuration=require('renaissance_arrival').begin()
+end
 function C.scene()
+ if C.arrivalKind=='hell' then return require('hell_arrival') end
+ if C.arrivalKind=='renaissance' then return require('renaissance_arrival') end
  if C.arrivalKind=='sky' then return require('sky_arrival') end
  if C.arrivalKind=='earth' then return require('earth_arrival') end
  if C.arrivalKind=='abyss' then return require('abyss_arrival') end
