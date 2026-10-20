@@ -5,6 +5,7 @@ local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
 local path={{0,-.10,0},{1.5,.17,.13},{3.6,.29,.035},{5.6,.38,.06},{7.8,.5,0}}
 function B.begin()
  B.age=0;B.actor={walkMoving=false}
+ if not Art.images.cinematic_tear then Art.add('cinematic_tear','assets/textures/larme.png') end
  if B.environment then B.environment:release();B.environment=nil end
  return B.duration
 end
@@ -23,7 +24,7 @@ function B.pose(t)
  local land=ease((t-5.6)/2.2)
  return {x=motion.sample(path,t),y=.5+math.sin(t*1.4)*.018*(1-land),progress=land,
   depth=ease((t-1.5)/4),mapAlpha=ease((t-4.8)/3),actorsAlpha=ease((t-7.8)/1.6),
-  size=1.5-.5*land,dir=land>.9 and 'up' or 'right'}
+  equip=ease((t-1.8)/1.8),size=1.5-.5*land,dir=land>.9 and 'up' or 'right'}
 end
 function B.draw(canvas,w,h)
  local g=love.graphics;local shader=g.getShader();local t=B.age;local p=B.pose(t)
@@ -44,15 +45,7 @@ function B.draw(canvas,w,h)
  ]])
  B.deep:send('dimensions',{w,h});B.deep:send('clock',t);B.deep:send('depth',p.depth)
  g.setShader(B.deep);g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.setShader()
- -- Passing rock lips frame an open horizontal fissure, never a black cut.
- local drift=t*.12
- for side=-1,1,2 do
-  for i=0,8 do
-   local rx=w*((i*.19-drift)%1.5-.25)
-   local ry=side<0 and -h*.05 or h*1.08
-   decor.rock(rx,ry,h*(.22+.04*math.sin(i*2)),i+11,p.depth*(1-p.mapAlpha)*.65)
-  end
- end
+ decor.grotto(w,h,t,0,p.depth*(1-p.mapAlpha),true)
  -- Plankton streams to the left while the swimmer enters from the left.
  for i=1,55 do
   local px=w*((i*.618-t*(.08+i%3*.025))%1)
@@ -60,15 +53,15 @@ function B.draw(canvas,w,h)
   g.setColor(.25,.65,.88,(1-p.mapAlpha)*(.12+.18*(i%3)/2));g.setLineWidth(scale)
   g.line(px,py,px+(4+i%4*3)*scale,py)
  end
- -- A small translucent jellyfish guides the passage and fades into the deep.
+ -- The existing ocean jelly carries both the tear and the lamp before handing it over.
  local jx=w*(p.x+.20);local jy=h*(.39+math.sin(t*1.7)*.025);local ja=1-p.mapAlpha
- for i=4,1,-1 do g.setColor(.12,.61,.95,ja*.035);g.circle('fill',jx,jy,(16+i*8)*scale) end
- g.setColor(.36,.84,1,ja*.65);g.ellipse('fill',jx,jy,16*scale,(10+math.sin(t*3))*scale,32)
- for i=-2,2 do
-  local points={}
-  for j=0,12 do points[#points+1]=jx+i*5*scale+math.sin(t*3-j*.35+i)*j*.3*scale;points[#points+1]=jy+j*2.5*scale end
-  g.setColor(.42,.81,1,ja*.45);g.setLineWidth(scale);g.line(points)
- end
+ local jellySize=82*scale
+ for i=4,1,-1 do g.setColor(.12,.61,.95,ja*.025);g.circle('fill',jx,jy,(24+i*8)*scale) end
+ g.setColor(1,1,1,ja);Art.drawFacing('jelly','right',jx,jy,jellySize)
+ local tx,ty=jx+jellySize*.08,jy-jellySize*.36
+ for i=3,1,-1 do g.setColor(.35,.8,1,ja*.06);g.circle('fill',tx,ty,(7+i*3)*scale) end
+ g.setColor(.025,.07,.15,ja);Art.drawTinted('cinematic_tear',tx,ty,22*scale)
+ g.setColor(.72,.96,1,ja);Art.drawTinted('cinematic_tear',tx,ty,17*scale)
  decor.reveal(canvas,B.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
  local ax=w*p.x;local ay=h*p.y
  ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress
@@ -79,7 +72,15 @@ function B.draw(canvas,w,h)
   bubble.drawAt(hx,hy,r,t*(1-p.progress),false,nil,nil,1,p.dir)
  end
  local bubble=require('breathing_bubble');local hx,hy,r=bubble.headPosition(ax,ay,size,p.dir)
- bubble.drawLantern(hx,hy,r,t*(1-p.progress),nil,p.depth,p.dir)
+ -- The same physical lamp travels from the jelly's tentacles onto the helmet.
+ local fromX,fromY=jx-jellySize*.12,jy+jellySize*.32+r*1.2
+ local lampX=fromX+(hx-fromX)*p.equip
+ local lampY=fromY+(hy-fromY)*p.equip-math.sin(p.equip*math.pi)*22*scale
+ if p.equip<1 then
+  local lx,ly=bubble.lanternPosition(lampX,lampY,r,t,p.dir)
+  require('silk_art').thread(ax+size*.2,ay,lx,ly,3*scale,math.sin(p.equip*math.pi)*.65)
+ end
+ bubble.drawLantern(lampX,lampY,r,t*(1-p.progress),nil,1,p.dir)
  g.pop()
 end
 return B

@@ -12,6 +12,8 @@ function T.run()
  end
  Profile.complete(4,10,0);App.openEntry(7,false,4);App.draftName='Abyss arrival';App.submit()
  assert(C.arrivalKind=='abyss' and Campaign.world==7 and Campaign.biome==7 and player.level==1)
+ assert(Art.images.jelly_right and Art.images.cinematic_tear,'Guide uses the existing jelly PNG and tear asset')
+ assert(B.pose(1).equip==0 and B.pose(2.7).equip>0 and B.pose(3.7).equip==1,'Lamp travels from guide to helmet before the dark passage')
  assert(B.pose(0).x<0 and B.pose(5).x<.5,'Enters from the left and remains left during destination reveal')
  assert(B.pose(7.8).actorsAlpha==0 and B.pose(8.8).actorsAlpha>0,'Creatures appear after the swimmer settles')
  for _,t in ipairs({1.5,3.6,5.6,7.8}) do
@@ -24,7 +26,7 @@ function T.run()
   assert(not C.press(Profile.keys.dash) and not C.launch())
   C.advance(.05);ticks=ticks+1;assert(ticks<230)
   assert(player.x==px and player.y==py and timer==0 and love.math.getRandomState()==rng)
-  for _,shot in ipairs({{'current',1.5},{'fissure',3.8},{'entry-left',5.4},{'landing',7.8},{'settled',9.5}}) do
+  for _,shot in ipairs({{'current',1.5},{'lamp-transfer',2.7},{'fissure',3.8},{'entry-left',5.4},{'landing',7.8},{'settled',9.5}}) do
    if C.arrival and C.arrival>=shot[2] and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
   end
  end

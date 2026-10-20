@@ -44,31 +44,10 @@ function O.draw(canvas,w,h)
  end
  if cave>0 then
   local offset=p.camera*h
-  decor.material(false);g.setColor(.32,.24,.13,cave)
-  local shore={}
-  for i=0,32 do
-   local u=i/32;shore[#shore+1]=w*.47*u
-   shore[#shore+1]=h*(.55+math.sin(u*9)*.004)-offset
-  end
-  -- A rounded, eroded lip continues into the submerged rock face.
-  for i=1,32 do
-   local u=i/32;local v=1-u
-   shore[#shore+1]=w*(v*v*v*.47+3*v*v*u*.60+3*v*u*u*.53)
-   shore[#shore+1]=h*(v*v*v*.552+3*v*v*u*.67+3*v*u*u*.80+u*u*u*.91)-offset
-  end
-  g.polygon('fill',shore)
-  g.setShader()
-  for i=1,20 do
-   local rx=w*(.02+(i*.137)%.47);local ry=h*(.59+(i*.173)%.20)-offset
-   decor.rock(rx,ry,(9+i%4*5)*scale,i,cave)
-  end
+  decor.grotto(w,h,t,p.camera,cave,false)
   for i=1,8 do
    local rx=w*(.04+i*.043);local ry=h*(.56+math.sin(i)*.01)-offset
    decor.mushroom(rx,ry,(13+i%3*6)*scale,cave)
-  end
-  -- Hanging mineral formations and luminous droplets echo the Earth biome.
-  for i=0,12 do
-   decor.rock(i*w/12,-offset-h*.035,w*(.09+.02*math.sin(i*2)),i+4,cave)
   end
   for i=1,7 do
    local dx=w*(.50+i*.065);local dy=h*(.18+((t*.16+i*.163)%.37))-offset

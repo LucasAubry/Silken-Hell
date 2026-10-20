@@ -54,6 +54,48 @@ function S.backdrop(world,w,h,time,alpha,depth)
  S.landscape:send('opacity',alpha or 1);S.landscape:send('depth',depth or 0)
  g.setColor(1,1,1);g.setShader(S.landscape);g.rectangle('fill',0,0,w,h);g.setShader()
 end
+-- Continuous eroded walls: ledges, overhangs and mineral seams instead of stacked stones.
+function S.grotto(w,h,time,camera,alpha,abyss)
+ local g=love.graphics
+ S.grottoShader=S.grottoShader or g.newShader([[
+ extern vec2 dimensions;extern float clock;extern float camera;extern float opacity;extern float abyss;
+ float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+ float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+ float fbm(vec2 p){return noise(p)*.6+noise(p*2.1)*.27+noise(p*4.4)*.13;}
+ vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel){
+  vec2 q=pixel/dimensions+vec2(clock*.045*abyss,camera);
+  float ceiling=.025+.095*fbm(vec2(q.x*9.,2.));
+  for(int i=0;i<6;i++){
+   float k=float(i);float x=.04+k*.19;
+   ceiling+=exp(-pow((q.x-x)*65.,2.))*(.025+.04*hash(vec2(k,7.)));
+  }
+  float top=.55+sin(q.x/.47*9.)*.004;
+  float edge=.47+.035*sin((q.y-.55)*18.)+.018*fbm(q*27.);
+  float ledge=min(q.y-top,edge-q.x);
+  float wall=.025+.035*fbm(vec2(q.y*9.,4.))-q.x;
+  float distance=max(max(ceiling-q.y,wall),ledge);
+  if(abyss>.5) distance=max(ceiling-q.y,q.y-(.94-.05*fbm(vec2(q.x*8.,9.))));
+  float mask=smoothstep(-.002,.002,distance);
+  float strata=sin(q.y*120.+fbm(q*vec2(11.,6.))*10.);
+  float grain=fbm(q*vec2(50.,95.));
+  float seam=pow(1.-abs(strata),12.);
+  vec3 rock=mix(vec3(.095,.073,.055),vec3(.40,.29,.17),grain);
+  rock*=.68+.32*smoothstep(-.3,.6,strata);
+  rock+=vec3(.12,.08,.035)*seam;
+  float moss=smoothstep(.57,.78,fbm(q*20.))*exp(-max(0.,distance)*22.);
+  rock=mix(rock,vec3(.20,.32,.13),moss*.7);
+  float rim=exp(-max(0.,distance)*110.);
+  rock+=vec3(.19,.14,.075)*rim;
+  float wet=smoothstep(.62,.85,grain)*pow(max(0.,sin(q.x*38.+q.y*6.+clock*.3)),14.);
+  rock+=vec3(.055,.12,.12)*wet;
+  rock=mix(rock,rock*vec3(.35,.66,.92),abyss);
+  return vec4(rock,mask*opacity);
+ }
+ ]])
+ S.grottoShader:send('dimensions',{w,h});S.grottoShader:send('clock',time);S.grottoShader:send('camera',camera or 0)
+ S.grottoShader:send('opacity',alpha);S.grottoShader:send('abyss',abyss and 1 or 0)
+ g.push('all');g.setShader(S.grottoShader);g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.pop()
+end
 -- Soft depth veil, shared by all cinematic handoffs; no cut or black frame.
 function S.mist(w,h,time,strength,water)
  if strength<=0 then return end
