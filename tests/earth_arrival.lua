@@ -20,7 +20,7 @@ function T.run()
  assert(C.arrivalKind=='earth' and Campaign.world==5 and Campaign.biome==5 and player.level==1,'Sky continuation loads the actual first Earth map')
  assert(E.pose(.4).jump==0 and not E.pose(.4).silk,'Starts resting on a cloud')
  assert(E.pose(1).jump>0 and not E.pose(1).silk,'Jumps off the cloud before deploying silk')
- assert(math.abs(E.pose(1.8).x-.5)<.001 and not E.pose(1.8).silk,'Lands on the middle cloud before rappel')
+ assert(math.abs(E.pose(1.8).x-E.cloudState(2,1.8).x)<.001 and not E.pose(1.8).silk,'Lands on the middle cloud before rappel')
  assert(E.pose(2.2).silk and E.pose(2.5).y<E.pose(2.1).y,'Second jump pays silk out from the middle cloud')
  for _,t in ipairs({.5,1.12,1.8,1.95,2.1,2.5,3.3,4.5,6}) do
   for _,key in ipairs({'x','y'}) do
