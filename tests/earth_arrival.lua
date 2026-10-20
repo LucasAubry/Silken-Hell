@@ -10,7 +10,7 @@ function T.run()
  local function capture(name)
   local g=love.graphics;local c=g.newCanvas(g.getDimensions());local setCanvas=g.setCanvas
   g.push('all');setCanvas(c);g.setCanvas=function(target,...)if target==nil then return setCanvas(c) end;return setCanvas(target,...)end
-  love.draw();g.setCanvas=setCanvas;setCanvas();g.pop();c:newImageData():encode('png','earth-arrival-'..name..'.png');c:release()
+  love.draw();g.setCanvas=setCanvas;setCanvas();g.pop();local image=c:newImageData();image:encode('png','earth-arrival-'..name..'.png');c:release();return image
  end
  Profile.complete(1,10,0);App.start(6);C.active=false;C.arrival=nil;C.arrivalKind=nil
  player.level=10;reset_level();capture('source');assert(E.source)
@@ -46,6 +46,19 @@ function T.run()
  local pose=E.pose(E.duration);assert(pose.progress==1 and pose.size==1 and pose.lift==0 and pose.mapAlpha==1)
  capture('gameplay');assert(C.press(Profile.keys.dash));assert(C.advance(.016)==.016,'Normal gameplay resumes after landing')
  App.openEntry(5,false);App.draftName='Direct Earth';App.submit();assert(C.arrivalKind=='brief','Repeat Earth launch uses a short rappel')
+ local decor=require('transition_scenery');local backdrop=decor.backdrop
+ decor.backdrop=function(world,...)
+  assert(world~=5,'Earth arrival must not resurrect the separate legacy cave background')
+  return backdrop(world,...)
+ end
+ local first=capture('brief-first');local second=capture('brief-second')
+ decor.backdrop=backdrop
+ local w,h=first:getDimensions();local difference=0
+ for yy=0,h-1,8 do for xx=0,w-1,8 do
+  local r,g,b=first:getPixel(xx,yy);local r2,g2,b2=second:getPixel(xx,yy)
+  difference=difference+math.abs(r-r2)+math.abs(g-g2)+math.abs(b-b2)
+ end end
+ assert(difference<.001,'First short-arrival frame matches the warmed renderer without an old-background flash')
  print('PASS Earth arrival: correct campaign order, Sky continuation, cloud/jump/web catch/rappel/cave landing, actual Earth landing, pause, frozen scoring/RNG and gameplay resumption')
  love.event.quit()
 end

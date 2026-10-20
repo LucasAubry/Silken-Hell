@@ -91,10 +91,10 @@ function E.draw(canvas,w,h)
  cloud(w,h,p.camera,t,1,1)
  cloud(w,h,p.camera,t,1,2)
  local underground=ease((t-3.7)/2.3)
- decor.backdrop(5,w,h,t,underground,p.rappel)
+ -- Reveal the actual cave, including its current frame, lighting and creatures.
+ -- A separate illustrated cave here resurfaced at the start of short arrivals.
+ decor.reveal(canvas,E.environment,w,h,underground,underground,shader)
  require('sky_arrival').drawClouds(w,h,t*.35,(1-underground)*(.16+.42*math.exp(-((t-3.8)/1.2)^2)))
- decor.caveEdges(w,h,t,p.rappel,underground*(1-p.mapAlpha))
- decor.reveal(canvas,E.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
  local veil=ease((t-3.3)/1.5)*(1-ease((t-7.1)/2))
  decor.mist(w,h,t,veil*.22*(1-p.mapAlpha),0)
  local tether=E.cloudState(2,t)
