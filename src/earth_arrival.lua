@@ -1,5 +1,5 @@
--- A living treetop above the clouds, then a swinging rappel into the cave.
-local E={duration=8.6,impact=7.4}
+-- A cloud departure and silk descent dissolve softly into the cave.
+local E={duration=10.8,impact=8.8}
 local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
 function E.clearSource()if E.source then E.source:release();E.source=nil end end
 function E.captureSource(canvas,drawFrame)
@@ -12,19 +12,30 @@ function E.captureSource(canvas,drawFrame)
  if drawFrame then drawFrame() end
  g.setCanvas(previous);g.pop()
 end
-function E.begin()E.age=0;E.actor={walkMoving=false};return E.duration end
+function E.begin()
+ E.age=0;E.actor={walkMoving=false}
+ if E.environment then E.environment:release();E.environment=nil end
+ return E.duration
+end
+function E.captureEnvironment(canvas)
+ if E.environment then return end
+ local g=love.graphics;local previous=g.getCanvas()
+ E.environment=g.newCanvas(canvas:getWidth(),canvas:getHeight(),{dpiscale=canvas:getDPIScale()})
+ g.push('all');g.setCanvas(E.environment);g.origin();g.setShader();g.clear()
+ g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1);g.draw(canvas);g.setCanvas(previous);g.pop()
+end
 function E.advance(age)E.age=age end
 function E.pose(age)
  local jump=ease((age-.7)/.9)
  local descent=ease((age-1.6)/4.7)
- local land=ease((age-6)/1.4)
+ local land=ease((age-6)/2.8)
  local swingTime=math.max(0,age-1.6)
  local angle=.50*math.cos(swingTime*2.6)*math.exp(-swingTime*.32)*(1-land)
- return {jump=jump,rappel=descent,progress=land,mapAlpha=land,
-  silk=age>=1.3 and age<7.4,cast=ease((age-1.3)/.3),angle=angle,
+ return {jump=jump,rappel=descent,progress=land,mapAlpha=land,actorsAlpha=ease((age-8.8)/1.6),
+  silk=age>=1.3 and age<8.8,cast=ease((age-1.3)/.3),angle=angle,
   length=.24+.85*descent,camera=.75*descent,size=1.6-.6*land,
   dir=land>.9 and 'up' or age<1.6 and 'right' or 'down',
-  lift=age>7.4 and age<7.7 and math.sin((age-7.4)/.3*math.pi)*3 or 0}
+  lift=age>8.8 and age<9.1 and math.sin((age-8.8)/.3*math.pi)*3 or 0}
 end
 local function cloud(w,h,camera,t)
  local g=love.graphics
@@ -53,9 +64,11 @@ function E.draw(canvas,w,h)
  local decor=require('transition_scenery')
  g.push('all');g.origin();g.setShader()
  decor.backdrop(6,w,h,t)
- local underground=ease((t-4.3)/1.7)
+ -- Match Paradise-to-Sky: broad atmospheric layers, then a long destination dissolve.
+ cloud(w,h,p.camera,t)
+ local underground=ease((t-2.9)/3.1)
  decor.backdrop(5,w,h,t,underground,p.rappel)
- if t<4.5 then cloud(w,h,p.camera,t) end
+ require('sky_arrival').drawClouds(w,h,t*.35,(1-underground)*(.16+.42*math.exp(-((t-3.8)/1.2)^2)))
  -- Roots and stone edges pass the lens while the camera follows the silk underground.
  if underground>0 and p.mapAlpha<1 then
   local alpha=underground*(1-p.mapAlpha)
@@ -69,10 +82,9 @@ function E.draw(canvas,w,h)
    end
   end
  end
- if p.mapAlpha>0 then
-  g.setShader(shader);g.setBlendMode('alpha','premultiplied');g.setColor(p.mapAlpha,p.mapAlpha,p.mapAlpha,p.mapAlpha)
-  g.draw(canvas,x,y,0,scale,scale);g.setBlendMode('alpha');g.setShader()
- end
+ decor.reveal(canvas,E.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
+ local veil=ease((t-2.5)/1.5)*(1-ease((t-7.1)/2))
+ decor.mist(w,h,t,veil*.48,0)
  local anchorX,anchorY=w*.36,h*(.27-p.camera)
  local ax=anchorX+math.sin(p.angle)*p.length*h
  local ay=anchorY+math.cos(p.angle)*p.length*h
@@ -83,11 +95,11 @@ function E.draw(canvas,w,h)
  end
  ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress-p.lift*scale
  local size=Characters.playerWidth*scale*p.size
- if t<.8 then Characters.shadow(ax,h*.27,size,p.dir,nil,1-p.jump) end
+
  if p.mapAlpha>0 then Characters.shadow(sx,sy,Characters.playerWidth*scale,'up',nil,p.mapAlpha) end
  if p.silk then
   local tipX=ax+(anchorX-ax)*p.cast;local tipY=ay+(anchorY-ay)*p.cast
-  g.setColor(.91,.96,1,1-ease((t-6.7)/.7));g.setLineWidth(1.4*scale);g.line(ax,ay-size*.15,tipX,tipY)
+  g.setColor(.91,.96,1,1-ease((t-7.6)/1.2));g.setLineWidth(1.4*scale);g.line(ax,ay-size*.15,tipX,tipY)
  end
  g.push();g.translate(ax,ay);g.rotate(t<1.6 and math.sin(p.jump*math.pi)*.25 or -p.angle*.65)
  g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,E.actor,p.mapAlpha>0 and 5 or 6);g.pop()

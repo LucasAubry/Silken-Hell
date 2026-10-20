@@ -22,15 +22,16 @@ function T.run()
  assert(E.pose(1).jump>0 and not E.pose(1).silk,'Jumps off the cloud before deploying silk')
  assert(E.pose(1.5).silk and E.pose(1.5).cast<1,'Web extends before becoming taut')
  assert(E.pose(2).angle*E.pose(3).angle<0,'Pendulum changes direction')
- assert(E.pose(7.5).angle==0,'Swing settles on landing')
+ assert(E.pose(9).angle==0,'Swing settles on landing')
  assert(E.pose(3).rappel>0 and E.pose(3).mapAlpha==0,'Descends before revealing cave')
+ assert(E.pose(8.8).actorsAlpha==0 and E.pose(9.6).actorsAlpha>0,'Soft reveal introduces creatures after landing')
  local x,y=player.x,player.y;local rng=love.math.getRandomState();local shots={};local ticks=0
  while C.arrival do
   assert(not C.press(Profile.keys.dash) and not C.launch())
   if ticks==10 then App.state='pause';local age=C.arrival;C.advance(.05);assert(C.arrival==age);App.state='playing' end
-  C.advance(.05);ticks=ticks+1;assert(ticks<210)
+  C.advance(.05);ticks=ticks+1;assert(ticks<260)
   assert(player.x==x and player.y==y and timer==0 and love.math.getRandomState()==rng,'Cinematic freezes position, scoring and gameplay RNG')
-  for _,shot in ipairs({{'cloud',.4},{'jump',1.1},{'catch',1.65},{'rappel',3.5},{'cave-entrance',5.5},{'cave-interior',6.6},{'impact',7.5},{'landed',8.2}}) do
+  for _,shot in ipairs({{'cloud',.4},{'jump',1.1},{'catch',1.65},{'rappel',3.5},{'cave-entrance',5.5},{'cave-interior',6.6},{'impact',8.9},{'creatures',9.6},{'landed',10.5}}) do
    if C.arrival and C.arrival>=shot[2] and not shots[shot[1]] then capture(shot[1]);shots[shot[1]]=true end
   end
  end

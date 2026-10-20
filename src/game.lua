@@ -369,7 +369,7 @@ function love.draw()
         love.graphics.setCanvas(gameCanvas); love.graphics.clear(); love.graphics.origin(); love.graphics.setColor(1,1,1)
         Prism.beginScene(gameCanvas)
         draw_level()
-        if RunStart.arrivalKind=='ocean' and RunStart.arrival then require('ocean_arrival').captureEnvironment(gameCanvas) end
+        if RunStart.arrival and RunStart.scene() and RunStart.scene().captureEnvironment then RunStart.scene().captureEnvironment(gameCanvas) end
         local queenScene=Ending.active and require('final_spider').active
         if queenScene then require('final_spider').drawGround() end
 

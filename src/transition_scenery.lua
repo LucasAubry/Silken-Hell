@@ -47,6 +47,35 @@ function S.backdrop(world,w,h,time,alpha,depth)
  S.landscape:send('opacity',alpha or 1);S.landscape:send('depth',depth or 0)
  g.setColor(1,1,1);g.setShader(S.landscape);g.rectangle('fill',0,0,w,h);g.setShader()
 end
+-- Soft depth veil, shared by all cinematic handoffs; no cut or black frame.
+function S.mist(w,h,time,strength,water)
+ if strength<=0 then return end
+ local g=love.graphics
+ S.veil=S.veil or g.newShader(love.filesystem.read('assets/shaders/sky_clouds.glsl')..[[
+  extern vec2 dimensions;extern float clock;extern float strength;extern float water;
+  vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel){
+   vec2 p=(pixel-dimensions*.5)/dimensions.y;
+   float n=skyNoise(p*3.+vec2(clock*.10,-clock*.12))*.65+skyNoise(p*7.+vec2(-clock*.08,clock*.05))*.35;
+   float veil=smoothstep(.23,.76,n);
+   vec3 tint=mix(vec3(.57,.51,.38),vec3(.32,.66,.74),water);
+   return vec4(tint,veil*strength);
+  }
+ ]])
+ g.push('all');g.setShader(S.veil)
+ S.veil:send('dimensions',{w,h});S.veil:send('clock',time);S.veil:send('strength',strength);S.veil:send('water',water or 0)
+ g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.pop()
+end
+-- A stationary destination and its creatures are revealed separately under the same fog.
+function S.reveal(canvas,environment,w,h,mapAlpha,actorsAlpha,shader)
+ if mapAlpha<=0 then return end
+ local g=love.graphics;local scale,x,y=App.viewport(w,h)
+ g.push('all');g.setShader(shader);g.setBlendMode('alpha','premultiplied')
+ g.setColor(mapAlpha,mapAlpha,mapAlpha,mapAlpha);g.draw(environment or canvas,x,y,0,scale,scale)
+ if actorsAlpha>0 then
+  g.setColor(actorsAlpha,actorsAlpha,actorsAlpha,actorsAlpha);g.draw(canvas,x,y,0,scale,scale)
+ end
+ g.pop()
+end
 local function grainShader()
  S.grain=S.grain or love.graphics.newShader([[
   extern float wood;

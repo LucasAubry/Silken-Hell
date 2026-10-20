@@ -29,10 +29,8 @@ function O.draw(canvas,w,h)
  local surface=h*(.62-p.camera);local cave=1-p.underwater
  g.push('all');g.origin();g.setShader()
  -- The camera crosses the surface: the same ocean floor is visible beneath the spring.
- decor.backdrop(4,w,h,t,1,p.camera)
- if surface>0 then
-  g.setScissor(0,0,w,math.min(h,math.ceil(surface)));decor.backdrop(5,w,h,t,1,p.camera);g.setScissor()
- end
+ decor.backdrop(5,w,h,t,1,p.camera)
+ decor.backdrop(4,w,h,t,ease((t-3.1)/3.2),p.camera)
  if cave>0 then
   local offset=p.camera*h
   decor.material(false);g.setColor(.32,.24,.13,cave)
@@ -59,19 +57,13 @@ function O.draw(canvas,w,h)
    g.setColor(.72,.85,.57,cave*.4);g.ellipse('fill',dx,dy,1.2*scale,3*scale)
   end
  end
- if p.mapAlpha>0 then
-  g.setShader(shader);g.setBlendMode('alpha','premultiplied');g.setColor(p.mapAlpha,p.mapAlpha,p.mapAlpha,p.mapAlpha)
-  g.draw(O.environment or canvas,x,y,0,scale,scale)
-  if p.actorsAlpha>0 then
-   g.setColor(p.actorsAlpha,p.actorsAlpha,p.actorsAlpha,p.actorsAlpha);g.draw(canvas,x,y,0,scale,scale)
-  end
-  g.setBlendMode('alpha');g.setShader()
- end
+ decor.reveal(canvas,O.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
+ decor.mist(w,h,t,.18*(1-p.mapAlpha),p.underwater)
  local ax=w*(.20+.25*p.approach+.20*p.dive)
  local ay=h*(.50+.34*p.dive-.12*math.sin(p.dive*math.pi)-p.camera*.35)
  ax=ax+(sx-ax)*p.progress;ay=ay+(sy-ay)*p.progress
  local size=Characters.playerWidth*scale*((1.65-.35*p.dive)*(1-p.progress)+p.progress)
- local rotation=math.sin(p.dive*math.pi)*.65*(1-p.underwater)
+ local rotation=math.sin(p.dive*math.pi)*.24*(1-p.underwater)
  if p.mapAlpha>0 then Characters.shadow(ax,sy,Characters.playerWidth*scale,p.dir,nil,p.mapAlpha) end
  if cave>0 then Characters.shadow(ax,h*(.53-p.camera),size,p.dir,O.actor,cave*(1-p.dive)) end
  g.push();g.translate(ax,ay);g.rotate(rotation)
@@ -88,7 +80,7 @@ function O.draw(canvas,w,h)
  end
  g.pop()
  -- Transparent moving water crosses the body, with a soft reflective meniscus.
- if surface<h and p.mapAlpha<1 then
+ if t>3.4 and surface<h and p.mapAlpha<1 then
   O.water=O.water or g.newShader([[
    extern vec2 dimensions;extern float surface;extern float clock;extern float opacity;
    vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel){
@@ -101,7 +93,7 @@ function O.draw(canvas,w,h)
     return vec4(c,(water*.16+edge*.38+shimmer*.025*water)*opacity);
    }
   ]])
-  O.water:send('dimensions',{w,h});O.water:send('surface',surface);O.water:send('clock',t);O.water:send('opacity',1-p.mapAlpha)
+  O.water:send('dimensions',{w,h});O.water:send('surface',surface);O.water:send('clock',t);O.water:send('opacity',ease((t-3.4)/.6)*(1-p.mapAlpha)*.65)
   g.setColor(1,1,1);g.setShader(O.water);g.rectangle('fill',0,0,w,h);g.setShader()
  end
  if surface>0 and surface<h then
