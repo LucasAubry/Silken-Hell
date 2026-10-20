@@ -1,6 +1,6 @@
 local T={}
 function T.run()
- io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Profile.save=function()end;Bestiary.save=function()end
+ Profile.transitionsSeen={};io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Profile.save=function()end;Bestiary.save=function()end
  LevelLayouts.disabled=true;Replay.disabled=true;Replay.playing=false;Replay.recording=false
  App.practice=nil;App.singleLevel=false;App.preview=false;App.historyPreview=nil;App.hardcore=false;App.sessionLayout=nil;Secret.duel=nil
  Input.speedHeld=function()return false end
@@ -15,6 +15,10 @@ function T.run()
   assert(C.arrivalKind==route.kind and Campaign.biome==route.to and player.level==1)
   local S=C.scene();local px,py=player.x,player.y;local rng=love.math.getRandomState();local ticks=0;local shots={}
   assert(S.pose(8.4).actorsAlpha==0 and S.pose(9).actorsAlpha>0)
+  if route.kind=='renaissance' then
+   assert(S.pose(3).scroll<S.pose(6).scroll,'Scenery travels throughout the crossing')
+   local ax,ay=S.position(S.duration,1200,750,197,533);assert(ax==197 and ay==533,'Renaissance lands at the actual spawn, even away from the center')
+  end
   if route.kind=='hell' then assert(S.pose(4).release==0 and S.pose(5.5).release>0 and S.pose(6.2).bubble==0,'Equipment remains attached underwater and fades only inside the hot vapor') end
   for _,t in ipairs({2,3.8,4,5.8,6.2}) do
    for _,key in ipairs({'x','y'}) do
@@ -33,7 +37,7 @@ function T.run()
   end
   assert(S.environment and not C.active and direction=='up' and S.pose(S.duration).progress==1)
   capture(route.kind..'-arrival-gameplay');assert(C.advance(.016)==.016)
-  App.openEntry(route.to,false);App.draftName='Direct';App.submit();assert(C.arrivalKind==route.kind)
+  App.openEntry(route.to,false);App.draftName='Direct';App.submit();assert(C.arrivalKind=='brief')
  end
  print('PASS elemental arrivals: both campaign handoffs, destination maps, continuous motion, bubble release, pause and frozen RNG/scoring')
  love.event.quit()

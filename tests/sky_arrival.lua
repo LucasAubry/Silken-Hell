@@ -1,6 +1,6 @@
 local T={}
 function T.run()
- io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Profile.save=function()end;Bestiary.save=function()end
+ Profile.transitionsSeen={};io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Profile.save=function()end;Bestiary.save=function()end
  LevelLayouts.disabled=true;App.practice=nil;App.singleLevel=false;App.hardcore=false;App.preview=false;App.sessionLayout=nil;Secret.duel=nil
  Replay.disabled=true;Replay.playing=false;Replay.recording=false;Input.speedHeld=function()return false end
  local C=require('run_start');local S=require('sky_arrival')
@@ -44,6 +44,7 @@ function T.run()
  local pose=S.pose(S.duration+S.exitDuration)
  assert(pose.zoom==1 and pose.tilt==1 and pose.angle==0 and pose.height==0 and pose.size==1 and direction=='up','Final camera and sprite match gameplay exactly')
  capture('gameplay')
+ Profile.transitionsSeen={}
  App.openEntry(6,false);App.draftName='Direct sky';App.submit()
  assert(C.arrivalKind=='sky' and S.fromParadise,'Direct sky launch includes the Paradise departure')
  C.advance(.05);capture('direct')

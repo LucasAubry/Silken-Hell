@@ -1,6 +1,6 @@
 local T={}
 function T.run()
- io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Profile.save=function()end;Bestiary.save=function()end
+ Profile.transitionsSeen={};io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Profile.save=function()end;Bestiary.save=function()end
  LevelLayouts.disabled=true;Replay.disabled=true;Replay.playing=false;Replay.recording=false
  App.practice=nil;App.singleLevel=false;App.preview=false;App.historyPreview=nil;App.hardcore=false;App.sessionLayout=nil;Secret.duel=nil
  Input.speedHeld=function()return false end
@@ -32,7 +32,7 @@ function T.run()
  end
  assert(B.environment and not C.active and direction=='up' and B.pose(B.duration).progress==1)
  capture('gameplay');assert(C.advance(.016)==.016)
- App.openEntry(7,false);App.draftName='Direct abyss';App.submit();assert(C.arrivalKind=='abyss')
+ App.openEntry(7,false);App.draftName='Direct abyss';App.submit();assert(C.arrivalKind=='brief')
  print('PASS Abyss arrival: Ocean campaign handoff, left entrance, smooth current, lantern, destination reveal, pause and frozen scoring/RNG')
  love.event.quit()
 end

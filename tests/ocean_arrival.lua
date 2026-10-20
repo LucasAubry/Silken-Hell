@@ -1,6 +1,6 @@
 local T={}
 function T.run()
- io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Profile.save=function()end;Bestiary.save=function()end
+ Profile.transitionsSeen={};io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Profile.save=function()end;Bestiary.save=function()end
  LevelLayouts.disabled=true;Replay.disabled=true;Replay.playing=false;Replay.recording=false
  App.practice=nil;App.singleLevel=false;App.preview=false;App.historyPreview=nil;App.hardcore=false;App.sessionLayout=nil;Secret.duel=nil
  Input.speedHeld=function()return false end
@@ -43,7 +43,7 @@ function T.run()
  bubble.drawAt=drawAt;assert(bubbleDrawn>=9,'Uses the real gameplay bubble renderer throughout the scene')
  assert(not C.active and direction=='up' and O.pose(O.duration).progress==1)
  capture('gameplay');assert(C.advance(.016)==.016)
- App.openEntry(4,false);App.draftName='Direct Ocean';App.submit();assert(C.arrivalKind=='ocean')
+ App.openEntry(4,false);App.draftName='Direct Ocean';App.submit();assert(C.arrivalKind=='brief')
  print('PASS Ocean arrival: campaign continuation, found/equipped shared bubble before water, current, real Ocean landing, pause, frozen scoring/RNG and resumed gameplay')
  love.event.quit()
 end

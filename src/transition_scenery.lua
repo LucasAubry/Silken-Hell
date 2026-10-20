@@ -115,10 +115,10 @@ function S.mist(w,h,time,strength,water)
  g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.pop()
 end
 -- A stationary destination and its creatures are revealed separately under the same fog.
-function S.reveal(canvas,environment,w,h,mapAlpha,actorsAlpha,shader)
+function S.reveal(canvas,environment,w,h,mapAlpha,actorsAlpha,shader,offsetX)
  if mapAlpha<=0 then return end
  local g=love.graphics;local scale,x,y=App.viewport(w,h)
- g.push('all');g.setShader(shader);g.setBlendMode('alpha','premultiplied')
+ g.push('all');g.translate(offsetX or 0,0);g.setShader(shader);g.setBlendMode('alpha','premultiplied')
  g.setColor(mapAlpha,mapAlpha,mapAlpha,mapAlpha);g.draw(environment or canvas,x,y,0,scale,scale)
  if actorsAlpha>0 then
   g.setColor(actorsAlpha,actorsAlpha,actorsAlpha,actorsAlpha);g.draw(canvas,x,y,0,scale,scale)

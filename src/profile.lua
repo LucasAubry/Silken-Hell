@@ -11,7 +11,7 @@ function P.load()
     P.skinEffects={};require('top_records').load()
     P.language='fr';P.speedMode='accelerate';P.iconBiome=nil;P.padBindings=PadControls.load();P.tearExtension=false;P.progressResetAt=0
     P.levels={};P.completed={};P.scores={}; P.achievements={};P.stats={tears=0,eggs=0,deaths=0,attempts=0}
-    P.biomeStats={};P.bossKills={};P.storyTexts={}
+    P.biomeStats={};P.bossKills={};P.storyTexts={};P.transitionsSeen={}
     local data=love.filesystem.read('profile.txt') or ''
     -- Existing saves keep their progress and can replay the opening from the menu.
     P.prologueSeen=#data>0
@@ -22,7 +22,7 @@ function P.load()
         elseif k and k:match('^completed%d+$') then P.completed[tonumber(k:match('%d+'))]=v=='1'
         elseif k=='prologueSeen' then P.prologueSeen=v=='1'
         elseif k=='iconBiome' then local n=tonumber(v);if n and n%1==0 and n>=1 and n<=7 then P.iconBiome=n end
-        elseif k=='biomeStats' or k=='bossKills' or k=='storyTexts' then
+        elseif k=='biomeStats' or k=='bossKills' or k=='storyTexts' or k=='transitionsSeen' then
             local ok,value=pcall(json.decode,v);if ok and type(value)=='table' then P[k]=value end
         elseif k=='padBindings' then
             local ok,value=pcall(json.decode,v);if ok then P.padBindings=PadControls.load(value) end
@@ -106,6 +106,7 @@ end
 function P.save()
     if Replay and Replay.playing then return end
     local rows={'iconBiome='..(P.iconBiome or 0),'speedMode='..P.speedMode,'statsVersion=1','totalTears='..P.stats.tears,'totalEggs='..(P.stats.eggs or 0),'totalDeaths='..P.stats.deaths,'totalAttempts='..P.stats.attempts,'achievementGillou='..(P.achievements.gillou and '2' or '0'),'achievementMaxance='..(P.achievements.maxance and '2' or '0'),'progressVersion=2','name='..P.name,'country='..P.country,'language='..P.language,'character='..(P.character or 1),'unlocked='..P.unlocked,'music='..P.music,'sound='..P.sound}
+    rows[#rows+1]='transitionsSeen='..json.encode(P.transitionsSeen or {})
     rows[#rows+1]='prologueSeen='..(P.prologueSeen and '1' or '0')
     rows[#rows+1]='biomeStats='..json.encode(P.biomeStats or {})
     rows[#rows+1]='progressResetAt='..tostring(P.progressResetAt or 0)

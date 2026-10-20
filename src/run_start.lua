@@ -1,20 +1,25 @@
 -- Wait for a fresh speed-button press outside deterministic gameplay/replay time.
 local C={}
+local storyWorlds={[6]=true,[5]=true,[4]=true,[7]=true,[2]=true,[3]=true}
 local function smooth(v)v=math.max(0,math.min(1,v));return v*v*(3-2*v)end
 function C.begin()
- C.elapsed=0;C.goAge=nil;C.countdown=nil;C.arrival=nil;C.arrivalActor=nil;C.arrivalKind=nil;C.arrivalPractice=false
+ C.elapsed=0;C.goAge=nil;C.countdown=nil;C.arrival=nil;C.arrivalActor=nil;C.arrivalKind=nil;C.arrivalPractice=false;C.rememberTransition=nil
  C.active=not (App.practice or App.singleLevel or App.sessionLayout or Secret.duel or Replay.playing or App.preview or os.getenv('SILKEN_PREVIEW_WORLD'))
  C.armed=not Input.speedHeld()
  if App.practice and not (App.preview or App.sessionLayout or Secret.duel or Replay.playing) then
   C.beginArrival(true,true);C.arrivalPractice=true;Hardcore.beginTrainingBorder()
  elseif C.active then
-  if Campaign.world==6 then C.beginSkyArrival(true)
+  if (Profile.transitionsSeen or {})[tostring(Campaign.world)]==true and storyWorlds[Campaign.world] then
+   direction='up';C.arrivalKind='brief';C.arrival=0;C.armed=false
+   C.arrivalDuration=require('biome_entry').begin(Campaign.world)
+  elseif Campaign.world==6 then C.beginSkyArrival(true)
   elseif Campaign.world==5 then C.beginEarthArrival()
   elseif Campaign.world==4 then C.beginOceanArrival()
   elseif Campaign.world==7 then C.beginAbyssArrival()
   elseif Campaign.world==2 then C.beginHellArrival()
   elseif Campaign.world==3 then C.beginRenaissanceArrival()
   else C.beginArrival(true,true) end
+  if C.scene() and C.arrivalKind~='brief' then C.rememberTransition=Campaign.world end
  end
 end
 -- The first portal opens onto the real level, held still until the story ends.
@@ -47,6 +52,7 @@ function C.beginRenaissanceArrival()
  C.arrivalDuration=require('renaissance_arrival').begin()
 end
 function C.scene()
+ if C.arrivalKind=='brief' then return require('biome_entry') end
  if C.arrivalKind=='hell' then return require('hell_arrival') end
  if C.arrivalKind=='renaissance' then return require('renaissance_arrival') end
  if C.arrivalKind=='sky' then return require('sky_arrival') end
@@ -92,7 +98,12 @@ function C.advance(dt)
     if C.arrival>=C.arrivalDuration+2 then require('history').close() end
     return 0
    end
-   if C.arrival>=C.arrivalDuration then C.arrival=nil;C.arrivalKind=nil;C.launch();C.goAge=nil end
+   if C.arrival>=C.arrivalDuration then
+    if C.rememberTransition then
+     Profile.transitionsSeen=Profile.transitionsSeen or {};Profile.transitionsSeen[tostring(C.rememberTransition)]=true;Profile.save();C.rememberTransition=nil
+    end
+    C.arrival=nil;C.arrivalKind=nil;C.launch();C.goAge=nil
+   end
    return 0
   end
   local a=C.arrivalActor;local oldY=a.y

@@ -1,6 +1,6 @@
 local T={}
 function T.run()
- io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Profile.save=function()end;Bestiary.save=function()end
+ Profile.transitionsSeen={};io.stdout:setvbuf('no');love.focus=function()end;Online.enabled=false;Profile.save=function()end;Bestiary.save=function()end
  LevelLayouts.disabled=true;Replay.disabled=true;Replay.playing=false;Replay.recording=false
  App.practice=nil;App.singleLevel=false;App.preview=false;App.historyPreview=nil;App.hardcore=false;App.sessionLayout=nil;Secret.duel=nil
  Input.speedHeld=function()return false end
@@ -44,7 +44,7 @@ function T.run()
  assert(not C.active and C.goAge==nil and direction=='up')
  local pose=E.pose(E.duration);assert(pose.progress==1 and pose.size==1 and pose.lift==0 and pose.mapAlpha==1)
  capture('gameplay');assert(C.advance(.016)==.016,'Normal gameplay resumes after landing')
- App.openEntry(5,false);App.draftName='Direct Earth';App.submit();assert(C.arrivalKind=='earth','Direct Earth launch includes the Sky transition')
+ App.openEntry(5,false);App.draftName='Direct Earth';App.submit();assert(C.arrivalKind=='brief','Repeat Earth launch uses a short rappel')
  print('PASS Earth arrival: correct campaign order, Sky continuation, cloud/jump/web catch/rappel/cave landing, actual Earth landing, pause, frozen scoring/RNG and gameplay resumption')
  love.event.quit()
 end
