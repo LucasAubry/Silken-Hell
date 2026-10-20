@@ -17,6 +17,8 @@ function T.run()
  App.draftName='Ocean arrival';App.submit()
  assert(C.arrivalKind=='ocean' and Campaign.world==4 and Campaign.biome==4 and player.level==1)
  assert(not O.pose(1).equipped and O.pose(2.4).equip>0 and O.pose(3.2).equipped and O.pose(3.2).dive==0,'Find and equip the bubble before entering water')
+ assert(O.pose(4).edge==1 and O.pose(4.8).edge==1 and O.pose(4.8).swim==0 and O.pose(4).dir=='down','Dive stays vertical before swimming')
+ assert(O.pose(5.6).swim>0 and O.pose(5.6).dir=='up','Swims toward the destination after submerging')
  assert(O.pose(6.1).underwater==1 and O.pose(8.1).mapAlpha==1)
  assert(O.pose(8).actorsAlpha==0 and O.pose(9).actorsAlpha>0 and O.pose(10).actorsAlpha==1,'Creatures appear gradually after landing')
  local drawAt=bubble.drawAt;local bubbleDrawn=0
