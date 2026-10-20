@@ -7,7 +7,6 @@ import re
 import os
 import sys
 import time
-import subprocess
 
 root = Path(__file__).resolve().parents[1]
 paths = set()
@@ -51,13 +50,4 @@ with tempfile.TemporaryDirectory(prefix='silken-build-') as folder:
     staged = cache / 'Silken Hell.love.new'
     shutil.copyfile(output, staged)
     staged.replace(cache / 'Silken Hell.love')
-    # Updating the new scenery must never replace the frozen classic edition.
-    branch = subprocess.run(['git', 'branch', '--show-current'], cwd=root,
-                            capture_output=True, text=True)
-    if branch.returncode == 0 and branch.stdout.strip() == 'new-deccors':
-        editions = dist / 'versions'
-        editions.mkdir(exist_ok=True)
-        staged = editions / 'new-deccors.love.tmp'
-        shutil.copyfile(output, staged)
-        staged.replace(editions / 'new-deccors.love')
 print(f'dist/game.love : {len(paths)} fichiers, jeu et éditeur à jour')
