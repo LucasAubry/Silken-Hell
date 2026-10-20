@@ -1,48 +1,26 @@
 extern vec2 dimensions;
 extern float clock;
-extern float depth;
-extern float heat;
-extern float camera;
-extern float landing;
+extern float waterline;
+extern float opening;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){return noise(p)*.57+noise(p*2.13)*.28+noise(p*4.37)*.15;}
 vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel){
  vec2 q=pixel/dimensions;
- vec2 p=(q-.5)*vec2(dimensions.x/dimensions.y,1.);
- float worldY=q.y+camera;
- float n=fbm((p+vec2(0.,depth))*7.);
- vec3 c=mix(vec3(.003,.009,.023),vec3(.012,.052,.083),n);
- float vent=exp(-pow(p.x*4.,2.))*smoothstep(-.45,.6,p.y);
- c+=vec3(.42,.065,.012)*vent*heat;
- float stoneCover=0.;
- for(int i=0;i<3;i++){
-  float layer=float(i);
-  vec2 stone=p+vec2(0.,depth*(.55+layer*.38));
-  float boundary=.16+layer*.15+.05*sin(stone.y*4.+layer*2.)+.065*fbm(vec2(stone.y*7.,layer*4.));
-  float edge=abs(stone.x)-boundary;
-  float mask=smoothstep(-.006,.008,edge)*smoothstep(.56,.59,worldY);
-  stoneCover=max(stoneCover,mask);
-  float grain=fbm(stone*vec2(34.,63.));
-  float strata=sin(stone.y*43.+fbm(stone*9.)*7.);
-  vec3 basalt=mix(vec3(.008,.021,.034),vec3(.035,.076,.092),grain)*(.65+.35*smoothstep(-.5,.7,strata));
-  float cracks=pow(1.-abs(sin(stone.y*19.+noise(stone*9.)*6.)),18.);
-  basalt=mix(basalt,basalt*vec3(1.8,.65,.38),heat);
-  basalt+=vec3(.65,.085,.008)*cracks*heat*.48;
-  basalt+=mix(vec3(.025,.13,.17),vec3(.38,.075,.015),heat)*exp(-max(edge,0.)*75.);
-  c=mix(c,basalt*(1.-layer*.12),mask);
- }
- // Water sits above the entrance like a suspended meniscus, never inside the shaft.
- float water=1.-smoothstep(.577,.583,worldY);
- vec3 sea=mix(vec3(.008,.035,.065),vec3(.025,.13,.19),n);
- sea+=vec3(.01,.025,.03)*sin(q.x*20.+worldY*6.+clock*.2);
- c=mix(c,sea,water);
- float opening=1.-smoothstep(.18,.24,abs(p.x));
- float rim=exp(-abs(worldY-.58)*190.);
- c+=mix(vec3(.07,.12,.14),vec3(.15,.46,.58),opening)*rim;
- // The real Hell arena lies beneath the open shaft from the first dry frames.
- // Its entire scene sharpens with depth; the enclosing rock clears on landing.
- float cover=max(water,max(stoneCover,.16*heat))*(1.-landing);
- cover=max(cover,clamp(rim,0.,1.)*(1.-landing));
+ vec2 stone=vec2(q.x,q.y-waterline);
+ float n=fbm(stone*vec2(14.,21.));
+ float water=smoothstep(waterline-.004,waterline+.004,q.y);
+ float vent=exp(-pow((q.x-.32)*9.,2.));
+ vec3 sea=mix(vec3(.003,.015,.035),vec3(.018,.12,.16),n);
+ sea+=vec3(.04,.12,.13)*vent*(.7+.3*sin(q.y*13.+clock*2.));
+ float wall=smoothstep(.13,.20,abs(q.x-.32)+.02*sin(stone.y*15.)+.025*n);
+ vec3 basalt=mix(vec3(.009,.018,.026),vec3(.07,.12,.13),n);
+ float cracks=pow(1.-abs(sin(stone.y*25.+fbm(stone*7.)*7.)),20.);
+ basalt+=vec3(.24,.045,.008)*cracks*(1.-water);
+ vec3 c=mix(basalt,sea,water*(1.-wall*.8));
+ float cover=max(water,wall*(1.-opening));
+ float rim=exp(-abs(q.y-waterline)*220.);
+ c+=vec3(.12,.32,.35)*rim;
+ cover=max(cover,rim);
  return vec4(c,cover);
 }

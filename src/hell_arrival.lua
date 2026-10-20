@@ -1,4 +1,5 @@
--- Cross the sealed waterline of a dry abyssal shaft, leaving the lamp underwater.
+-- A volcanic updraft launches the swimmer into a silk swing over the Hell arena.
+local motion=require('cinematic_motion')
 local S={duration=9.95,impact=9.8}
 local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
 function S.begin()
@@ -14,14 +15,19 @@ function S.captureEnvironment(canvas)
  g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1);g.draw(canvas);g.setCanvas(previous);g.pop()
 end
 function S.pose(t)
- local land=ease((t-5.8)/4)
- local camera=.055*math.max(0,t-2)^2
- local jump=ease((t-.3)/1.1)
- return {x=.34+.16*jump,y=.43-.065*math.sin(jump*math.pi)+.055*math.max(0,t-1.4)^2-camera,
-  camera=camera,progress=land,size=1.65-.65*land,depth=camera/1.35,heat=ease((t-3.3)/3.5),
-  mapAlpha=land,actorsAlpha=land,bubble=1-ease((t-2.65)/.45),release=ease((t-2.65)/.45),
+ local land=ease((t-6.8)/3)
+ local angle=motion.sample({{4.2,-.68,0},{5.6,.58,0},{6.8,0,0}},t)
+ local startX,startY=.53+.42*math.sin(-.68),-.08+.57*math.cos(-.68)
+ local x=motion.sample({{0,.28,0},{1.3,.32,0},{2.8,.32,0},{3.5,.28,-.05},{4.2,startX,0}},t)
+ local y=motion.sample({{0,.70,0},{1.3,.64,-.12},{2.8,.40,-.24},{3.5,.18,0},{4.2,startY,0}},t)
+ if t>=4.2 then x=.53+.42*math.sin(angle);y=-.08+.57*math.cos(angle) end
+ local release=ease((t-3.1)/.45)
+ return {x=x,y=y,progress=land,size=1.65-.65*land,
+  waterline=.25+.95*ease((t-2.8)/3),opening=ease((t-3.3)/3.5),
+  silk=ease((t-3.65)/.55)*(1-ease((t-6.8)/.4)),angle=angle,
+  mapAlpha=land,actorsAlpha=land,bubble=1-release,release=release,
   blur=14*(1-ease((t-2.65)/7.15)),
-  detached=t>=2.65,broken=t>=2.95,dir=t<1.4 and 'right' or t<5.8 and 'down' or 'up'}
+  detached=t>=3.1,broken=t>=3.35,dir=t<3.1 and 'up' or t<5.6 and 'right' or t<6.8 and 'left' or 'up'}
 end
 function S.position(t,w,h,sx,sy)
  local p=S.pose(t);local x,y=w*p.x,h*p.y
@@ -61,23 +67,32 @@ function S.draw(canvas,w,h)
  g.push('all');g.origin();g.setShader()
  S.drawDepth(canvas,w,h,p.blur,shader)
  S.scenery=S.scenery or g.newShader('assets/shaders/abyss_hell_passage.glsl')
- S.scenery:send('dimensions',{w,h});S.scenery:send('clock',t);S.scenery:send('depth',p.depth)
- S.scenery:send('camera',p.camera);S.scenery:send('heat',p.heat)
- S.scenery:send('landing',p.progress)
+ S.scenery:send('dimensions',{w,h});S.scenery:send('clock',t)
+ S.scenery:send('waterline',p.waterline);S.scenery:send('opening',p.opening)
  g.setShader(S.scenery);g.setColor(1,1,1);g.rectangle('fill',0,0,w,h);g.setShader()
- local waterline=h*(.58-p.camera)
- -- Suspended particles remain above the sealed surface; there is no waterfall.
- for i=1,50 do
-  local px=w*((i*.618+math.sin(t*.3+i)*.008)%1);local py=h*((i*.137)% .58-p.camera)
-  if py<waterline then g.setColor(.22,.65,.85,.25);g.circle('fill',px,py,(.7+i%3*.4)*scale) end
- end
- -- Only a few drops follow the spider through the meniscus.
- for i=1,7 do
-  local age=t-2.65-i*.035
-  if age>0 and age<1.5 then
-   g.setColor(.45,.8,.95,(1-age/1.5)*.65)
-   g.ellipse('fill',w*.5+math.sin(i*2.4)*16*scale,h*(.58+.13*age+.22*age*age-p.camera),scale,2.5*scale)
+ -- Bubbles accelerate up the vent and break at the receding surface.
+ for i=1,70 do
+  local speed=.12+i%5*.035
+  local py=h*(p.waterline+((i*.137-t*speed)%1)*1.2)
+  local px=w*(.32+math.sin(i*2.4+t*.7)*(.035+i%4*.018))
+  if py<h+20 then
+   g.setColor(.36,.72,.83,.22);g.setLineWidth(scale)
+   g.circle('line',px,py,(2+i%5)*scale)
+   g.setColor(.72,.91,.94,.32);g.circle('fill',px-scale,py-scale,scale)
   end
+ end
+ -- The launch throws only spray into the dry chamber; the lamp stays afloat below.
+ for i=1,18 do
+  local age=t-3.1-i*.008
+  if age>0 and age<1.7 then
+   g.setColor(.55,.85,.95,(1-age/1.7)*.65)
+   g.ellipse('fill',w*(.32+math.sin(i*2.4)*age*.11),h*(.30-.24*age+.48*age*age),scale,2.5*scale)
+  end
+ end
+ if p.silk>0 then
+  local attachX,attachY=w*.53,-h*.08
+  local thread=ease((t-3.65)/.55)
+  silk.thread(ax,ay+size*.12,ax+(attachX-ax)*thread,ay+(attachY-ay)*thread,3.5*scale,p.silk)
  end
  Characters.shadow(sx,sy,Characters.playerWidth*scale,p.dir,S.actor,p.mapAlpha)
  g.setColor(1,1,1);Characters.draw(ax,ay,size,p.dir,S.actor,2)
@@ -87,14 +102,14 @@ function S.draw(canvas,w,h)
  end
  if not p.detached then bubble.drawLantern(hx,hy,r,t,nil,1,p.dir)
  else
-  -- The buoyant lamp remains at a fixed depth in the water as the camera falls.
-  local lampX=w*.5+math.sin((t-2.65)*2)*3*scale
-  local lampY=h*(.55-p.camera);local lampR=Characters.playerWidth*scale*1.65*.19
+  -- The buoyant lamp stays on the water as the camera rises into the cavern.
+  local lampX=w*.32+math.sin((t-3.1)*2)*3*scale
+  local lampY=h*(p.waterline+.065);local lampR=Characters.playerWidth*scale*1.65*.19
   bubble.drawLantern(lampX,lampY,lampR,t,nil,1,'down')
   local lx,ly=bubble.lanternPosition(lampX,lampY,lampR,t,'down')
   if not p.broken then silk.thread(hx,hy,lx,ly,2*scale,1)
   else
-   local recoil=ease((t-2.95)/.6);local alpha=1-ease((t-3.2)/.5)
+   local recoil=ease((t-3.35)/.6);local alpha=1-ease((t-3.5)/.5)
    silk.thread(lx,ly,lx+math.sin(t*12)*5*scale,ly+(1-recoil)*20*scale,2*scale,1)
    silk.thread(hx,hy,hx-5*scale,hy-(1-recoil)*20*scale,2*scale,alpha)
   end

@@ -17,17 +17,18 @@ function T.run()
   assert(S.pose(S.duration).actorsAlpha==1,'Creatures are fully revealed at gameplay handoff')
   if route.kind=='hell' then
    assert(S.pose(5).mapAlpha>0 and S.pose(5.8).mapAlpha<1,'Same continuous dissolve as Sky')
-   assert(pose(2).dir=='down' and pose(4).dir=='down','Faces the viewer during the fall')
-   assert(not pose(2.6).detached and pose(2.7).detached and not pose(2.7).broken and pose(3).broken,'Lamp detaches then its taut thread breaks at the waterline')
-   assert(pose(4).x==.5 and pose(8).x==.5,'Falls directly rather than entering a side gallery')
+   assert(pose(2).y<pose(1).y and pose(3.5).y<pose(2).y,'Current lifts the spider before launching it out of the water')
+   assert(not pose(3).detached and pose(3.2).detached and not pose(3.2).broken and pose(3.4).broken,'Lantern detaches at the surface then the thread breaks')
+   assert(pose(3.5).silk==0 and pose(4.3).silk==1 and pose(7.3).silk==0,'Silk launches, catches and releases before landing')
+   assert(pose(5.6).x>pose(4.3).x+.4,'Swings across the cavern over the lava')
    local ex,ey=S.position(S.duration,1200,750,197,533);assert(ex==197 and ey==533,'Hell finishes at the exact spawn')
   end
   if route.kind=='renaissance' then
    assert(pose(4).silk==0 and pose(8.8).silk>0 and S.pose(S.duration).silk==0,'Web catches the fall and releases at landing')
    local ax,ay=S.position(S.duration,1200,750,197,533);assert(ax==197 and ay==533,'Renaissance lands at the actual spawn, even away from the center')
   end
-  if route.kind=='hell' then assert(pose(2.6).release==0 and pose(2.9).release>0 and pose(3.2).bubble==0,'Breathing bubble clears when leaving the water') end
-  for _,t in ipairs({2,3.8,4,5.8,6.2}) do
+  if route.kind=='hell' then assert(pose(3).release==0 and pose(3.3).release>0 and pose(3.6).bubble==0,'Breathing bubble clears when leaving the water') end
+  for _,t in ipairs({1.3,2.8,3.5,4.2,5.8,6.8}) do
    for _,key in ipairs({'x','y'}) do
     local dt=.0001;local before=pose(t-dt)[key];local at=pose(t)[key];local after=pose(t+dt)[key]
     assert(math.abs((at-before)/dt-(after-at)/dt)<.01,'Continuous velocity during the crossing')
