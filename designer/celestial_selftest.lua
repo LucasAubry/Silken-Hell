@@ -77,6 +77,18 @@ function T.run(M,state,select)
  assert(boss.bossTimings.barrage==10 and M.validate(M.layout),'Barrage duration edits the correct page')
  local savedBoss=require('json').decode(love.filesystem.read(M.draftFilename))['6:1'].entities[#M.layout.entities]
  assert(savedBoss.bossTimings.barrage==10,'Boss timings persist')
+ state.attackSettings=nil;M.selected=timed;state.tool=nil;love.draw()
+ -- Selection must survive the procedural sprites' early return paths.
+ local selectedImage=state.mapCanvas:newImageData()
+ local r,g,b=selectedImage:getPixel(460,300)
+ assert(r>.9 and g>.65 and b<.2,'Procedural monster has a yellow selection outline')
+ selectedImage:release()
+ assert(require('sky_void').field,'Sky edge void is visible in the editor')
+ for _,world in ipairs({1,2,3,4,5,7}) do
+  select(world,1);love.draw()
+  assert(require('biome_borders').key:match('^'..world..':'),'Editor renders the selected biome perimeter')
+ end
+ select(6,1);M.selected=M.add({kind='mob',type='cloud_snail',speed=40},500,300);love.draw()
  local frames=0;state.testUpdate=function()
   frames=frames+1
   if frames==2 then love.graphics.captureScreenshot('celestial-editor.png') end

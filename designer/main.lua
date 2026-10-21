@@ -104,16 +104,21 @@ local function entity(e,ghost,terrainDrawn)
     end
     if e.kind=='spawn' then g.setColor(.3,1,.7,.75); g.circle('line',e.x,e.y,32) end
     if e.has_larme then g.setColor(Worlds.color(M.world).tear); g.circle('fill',e.x+21,e.y+20,6) end
-    if e==M.selected then
-        g.setColor(color.accent); g.setLineWidth(2)
-        local w,h=e.w and e.w+8 or e.type=='skeleton_head' and 178 or 70,e.h and e.h+8 or e.type=='skeleton_head' and 158 or 70
-        g.push();g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180)
-        if brush(e) and e.points then
-            local x0,y0,x1,y1=require('ground_holes').bounds(e);g.rectangle('line',x0-4,y0-4,x1-x0+8,y1-y0+8,4)
-        else g.rectangle('line',-w/2,-h/2,w,h,4) end
-        g.pop(); g.setLineWidth(1)
-    end
 end
+local function selection(e)
+    if not e then return end
+    g.push('all');g.setShader();g.setColor(1,.85,.08,1);g.setLineWidth(3)
+    local size=e.kind=='boss' and (e.type=='octopus' and 360 or 110) or 70
+    local w,h=e.w and e.w+10 or e.type=='skeleton_head' and 180 or size+10,e.h and e.h+10 or e.type=='skeleton_head' and 160 or size+10
+    g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180)
+    if brush(e) and e.points then
+        local x0,y0,x1,y1=require('ground_holes').bounds(e);g.rectangle('line',x0-5,y0-5,x1-x0+10,y1-y0+10,4)
+    elseif e.type=='skeleton_fish' then
+        g.rectangle('line',-M.layout.width*.405-55,-90,M.layout.width*.695+145,180,6)
+    else g.rectangle('line',-w/2,-h/2,w,h,6) end
+    g.pop()
+end
+
 local function apply()
     local ok,msg=M.apply(); state.status=msg; state.error=not ok; return ok
 end
@@ -266,6 +271,7 @@ function love.draw()
     end
     require('terrain_surface').draw(holes,'hole',state.clock,1,M.world)
     require('editor_terrain').draw(lava,M.world,state.clock)
+    require('biome_borders').draw(M.world,M.layout.width,M.level)
     if moving then require('brush_preview').draw(moving) end
     if state.stroke then require('brush_preview').draw(state.stroke) end
     for _,e in ipairs(M.layout.entities) do if e.kind~='mob' and e.kind~='boss' and e.kind~='spawn' then entity(e,false,true) end end
@@ -277,6 +283,7 @@ function love.draw()
         end
     end
     require('level_environment').draw(M.world,M.layout.width,600,0,M.layout.environment,true)
+    selection(M.selected)
     g.pop()
     g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1)
     g.draw(state.mapCanvas,x,y,0,scale,scale);g.pop()

@@ -91,34 +91,39 @@ function B.paint(canvas,zones,edgeConnectionsOnly)
  end
  g.draw(canvas);g.pop()
 end
-function B.draw()
- if (Campaign.biome==6 or Campaign.biome==7) and not Secret.inArena() then return end
- local g=love.graphics;local biome=Secret.inArena() and 8 or Campaign.biome;local rank=Worlds.rank(biome);if rank==math.huge then rank=biome==8 and 4 or 1 end;rank=math.min(7,rank)
+function B.draw(editorBiome,editorWidth,editorLevel)
+ if editorBiome==6 then return end
+ if not editorBiome and (Campaign.biome==6 or Campaign.biome==7) and not Secret.inArena() then return end
+ local g=love.graphics;local biome=editorBiome or (Secret.inArena() and 8 or Campaign.biome);local rank=require('worlds').rank(biome);if rank==math.huge then rank=biome==8 and 4 or 1 end;rank=math.min(7,rank)
+ local width=editorWidth or Arena.width;local level=editorLevel or player.level or 1
  local target=g.getCanvas()
  local density=target and target:getDPIScale() or 1
- local key=biome..':'..Arena.width..':'..(player.level or 1)..':'..density
+ local key=biome..':'..width..':'..level..':'..density
  if B.key~=key then
   B.key=key;if B.canvas then B.canvas:release() end
-  B.canvas=g.newCanvas(Arena.width,600,{dpiscale=density});B.canvas:setFilter('linear','linear')
+  B.canvas=g.newCanvas(width,600,{dpiscale=density});B.canvas:setFilter('linear','linear')
   local old=g.getCanvas();g.push('all');g.setCanvas(B.canvas);g.origin();g.setShader();g.clear(0,0,0,0)
-  B.edge(Arena.width,biome,1)
-  g.push();g.translate(Arena.width,600);g.rotate(math.pi);B.edge(Arena.width,biome,2);g.pop()
+  B.edge(width,biome,1)
+  g.push();g.translate(width,600);g.rotate(math.pi);B.edge(width,biome,2);g.pop()
   g.push();g.translate(0,600);g.rotate(-math.pi/2);B.edge(600,biome,3);g.pop()
-  g.push();g.translate(Arena.width,0);g.rotate(math.pi/2);B.edge(600,biome,4);g.pop()
+  g.push();g.translate(width,0);g.rotate(math.pi/2);B.edge(600,biome,4);g.pop()
   -- The same fine silk appears increasingly often along the entire route.
-  local density=3+(rank-1)*4+math.floor(((player.level or 1)-1)/4)
-  local perimeter=2*(Arena.width+600)
+  local density=3+(rank-1)*4+math.floor((level-1)/4)
+  local perimeter=2*(width+600)
   for i=1,density do
    local d=(i/density*perimeter+rand(i,biome)*55)%perimeter;local x,y,angle
-   if d<Arena.width then x,y,angle=d,17,0 elseif d<Arena.width+600 then x,y,angle=Arena.width-17,d-Arena.width,math.pi/2
-   elseif d<2*Arena.width+600 then x,y,angle=2*Arena.width+600-d,583,math.pi else x,y,angle=17,perimeter-d,-math.pi/2 end
+   if d<width then x,y,angle=d,17,0 elseif d<width+600 then x,y,angle=width-17,d-width,math.pi/2
+   elseif d<2*width+600 then x,y,angle=2*width+600-d,583,math.pi else x,y,angle=17,perimeter-d,-math.pi/2 end
    local size=24+rank*3+rand(i,4)*10
    if biome==1 then g.setColor(1,.94,.77,.42) else g.setColor(.93,.96,1,.30+rank*.055) end
-   require('final_art').draw('web_wall',x,y,size,i*.81)
+   if editorBiome then
+    local art=require('art');art.add('final_web_wall','assets/sprites/final/web_wall.png');local sprite=art.images.final_web_wall
+    art.draw('final_web_wall',x,y,size,i*.81,size*sprite.h/sprite.w)
+   else require('final_art').draw('web_wall',x,y,size,i*.81) end
   end
   g.setCanvas(old);g.pop()
  end
  -- Lava stays below masonry even when its painted footprint reaches outside.
- B.paint(B.canvas)
+ if editorBiome then g.push('all');g.setShader();g.setColor(1,1,1);g.setBlendMode('alpha','premultiplied');g.draw(B.canvas);g.pop() else B.paint(B.canvas) end
 end
 return B
