@@ -7,7 +7,7 @@ function T.run()
  -- Lethal contacts are exercised separately by sky_weather/ecosystem_revision.
  local kill=Hazards.kill;Hazards.kill=function()end
  App.sessionLayout={world=6,level=1,width=960,height=600,entities={{kind='spawn',x=480,y=300},{kind='tear',x=850,y=500},
-  {kind='mob',type='cloud_beast',startDirection='left',x=350,y=120,speed=330},{kind='mob',type='cloud_beast',x=550,y=140,speed=330},{kind='mob',type='cloud_beast',x=730,y=260,speed=330},{kind='mob',type='cloud_snail',startDirection='up',x=300,y=300,speed=66},{kind='mob',type='dragonfly',x=700,y=110,speed=70},{kind='mob',type='mist_moth',startDirection='left',x=800,y=440,speed=55},{kind='mob',type='wind_bat',x=80,y=80,speed=0}}}
+  {kind='mob',type='cloud_beast',startDirection='left',x=350,y=120,speed=330},{kind='mob',type='cloud_beast',x=550,y=140,speed=330},{kind='mob',type='cloud_beast',x=730,y=260,speed=330},{kind='mob',type='cloud_snail',startDirection='up',x=300,y=300,speed=66},{kind='mob',type='dragonfly',x=700,y=110,speed=70},{kind='mob',type='mist_moth',attackDelay=4,attackDuration=10,attackInterval=1,startDirection='left',x=800,y=440,speed=55},{kind='mob',type='wind_bat',x=80,y=80,speed=0}}}
  App.singleLevel=true;App.practice=1;App.hardcore=false;LevelLayouts.disabled=false;Replay.recording=false;Replay.data=nil
  Input.move=function()if Replay.input then return Replay.input[1],Replay.input[2] end;return 0,0 end
  Input.slow=function()return true end

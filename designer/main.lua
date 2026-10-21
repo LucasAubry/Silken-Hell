@@ -307,6 +307,7 @@ function love.draw()
         button('Dupliquer',right,yy,99,34,function() local t=M.clone(e); M.add(t,math.min(M.layout.width-40,e.x+30),math.min(560,e.y+30)) end)
         button('Supprimer',right+108,yy,99,34,M.delete)
         if e.kind=='mob' or e.kind=='boss' then button('Comportement',right,yy+42,207,34,function() state.details=e end) end
+        if require('mob_attack_timing').spec(e) then button('Attaques',right,yy+84,207,34,function() state.attackSettings=e;state.timingError=nil end) end
     else
         text(state.tool and state.tool.name or 'Aucun objet sélectionné',right,212,18,nil,208)
         if state.tool and (state.tool.kind=='mob' or state.tool.kind=='boss') then
@@ -330,15 +331,27 @@ function love.draw()
         if not M.workshop and not M.devMode then text('Entrée : enregistrer · Échap : annuler',w/2-230,h/2+65,14,color.muted,460) end
     end
     if Projects then Projects.drawPublication() end
-    local modal=state.directionPicker or state.details
+    local modal=state.directionPicker or state.details or state.attackSettings
     if modal then
         state.buttons={}
         local width=math.min(620,w-60);local height=state.directionPicker and 350 or 410
         local x,y=(w-width)/2,(h-height)/2
         g.setColor(0,0,0,.78);g.rectangle('fill',0,0,w,h)
         g.setColor(color.panel);g.rectangle('fill',x,y,width,height,10)
-        text(state.directionPicker and 'Direction de départ' or catalog(modal).name,x+24,y+24,22,nil,width-48)
-        if state.directionPicker then
+        text(state.directionPicker and 'Direction de départ' or state.attackSettings and 'Attaques · '..catalog(modal).name or catalog(modal).name,x+24,y+24,22,nil,width-48)
+        if state.attackSettings then
+            local timing=require('mob_attack_timing');local spec=timing.spec(modal);local row=0
+            for _,key in ipairs(timing.keys) do if spec[key]~=nil then
+                local label=({attackDelay='Délai initial (s)',attackDuration='Durée (s)',attackInterval='Repos (s)'})[key]
+                if modal.type=='magma_larva' then label='Mèche (s)' elseif modal.type=='dragonfly' then label='Traînée après (s)' end
+                text(label,x+24,y+82+row*58,18)
+                local value=state.input==key and state.inputText..'|' or modal[key]~=nil and tostring(modal[key]) or 'Par défaut'
+                button(value,x+width-220,y+74+row*58,196,40,function() state.input=key;state.inputText=tostring(modal[key] or spec[key]);state.timingError=nil;love.keyboard.setTextInput(true) end)
+                row=row+1
+            end end
+            if state.timingError then g.setFont(state.fonts[16]);g.setColor(1,.5,.4);g.printf(state.timingError,x+24,y+264,width-48) end
+            button('Par défaut',x+24,y+height-50,160,34,function() M.checkpoint();for _,key in ipairs(timing.keys) do modal[key]=nil end;M.persist();state.input=nil;state.timingError=nil;love.keyboard.setTextInput(false) end)
+        elseif state.directionPicker then
             for i,dir in ipairs({'up','left','down','right','default'}) do
                 local label=Directions.labels[dir] or 'Par défaut'
                 button(label,x+24,y+74+(i-1)*42,width-48,34,function()
@@ -349,12 +362,12 @@ function love.draw()
             g.setFont(state.fonts[18]);g.setColor(color.text)
             g.printf(require('creature_details').text(modal),x+24,y+78,width-48)
         end
-        button('Fermer',x+width-144,y+height-50,120,34,function() state.directionPicker=nil;state.details=nil end)
+        button('Fermer',x+width-144,y+height-50,120,34,function() state.directionPicker=nil;state.details=nil;state.attackSettings=nil;state.input=nil;love.keyboard.setTextInput(false) end)
     end
 end
 function love.mousepressed(mx,my,button)
     for _,b in ipairs(state.buttons) do if mx>=b.x and mx<=b.x+b.w and my>=b.y and my<=b.y+b.h then if button==1 then b.fn() end; return end end
-    if state.directionPicker or state.details then return end
+    if state.directionPicker or state.details or state.attackSettings then return end
     if Projects and ((not M.currentProject and not M.devMode) or Projects.publication) then return end
     if not inside(mx,my) then return end
     state.input=nil; love.keyboard.setTextInput(false)
@@ -380,7 +393,7 @@ function love.mousepressed(mx,my,button)
     end
 end
 function love.mousemoved(mx,my)
-    if state.directionPicker or state.details then return end
+    if state.directionPicker or state.details or state.attackSettings then return end
     if Projects and ((not M.currentProject and not M.devMode) or Projects.publication) then return end
     if state.stroke then
         local x,y=point(mx,my);local e=state.stroke;local p=e.points
@@ -406,10 +419,10 @@ function love.mousereleased(mx,my,button)
     end
     if state.drag then M.persist();state.drag=nil end
 end
-function love.wheelmoved(x,y) if state.directionPicker or state.details then return end;if love.mouse.getX()<250 then state.scroll=math.max(0,state.scroll-y) end end
+function love.wheelmoved(x,y) if state.directionPicker or state.details or state.attackSettings then return end;if love.mouse.getX()<250 then state.scroll=math.max(0,state.scroll-y) end end
 function love.textinput(s) if Projects and Projects.text(s) then return end;if state.input then if state.input=='templateName' then state.inputText=(state.inputText..s:gsub('[%c]','')):sub(1,60) else state.inputText=state.inputText..s:gsub('[^%d%.%-]','') end end end
 function love.keypressed(key)
-    if state.directionPicker or state.details then if key=='escape' then state.directionPicker=nil;state.details=nil end;return end
+    if state.directionPicker or state.details or state.attackSettings and not state.input then if key=='escape' then state.directionPicker=nil;state.details=nil;state.attackSettings=nil end;return end
     if Projects and Projects.key(key) then return end
     if state.input then
         if key=='backspace' then state.inputText=state.inputText:sub(1,-2)
@@ -424,7 +437,14 @@ function love.keypressed(key)
                 end
             end
             local v=tonumber(state.inputText)
-            if v and M.selected then M.checkpoint(); M.selected[state.input]=v; M.persist() end
+            if state.attackSettings then
+                local timing=require('mob_attack_timing')
+                if not timing.valid(state.attackSettings,state.input,v) then
+                    state.timingError=state.attackSettings.type=='cloud_beast' and state.input=='attackDelay' and 'Délai : entre 1,95 et 120 secondes.' or state.input=='attackDelay' and 'Délai : entre 0 et 120 secondes.' or 'Durée : entre 0,1 et 120 secondes.'
+                    return
+                end
+                M.checkpoint();state.attackSettings[state.input]=v;M.persist();state.timingError=nil
+            elseif v and M.selected then M.checkpoint(); M.selected[state.input]=v; M.persist() end
             state.input=nil; love.keyboard.setTextInput(false)
         elseif key=='escape' then state.input=nil; love.keyboard.setTextInput(false) end
         return

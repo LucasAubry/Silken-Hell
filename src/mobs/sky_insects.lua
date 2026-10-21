@@ -24,7 +24,7 @@ function B.update(m,dt)
     local x,y=m.x,m.y
     Arena.move(m,m.vx*distance/steps,m.vy*distance/steps)
     m.x=math.max(48,math.min(Arena.width-48,m.x));m.y=math.max(48,math.min(552,m.y))
-    W.trail(x,y,m.x,m.y)
+    if m.attackDelay==nil or m.age>=m.attackDelay then W.trail(x,y,m.x,m.y) end
     if isTouching(player,m) then Hazards.kill() end
    end
   end
@@ -45,7 +45,7 @@ function B.update(m,dt)
    m.roamTime=7
   end
   local dx,dy=m.tx-m.x,m.ty-m.y
-  if dx*dx+dy*dy>35^2 and m.roamTime>0 then m.cooldown=math.max(m.cooldown,.15) end
+  if m.attackInterval==nil and dx*dx+dy*dy>35^2 and m.roamTime>0 then m.cooldown=math.max(m.cooldown,.15) end
   Arena.navigate(m,m.tx,m.ty,math.max(140,(m.speed or 55)*2.5),dt)
   m.angle=math.atan2(dy,dx)-math.pi/2
 

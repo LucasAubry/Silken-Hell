@@ -55,7 +55,19 @@ function T.run(M,state,select)
  M.undo(true);assert(M.layout.environment.rain==false,'Environment participates in redo')
  assert(M.validate(M.layout));local saved=require('json').decode(love.filesystem.read(M.draftFilename))['6:1']
  assert(saved.environment.rain==false and saved.entities[#saved.entities].type=='cloud_snail','Options and placed snail persist in drafts')
- state.details=bat
+ local timed=M.add({kind='mob',type='mist_moth',speed=55},500,300)
+ state.attackSettings=timed;love.draw()
+ local height=love.graphics.getHeight();local top=(height-410)/2
+ love.mousepressed(w/2+180,top+94,1);state.inputText='4';love.keypressed('return')
+ love.draw();love.mousepressed(w/2+180,top+152,1);state.inputText='10';love.keypressed('return')
+ assert(timed.attackDelay==4 and timed.attackDuration==10 and timed.attackInterval==nil,'Attack settings are individually optional')
+ assert(M.validate(M.layout));local encoded=require('json').decode(love.filesystem.read(M.draftFilename))['6:1']
+ assert(encoded.entities[#encoded.entities].attackDuration==10,'Attack timings persist')
+ love.draw();love.mousepressed(w/2+180,top+152,1);state.inputText='0';love.keypressed('return');assert(timed.attackDuration==10 and state.timingError,'Invalid attack duration is rejected')
+ love.keypressed('escape');love.keypressed('escape');assert(not state.attackSettings)
+ M.undo(false);assert(M.layout.entities[#M.layout.entities].attackDuration==nil,'Undo restores default duration')
+ M.undo(true);timed=M.layout.entities[#M.layout.entities];assert(timed.attackDuration==10)
+ state.attackSettings=timed;state.timingError=nil
  local frames=0;state.testUpdate=function()
   frames=frames+1
   if frames==2 then love.graphics.captureScreenshot('celestial-editor.png') end

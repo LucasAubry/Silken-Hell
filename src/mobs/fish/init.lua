@@ -2,7 +2,9 @@ return function(R)
     local function motion(m,dt,before)
         local vx,vy,speed,dangerous=m.vx,m.vy,m.speed,true
         local s=m.school; local dash=s.age%3>=2.3
-        vx,vy=math.cos(s.angle),math.sin(s.angle); speed=dash and 440 or 13
+        local timed=require('mob_attack_timing').charge(m,dt);if timed~=nil then dash=timed end
+        local angle=timed~=nil and (m.attackAngle or s.angle) or s.angle
+        vx,vy=math.cos(angle),math.sin(angle); speed=dash and 440 or 13
         if not dash then
             local leaderIndex=s.members[2] and 2 or 1
             local leader=s.members[leaderIndex] or m; local offset=(m.slot-leaderIndex)*29

@@ -39,7 +39,8 @@ local function draw(m)
     end
     local hidden=(m.type=='mole' and (phase=='hidden' or phase=='warning')) or (m.type=='worm' and m.age%4<1.2)
     if hidden then return end
-    if m.type=='fish' and m.school.age%3>2.05 then
+    local warning=m.type=='fish' and require('mob_attack_timing').warning(m)
+    if m.type=='fish' and (warning or warning==nil and m.school.age%3>2.05) then
         love.graphics.setColor(1,.5,.15,.5); love.graphics.circle('line',m.x,m.y,20)
     end
     love.graphics.setColor(m.is_frozen and {.55,.75,1} or {1,1,1})

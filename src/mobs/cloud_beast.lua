@@ -19,7 +19,7 @@ function B.update(m,dt)
  if m.roamSeed==nil then m.roamSeed=heading(m) end
  m.age=m.age+dt;m.sparks=m.sparks or {}
  for i=#m.sparks,1,-1 do local p=m.sparks[i];p.age=p.age+dt;if p.age>.65 then table.remove(m.sparks,i) end end
- if type(m.phase)~='string' then phase(m,'surface',1.2);local a=require('mob_start_direction').angle(m) or m.roamSeed;m.vx=math.cos(a);m.vy=math.sin(a) end
+ if type(m.phase)~='string' then phase(m,'surface',m.attackDelay and math.max(0,m.attackDelay-1.95) or 1.2);local a=require('mob_start_direction').angle(m) or m.roamSeed;m.vx=math.cos(a);m.vy=math.sin(a) end
  m.phaseTime=m.phaseTime-dt
  if m.phase=='surface' or m.phase=='dive' then
   local speed=m.phase=='surface' and 42 or 42*math.max(0,m.phaseTime/.45)
@@ -48,7 +48,7 @@ function B.update(m,dt)
    phase(m,'emerge',.4);splash(m)
    local dx,dy=player.x+15-m.x,player.y+12-m.y;local d=math.max(.001,math.sqrt(dx*dx+dy*dy))
    m.vx,m.vy=dx/d,dy/d;m.angle=math.atan2(dy,dx)-math.pi/2
-  elseif m.phase=='emerge' then phase(m,'charge',.9) end
+  elseif m.phase=='emerge' then phase(m,'charge',m.attackDuration or .9) end
  end
  if (m.phase=='surface' or m.phase=='charge') and isTouching(player,m) then Hazards.kill('cloud_beast') end
 end

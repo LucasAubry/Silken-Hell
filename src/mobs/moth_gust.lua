@@ -15,6 +15,13 @@ function G.reaches(m,x,y)
 end
 function G.update(m,dt)
  if m.phase~='windup' and m.phase~='gust' and m.phase~='recover' then m.phase='roam' end
+ if m.phase=='roam' and m.attackDelay~=nil and not m.attackStarted then
+  local tell=math.min(.85,m.attackDelay);local start=m.attackDelay-tell
+  local before=m.age-dt
+  if m.age<start then return false end
+  dt=math.max(0,m.age-math.max(before,start));m.attackStarted=true;m.cooldown=0
+  aim(m);m.phase=tell>0 and 'windup' or 'gust';m.phaseTime=tell>0 and tell or (m.attackDuration or 2)
+ end
  if m.phase=='roam' then
   if m.cooldown>0 then return false end
   local dx,dy=player.x+15-m.x,player.y+12-m.y
@@ -41,7 +48,7 @@ function G.update(m,dt)
     end
    end
   end
-  if m.phase=='gust' and not (player.reset or player.falling or player.tunnelTravel or player.abyssHeld or player.skyWhirl or player.skyThrow) then
+  if m.phase=='gust' and not (player.reset or player.falling or player.tunnelTravel or player.abyssHeld or player.whirl or player.throw or player.skyWhirl or player.skyThrow) then
    local steps=math.max(1,math.ceil(G.power*step/4))
    for _=1,steps do
     if not G.reaches(m,player.x+15,player.y+12) then break end
@@ -53,9 +60,9 @@ function G.update(m,dt)
   end
   remaining=remaining-step;m.phaseTime=m.phaseTime-step
   if m.phaseTime<=0 then
-   if m.phase=='windup' then aim(m);m.phase='gust';m.phaseTime=2
+   if m.phase=='windup' then aim(m);m.phase='gust';m.phaseTime=m.attackDuration or 2
    elseif m.phase=='gust' then m.phase='recover';m.phaseTime=.65
-   else m.phase='roam';m.cooldown=2.5 end
+   else m.phase='roam';m.cooldown=m.attackInterval or 2.5 end
   end
  end
  return true

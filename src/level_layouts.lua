@@ -1,6 +1,6 @@
 local json=require 'json'
 local L={disabled=false}
-local fields={'x','y','speed','rota','radius','phase','rx','ry','dx','seed','w','h','electric','has_larme','elite','startUnderground','customName','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage','rotation'}
+local fields={'attackDelay','attackDuration','attackInterval','x','y','speed','rota','radius','phase','rx','ry','dx','seed','w','h','electric','has_larme','elite','startUnderground','customName','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage','rotation'}
 local function copy(t)
     local r={}; for _,k in ipairs(fields) do if type(t[k])=="number" or type(t[k])=="boolean" then r[k]=t[k] end end
     if t.startDirection then r.startDirection=t.startDirection end
@@ -90,6 +90,7 @@ function L.spawn(e)
     if m.has_larme then Campaign.carrier=m; objet.larme_dropped=false end
     if m.type=='scie' then setup_rotor(m) elseif m.type=='spinner' then setup_spinner(m) end
     require('mob_start_direction').apply(m,e)
+    require('mob_attack_timing').apply(m,e)
     if m.imgs then m.img=(m.startDirection and m.imgs[m.dir]) or m.imgs.down or m.imgs.up end
     if kind=='ange' or kind=='snake' then require('mobs.shared.floating').hitbox(m) end
 end

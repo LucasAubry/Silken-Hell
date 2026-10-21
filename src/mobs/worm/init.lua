@@ -5,7 +5,8 @@ return function(R)
         vx,vy=math.cos(a),math.sin(a)
         dangerous=m.age%4>=1.2
         if not dangerous then speed=speed*1.3 else speed=speed*.3 end
-        if math.floor((before+2.8)/4)<math.floor((m.age+2.8)/4) then R.spit(m) end
+        local due=require('mob_attack_timing').due(m,dt,(m.startUnderground and 1.2 or 3.6),4)
+        if due or (due==nil and (math.floor((before+2.8)/4)<math.floor((m.age+2.8)/4))) then R.spit(m) end
         return vx,vy,speed,dangerous
     end
     return require('mobs.shared.realm_behavior')(R,motion)
