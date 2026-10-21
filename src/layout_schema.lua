@@ -63,6 +63,10 @@ function S.validate(l)
         if e.kind=='electric_ground' and not e.points then return false,'Dessine la zone électrique.' end
         if e.type=='wind_bat' and e.dx~=nil and e.dx~=1 and e.dx~=-1 then return false,'Sens de traversée invalide.' end
         for _,key in ipairs(require('mob_attack_timing').keys) do if e[key]~=nil and not require('mob_attack_timing').valid(e,key,e[key]) then return false,'Durée d’attaque invalide (0 à 120 s ; durée et repos : 0,1 s minimum ; bête : délai de 1,95 s minimum).' end end
+        if e.bossTimings~=nil then
+            if type(e.bossTimings)~='table' then return false,'Réglages du boss invalides.' end
+            for key,value in pairs(e.bossTimings) do if not require('boss_attack_timing').valid(e,key,value) then return false,'Durée du boss invalide (120 s maximum).' end end
+        end
         if e.startDirection~=nil and (not require('mob_start_direction').vectors[e.startDirection] or not require('mob_start_direction').supported(e)) then return false,'Direction de départ invalide.' end
         if e.customName~=nil and (type(e.customName)~='string' or #e.customName>60) then return false,'Nom de créature invalide.' end
         for _,key in ipairs({'electric','has_larme','elite','startUnderground'}) do if e[key]~=nil and type(e[key])~='boolean' then return false,'Option invalide.' end end

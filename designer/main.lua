@@ -307,7 +307,7 @@ function love.draw()
         button('Dupliquer',right,yy,99,34,function() local t=M.clone(e); M.add(t,math.min(M.layout.width-40,e.x+30),math.min(560,e.y+30)) end)
         button('Supprimer',right+108,yy,99,34,M.delete)
         if e.kind=='mob' or e.kind=='boss' then button('Comportement',right,yy+42,207,34,function() state.details=e end) end
-        if require('mob_attack_timing').spec(e) then button('Attaques',right,yy+84,207,34,function() state.attackSettings=e;state.timingError=nil end) end
+        if require('mob_attack_timing').spec(e) or require('boss_attack_timing').spec(e) then button('Attaques',right,yy+84,207,34,function() state.attackSettings=e;state.timingError=nil;state.attackPage=1 end) end
     else
         text(state.tool and state.tool.name or 'Aucun objet sélectionné',right,212,18,nil,208)
         if state.tool and (state.tool.kind=='mob' or state.tool.kind=='boss') then
@@ -339,7 +339,9 @@ function love.draw()
         g.setColor(0,0,0,.78);g.rectangle('fill',0,0,w,h)
         g.setColor(color.panel);g.rectangle('fill',x,y,width,height,10)
         text(state.directionPicker and 'Direction de départ' or state.attackSettings and 'Attaques · '..catalog(modal).name or catalog(modal).name,x+24,y+24,22,nil,width-48)
-        if state.attackSettings then
+        if state.attackSettings and modal.kind=='boss' then
+            require('boss_attack_panel').draw(modal,state,M,button,text,color,x,y,width,height)
+        elseif state.attackSettings then
             local timing=require('mob_attack_timing');local spec=timing.spec(modal);local row=0
             for _,key in ipairs(timing.keys) do if spec[key]~=nil then
                 local label=({attackDelay='Délai initial (s)',attackDuration='Durée (s)',attackInterval='Repos (s)'})[key]
@@ -438,12 +440,13 @@ function love.keypressed(key)
             end
             local v=tonumber(state.inputText)
             if state.attackSettings then
-                local timing=require('mob_attack_timing')
+                local boss=state.attackSettings.kind=='boss'
+                local timing=boss and require('boss_attack_timing') or require('mob_attack_timing')
                 if not timing.valid(state.attackSettings,state.input,v) then
-                    state.timingError=state.attackSettings.type=='cloud_beast' and state.input=='attackDelay' and 'Délai : entre 1,95 et 120 secondes.' or state.input=='attackDelay' and 'Délai : entre 0 et 120 secondes.' or 'Durée : entre 0,1 et 120 secondes.'
+                    state.timingError=boss and 'Durée invalide (maximum 120 s).' or state.attackSettings.type=='cloud_beast' and state.input=='attackDelay' and 'Délai : entre 1,95 et 120 secondes.' or state.input=='attackDelay' and 'Délai : entre 0 et 120 secondes.' or 'Durée : entre 0,1 et 120 secondes.'
                     return
                 end
-                M.checkpoint();state.attackSettings[state.input]=v;M.persist();state.timingError=nil
+                M.checkpoint();if boss then state.attackSettings.bossTimings=state.attackSettings.bossTimings or {};state.attackSettings.bossTimings[state.input]=v else state.attackSettings[state.input]=v end;M.persist();state.timingError=nil
             elseif v and M.selected then M.checkpoint(); M.selected[state.input]=v; M.persist() end
             state.input=nil; love.keyboard.setTextInput(false)
         elseif key=='escape' then state.input=nil; love.keyboard.setTextInput(false) end

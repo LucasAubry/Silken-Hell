@@ -3,6 +3,7 @@ local L={disabled=false}
 local fields={'attackDelay','attackDuration','attackInterval','x','y','speed','rota','radius','phase','rx','ry','dx','seed','w','h','electric','has_larme','elite','startUnderground','customName','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage','rotation'}
 local function copy(t)
     local r={}; for _,k in ipairs(fields) do if type(t[k])=="number" or type(t[k])=="boolean" then r[k]=t[k] end end
+    if t.bossTimings then r.bossTimings=json.decode(json.encode(t.bossTimings)) end
     if t.startDirection then r.startDirection=t.startDirection end
     if t.points then r.points={};for i,v in ipairs(t.points) do r.points[i]=v end end
     return r
@@ -38,7 +39,7 @@ function L.snapshot()
     for _,item in ipairs(Bosses.items) do
         local b=item.boss
         if item.kind=='skeleton_fish' then
-            put('boss',{x=b.origin.x,y=b.origin.y,skeletonStage=b.skeletonStage,movementRate=b.movementRate,attackRate=b.attackRate},b.headOnly and 'skeleton_head' or 'skeleton_fish')
+            put('boss',{x=b.origin.x,y=b.origin.y,skeletonStage=b.skeletonStage,movementRate=b.movementRate,attackRate=b.attackRate,bossTimings=b.bossTimings},b.headOnly and 'skeleton_head' or 'skeleton_fish')
         else put('boss',b,item.kind) end
     end
     local gate=require('abyss_gate')

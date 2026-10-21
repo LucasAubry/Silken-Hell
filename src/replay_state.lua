@@ -1,7 +1,7 @@
 -- Compare the simulated world, not just the player's route. Quantization avoids
 -- treating insignificant floating-point roundoff as a different encounter.
 local S={}
-local fields={'attackDelay','attackDuration','attackInterval','attackClock','attackStarted','attackAngle','attackActive','startDirection','type','kind','x','y','cx','cy','vx','vy','tx','ty','angle','speed','age','life','time','clock',
+local fields={'edgeFall','edgeGone','attackDelay','attackDuration','attackInterval','attackClock','attackStarted','attackAngle','attackActive','startDirection','type','kind','x','y','cx','cy','vx','vy','tx','ty','angle','speed','age','life','time','clock',
  'snailId','pendingEggs','hits','touching','hatch','jumpCooldown','owner','id','frozen','eggSerial','volley','cast','damageGrace','contactGrace','jumpHeight','snare','phase','phaseTime','phaseAge','hp','maxHp','active','defeated','hidden','taken','dead','reset','falling',
  'fallTimer','charges','overload','cooldown','radius','r','rx','ry','w','h','rotation','seed','dir','burst','shot','bolt',
  'boltsRemaining','volleyClock','patrolClock','fishCharge','fishWave','electric','spent','committed',
@@ -12,6 +12,7 @@ local lists={'snailHoles','trails','wind','mist','mistCuts','projectiles','strik
 local function actor(a,depth)
  if type(a)~='table' then return nil end
  local out={}
+ if a.bossTimings then out.bossTimings={};for key,value in pairs(a.bossTimings) do out.bossTimings[key]=math.floor(value*1000+.5) end end
  for _,key in ipairs(fields) do
   local v=a[key]
   if type(v)=='number' and v==v and math.abs(v)<1e12 then out[key]=math.floor(v*1000+.5)

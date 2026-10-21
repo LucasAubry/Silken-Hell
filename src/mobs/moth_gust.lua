@@ -44,6 +44,7 @@ function G.update(m,dt)
      for _=1,steps do
       if not G.reaches(m,other.x,other.y) then break end
       Arena.move(other,m.vx*G.power*step/steps,m.vy*G.power*step/steps)
+      if require('mob_edge_fall').check(other) then break end
      end
     end
    end

@@ -1,3 +1,4 @@
+local Timing=require('boss_attack_timing')
 local H={active=false,projectiles={}}
 function H.reset(active)
     H.active=active; H.name='Hérisson Brise-Roche'; H.hp=10; H.maxHp=10
@@ -39,7 +40,7 @@ function H.finishRound()
             objet.larme.x,objet.larme.y=Arena.clearSpot(H.x-15,H.y-20,30,40)
         end)
     else
-        H.stage=H.stage+1; H.phase='stunned'; H.phaseTime=.45; H.shot=.05
+        H.stage=H.stage+1; H.phase='stunned'; H.phaseTime=Timing.get(H,'stun',.45); H.shot=.05
         if H.stage<=5 then H.mole() end
     end
 end
@@ -56,11 +57,11 @@ function H.update(dt)
     if H.phase=='standing' then
         H.phaseTime=H.phaseTime-dt; H.shot=H.shot-dt*(H.attackRate or 1)
         if H.phaseTime<=0 then H.roll()
-        elseif H.shot<=0 then H.fire(); H.shot=1.25 end
+        elseif H.shot<=0 then H.fire(); H.shot=Timing.get(H,'shotInterval',1.25) end
     elseif H.phase=='stunned' then
         H.phaseTime=H.phaseTime-dt
         if H.phaseTime<=0 then
-            H.phase='standing'; H.phaseTime=.65; H.shot=.05
+            H.phase='standing'; H.phaseTime=Timing.get(H,'nextRoll',.65); H.shot=.05
         end
     else
         local speed=(475+(H.stage-1)*22)*(H.movementRate or 1)

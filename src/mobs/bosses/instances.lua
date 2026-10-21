@@ -40,6 +40,7 @@ function B.load(entries,nests,lights)
             end
             boss.name=e.customName or boss.name
             boss.movementRate=e.movementRate or 1; boss.attackRate=e.attackRate or 1
+            require('boss_attack_timing').configure(boss,e)
             B.items[#B.items+1]={kind=e.type=='skeleton_head' and 'skeleton_fish' or e.type,boss=boss}
         end
     end

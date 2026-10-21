@@ -1,3 +1,4 @@
+local Timing=require('boss_attack_timing')
 -- Swimming volleys, suction and exhale; stored blue energy damages only the mouth.
 local C={}
 local W=require 'mobs.bosses.abyss.whip_cycle'
@@ -266,7 +267,7 @@ function C.transition(a,target)
  end
  a.nextPhase=target;C.enter(a,'exitSwim')
 end
-function C.duration(a) return a.phase=='traverse' and a.passDuration or durations[a.phase] end
+function C.duration(a) return a.phase=='traverse' and a.passDuration or Timing.get(a,a.phase,durations[a.phase]) end
 local function tick(a,dt)
  local phase=a.phase
  a.bodyHitCooldown=math.max(0,a.bodyHitCooldown-dt)
@@ -274,7 +275,7 @@ local function tick(a,dt)
  a.clock=a.clock+dt;a.flash=math.max(0,a.flash-dt);a.spitFlash=math.max(0,a.spitFlash-dt)
  a.phaseTime=a.phaseTime+dt*(phase=='traverse' and 1 or (a.attackRate or 1))
  if phase=='roar' then
-  local t=math.min(1,a.phaseTime/1.1);t=1-(1-t)^3
+  local t=math.min(1,a.phaseTime/Timing.get(a,'roar',1.1));t=1-(1-t)^3
   player.x=a.pushFrom.x+(Arena.width-110-a.pushFrom.x)*t
   player.y=math.max(45,math.min(530,a.pushFrom.y));player.dashing=false
  end

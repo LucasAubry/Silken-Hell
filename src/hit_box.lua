@@ -29,6 +29,7 @@ end
 
 
 function isTouching(a, b)
+    if a.edgeFall~=nil or b.edgeFall~=nil or a.edgeGone or b.edgeGone then return false end
     if (a==player and b~=objet.larme and b.tunnelTravel) or (b==player and a~=objet.larme and a.tunnelTravel) then return false end
     if Abyss and Abyss.isPulling() and ((a==player and b~=objet.larme) or (b==player and a~=objet.larme)) then return false end
     if a.abyssHeld or b.abyssHeld or (player.abyssSpit and (a==player or b==player)) then return false end

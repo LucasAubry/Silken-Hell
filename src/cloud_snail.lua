@@ -137,10 +137,19 @@ function N.drawTrail()
  end
  local key=field and field.key or ''
  if N.unionList~=list or N.unionCount~=#list or N.unionRevision~=N.revision or N.unionKey~=key then
+  local dirty
+  if N.unionList==list and N.unionRevision==N.revision and N.unionKey==key and (N.unionCount or 0)<#list then
+   dirty={math.huge,math.huge,-math.huge,-math.huge}
+   for i=(N.unionCount or 0)+1,#list do
+    local p=list[i];local pad=(p.radius or N.width)+N.mergeMargin+18
+    dirty[1]=math.min(dirty[1],p.x-pad,p.tx-pad);dirty[2]=math.min(dirty[2],p.y-pad,p.ty-pad)
+    dirty[3]=math.max(dirty[3],p.x+pad,p.tx+pad);dirty[4]=math.max(dirty[4],p.y+pad,p.ty+pad)
+   end
+  end
   g.push('all');g.setCanvas(N.union);g.origin();g.setScissor();g.setShader();g.clear(0,0,0,1)
   g.setBlendMode('lighten','premultiplied');g.setColor(1,1,1);g.draw(N.canvas)
   if field then g.draw(field.image,field.x,field.y,0,field.step,field.step) end
-  g.pop();require('hole_union_distance').build(N.union,N);N.unionList=list;N.unionCount=#list;N.unionRevision=N.revision;N.unionKey=key
+  g.pop();require('hole_union_distance').build(N.union,N,dirty);N.unionList=list;N.unionCount=#list;N.unionRevision=N.revision;N.unionKey=key
  end
  surface.drawSkyField({image=N.distanceResult,x=0,y=0,w=width,h=600,step=1},1)
 end

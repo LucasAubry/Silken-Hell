@@ -67,7 +67,16 @@ function T.run(M,state,select)
  love.keypressed('escape');love.keypressed('escape');assert(not state.attackSettings)
  M.undo(false);assert(M.layout.entities[#M.layout.entities].attackDuration==nil,'Undo restores default duration')
  M.undo(true);timed=M.layout.entities[#M.layout.entities];assert(timed.attackDuration==10)
- state.attackSettings=timed;state.timingError=nil
+ state.attackSettings=nil;state.timingError=nil
+ local boss=M.add({kind='boss',type='octopus'},500,300);state.attackSettings=boss;state.attackPage=1;love.draw()
+ love.mousepressed(w/2+180,top+94,1);state.inputText='4';love.keypressed('return')
+ assert(boss.bossTimings.firstInk==4,'Boss timings editable from numeric fields')
+ love.draw();love.mousepressed(w/2+250,top+312,1);love.draw();assert(state.attackPage==2,'Boss attack pagination')
+ love.mousepressed(w/2+250,top+312,1);love.draw();assert(state.attackPage==3)
+ love.mousepressed(w/2+180,top+94,1);state.inputText='10';love.keypressed('return')
+ assert(boss.bossTimings.barrage==10 and M.validate(M.layout),'Barrage duration edits the correct page')
+ local savedBoss=require('json').decode(love.filesystem.read(M.draftFilename))['6:1'].entities[#M.layout.entities]
+ assert(savedBoss.bossTimings.barrage==10,'Boss timings persist')
  local frames=0;state.testUpdate=function()
   frames=frames+1
   if frames==2 then love.graphics.captureScreenshot('celestial-editor.png') end

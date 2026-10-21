@@ -1,3 +1,4 @@
+local Timing=require('boss_attack_timing')
 local B={active=false,projectiles={},eggs={},nests={},chicks={},name='L’Œuf du Merle'}
 local function hitPlayer() Hazards.kill() end
 function B.reset(active)
@@ -22,7 +23,7 @@ end
 function B.touchesEgg(x,y,radius)
     return (x-B.x)^2/(45+radius)^2+(y-(B.y-5))^2/(60+radius)^2<=1
 end
-function B.interval() return .32-.10*(1-B.hp/B.maxHp) end
+function B.interval() return Timing.get(B,'shotInterval',.32-.10*(1-B.hp/B.maxHp)) end
 function B.chaseSpeed() return (125+60*(1-B.hp/B.maxHp))*(B.movementRate or 1) end
 function B.finish()
     require('boss_liberation').start(B,'merle',function()
@@ -51,7 +52,7 @@ function B.fire(m)
     if B.broken or B.defeated or #B.projectiles>=256 then return end
     m=m or {x=B.x,y=B.y}
     local a=math.atan2(player.y+12-m.y,player.x+15-m.x)
-    B.projectiles[#B.projectiles+1]={x=m.x,y=m.y,vx=math.cos(a)*B.featherSpeed,vy=math.sin(a)*B.featherSpeed,life=3.5,sourceSlot=m.slot}
+    B.projectiles[#B.projectiles+1]={x=m.x,y=m.y,vx=math.cos(a)*B.featherSpeed,vy=math.sin(a)*B.featherSpeed,life=Timing.get(B,'featherLife',3.5),sourceSlot=m.slot}
 end
 function B.hatch()
     if B.broken or B.defeated then return end

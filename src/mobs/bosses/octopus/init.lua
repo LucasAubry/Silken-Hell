@@ -1,3 +1,4 @@
+local Timing=require('boss_attack_timing')
 local TentacleVector=require 'mobs.bosses.octopus.tentacle'
 local Head=require 'mobs.bosses.octopus.head'
 local O={active=false,projectiles={},blots={},crabs={},crabProbes={{0,0},{-10,0},{10,0},{0,-8},{0,8}}}
@@ -57,7 +58,7 @@ function O.tearArm(arm)
     O.arms[arm]=0;O.hp=O.hp-1;O.flash=.3;O.rider=nil;O.stun=0;O.spin=-O.spin
     O.wounds[#O.wounds+1]={x=player.x+15,y=player.y+12,life=.55};
     if O.hp<=O.maxHp/2 and not O.enraged then
-        O.enraged=true;O.barrage=3;O.barrageShot=0
+        O.enraged=true;O.barrage=Timing.get(O,'barrage',3);O.barrageShot=0
     end
     if O.hp==0 then
         require('boss_liberation').start(O,'octopus',function()
@@ -445,12 +446,12 @@ function O.update(dt)
             if player.reset or O.stun>0 or O.defeated then break end
         end
         O.summon=O.summon-dt*(O.attackRate or 1)
-        if O.summon<=0 then O.releaseCrabs();O.summon=O.enraged and 2.5 or 3.2 end
+        if O.summon<=0 then O.releaseCrabs();O.summon=O.enraged and Timing.get(O,'rageCrabs',2.5) or Timing.get(O,'crabInterval',3.2) end
         O.shot=O.shot-dt*(O.attackRate or 1)
-        if O.shot<=0 then O.ink();O.shot=O.enraged and .85 or 1.25 end
+        if O.shot<=0 then O.ink();O.shot=O.enraged and Timing.get(O,'rageInk',.85) or Timing.get(O,'inkInterval',1.25) end
         if O.barrage>0 then
             O.barrage=math.max(0,O.barrage-dt);O.barrageShot=O.barrageShot-dt
-            if O.barrageShot<=0 then O.ink();O.barrageShot=.16 end
+            if O.barrageShot<=0 then O.ink();O.barrageShot=Timing.get(O,'barrageInterval',.16) end
         end
     end
     if player.reset then return end

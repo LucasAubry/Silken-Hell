@@ -300,9 +300,11 @@ function App.simulate(dt)
     Abyss.refreshLight()
     Campaign.updateTear(dt)
     for _,m in ipairs(mobs) do
-        if m.type~='piege' and m.type~='scie' then Realms.capture(m) end
-        local behavior=MobBehaviors[m.type]
-        if not m.abyssHeld and not Abyss.inSuctionShelter(m.x,m.y) and behavior and behavior.update then behavior.update(m,dt) end
+        if not require('mob_edge_fall').update(m,dt) then
+            if m.type~='piege' and m.type~='scie' then Realms.capture(m) end
+            local behavior=MobBehaviors[m.type]
+            if not m.abyssHeld and not Abyss.inSuctionShelter(m.x,m.y) and behavior and behavior.update then behavior.update(m,dt) end
+        end
         if player.reset then break end
     end
     if liberation.busy() or App.resolveDeath() then return end

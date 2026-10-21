@@ -1,3 +1,4 @@
+local Timing=require('boss_attack_timing')
 local FX=require 'mobs.bosses.encounter_fx'
 local S={active=false,playerFeatherRadius=17}
 local Rain=require 'storm_rain'
@@ -22,10 +23,10 @@ end
 function S.setPhase(phase)
  S.phase=phase;S.phaseAge=0;S.hidden=false
  if phase=='orbit' or phase=='lightning' then
-  S.phase='orbit';S.phaseTime=math.huge;S.shot=.7;S.bolt=.65;S.burst=0;S.salvos=0;S.round=S.round+1;S.boltsRemaining=0;S.fallSide=nil
+  S.phase='orbit';S.phaseTime=math.huge;S.shot=Timing.get(S,'firstShot',.7);S.bolt=Timing.get(S,'firstBolt',.65);S.burst=0;S.salvos=0;S.round=S.round+1;S.boltsRemaining=0;S.fallSide=nil
  elseif phase=='leave' then S.phaseTime=.22;S.fromX=S.x;S.fromY=S.y;S.pass=0;S.vx=0;S.vy=0
  elseif phase=='flightTell' then
-  S.phaseTime=.60-.16*(1-S.hp/S.maxHp);S.hidden=true;S.pass=S.pass+1
+  S.phaseTime=Timing.get(S,'hidden',.60-.16*(1-S.hp/S.maxHp));S.hidden=true;S.pass=S.pass+1
   local px,py=clamp(player.x+15,38,Arena.width-38),clamp(player.y+12,35,565)
   -- Retaliate from the grounded rod's edge; lock the lane during the beak warning.
   local dx=(px-Arena.width*.5)/(Arena.width*.5-38);local dy=(py-300)/265
@@ -57,7 +58,7 @@ function S.fire()
  local a=aim+offset;local speed=(255+110*rage)*1.3*(1+S.charges*.12)
  S.projectiles[#S.projectiles+1]={x=S.x+math.cos(a)*45,y=S.y+math.sin(a)*45,vx=math.cos(a)*speed,vy=math.sin(a)*speed,life=4.5,age=0}
  S.burst=S.burst+1
- if S.burst>=count then S.burst=0;S.salvos=S.salvos+1;S.featherSalvos=S.featherSalvos+1;S.shot=.95-.60*rage else S.shot=.26-.17*rage end
+ if S.burst>=count then S.burst=0;S.salvos=S.salvos+1;S.featherSalvos=S.featherSalvos+1;S.shot=Timing.get(S,'salvoRest',.95-.60*rage) else S.shot=Timing.get(S,'shotInterval',.26-.17*rage) end
 end
 function S.lightningAt(x,y)
  for _,strike in ipairs(S.strikes) do
@@ -161,8 +162,8 @@ function S.update(dt)
   if S.shot<=0 then S.fire() end
   if S.boltsRemaining>0 then
    S.volleyClock=S.volleyClock-dt*(S.attackRate or 1)
-   if S.volleyClock<=0 then S.targetLightning();S.boltsRemaining=S.boltsRemaining-1;S.volleyClock=S.volleyClock+.42 end
-  elseif S.bolt<=0 then S.summon();S.bolt=2.4 end
+   if S.volleyClock<=0 then S.targetLightning();S.boltsRemaining=S.boltsRemaining-1;S.volleyClock=S.volleyClock+Timing.get(S,'volleyInterval',.42) end
+  elseif S.bolt<=0 then S.summon();S.bolt=Timing.get(S,'boltInterval',2.4) end
  end
  if S.dir~=oldDir then S.previousDir=oldDir;S.poseAge=0 end
  for i=#S.strikes,1,-1 do local p=S.strikes[i];local previous=p.age;p.age=p.age+dt

@@ -1,3 +1,4 @@
+local Timing=require('boss_attack_timing')
 local W={active=false,projectiles={},minions={}}
 function W.reset(active)
     W.hardcore=false; W.active=active; W.name='Les Guêpes brûlées'; W.hp=9; W.maxHp=9; W.defeated=false; W.flash=0
@@ -158,7 +159,7 @@ function W.releaseLarvae()
     if not ready then return end
     for _,b in ipairs(W.bees) do if b.hp>0 then
         if W.aliveCount()==1 then W.soloLarvae(b) elseif b.launchLarva then W.fireLarva(b) end
-        b.phase='hiding';b.time=.22
+        b.phase='hiding';b.time=Timing.get(W,'hiding',.22)
     end end
 end
 function W.approach(b,x,y,speed,dt)
@@ -198,7 +199,7 @@ function W.updateBees(dt)
         elseif b.phase=='position' then
             W.trackPlayer(b)
             if W.approach(b,b.tx,b.ty,1250*tempo*move,dt) then
-                b.phase='aim';b.time=b.attack==3 and .5 or .20
+                b.phase='aim';b.time=b.attack==3 and Timing.get(W,'larvaAim',.5) or Timing.get(W,'aim',.20)
             end
         elseif b.phase=='aim' then
             if b.attack~=3 then
@@ -219,8 +220,8 @@ function W.updateBees(dt)
                     b.dashesLeft=(b.dashesLeft or 1)-1
                     if b.dashesLeft>0 then
                         b.vx,b.vy=-b.vx,-b.vy;b.dir=Art.direction(b.vx,b.vy,b.dir)
-                        b.tx,b.ty=b.x,b.y;b.phase='aim';b.time=.18
-                    else b.phase='fatigued';b.time=1.65 end
+                        b.tx,b.ty=b.x,b.y;b.phase='aim';b.time=Timing.get(W,'reboundAim',.18)
+                    else b.phase='fatigued';b.time=Timing.get(W,'fatigue',1.65) end
                     BossFX.burst(b.x,b.y,{1,.7,.2},2);break
                 end
                 b.x,b.y=x,y;W.chargeContact(b)
@@ -235,7 +236,7 @@ function W.updateBees(dt)
     W.contact()
     local complete=W.roundActive
     for _,b in ipairs(W.bees) do if b.hp>0 and b.phase~='cooldown' then complete=false end end
-    if complete then W.roundActive=false;W.rest=.04 end
+    if complete then W.roundActive=false;W.rest=Timing.get(W,'roundRest',.04) end
 end
 function W.update(dt)
 

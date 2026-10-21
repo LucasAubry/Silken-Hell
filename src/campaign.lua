@@ -276,11 +276,14 @@ function C.drawTear(overlay)
     g.setColor(1,1,1)
 end
 local function drawMob(m)
-    if m.abyssHeld then return end
+    if m.abyssHeld or m.edgeGone then return end
     local behavior=MobBehaviors[m.type]
     if not behavior or not behavior.draw then return end
     local servants=require('servant_art');local previous=servants.current;servants.current=m
-    if m.tunnelTravel then
+    if m.edgeFall~=nil then
+        local t=math.min(1,m.edgeFall/.55);local g=love.graphics
+        g.push('all');g.translate(m.x,m.y+t*t*45);g.scale(math.max(.001,1-t));g.translate(-m.x,-m.y);behavior.draw(m);g.pop()
+    elseif m.tunnelTravel then
         local scale,dy=Realms.travelPose(m);local travel=m.tunnelTravel;m.tunnelTravel=nil
         local g=love.graphics;g.push('all');g.translate(m.x,m.y+dy);g.scale(math.max(.001,scale));g.translate(-m.x,-m.y)
         behavior.draw(m);g.pop();m.tunnelTravel=travel
