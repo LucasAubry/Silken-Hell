@@ -21,11 +21,10 @@ function T.run()
   local x,y=player.x,player.y;App.move(dt)
   assert(player.x==x and player.y==y,'Directional input cannot walk out of the tornado')
   Realms.clock=.2
-  Realms.updateTraversal(dt)
-  assert(player.whirl,'Direction selects aim without launching')
   if dt>.4 then
-   input(0,0,true);Realms.updateTraversal(1/60)
-  end
+   if dx~=0 or dy~=0 then Realms.updateTraversal(.01) end
+   Realms.updateTraversal(math.max(.001,.651-player.whirl.age))
+  else Realms.updateTraversal(dt) end
  end
  local function checkThrow(dx,dy)
   local length=math.sqrt(dx*dx+dy*dy);dx,dy=dx/length,dy/length
@@ -37,20 +36,10 @@ function T.run()
   assert(math.abs(player.x-x-dx*42)<.01 and math.abs(player.y-y-dy*42)<.01,'After launch, changing input no longer steers the throw')
   assert(Realms.tornadoes[1].cooldown>1,'Cooldown prevents immediate recapture')
  end
- enter(1,0);input(0,0);Realms.updateTraversal(.01)
- assert(player.whirl,'No automatic launch')
- input(0,-1);Realms.updateTraversal(.01)
- assert(player.whirl and player.whirl.dy==-1,'Direction alone only aims')
- input(0,0,true);Realms.updateTraversal(.01)
- assert(player.throw and player.throw.vy==-1050,'Space launches in the saved direction')
- -- A held key on entry must not eject immediately, including a chained capture.
- enter(1,0);player.whirl.launchHeld=true;input(1,1,true);Realms.updateTraversal(.1)
- assert(player.whirl,'Holding Space from entry does not relaunch')
- input(1,1);Realms.updateTraversal(.01);input(1,1,true);Realms.updateTraversal(.01)
- assert(player.throw and player.throw.vx>0 and player.throw.vy>0,'A fresh Space press launches diagonally')
- Profile.speedMode='slow';enter(1,0);steer(0,1,.46);checkThrow(0,1);Profile.speedMode='accelerate'
- enter(1,0);input(0,0);Realms.updateTraversal(2)
- assert(player.whirl,'Without direction the player keeps orbiting')
+ enter(1,0);input(0,-1);Realms.updateTraversal(.2)
+ assert(player.whirl,'Short automatic orbit retains player while aiming')
+ input(0,0);Realms.updateTraversal(.46)
+ assert(player.throw and player.throw.vy==-1050,'Automatic release retains last selected direction without Space')
  for _,d in ipairs({{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1},{.2,.1}})do
   enter(0,1)
   steer(d[1],d[2],.46);checkThrow(d[1],d[2])

@@ -18,7 +18,7 @@ function T.run()
   elseif kind=='wasp' then assert(b.rest==2.25);b.updateBees(.1);assert(not b.roundActive)
   elseif kind=='hedgehog' then assert(b.phaseTime==3.35 and b.shot==2.28);b.finishRound();assert(b.phaseTime==2.45)
   elseif kind=='octopus' then assert(b.shot==4 and b.summon==3.2)
-  elseif kind=='storm' then assert(b.shot==2.7 and b.bolt==2.65);b.setPhase('leave');b.setPhase('flightTell');assert(math.abs(b.phaseTime-2.6)<.001)
+  elseif kind=='storm' then b.setPhase('tell');assert(math.abs(b.phaseTime-2.9)<.001);b.setPhase('hunt');assert(b.phaseTime==20)
   else local cycle=require('mobs.bosses.abyss.pattern_cycle');cycle.enter(b,'suction');assert(cycle.duration(b)==8.5) end
   local found=false
   for _,entry in ipairs(LevelLayouts.snapshot().entities) do if entry.kind=='boss' and entry.bossTimings then found=math.abs(entry.bossTimings[rows[1][1]]-rows[1][3]-2)<1e-9 end end

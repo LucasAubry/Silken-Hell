@@ -131,15 +131,6 @@ function I.slow()
     if Profile.speedMode=='slow' then return held end
     return not held
 end
--- The speed action is Space by default, and keeps its controller/rebind support.
--- Replay inputs store slow/fast, so decode the physical press with the recorded mode.
-function I.tornadoLaunchHeld()
-    local mode=Profile.speedMode
-    if Replay and Replay.playing and Replay.data then mode=Replay.data.speedMode or 'accelerate' end
-    local slow=I.slow()
-    if mode=='slow' then return slow end
-    return not slow
-end
 function I.navigate(dx,dy)
     local buttons=UI.buttons;local b=buttons[I.index]
     if not b or b.disabled then for n,v in ipairs(buttons) do if not v.disabled then I.index=n;return end end;return end

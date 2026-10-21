@@ -6,103 +6,58 @@ function T.run()
  local json=require('json');local kill=Hazards.kill
  local layout={world=6,level=10,width=960,height=600,environment={lightning=false},entities={{kind='spawn',x=480,y=300},{kind='boss',type='storm',x=480,y=140}}}
  local function setup()
-  App.sessionLayout=json.decode(json.encode(layout));App.singleLevel=true;LevelLayouts.disabled=false
+  require('boss_liberation').reset();App.sessionLayout=json.decode(json.encode(layout));App.singleLevel=true;LevelLayouts.disabled=false
   App.start(6);require('run_start').active=false;require('retry_wait').reset();Replay.input={0,0,true}
-  local b=Bosses.items[1].boss
-  return b
+  return Bosses.items[1].boss
  end
- local b=setup();local patterns={};local routeKeys={}
- -- The generated campaign spawn is near the bottom; edge routes must still escape.
- for _,pos in ipairs({{480,535},{60,65},{900,535}})do
-  player.x=pos[1]*Arena.width/960-15;player.y=pos[2]-12
-  for _=1,3 do
-   b.setPhase('approach');local first,last=b.route[1],b.route[#b.route]
-   assert((first.x-b.cx)^2+(first.y-b.cy)^2<(b.radius-26)^2,'Edge spawn stays inside the safe island')
-   assert((last.x-b.cx)^2+(last.y-b.cy)^2>(b.radius+30)^2,'Edge route ends beyond the hole')
-  end
- end
- b=setup()
-
- -- All three fixed routes, sampled with real phase transitions and tornado growth.
+ local b=setup();assert(b.wave==1 and #b.snails==1 and b.x<0,'First wave starts offscreen with one snail')
  Hazards.kill=function()end
- local function cycle()
-  local previous=0
-  for frame=1,3700 do
-   Realms.updateTraversal(1/60);b.update(1/60)
-   if b.phase=='orbit' and b.round~=previous then
-    previous=b.round
-    if #patterns<3 then
-     patterns[#patterns+1]=b.pattern;local route=b.route;local p=route[1]
-     assert((p.x-b.cx)^2+(p.y-b.cy)^2<(b.radius-26)^2,'First tornado is inside the circle')
-     local diagonals,cardinals=0,0
-     for i=2,#route do
-      local dx,dy=math.abs(route[i].x-route[i-1].x),math.abs(route[i].y-route[i-1].y)
-      assert(dx<.001 or dy<.001 or math.abs(dx-dy)<.001,'Routes use cardinal or diagonal launches')
-      if dx>.001 and dy>.001 then diagonals=diagonals+1 else cardinals=cardinals+1 end
-      assert(math.sqrt(dx*dx+dy*dy)>140,'Tornado footprints remain separated')
-      assert(math.sqrt(dx*dx+dy*dy)<1050*1.5,'Every hop is within flight range')
-      assert(route[i].x>30 and route[i].x<Arena.width-30 and route[i].y>30 and route[i].y<570,'Tornado stays on the map')
-     end
-     assert(diagonals>cardinals and cardinals>0,'Each route prioritizes diagonals while retaining a cardinal link')
-     local last=route[#route];assert((last.x-b.cx)^2+(last.y-b.cy)^2>(b.radius+30)^2,'Last tornado escapes the ring')
-     routeKeys[#routeKeys+1]=json.encode(route)
-    end
-   end
-   if b.phase=='orbit' and b.phaseAge>2.4 and b.phaseAge<2.42 then
-    assert(#Realms.tornadoes>=3,'Tornadoes appear progressively')
-    local a,c=Realms.tornadoes[1],Realms.tornadoes[#Realms.tornadoes]
-    assert(a.growth>c.growth,'Growth is staggered')
-   end
-   if b.phase=='orbit' and b.phaseAge>7.5 and b.phaseAge<7.52 then
-    assert(b.holeAt(b.cx+b.radius,b.cy) and not b.holeAt(b.cx,b.cy),'Continuous annular hole surrounds a safe center')
-    local g=love.graphics;local canvas=g.newCanvas(Arena.width,600)
-    g.push('all');g.setCanvas(canvas);g.origin();draw_level();b.draw();draw_player('down');g.pop()
-    local pixels=canvas:newImageData();pixels:encode('png','storm-tornado-pattern-'..b.pattern..'.png');pixels:release();canvas:release()
-   end
-  end
- end
- cycle();assert(table.concat(patterns,',')=='1,2,3','Fixed pattern order')
- assert(routeKeys[1]~=routeKeys[2] and routeKeys[2]~=routeKeys[3],'Different tornado layouts')
+ for _=1,180 do b.update(1/60)end
+ assert(#b.holes>0,'Dragging excavates a narrow trail')
+ assert(b.holes[1].radius==(require('cloud_snail').width+require('cloud_snail').mergeMargin)/2,'Hole radius halved')
+ b.spawnSnails();local p=b.snails[1];local beforeX,beforeY=p.x,p.y
+ b.angle=b.angle+.02;b.vx=0;b.vy=350;b.updateSnails(1/120)
+ assert(math.sqrt((p.x-beforeX)^2+(p.y-beforeY)^2)<20,'Turn does not teleport the snail')
+ local ax,ay=b.anchor();local dx,dy=p.x-ax,p.y-ay
+ assert(math.sqrt(dx*dx+dy*dy)<p.rope*1.2,'Rope constrains sliding cargo')
+ -- Capture the new fight with a curved trail and distinct small shell.
+ local g=love.graphics;local c=g.newCanvas(Arena.width,600)
+ g.push('all');g.setCanvas(c);g.origin();draw_level();b.draw();g.pop();c:newImageData():encode('png','storm-silk-fight.png');c:release()
  Hazards.kill=kill
- -- Limited push: safe in the middle, lethal only near the exit edge.
- for _,near in ipairs({false,true}) do
-  b=setup();player.x=(near and Arena.width-45 or Arena.width/2+30)-15;player.y=288
-  b.setPhase('sweepTell');b.setPhase('sweep');local start=player.x
-  for i=1,180 do b.update(1/60);if player.reset or b.phase~='sweep' then break end end
-  if near then assert(player.reset,'Edge-adjacent player falls from the sweep')
-  else assert(not player.reset and math.abs(player.x-start-70)<.1,'Center player is pushed a bounded distance')end
+ player.reset=false;player.x=p.x-15;player.y=p.y-12;b.contact();assert(player.reset,'Tethered snail is lethal')
+ b=setup();Hazards.kill=function()end;b.setPhase('charge');b.x=600;b.y=300;b.angle=0;b.vx=300;b.vy=0
+ p=b.snails[1];p.x=340;p.y=300;p.vx=100;p.vy=0
+ player.x=435;player.y=288;b.playerX=450;b.playerY=300;b.contact()
+ assert(p.phase=='tethered','Stationary contact does not cut a moving rope for free')
+ player.x=438;b.contact()
+ assert(p.phase=='rise' and b.hp==10,'Crossing silk liberates the snail without direct damage')
+ for i=1,300 do b.update(1/60);if b.hp<10 then break end end
+ assert(b.hp==9 and p.phase=='spent','Freed snail rises and hits boss exactly once')
+ -- Cleanup cannot erase a distant scar before the bird reaches it.
+ b.holes={{x=100,y=100,tx=120,ty=100,radius=7.74},{x=800,y=480,tx=820,ty=480,radius=7.74}}
+ b.x=110;b.y=100;b.advanceWave=true;b.setPhase('clean');b.update(.01)
+ assert(b.holes[1].closing and not b.holes[2].closing,'Only overflown holes close')
+ for i=1,1800 do b.update(1/60);if b.wave==2 then break end end
+ assert(b.wave==2 and #b.snails==2 and #b.holes==0,'Bird seals trails, leaves, and returns with two snails')
+ local hp=b.hp;b.setPhase('hunt');player.throw={vx=1050,vy=0,time=1.5};player.x=b.x-15;player.y=b.y-12;b.contact()
+ assert(b.hp==hp,'Direct tornado body impacts no longer damage the boss');player.throw=nil
+ -- Complete a full four-wave encounter: 1+2+3+4 rescued snails.
+ b=setup();Hazards.kill=function()end;local waves={};local maxTick=0
+ for tick=1,10000 do
+  b.update(1/60);waves[b.wave]=true
+  if b.phase=='hunt' and b.phaseAge>.5 then
+   if b.wave==3 then
+    local canvas=g.newCanvas(Arena.width,600)
+    g.push('all');g.setCanvas(canvas);g.origin();draw_level();b.draw();g.pop()
+    canvas:newImageData():encode('png','storm-silk-wave-three.png');canvas:release()
+   end
+   for _,s in ipairs(b.snails)do b.cut(s)end
+  end
+  maxTick=tick;if b.defeated then break end
  end
- for _,flying in ipairs({false,true})do
-  b=setup();b.setPhase('approach');b.setPhase('orbit');local x,y=b.snailPose()
-  player.x,player.y=x-15,y-12;player.throw=flying and {vx=1050,vy=0,time=1.5} or nil
-  b.contact();assert(player.reset,'Tethered snail kills on ground and during tornado flight')
- end
- b=setup();b.setPhase('approach');b.setPhase('orbit')
- local hole=b.holes[1];local ax,ay=hole.x+math.cos(hole.start)*hole.r,hole.y+math.sin(hole.start)*hole.r
- assert(b.holeAt(ax,ay),'New hole starts as a closed round cap')
- assert(not b.holeAt(hole.x-math.cos(hole.start)*hole.r,hole.y-math.sin(hole.start)*hole.r),'Unexcavated arc stays solid')
- b=setup();b.setPhase('approach');b.setPhase('orbit');b.holes[1].arc=math.pi*2
- player.x=b.cx+b.radius-15;player.y=b.cy-12;player.throw={vx=1050,vy=0,time=1.5}
- b.x=player.x+15;b.y=player.y+12;local hp=b.hp;b.contact()
- assert(b.hp==hp-1 and not player.reset,'Projected player damages the boss over its hole')
- b.contact();assert(b.hp==hp-1,'Only one hit per launch')
- player.throw=nil;player.whirl=nil;player.reset=false;b.x=b.cx;b.y=b.cy-150
- player.x=b.cx-15;player.y=b.cy-12
- b.projectiles={{x=player.x+15,y=player.y+12,vx=0,vy=0,life=1,age=0}}
- b.update(.001);assert(player.reset,'Electric feather is lethal')
- b=setup();b.setPhase('approach');b.setPhase('orbit');b.holes={}
- player.x=Arena.width/2-15;player.y=288;player.throw={vx=1050,vy=0,time=1.5}
- b.x=player.x+15+90;b.y=300;local previousHp=b.hp
- Realms.updateTraversal(.12)
- assert(b.hp==previousHp-1 and not player.reset,'Swept tornado movement hits the boss through real collision dispatch')
- b=setup();Realms.tornadoes={{x=200,y=300,cooldown=0},{x=700,y=300,cooldown=0}}
- b.setPhase('sweep');for i=1,120 do Realms.updateTraversal(1/60)end
- assert(#Realms.tornadoes==0,'Swept tornadoes leave the map and disappear')
- b=setup();b.setPhase('approach');b.setPhase('orbit');b.hp=1
- player.x=b.x-15;player.y=b.y-12;player.throw={vx=1050,vy=0,time=1.5};b.contact()
- assert(b.defeated and b.liberating,'Final projected hit completes the fight')
- require('boss_liberation').reset()
- print('PASS new Merle: three reachable deterministic routes, staggered growth, annular void, limited/edge push, electric feathers, airborne damage, tornado removal and victory')
+ assert(b.defeated and b.hp==0 and waves[1] and waves[2] and waves[3] and waves[4],'All freed snails complete four escalating waves')
+ Hazards.kill=kill;require('boss_liberation').reset()
+ print('PASS silk Merle: physical cargo, lethal snails, cut silk, rising homing explosion, halved trails, local cleanup, escalating waves and victory ('..maxTick..' ticks)')
  love.event.quit()
 end
 return T
