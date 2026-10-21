@@ -227,6 +227,13 @@ function C.draw()
     local g=love.graphics; local hell=C.biome==2
     if Secret.inArena() then require('sanctuary_scene').arena(App.hardcore or Worlds.isSecret(C.world))
     else Arena.drawFloor(hell);if C.world==3 then Meadow.draw() end end
+    if require('sky').openEdges() and #require('sky_weather').snailHoles==0 then
+        local zones={}
+        for _,list in ipairs({Realms.holes or {},require('sky_weather').holes or {}}) do
+            for _,hole in ipairs(list) do if not hole.temporary then zones[#zones+1]=hole end end
+        end
+        require('sky_void').draw(Arena.width,zones)
+    end
     require('cloud_snail').drawTrail()
     Hazards.drawFloor()
     Story.drawDecor(function()require('ocean_scenery').draw()end)

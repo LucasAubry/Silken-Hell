@@ -148,6 +148,7 @@ function N.drawTrail()
   end
   g.push('all');g.setCanvas(N.union);g.origin();g.setScissor();g.setShader();g.clear(0,0,0,1)
   g.setBlendMode('lighten','premultiplied');g.setColor(1,1,1);g.draw(N.canvas)
+  local edge=require('sky_void').edgeField(width);g.draw(edge.image,0,0,0,edge.step,edge.step)
   if field then g.draw(field.image,field.x,field.y,0,field.step,field.step) end
   g.pop();require('hole_union_distance').build(N.union,N,dirty);N.unionList=list;N.unionCount=#list;N.unionRevision=N.revision;N.unionKey=key
  end

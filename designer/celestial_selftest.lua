@@ -89,6 +89,15 @@ function T.run(M,state,select)
   assert(require('biome_borders').key:match('^'..world..':'),'Editor renders the selected biome perimeter')
  end
  select(6,1);M.selected=M.add({kind='mob',type='cloud_snail',speed=40},500,300);love.draw()
+ local edgeHole=M.add({kind='hole',points={0,0,90,0},radius=40,rx=40,ry=40},10,300)
+ love.draw()
+ local merged=require('sky_void').distanceResult:newImageData()
+ assert(merged:getPixel(24,300)>.7,'Painted hole merges with the map void without an internal rim')
+ merged:release()
+ edgeHole.x=200;love.draw()
+ local detached=require('sky_void').distanceResult:newImageData()
+ assert(detached:getPixel(90,300)<.5,'Moving a hole restores solid cloud between it and the edge')
+ detached:release();edgeHole.x=10;love.draw()
  local frames=0;state.testUpdate=function()
   frames=frames+1
   if frames==2 then love.graphics.captureScreenshot('celestial-editor.png') end
