@@ -39,6 +39,11 @@ function S.refresh()
     S.hallWidth=Arena.width;S.pending=nil;S.upReady=false
 end
 function S.navigate(dx,dy)
+    if math.abs(dx)>=math.abs(dy) and math.abs(dx)>.1 then
+        local page=math.max(1,math.min(#S.portals,S.page+(dx>0 and 1 or -1)))
+        if page~=S.page then S.page=page;S.nearest=page;Audio.play('selection') end
+        return
+    end
     local C=require('sanctuary_arrival');local x,y=C.bossPosition(S.page,#S.portals,Arena.width)
     local best,score
     for i=1,#S.portals do if i~=S.page then
@@ -101,7 +106,7 @@ function S.open(demon)
     App.selectedWorld=8;WorldMap.hardcore=false;UI.boardHardcore=false
     App.sessionLayout=nil;App.singleLevel=false;App.workshopMap=nil;App.custom=false
     S.duel=nil;S.page=back and back.page or 1;S.category=back and back.category or 'boss';S.charge=0;S.charging=nil;S.refresh()
-    Ending.active=false;require('final_spider').active=false;Replay.input=nil;S.facing='down';S.walkMoving=false;S.walkPhase=0
+    Ending.active=false;require('final_spider').active=false;Replay.input=nil;S.facing='up';S.walkMoving=false;S.walkPhase=0
     S.x=Arena.width*.5;S.y=485;S.cameraX=0;S.turn=0;S.navHeld=false;S.cooldown=.3;S.upReady=false;S.pending=nil;App.state='bossWorld'
     S.presentation=require('sanctuary_arrival').begin();S.intro=S.presentation
 end
@@ -122,8 +127,23 @@ function S.update(dt)
         S.navigate(dx,dy);S.cooldown=S.navHeld and .18 or .35;S.navHeld=true
     end
     local bx,by=C.bossPosition(S.page,#S.portals,Arena.width)
-    local target=math.atan2(bx-S.x,S.y-by)
-    S.turn=S.turn+(target-S.turn)*(1-math.exp(-dt*10))
+    local facing=math.abs(bx-S.x)<Arena.width*.12 and 'up' or bx<S.x and 'left' or 'right'
+    if S.facing~=facing then S.facing=facing;S.turnBlend=1 end
+    S.turnBlend=(S.turnBlend or 0)*math.exp(-dt*12)
+end
+function S.mousepressed(x,y)
+    if S.intro then return true end
+    local scale,vx,vy=App.viewport(love.graphics.getDimensions())
+    x,y=(x-vx)/scale,(y-vy)/scale
+    local C=require('sanctuary_arrival');local best,distance
+    for i,p in ipairs(S.portals) do
+        local bx,by=C.bossPosition(i,#S.portals,Arena.width)
+        local radius=p.type=='skeleton_head' and 108 or p.type=='wasp' and 98 or 82
+        local d=((x-bx)/radius)^2+((y-by)/112)^2
+        if d<=1 and (not distance or d<distance) then best,distance=i,d end
+    end
+    if best then S.page=best;S.nearest=best;Audio.play('selection');return true end
+    return false
 end
 function S.drawWorld() require('sanctuary_arrival').draw(S) end
 function S.draw()

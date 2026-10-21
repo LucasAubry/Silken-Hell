@@ -7,7 +7,14 @@ function R.draw(w,h,p,t)
  g.translate(0,-p.camera*h)
  decor.material(false)
  g.setColor(.07,.18,.23)
- g.polygon('fill',-w,.58*h,.26*w,.60*h,.34*w,.70*h,.29*w,.84*h,.32*w,1.12*h,-w,1.25*h)
+ local cliff={-w,.58*h,.26*w,.60*h,.34*w,.70*h}
+ for i=1,32 do
+  local u=i/32
+  cliff[#cliff+1]=w*(.34-.78*u^1.28+math.sin(u*19)*.012*math.sin(u*math.pi))
+  cliff[#cliff+1]=h*(.70+1.15*u)
+ end
+ cliff[#cliff+1]=-w;cliff[#cliff+1]=1.85*h
+ g.polygon('fill',cliff)
  g.setColor(.12,.29,.33)
  g.polygon('fill',-w,.58*h,.26*w,.60*h,.30*w,.65*h,.17*w,.66*h,-w,.64*h)
  g.setShader()

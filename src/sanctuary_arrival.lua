@@ -3,8 +3,8 @@ local C={duration=6.8}
 local colors={[1]={1,.80,.38},[6]={.55,.73,1},[5]={.76,.56,.33},[4]={.2,.9,.9},[7]={.25,.47,1},[2]={1,.25,.06},[3]={.65,1,.35}}
 local function ease(v)v=math.max(0,math.min(1,v));return v*v*(3-2*v)end
 function C.bossPosition(i,count,w)
- local u=(i-.5)/count
- return w*(.07+.86*u),210+90*math.abs(u-.5)*2
+ local positions={{.12,185},{.22,330},{.36,185},{.50,330},{.64,185},{.78,330},{.88,185}}
+ local p=positions[i];return w*p[1],p[2]
 end
 function C.begin()return {age=0,actor={walkMoving=false,sanctuaryPlayer=true},previousY=690} end
 function C.update(state,dt)
@@ -16,11 +16,11 @@ end
 function C.draw(S)
  local state=S.presentation;local t=state.age;local g=love.graphics;local R=require('sanctuary_scene');local w=Arena.width
  local reveal=ease((t-1.2)/3.5);local pull=ease((t-1.8)/3.6)
- if not C.canvas or C.canvas:getWidth()~=w then
+ local target=g.getCanvas();local density=target and target:getDPIScale() or 1
+ if not C.canvas or C.canvas:getWidth()~=w or C.canvas:getDPIScale()~=density then
   if C.canvas then C.canvas:release() end
-  C.canvas=g.newCanvas(w,600)
+  C.canvas=g.newCanvas(w,600,{dpiscale=density});C.canvas:setFilter('linear','linear')
  end
- local target=g.getCanvas()
  g.push('all');g.setCanvas(C.canvas);g.origin();g.setScissor();g.setShader();g.clear()
  R.hall(false)
  local impact=math.exp(-((t-1.7)/.16)^2)
@@ -58,22 +58,29 @@ function C.draw(S)
   g.setColor(.08,.10,.14);g.ellipse('fill',bx,by+45,58,13)
   g.setColor(c[1],c[2],c[3],awake*.7);g.setLineWidth(2);g.ellipse('line',bx,by+45,58,13)
   local selected=not S.intro and S.page==i
-  R.throneAt(bx,by,.52,selected and {1,.83,.26} or c,selected)
-  local size=p.type=='skeleton_head' and .23 or p.type=='wasp' and .31 or p.type=='final_spider' and .88 or .62
+  local ink=selected and {1,.83,.26} or c
+  if p.type=='wasp' then
+   for sister=1,3 do R.throneAt(bx+(sister-2)*58,by+(sister==2 and -8 or 12),.52,ink,selected,.48) end
+  else R.throneAt(bx,by,.64,ink,selected,p.type=='skeleton_head' and 1.55 or 1) end
+  local size=p.type=='skeleton_head' and .34 or p.type=='wasp' and .40 or p.type=='final_spider' and 1.15 or p.type=='hedgehog' and 1 or .78
   g.push();g.translate(bx,by+math.sin(t*1.3+i)*2);g.scale(size)
-  R.boss(p,0,0);g.pop()
+  local art=Art.images[p.art];local min,mag
+  if art and art.image then min,mag=art.image:getFilter();art.image:setFilter('linear','linear') end
+  R.boss(p,0,0)
+  if min then art.image:setFilter(min,mag) end
+  g.pop()
   -- Soft moving smoke hides the alcove, with no rectangular mask edges.
   if awake<1 then
    C.smoke=C.smoke or g.newShader('assets/shaders/sanctuary_smoke.glsl')
    local cx,cy=g.transformPoint(bx,by-20)
-   C.smoke:send('center',{cx,cy});C.smoke:send('radius',{75*zoom,115*zoom})
+   C.smoke:send('center',{cx*density,cy*density});C.smoke:send('radius',{135*zoom*density,180*zoom*density})
    C.smoke:send('clock',t+i*2);C.smoke:send('opacity',1-awake)
-   g.setShader(C.smoke);g.setColor(1,1,1);g.rectangle('fill',bx-100,by-160,200,280);g.setShader()
+   g.setShader(C.smoke);g.setColor(1,1,1);g.rectangle('fill',bx-160,by-225,320,410);g.setShader()
   end
   if selected then
    g.setColor(1,.82,.22,.85);g.setLineWidth(2)
-   g.ellipse('line',bx,by,63,94)
-   UI.arrowArt(bx,by-126+math.sin(UI.clock*3)*3,1,false,math.pi/2,{1,.83,.22})
+   g.ellipse('line',bx,by,p.type=='skeleton_head' and 108 or p.type=='wasp' and 98 or 82,112)
+   UI.arrowArt(bx,by-(by<250 and 130 or 156)+math.sin(UI.clock*3)*3,1,false,math.pi/2,{1,.83,.22})
   end
  end
  R.fog(true,false)
@@ -83,7 +90,7 @@ function C.draw(S)
  for j=6,1,-1 do
   g.setColor(.65,.76,.92,.015*reveal);g.ellipse('fill',w*.5,hy+18,heroSize*.45+j*5,12+j*3)
  end
- g.push();g.translate(w*.5,hy);g.rotate(S.turn or 0);g.setColor(1,1,1);Characters.draw(0,0,heroSize,'up',state.actor,8);g.pop()
+ g.push();g.translate(w*.5,hy);g.scale(1-.12*(S.turnBlend or 0),1);g.setColor(1,1,1);Characters.draw(0,0,heroSize,S.facing or 'up',state.actor,8);g.pop()
  -- Embers drift towards the confrontation, crossing foreground and background.
  g.setBlendMode('add','alphamultiply')
  for i=1,90 do

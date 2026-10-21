@@ -488,6 +488,7 @@ function love.draw()
 end
 function love.mousepressed(x,y,button)
     Input.active=false
+    if App.state=='bossWorld' and button==1 and Secret.mousepressed(x,y) then return end
     if App.historyPreview and button==1 then local vx,vy=UI.mouse(x,y);if UI.click(vx,vy) then return end end
     if UI.binding then if UI.bindingDevice~='pad' then Input.bind('mouse:'..button) elseif button==1 then local vx,vy=UI.mouse(x,y);UI.click(vx,vy) end;return end
     if Replay.playing then

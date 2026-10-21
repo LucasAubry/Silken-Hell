@@ -23,15 +23,22 @@ function T.run()
  local calls,thrones=0,0;local arrow=UI.arrowArt;local throne=R.throneAt
  UI.arrowArt=function(x,y,dir,hover,angle,ink)calls=calls+1;assert(angle==math.pi/2 and ink[1]==1 and ink[3]<.3);return arrow(x,y,dir,hover,angle,ink)end
  R.throneAt=function(...)thrones=thrones+1;return throne(...)end
- capture('selected-first');assert(calls==1 and thrones==7,'One downward menu arrow and seven thrones')
+ capture('selected-first');assert(calls==1 and thrones==9,'One downward arrow, a broad Abyss throne and three wasp thrones')
  UI.arrowArt=arrow;R.throneAt=throne
  for i=2,7 do
   dx=1;Secret.update(.05);dx=0;Secret.update(.05)
   assert(Secret.page==i and Secret.x==x,'Movement keys select instead of moving the player')
  end
  for i=1,20 do Secret.update(.05) end
- assert(Secret.turn>0,'Spider faces the selected boss on the right');capture('selected-last')
- Secret.page=1;Secret.navigate(0,-1);assert(Secret.page>1,'Up selects a throne further into the chamber')
+ assert(Secret.facing=='right' and Secret.turn==0,'Spider uses an upright facing sprite without rotating her body');capture('selected-last')
+ Secret.page=2;Secret.navigate(0,-1);assert(Secret.page~=2,'Up selects a throne further into the chamber')
+ local scale,vx,vy=App.viewport(love.graphics.getDimensions())
+ for i=1,7 do
+  local bx,by=require('sanctuary_arrival').bossPosition(i,7,Arena.width)
+  love.mousepressed(vx+bx*scale,vy+by*scale,1)
+  assert(Secret.page==i and App.state=='bossWorld','Mouse selects each boss without launching it')
+ end
+ assert(not Secret.mousepressed(vx+Arena.width*.5*scale,vy+550*scale),'Empty floor does not select a boss')
  assert(love.math.getRandomState()==rng,'Presentation preserves gameplay RNG')
  Input.move=oldMove;R.boss=boss
  Secret.page=2;Secret.key('space',false)

@@ -172,8 +172,8 @@ end
 function R.emptyThrone(x,color)
  throne(x,color or {.65,.72,.85},true)
 end
-function R.throneAt(x,y,scale,color,selected)
- local g=love.graphics;g.push();g.translate(x,y);g.scale(scale);g.translate(0,-315)
+function R.throneAt(x,y,scale,color,selected,width)
+ local g=love.graphics;g.push();g.translate(x,y);g.scale(scale*(width or 1),scale);g.translate(0,-315)
  throne(0,color,selected);g.pop()
 end
 return R
