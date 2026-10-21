@@ -16,7 +16,7 @@ end
 function H.inLava(x,y,pad)
     for _,p in ipairs(H.lava) do
         if p.points then
-            if require('ground_holes').contains(p,x,y) then return true end
+            if require('ground_holes').containsFast(p,x,y) then return true end
         elseif H.inEllipse(x,y,p,pad) then return true end
     end
     return false
@@ -38,7 +38,7 @@ function H.openEdge(r,x,y,w,h)
  if r.w==Arena.width and (r.y==0 or r.y==578) then py=r.y==0 and 22 or 578
  elseif r.h==600 and (r.x==0 or r.x==Arena.width-22) then px=r.x==0 and 22 or Arena.width-22
  else return false end
- for _,zone in ipairs(H.lava) do if zone.points and require('ground_holes').contains(zone,px,py) then return true end end
+ for _,zone in ipairs(H.lava) do if zone.points and require('ground_holes').containsFast(zone,px,py) then return true end end
  return false
 end
 function H.speed()

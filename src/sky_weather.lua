@@ -124,7 +124,7 @@ function S.update(dt)
  end
 end
 function S.fallAt(x,y)
- for _,p in ipairs(S.holes) do if require('ground_holes').contains(p,x,y) then return true end end
+ for _,p in ipairs(S.holes) do if require('ground_holes').containsFast(p,x,y) then return true end end
  return false
 end
 function S.resize(ratio)

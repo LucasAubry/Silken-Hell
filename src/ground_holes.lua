@@ -83,6 +83,41 @@ function H.contains(e,x,y)
  end
  return false
 end
+-- Runtime strokes are immutable between resizes. Compile their normalized
+-- segments once; broad bounds reject distant points before any segment work.
+H.fastCache=setmetatable({},{__mode='k'})
+function H.containsFast(e,x,y)
+ local p=e.points;local rx,ry=e.rx or e.radius or 28,e.ry or e.radius or 28
+ local c=H.fastCache[e]
+ if not c or c.points~=p or c.count~=#p or c.rx~=rx or c.ry~=ry then
+  local x0,y0,x1,y1=H.bounds(e)
+  c={points=p,count=#p,rx=rx,ry=ry,x0=x0,y0=y0,x1=x1,y1=y1,segments={}}
+  local ax,ay=p[1]/rx,p[2]/ry;c.ax,c.ay=ax,ay
+  for i=3,#p,2 do
+   local bx,by=p[i]/rx,p[i+1]/ry;local dx,dy=bx-ax,by-ay
+   c.segments[#c.segments+1]={ax,ay,dx,dy,dx*dx+dy*dy,math.min(ax,bx)-1,math.min(ay,by)-1,math.max(ax,bx)+1,math.max(ay,by)+1}
+   ax,ay=bx,by
+  end
+  H.fastCache[e]=c
+ end
+ x,y=x-e.x,y-e.y
+ if x<c.x0-1e-9 or y<c.y0-1e-9 or x>c.x1+1e-9 or y>c.y1+1e-9 then return false end
+ local px,py=x/rx,y/ry
+ if (px-c.ax)^2+(py-c.ay)^2<=1 then return true end
+ for _,v in ipairs(c.segments) do
+  if px>=v[6] and py>=v[7] and px<=v[8] and py<=v[9] then
+   local t=v[5]>0 and math.max(0,math.min(1,((px-v[1])*v[3]+(py-v[2])*v[4])/v[5])) or 0
+   if (px-v[1]-v[3]*t)^2+(py-v[2]-v[4]*t)^2<=1 then return true end
+  end
+ end
+ if not c.gridReady then c.grid=H.geometry(e).grid;c.gridReady=true end
+ local grid=c.grid
+ if grid then
+  local col=math.floor((px*rx-grid.x)/grid.step);local row=math.floor((py*ry-grid.y)/grid.step)
+  if col>=0 and col<grid.w and row>=0 and row<grid.h then return grid.cells[row*grid.w+col+1]==true end
+ end
+ return false
+end
 function H.stroke(points,radius,kind)
  local x0,y0,x1,y1=points[1],points[2],points[1],points[2]
  for i=3,#points,2 do x0=math.min(x0,points[i]);x1=math.max(x1,points[i]);y0=math.min(y0,points[i+1]);y1=math.max(y1,points[i+1]) end
@@ -91,6 +126,7 @@ function H.stroke(points,radius,kind)
  return e
 end
 function H.resize(e,ratio)
+ H.fastCache[e]=nil
  e.x=e.x*ratio
  if e.points then
   e.rx=(e.rx or e.radius)*ratio;e.ry=e.ry or e.radius

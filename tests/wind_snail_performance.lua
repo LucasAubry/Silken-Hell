@@ -45,6 +45,41 @@ function T.run()
  for _,kind in ipairs({'snake','spinner','worm','mole','lava_scorpion','crab'}) do
   local actor={type=kind,x=200,y=601};assert(F.check(actor),'Ground monster falls: '..kind)
  end
+ -- Stress real collision queries used by the tear-drop search and gust substeps.
+ Realms.holes={};W.holes={};W.snailHoles={};Arena.walls={};Realms.custom=true
+ local H=require('ground_holes')
+ for i=1,20 do
+  local points={};local cx=90+(i%8)*(Arena.width-180)/8;local cy=180+math.floor((i-1)/8)*110
+  for j=0,95 do local angle=j/95*math.pi*2;points[#points+1]=cx+math.cos(angle)*22;points[#points+1]=cy+math.sin(angle)*22 end
+  local hole=H.stroke(points,10);Realms.holes[#Realms.holes+1]=hole;H.geometry(hole)
+ end
+ for i=1,1200 do N.trail(120+i%400,470+math.floor(i/400)*24,126+i%400,470+math.floor(i/400)*24,i%4) end
+ player.x=90;player.y=60
+ local drop=require('tear_safe_drop');local start=love.timer.getTime();local x,y=drop.position(Arena.width+3,300)
+ local elapsed=(love.timer.getTime()-start)*1000
+ assert(drop.safe(x,y),'Stress drop remains recoverable')
+ print(string.format('Carrier drop stress: %.3f ms, 20 complex holes and 1200 trail samples',elapsed))
+ local start=love.timer.getTime()
+ for i=1,500 do Realms.fallAt(100+i%(Arena.width-200),120) end
+ print(string.format('Wind collision stress: %.3f ms for 500 queries',(love.timer.getTime()-start)*1000))
+ for _,hole in ipairs(Realms.holes) do
+  for j=1,40 do
+   local x=hole.x-50+(j*17)%100;local y=hole.y-50+(j*31)%100
+   assert(H.contains(hole,x,y)==H.containsFast(hole,x,y),'Accelerated collision matches authored strokes and filled pockets')
+  end
+ end
+ local shape=H.stroke({100,100,160,100,160,160,100,160,100,100},10)
+ H.containsFast(shape,130,130);H.resize(shape,1.4)
+ assert(H.contains(shape,182,130)==H.containsFast(shape,182,130),'Resized collision cache is invalidated')
+ shape.rx=18;assert(H.contains(shape,150,140)==H.containsFast(shape,150,140),'Changed radii invalidate collision cache')
+ local pushed={type='cloud_snail',x=180,y=120,age=0,has_larme=true,hitBox_width=32,hitBox_height=30,hitBox_offset_x=-16,hitBox_offset_y=-15}
+ local blower={type='mist_moth',x=80,y=120,age=1,phase='gust',phaseTime=10,vx=1,vy=0,hitBox_width=32,hitBox_height=30}
+ mobs={blower,pushed};objet.larme_dropped=false;local peak=0
+ for i=1,180 do
+  blower.y=pushed.y;local start=love.timer.getTime();G.update(blower,1/60);peak=math.max(peak,(love.timer.getTime()-start)*1000)
+  if pushed.falling then break end
+ end
+ print(string.format('Wind-pushed carrier stress: peak %.3f ms per tick',peak))
  print('PASS wind/snail performance, incremental terrain equivalence, falling creatures, flying exemptions and reachable tears');love.event.quit()
 end
 return T

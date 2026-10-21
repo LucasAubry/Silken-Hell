@@ -240,7 +240,7 @@ function R.fallAt(x,y)
     for _,item in ipairs(Bosses.items) do if item.kind=='storm' and item.boss.holeAt(x,y) then return true end end
     for _,p in ipairs(R.holes) do
         if p.points then
-            if require('ground_holes').contains(p,x,y) then return true end
+            if require('ground_holes').containsFast(p,x,y) then return true end
         else
         local dx,dy=(x-p.x)/p.rx,(y-p.y)/p.ry
         if math.sqrt(dx*dx+dy*dy)<R.holeRadius(p,math.atan2(dy,dx))-.07 then return true end
