@@ -27,7 +27,7 @@ function B.pose(t)
  local crack=ease((t-3.25)/.35)
  local jolt=ease(slide/.045)*(1-ease((slide-.10)/.55))*crack
  return {worldX=worldX,camera=camera,x=worldX,y=.538+drop,
-  crack=crack,jolt=jolt,tilt=0,
+  crack=crack,jolt=jolt,tilt=0,fallMotion=ease(slide/.45)*(1-land),
   rockX=rockX,rockY=rockY,leave=leave,slide=slide,progress=land,
   depth=ease((t-3.6)/3.5),mapAlpha=land,actorsAlpha=land,
   equip=ease((t-2.1)/1.3),size=1.5-.5*land,dir=t>=3.6 and 'up' or 'right'}
@@ -47,6 +47,8 @@ function B.advance(age)
  local old=B.age;local dt=math.max(0,age-old);B.age=age
  local distance=math.abs(B.pose(age).worldX-B.pose(old).worldX)*Arena.width
  require('brown_walk').advance(B.actor,distance,dt)
+ local p=B.pose(age)
+ if p.slide>0 and p.fallMotion>.01 then B.actor.walkMoving=true;B.actor.walkPhase=p.slide*4 end
 end
 function B.draw(canvas,w,h)
  local g=love.graphics;local shader=g.getShader();local t=B.age;local p=B.pose(t)
@@ -81,7 +83,7 @@ function B.draw(canvas,w,h)
  if p.equip<1 then
   for i=5,1,-1 do g.setColor(1,.72,.28,.025);g.circle('fill',lx,ly,(12+i*13)*scale) end
  end
- g.push();g.translate(ax,ay);g.rotate(p.tilt);g.scale(1-.65*math.exp(-((t-3.6)/.16)^2),1);g.translate(-ax,-ay)
+ g.push();g.translate(ax,ay);g.rotate(math.sin(p.slide*4)*.12*p.fallMotion);g.scale(1-.65*math.exp(-((t-3.6)/.16)^2),1+math.sin(p.slide*5)*.025*p.fallMotion);g.translate(-ax,-ay)
  g.setColor(1,1,1);Characters.draw(ax,ay,size,p.dir,B.actor,7)
  if not require('integrated_skins').bubble(Characters.selected()) then bubble.drawAt(hx,hy,r,t*(1-p.progress),false,nil,nil,1,p.dir) end
  if p.equip>0 and p.equip<1 then

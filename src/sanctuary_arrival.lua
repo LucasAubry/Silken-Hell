@@ -3,8 +3,8 @@ local C={duration=6.8}
 local colors={[1]={1,.80,.38},[6]={.55,.73,1},[5]={.76,.56,.33},[4]={.2,.9,.9},[7]={.25,.47,1},[2]={1,.25,.06},[3]={.65,1,.35}}
 local function ease(v)v=math.max(0,math.min(1,v));return v*v*(3-2*v)end
 function C.bossPosition(i,count,w)
- local positions={{.12,185},{.22,330},{.36,185},{.50,330},{.64,185},{.78,330},{.88,185}}
- local p=positions[i];return w*p[1],p[2]
+ local u=-1+2*(i-1)/math.max(1,count-1)
+ return w*(.5+.41*u),410-220*math.sqrt(math.max(0,1-u*u))
 end
 function C.begin()return {age=0,actor={walkMoving=false,sanctuaryPlayer=true},previousY=690} end
 function C.update(state,dt)
@@ -43,8 +43,14 @@ function C.draw(S)
   g.setColor(.55,.72,.9,reveal*.09);g.setLineWidth(1.4)
   g.ellipse('line',w*.5,400,130+ring*65,22+ring*17)
  end
- local bosses=S.normalBosses
- for i,p in ipairs(bosses) do
+ local bosses=S.normalBosses;local actors={}
+ local order={};for i=1,#bosses do order[i]=i end
+ table.sort(order,function(a,b)
+  local _,ay=C.bossPosition(a,#bosses,w);local _,by=C.bossPosition(b,#bosses,w)
+  return ay==by and a<b or ay<by
+ end)
+ for _,i in ipairs(order) do
+  local p=bosses[i]
   local bx,by=C.bossPosition(i,#bosses,w)
   local awake=ease((t-1.65-i*.34)/.75);local c=colors[p.world] or colors[1]
   -- Light wells ignite underneath each real boss sprite, without spawning text.
@@ -63,6 +69,7 @@ function C.draw(S)
    for sister=1,3 do R.throneAt(bx+(sister-2)*58,by+(sister==2 and -8 or 12),.52,ink,selected,.48) end
   else R.throneAt(bx,by,.64,ink,selected,p.type=='skeleton_head' and 1.55 or 1) end
   local size=p.type=='skeleton_head' and .34 or p.type=='wasp' and .40 or p.type=='final_spider' and 1.15 or p.type=='hedgehog' and 1 or .78
+  actors[#actors+1]=function()
   g.push();g.translate(bx,by+math.sin(t*1.3+i)*2);g.scale(size)
   local art=Art.images[p.art];local min,mag
   if art and art.image then min,mag=art.image:getFilter();art.image:setFilter('linear','linear') end
@@ -82,7 +89,9 @@ function C.draw(S)
    g.ellipse('line',bx,by,p.type=='skeleton_head' and 108 or p.type=='wasp' and 98 or 82,112)
    UI.arrowArt(bx,by-(by<250 and 130 or 156)+math.sin(UI.clock*3)*3,1,false,math.pi/2,{1,.83,.22})
   end
+  end
  end
+ for _,drawActor in ipairs(actors) do drawActor() end
  R.fog(true,false)
  -- A clear rear silhouette holds the last shot; the same walking rig drives arrival.
  local hy=690-205*ease(t/3.6);local heroSize=Characters.playerWidth*(2.8-.65*pull)
