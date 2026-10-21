@@ -16,25 +16,27 @@ function T.run()
   local image=target:newImageData();target:release();return image
  end
  for _,world in ipairs({6,5,4,7,2,3}) do
-  App.start(world);assert(math.abs(C.arrivalDuration-6.7)<.00001,'Same full duration as Paradise to Sky')
+  App.start(world)
+  assert(world==6 and math.abs(C.arrivalDuration-6.7)<.00001 or world~=6 and C.arrivalDuration>=9.3,'Longer descents, unchanged Paradise to Sky')
   local scene=C.scene();local px,py=player.x,player.y;local rng=love.math.getRandomState()
   local previousBlur=math.huge
-  for i=1,133 do
+  local steps=math.ceil(C.arrivalDuration/.05)
+  for i=1,steps-1 do
    C.advance(.05)
    if world~=6 then
     local p=scene.pose(C.arrival)
     assert(p.mapAlpha==p.actorsAlpha,'One reveal for scenery and creatures')
-    if C.arrival>6 then assert(p.mapAlpha==1,'Complete destination before handoff') end
+    if C.arrival>scene.impact then assert(p.mapAlpha==1,'Complete destination before handoff') end
     if world==2 then
      assert(p.blur>=0 and p.blur<=previousBlur,'Hell scene sharpens continuously throughout descent')
      previousBlur=p.blur
-     if C.arrival>=6 then assert(p.blur==0,'Hell is fully sharp on landing') end
+     if C.arrival>=scene.impact then assert(p.blur==0,'Hell is fully sharp on landing') end
     end
    end
    if world==2 and (i==30 or i==36 or i==42) or i==1 or i==65 or i==82 or i==98 or i==108 or i==132 then capture():encode('png','handoff-'..world..'-'..i..'.png') end
    assert(timer==0 and px==player.x and py==player.y and rng==love.math.getRandomState(),'Presentation does not simulate gameplay')
   end
-  scene.advance(6.7);C.arrival=6.7
+  scene.advance(C.arrivalDuration);C.arrival=C.arrivalDuration
   local before=capture()
   if world==4 then
    local bubble=require('breathing_bubble');local draw=bubble.drawAt;local calls=0;local actual
@@ -66,7 +68,7 @@ function T.run()
  App.state='customVictory';App.restartCurrent()
  assert(not C.arrival and C.active and App.practice==1,'Training replay skips portal and waits for Space')
  assert(timer==0 and player.death==0 and C.press(Profile.keys.dash),'Fresh training attempt')
- print('PASS unified 6.7-second transitions, synchronized creatures, pixel handoffs and training replay')
+ print('PASS extended descents with unchanged Sky timing, synchronized creatures, pixel handoffs and training replay')
  love.event.quit()
 end
 return T

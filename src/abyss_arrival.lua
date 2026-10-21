@@ -93,4 +93,4 @@ function B.draw(canvas,w,h)
  g.pop()
  g.pop()
 end
-return require('arrival_timing').fit(B)
+return require('arrival_timing').fit(B,{from=3.6,to=7.8,extra=3})

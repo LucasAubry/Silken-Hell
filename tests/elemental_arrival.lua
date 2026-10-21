@@ -18,7 +18,7 @@ function T.run()
   if route.kind=='hell' then
    assert(pose(0).y>1.1,'Spider enters from below the screen')
    assert(pose(5).anchorY>0 and pose(5).anchorY<.2,'Silk anchor is visibly inside the frame during the swing')
-   assert(S.pose(5).mapAlpha>0 and S.pose(5.8).mapAlpha<1,'Same continuous dissolve as Sky')
+   assert(S.pose(S.impact-.7).mapAlpha>0 and S.pose(S.impact-.2).mapAlpha<1,'Same continuous dissolve as Sky')
    assert(pose(2).y<pose(1).y and pose(3.5).y<pose(2).y,'Current lifts the spider before launching it out of the water')
    assert(not pose(3).detached and pose(3.2).detached and not pose(3.2).broken and pose(3.4).broken,'Lantern detaches at the surface then the thread breaks')
    assert(pose(3.5).silk==0 and pose(4.3).silk==1 and pose(7.3).silk==0,'Silk launches, catches and releases before landing')
