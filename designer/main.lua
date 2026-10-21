@@ -398,7 +398,8 @@ function love.keypressed(key)
         if dx~=0 or dy~=0 then M.checkpoint(); M.selected.x=M.selected.x+dx; M.selected.y=M.selected.y+dy; M.persist() end
     end
 end
-function love.update(dt) state.clock=state.clock+dt;if Projects then Projects.update(dt) end; if state.testUpdate then state.testUpdate() end;require('graphics_settings').pace(true) end
+-- Keep the editing scene still; only the launched game preview animates.
+function love.update(dt) if Projects then Projects.update(dt) end; if state.testUpdate then state.testUpdate() end;require('graphics_settings').pace(true) end
 function love.quit()
     if Projects and (M.currentProject or M.devMode) then local ok,err=M.persist();if not ok and not M.devMode then state.status='Sauvegarde impossible : '..tostring(err);return true end end
 end
