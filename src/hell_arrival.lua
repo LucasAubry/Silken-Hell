@@ -140,7 +140,7 @@ function S.draw(canvas,w,h)
   g.circle('fill',tx+dx,ty+dy,(.6+i%3*.25)*scale)
  end
  Characters.shadow(sx,sy,Characters.playerWidth*scale,p.dir,S.actor,p.mapAlpha)
- g.setColor(1,1,1);Characters.draw(ax,ay,size,p.dir,S.actor,2)
+ g.push();g.translate(ax,ay);g.rotate(math.sin(t*4.5)*.065*ease((t-5.3)/.3)*(1-p.progress));g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,S.actor,2);g.pop()
  local hx,hy,r=bubble.headPosition(ax,ay,size,p.dir)
  if p.bubble>0 and not require('integrated_skins').bubble(Characters.selected()) then
   bubble.drawAt(hx,hy,r,t,false,nil,nil,p.bubble,p.dir)

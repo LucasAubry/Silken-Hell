@@ -172,41 +172,8 @@ end
 function R.emptyThrone(x,color)
  throne(x,color or {.65,.72,.85},true)
 end
-function R.draw(S)
- local g=love.graphics;local w=Arena.width;local camera=S.cameraX or 0
- g.push('all');g.setShader();R.hall(false)
- g.setColor(.025,.038,.054);g.rectangle('fill',0,443,w,157)
- g.setColor(.13,.18,.23);g.setLineWidth(2);g.line(0,548,w,548)
- for i=math.floor(camera/95)-1,math.ceil((camera+w)/95)+1 do
-  local x=i*95-camera
-  g.setColor(.06,.09,.12);g.polygon('fill',x,552,x+87,552,x+106,584,x-14,584)
-  g.setColor(.19,.25,.30,.5);g.line(x,552,x+87,552)
- end
- g.push();g.translate(-camera,0)
- for i,entry in ipairs(S.portals) do
-  local x=S.position(i)
-  if x>camera-480 and x<camera+w+480 then
-   local c=colors[Worlds.biome(entry.world)] or colors[7];local selected=math.abs(S.x-x)<58
-   if entry.type=='wasp' then
-    for sister=1,3 do
-     g.push();g.translate(x+(sister-2)*145,437);g.scale(.68,1);g.translate(0,-437)
-     throne(0,c,selected);g.pop()
-    end
-   else throne(x,c,selected) end
-   g.push();g.translate(x,315);R.boss(entry,0,0);g.pop()
-   local name=entry.type=='skeleton_head' and 'Le Monstre d’os' or entry.name
-   name=UI.ellipsize(require('localization').render(name),'body',250)
-   UI.rawText(name,x-125,453,'body',selected and {1,.94,.72} or {.68,.77,.83},250,'center')
-   if selected then
-    g.setColor(.86,.94,1,.8);g.setLineWidth(2);g.line(x-8,491,x,483,x+8,491)
-   end
-  end
- end
- g.setColor(0,0,0,.6);g.ellipse('fill',S.x,S.y+24,24,8)
- g.setColor(1,1,1);Characters.draw(S.x,S.y,62,S.facing or 'right',S)
- g.pop()
- R.fog(true,false)
- g.setColor(.008,.013,.023,.8);g.rectangle('fill',0,584,w,16)
- g.pop()
+function R.throneAt(x,y,scale,color,selected)
+ local g=love.graphics;g.push();g.translate(x,y);g.scale(scale);g.translate(0,-315)
+ throne(0,color,selected);g.pop()
 end
 return R

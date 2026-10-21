@@ -195,9 +195,7 @@ function I.press(j,b)
     end
     if App.state=='bossWorld' then
         if Secret.intro then return end
-        if Secret.pending then if b=='a' then Secret.confirm() end;return end
-        if b=='y' then Secret.switchCategory()
-        elseif b=='rightshoulder' then Secret.turnPage(1) elseif b=='leftshoulder' then Secret.turnPage(-1) end
+        if b=='a' then Secret.key('space',false) end
         return
     end
     if b=='a' and App.state=='pause' then require('run_start').armed=false end

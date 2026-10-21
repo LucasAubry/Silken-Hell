@@ -124,7 +124,7 @@ function E.draw(canvas,w,h)
  -- The cloud occludes the anchor, so the silk emerges from behind its underside.
  cloud(w,h,p.camera,t,1-underground,1)
  cloud(w,h,p.camera,t,1-underground,2)
- g.push();g.translate(ax,ay);g.rotate(t<2.1 and math.sin(p.jump*math.pi)*.12 or -p.angle*.65)
+ g.push();g.translate(ax,ay);g.rotate(t<2.1 and math.sin(p.jump*math.pi)*.12 or -p.angle*.65+math.sin(t*4)*.045*fall)
  g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,E.actor,p.mapAlpha>0 and 5 or 6);g.pop()
  -- Seen from behind, the attachment and thread pass in front of the body.
  if p.silk then

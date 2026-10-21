@@ -541,15 +541,20 @@ function U.bestiary()
     U.text(page..' / '..math.max(1,math.ceil(#rows/8)),220,598,'body',gold,140,'center')
     U.button('Retour',490,668,220,38,function() App.state=U.bestReturn or 'menu' end)
 end
+function U.arrowArt(cx,cy,dir,hover,angle,ink)
+    g.push('all');g.translate(cx,cy);g.rotate(angle or 0)
+    g.setColor(0.08,0.06,0.025,0.9);g.polygon('fill',0,-24,24,0,0,24,-24,0)
+    g.setColor(ink or (hover and {1,0.95,0.7} or gold));g.polygon('line',0,-24,24,0,0,24,-24,0)
+    g.polygon('fill',dir*8,0,-dir*5,-8,-dir*5,8);g.pop()
+end
 function U.arrow(cx,cy,dir,callback)
     local originalY=cy
     if U.pressed and U.pressed.state==App.state and U.pressed.x==cx-24 and U.pressed.y==cy-24 then cy=cy+3 end
-    local mx,my=U.mouse(); local hover=(mx-cx)^2+(my-cy)^2<24^2
-    g.setColor(0.08,0.06,0.025,0.9); g.polygon('fill',cx,cy-24,cx+24,cy,cx,cy+24,cx-24,cy)
-    g.setColor(hover and {1,0.95,0.7} or gold); g.polygon('line',cx,cy-24,cx+24,cy,cx,cy+24,cx-24,cy)
-    g.polygon('fill',cx+dir*8,cy,cx-dir*5,cy-8,cx-dir*5,cy+8)
+    local mx,my=U.mouse();local hover=(mx-cx)^2+(my-cy)^2<24^2
+    U.arrowArt(cx,cy,dir,hover)
     U.buttons[#U.buttons+1]={x=cx-24,y=originalY-24,w=48,h=48,run=callback}
 end
+
 function U.outlined(text,x,y,font,color,width)
     text=L.render(text)
     g.setFont(U.fonts[font or 'medium'])

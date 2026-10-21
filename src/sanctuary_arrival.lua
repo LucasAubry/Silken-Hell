@@ -1,16 +1,20 @@
 -- A return to the arena: the challenger walks into the light of all seven worlds.
-local C={duration=9.2}
+local C={duration=6.8}
 local colors={[1]={1,.80,.38},[6]={.55,.73,1},[5]={.76,.56,.33},[4]={.2,.9,.9},[7]={.25,.47,1},[2]={1,.25,.06},[3]={.65,1,.35}}
 local function ease(v)v=math.max(0,math.min(1,v));return v*v*(3-2*v)end
+function C.bossPosition(i,count,w)
+ local u=(i-.5)/count
+ return w*(.07+.86*u),210+90*math.abs(u-.5)*2
+end
 function C.begin()return {age=0,actor={walkMoving=false,sanctuaryPlayer=true},previousY=690} end
 function C.update(state,dt)
- state.age=math.min(C.duration,state.age+dt)
+ state.age=state.age+dt
  local y=690-205*ease(state.age/3.6)
  require('brown_walk').advance(state.actor,math.abs(y-state.previousY),dt);state.previousY=y
  return state.age>=C.duration
 end
 function C.draw(S)
- local state=S.intro;local t=state.age;local g=love.graphics;local R=require('sanctuary_scene');local w=Arena.width
+ local state=S.presentation;local t=state.age;local g=love.graphics;local R=require('sanctuary_scene');local w=Arena.width
  local reveal=ease((t-1.2)/3.5);local pull=ease((t-1.8)/3.6)
  if not C.canvas or C.canvas:getWidth()~=w then
   if C.canvas then C.canvas:release() end
@@ -41,7 +45,7 @@ function C.draw(S)
  end
  local bosses=S.normalBosses
  for i,p in ipairs(bosses) do
-  local u=(i-.5)/#bosses;local bx=w*(.07+.86*u);local by=210+90*math.abs(u-.5)*2
+  local bx,by=C.bossPosition(i,#bosses,w)
   local awake=ease((t-1.65-i*.34)/.75);local c=colors[p.world] or colors[1]
   -- Light wells ignite underneath each real boss sprite, without spawning text.
   g.setBlendMode('add','alphamultiply')
@@ -53,11 +57,24 @@ function C.draw(S)
   g.setBlendMode('alpha','alphamultiply')
   g.setColor(.08,.10,.14);g.ellipse('fill',bx,by+45,58,13)
   g.setColor(c[1],c[2],c[3],awake*.7);g.setLineWidth(2);g.ellipse('line',bx,by+45,58,13)
+  local selected=not S.intro and S.page==i
+  R.throneAt(bx,by,.52,selected and {1,.83,.26} or c,selected)
   local size=p.type=='skeleton_head' and .23 or p.type=='wasp' and .31 or p.type=='final_spider' and .88 or .62
   g.push();g.translate(bx,by+math.sin(t*1.3+i)*2);g.scale(size)
   R.boss(p,0,0);g.pop()
-  -- Mask the alcove until its light catches the waiting adversary.
-  g.setColor(.006,.009,.018,(1-awake)*.96);g.rectangle('fill',bx-w*.061,by-88,w*.122,128)
+  -- Soft moving smoke hides the alcove, with no rectangular mask edges.
+  if awake<1 then
+   C.smoke=C.smoke or g.newShader('assets/shaders/sanctuary_smoke.glsl')
+   local cx,cy=g.transformPoint(bx,by-20)
+   C.smoke:send('center',{cx,cy});C.smoke:send('radius',{75*zoom,115*zoom})
+   C.smoke:send('clock',t+i*2);C.smoke:send('opacity',1-awake)
+   g.setShader(C.smoke);g.setColor(1,1,1);g.rectangle('fill',bx-100,by-160,200,280);g.setShader()
+  end
+  if selected then
+   g.setColor(1,.82,.22,.85);g.setLineWidth(2)
+   g.ellipse('line',bx,by,63,94)
+   UI.arrowArt(bx,by-126+math.sin(UI.clock*3)*3,1,false,math.pi/2,{1,.83,.22})
+  end
  end
  R.fog(true,false)
  -- A clear rear silhouette holds the last shot; the same walking rig drives arrival.
@@ -66,7 +83,7 @@ function C.draw(S)
  for j=6,1,-1 do
   g.setColor(.65,.76,.92,.015*reveal);g.ellipse('fill',w*.5,hy+18,heroSize*.45+j*5,12+j*3)
  end
- g.setColor(1,1,1);Characters.draw(w*.5,hy,heroSize,'up',state.actor,8)
+ g.push();g.translate(w*.5,hy);g.rotate(S.turn or 0);g.setColor(1,1,1);Characters.draw(0,0,heroSize,'up',state.actor,8);g.pop()
  -- Embers drift towards the confrontation, crossing foreground and background.
  g.setBlendMode('add','alphamultiply')
  for i=1,90 do
@@ -78,8 +95,6 @@ function C.draw(S)
  g.setColor(0,0,0,.9);g.rectangle('fill',-w,-600,w*3,628);g.rectangle('fill',-w,572,w*3,700)
  g.setColor(0,0,0,1-ease(t/.8));g.rectangle('fill',-w,-600,w*3,1800)
  g.setCanvas(target);g.pop()
- local dissolve=ease((t-8.2)/1)
- if dissolve>0 then R.draw(S) end
- g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied');local a=1-dissolve;g.setColor(a,a,a,a);g.draw(C.canvas);g.pop()
+ g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1);g.draw(C.canvas);g.pop()
 end
 return C

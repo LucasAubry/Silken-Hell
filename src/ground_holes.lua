@@ -1,5 +1,5 @@
 -- Authored brush strokes share exactly the same footprint in editor and game.
-local H={cache=setmetatable({},{__mode='k'})}
+local H={cache=setmetatable({},{__mode='k'}),shared={},order={},builds=0}
 function H.bounds(e)
  local p=e.points;local rx,ry=e.rx or e.radius or 28,e.ry or e.radius or 28
  local x0,y0,x1,y1=p[1],p[2],p[1],p[2]
@@ -13,8 +13,15 @@ function H.geometry(e)
  local signature=table.concat(p,',')..':'..rx..':'..ry
  local cache=H.cache[e]
  if cache and cache.signature==signature then return cache end
- if cache then for _,mesh in pairs(cache.meshes) do mesh:release() end end
+ -- Layout entities are copied on every retry; geometry belongs to the shape,
+ -- not to that short-lived entity. Editing points still changes the signature.
+ cache=H.shared[signature]
+ if cache then H.cache[e]=cache;return cache end
+ H.builds=H.builds+1
  cache={signature=signature,meshes={},fill={}};H.cache[e]=cache
+ H.shared[signature]=cache;H.order[#H.order+1]=signature
+ if #H.order>64 then H.shared[table.remove(H.order,1)]=nil end
+ -- Live entities may still reference an evicted mesh: let GC release it safely.
  if #p<6 then return cache end
  local x0,y0,x1,y1=H.bounds(e)
  local step=math.max(2,math.sqrt((x1-x0+8)*(y1-y0+8)/160000))

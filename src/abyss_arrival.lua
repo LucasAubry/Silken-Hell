@@ -21,20 +21,27 @@ function B.pose(t)
  local slide=math.max(0,t-3.6)
  local camera=slide*slide*.10
  local leave=ease((t-5.1)/1.3)
- local rockX=.43-.65*ease((t-5.1)/2.7)
+ local rockX=.43
  local drop=.18*ease(slide/1.65)
- local rockY=.60+drop+.15*slide*slide
+ local rockY=.60+drop+.40*(slide-.8*(1-math.exp(-slide/.8)))
  local crack=ease((t-3.25)/.35)
  local jolt=ease(slide/.045)*(1-ease((slide-.10)/.55))*crack
- return {worldX=worldX,camera=camera,x=worldX,y=.538+drop-.203*leave,
-  crack=crack,jolt=jolt,tilt=.24*ease(slide/.7)*(1-leave),
+ return {worldX=worldX,camera=camera,x=worldX,y=.538+drop,
+  crack=crack,jolt=jolt,tilt=0,
   rockX=rockX,rockY=rockY,leave=leave,slide=slide,progress=land,
   depth=ease((t-3.6)/3.5),mapAlpha=land,actorsAlpha=land,
   equip=ease((t-2.1)/1.3),size=1.5-.5*land,dir=t>=3.6 and 'up' or 'right'}
 end
 function B.position(t,w,h,sx,sy)
- local p=B.pose(t);local x,y=w*p.x,h*p.y
- return x+(sx-x)*p.progress,y+(sy-y)*p.progress
+ local p=B.pose(t)
+ -- Establish the destination axis during the approach, then sink straight down.
+ -- Camera tracking slows the screen-space fall without reversing its direction.
+ if t<3.6 then
+  local approach=ease(t/1.8)
+  return -w*.10+(sx+w*.10)*approach,sy-h*.22
+ end
+ local descent=ease((t-3.6)/4.2)
+ return sx,sy-h*.22*(1-descent)
 end
 function B.advance(age)
  local old=B.age;local dt=math.max(0,age-old);B.age=age
@@ -47,7 +54,7 @@ function B.draw(canvas,w,h)
  local scale,x,y=App.viewport(w,h);local sx,sy=x+(player.x+15)*scale,y+(player.y+8)*scale
  local ax,ay=B.position(t,w,h,sx,sy);local size=Characters.playerWidth*scale*p.size
  g.push('all');g.origin();g.setShader()
- g.translate(math.sin(t*63)*p.jolt*11*scale,math.sin(t*47)*p.jolt*15*scale)
+ g.translate(0,math.sin(t*47)*p.jolt*6*scale)
  decor.backdrop(4,w,h,t,1,p.camera*.6)
  g.setColor(.002,.009,.025,p.depth*.85);g.rectangle('fill',0,0,w,h)
  for i=1,45 do
@@ -63,9 +70,11 @@ function B.draw(canvas,w,h)
  end
  decor.reveal(canvas,B.environment,w,h,p.mapAlpha,p.actorsAlpha,shader)
  -- Both layers stay solid and leave the screen with the following camera.
- rocks.draw(w,h,p,t)
+ local axis=sx/w-.43
+ g.push();g.translate(axis*w,sy-h*.22-h*.538)
+ rocks.draw(w,h,p,t);g.pop()
  local hx,hy,r=bubble.headPosition(ax,ay,size,p.dir)
- local fromX,fromY=w*.52,h*.595+r*1.20-5*scale
+ local fromX,fromY=sx+w*.09,sy-h*.22+h*.057+r*1.20-5*scale
  local lampX=fromX+(hx-fromX)*p.equip
  local lampY=fromY+(hy-fromY)*p.equip-math.sin(p.equip*math.pi)*18*scale
  local lx,ly=bubble.lanternPosition(lampX,lampY,r,t*(1-p.progress),p.dir)

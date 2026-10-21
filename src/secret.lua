@@ -33,39 +33,28 @@ function S.rushBoss(n)
 end
 function S.refresh()
     if not S.normalBosses then S.catalog() end
-    local list=S.hardcore and S.demonBosses or S.category=='mobs' and S.creatures or S.normalBosses
+    local list=S.normalBosses
     S.portals={};for i,p in ipairs(list) do S.portals[i]=p end
     S.perPage=#list;S.pages=#list;S.page=math.max(1,math.min(S.page or 1,S.pages))
-    S.positions={};local edge=0
-    for i,p in ipairs(list) do local width=p.type=='skeleton_head' and 620 or p.type=='wasp' and 500 or 360;S.positions[i]=edge+width/2;edge=edge+width end
-    S.hallWidth=math.max(Arena.width,edge)
-    S.pending=nil;S.upReady=false
+    S.hallWidth=Arena.width;S.pending=nil;S.upReady=false
 end
-function S.turnPage(step)
-    S.page=math.max(1,math.min(S.pages,(S.nearest or S.page)+step))
-    S.x=S.position(S.page);S.y=510;S.cooldown=.2;S.upReady=false
-end
-function S.switchCategory()
-    S.category=S.category=='mobs' and 'boss' or 'mobs';S.page=1;S.refresh();S.x=S.position(1);S.cameraX=0
-end
-function S.ask(index)
-    S.pending=S.portals[index];S.confirmYes=false;S.upReady=false;S.confirmRepeat=0
-end
-function S.cancel()
-    S.pending=nil;S.upReady=false;S.cooldown=.25
-end
-function S.confirm()
-    local entry=S.pending;if not entry then return end
-    if not S.confirmYes then S.cancel();return end
-    S.pending=nil;S.launch(entry)
+function S.navigate(dx,dy)
+    local C=require('sanctuary_arrival');local x,y=C.bossPosition(S.page,#S.portals,Arena.width)
+    local best,score
+    for i=1,#S.portals do if i~=S.page then
+        local bx,by=C.bossPosition(i,#S.portals,Arena.width);local vx,vy=bx-x,by-y
+        local distance=math.sqrt(vx*vx+vy*vy);local alignment=(vx*dx+vy*dy)/distance
+        if alignment>.12 then
+            local cost=distance/(alignment*alignment)
+            if not score or cost<score then best,score=i,cost end
+        end
+    end end
+    if best then S.page=best;S.nearest=best;Audio.play('selection') end
 end
 function S.key(key,isrepeat)
     if S.intro then return key~='escape' end
-    if not S.pending then return false end
-    if key=='escape' then S.cancel()
-    elseif key=='left' or key==Profile.keys.left then S.confirmYes=true
-    elseif key=='right' or key==Profile.keys.right then S.confirmYes=false
-    elseif not isrepeat and (key=='return' or key=='space') then S.confirm() end
+    if key=='escape' then return false end
+    if not isrepeat and (key=='return' or key=='space') then S.launch(S.portals[S.page]) end
     return true
 end
 function S.launch(p)
@@ -100,7 +89,7 @@ function S.updateDuel(dt)
         if S.duel.time>=20 then App.state='customVictory';if Replay and not Replay.playing then Replay.finish() end end
     end
 end
-function S.position(i) return (S.positions and S.positions[i]) or 180,510 end
+function S.position(i) return require('sanctuary_arrival').bossPosition(i,#S.portals,Arena.width) end
 function S.open(demon)
     if demon==true then App.openEntry(8,true);return end
     local back=demon==nil and S.returnSelection or nil
@@ -113,53 +102,37 @@ function S.open(demon)
     App.sessionLayout=nil;App.singleLevel=false;App.workshopMap=nil;App.custom=false
     S.duel=nil;S.page=back and back.page or 1;S.category=back and back.category or 'boss';S.charge=0;S.charging=nil;S.refresh()
     Ending.active=false;require('final_spider').active=false;Replay.input=nil;S.facing='down';S.walkMoving=false;S.walkPhase=0
-    S.x=back and back.x or S.position(1);S.y=510;S.cameraX=math.max(0,math.min(S.hallWidth-Arena.width,S.x-Arena.width*.5));S.cooldown=.3;S.upReady=false;S.pending=nil;App.state='bossWorld'
-    S.intro=not back and require('sanctuary_arrival').begin() or nil
+    S.x=Arena.width*.5;S.y=485;S.cameraX=0;S.turn=0;S.navHeld=false;S.cooldown=.3;S.upReady=false;S.pending=nil;App.state='bossWorld'
+    S.presentation=require('sanctuary_arrival').begin();S.intro=S.presentation
 end
 function S.update(dt)
+    local C=require('sanctuary_arrival')
+    if S.presentation then C.update(S.presentation,dt) end
     if S.intro then
-        if require('sanctuary_arrival').update(S.intro,dt) then S.intro=nil;S.cooldown=.3;S.upReady=false end
+        if S.intro.age>=C.duration then S.intro=nil;S.cooldown=.25;S.navHeld=true end
         return
     end
     local dx,dy=Input.move()
-    if S.pending then
-        S.walkMoving=false
-        if dx<-.5 then S.confirmYes=true elseif dx>.5 then S.confirmYes=false end
-        return
-    end
+    -- Arrow keys remain available even when movement is remapped to ZQSD.
+    if love.keyboard.isDown('left') then dx=-1 elseif love.keyboard.isDown('right') then dx=1 end
+    if love.keyboard.isDown('up') then dy=-1 elseif love.keyboard.isDown('down') then dy=1 end
     S.cooldown=math.max(0,S.cooldown-dt)
-    local speed=Input.slow() and 260 or 1050
-    local oldX=S.x
-    S.x=math.max(55,math.min(S.hallWidth-55,S.x+dx*speed*math.min(dt,.05)));S.y=510
-    S.sanctuaryPlayer=true;require('brown_walk').advance(S,math.abs(S.x-oldX),dt)
-    if dx~=0 then S.facing=dx>0 and 'right' or 'left' end
-    local camera=math.max(0,math.min(S.hallWidth-Arena.width,S.x-Arena.width*.5))
-    S.cameraX=(S.cameraX or 0)+(camera-(S.cameraX or 0))*math.min(1,dt*9)
-    local index=1
-    for i=2,#S.portals do if math.abs(S.x-S.position(i))<math.abs(S.x-S.position(index)) then index=i end end
-    S.nearest=index;S.page=index
-    if dy>-.3 then S.upReady=true end
-    if dy<-.55 and S.upReady and S.cooldown<=0 and math.abs(S.x-S.position(index))<58 then S.ask(index) end
+    if math.abs(dx)+math.abs(dy)<.35 then S.navHeld=false;S.cooldown=0
+    elseif not S.navHeld or S.cooldown<=0 then
+        S.navigate(dx,dy);S.cooldown=S.navHeld and .18 or .35;S.navHeld=true
+    end
+    local bx,by=C.bossPosition(S.page,#S.portals,Arena.width)
+    local target=math.atan2(bx-S.x,S.y-by)
+    S.turn=S.turn+(target-S.turn)*(1-math.exp(-dt*10))
 end
-function S.drawWorld()
-    if S.intro then require('sanctuary_arrival').draw(S) else require('sanctuary_scene').draw(S) end
-end
+function S.drawWorld() require('sanctuary_arrival').draw(S) end
 function S.draw()
     if S.intro then return end
-    UI.text('LE SANCTUAIRE',300,24,'heading',{1,1,.94},600,'center')
-    if S.pending then
-        S.walkMoving=false
-        local g=love.graphics;g.push('all');g.origin();g.setColor(.005,.008,.015,.78);g.rectangle('fill',0,0,g.getWidth(),g.getHeight());g.pop()
-        UI.panel(275,235,650,280)
-        local L=require('localization')
-        UI.text(L.text('Êtes-vous sûr de vouloir affronter %s ?',L.render(S.pending.name)),310,275,'medium',{1,.95,.8},580,'center')
-        UI.button('Oui',325,419,255,50,function() S.confirmYes=true;S.confirm() end,false,S.confirmYes)
-        UI.button('Non',620,419,255,50,S.cancel,false,not S.confirmYes)
-        return
-    end
-    UI.button(S.category=='mobs' and 'Voir les boss' or 'Voir les créatures',100,78,260,40,S.switchCategory)
-    UI.button('Classement hardcore',390,78,310,40,function() UI.boardReturn='bossWorld';UI.boardWorld=8;UI.boardHardcore=true;UI.boardPage=1;App.state='rankings' end)
-    UI.button('Choix des mondes',730,78,350,40,function() WorldMap.hardcore=S.hardcore;WorldMap.open() end)
+    UI.text('LE SANCTUAIRE',300,30,'heading',{1,1,.94},600,'center')
+    local boss=S.portals[S.page]
+    UI.text(UI.ellipsize(require('localization').render(boss.name),'body',540),330,710,'body',{1,.85,.51},540,'center')
+    UI.button('Mondes',65,642,220,48,function() WorldMap.hardcore=false;WorldMap.open() end)
+    UI.button('Affronter',915,642,220,48,function() S.launch(boss) end)
 end
 function S.configure()
     if not Worlds.isSecret(Campaign.world) and Campaign.world~=8 then return end
