@@ -4,7 +4,8 @@ function T.run()
  Online.enabled=false;Replay.disabled=true;Replay.playing=false;Profile.save=function()end;Bestiary.save=function()end
  LevelLayouts.disabled=true;App.singleLevel=true;App.practice=1;App.start(6);require('run_start').active=false
  local savedInput=Replay.input
- local function input(dx,dy) Replay.input={dx,dy,false} end
+ Profile.speedMode='accelerate'
+ local function input(dx,dy,held) Replay.input={dx,dy,Profile.speedMode=='slow' and held==true or Profile.speedMode~='slow' and not held} end
  local function enter(dx,dy)
   input(0,0)
   mobs={};Realms.holes={};Realms.tornadoes={{x=Arena.width/2,y=300,cooldown=0}};Realms.tunnels={}
@@ -20,14 +21,11 @@ function T.run()
   local x,y=player.x,player.y;App.move(dt)
   assert(player.x==x and player.y==y,'Directional input cannot walk out of the tornado')
   Realms.clock=.2
+  Realms.updateTraversal(dt)
+  assert(player.whirl,'Direction selects aim without launching')
   if dt>.4 then
-   -- Every launch now requires a fresh direction after the one-second wait.
-   local w=player.whirl;local aimX,aimY=dx,dy
-   if aimX==0 and aimY==0 then aimX,aimY=w.dx,w.dy end
-   input(0,0);Realms.updateTraversal(1.01)
-   assert(player.whirl,'No automatic launch after the wait')
-   input(aimX,aimY);Realms.updateTraversal(1/60)
-  else Realms.updateTraversal(dt) end
+   input(0,0,true);Realms.updateTraversal(1/60)
+  end
  end
  local function checkThrow(dx,dy)
   local length=math.sqrt(dx*dx+dy*dy);dx,dy=dx/length,dy/length
@@ -42,7 +40,15 @@ function T.run()
  enter(1,0);input(0,0);Realms.updateTraversal(.01)
  assert(player.whirl,'No automatic launch')
  input(0,-1);Realms.updateTraversal(.01)
- assert(player.throw and player.throw.vy==-1050,'A direction launches immediately after entry')
+ assert(player.whirl and player.whirl.dy==-1,'Direction alone only aims')
+ input(0,0,true);Realms.updateTraversal(.01)
+ assert(player.throw and player.throw.vy==-1050,'Space launches in the saved direction')
+ -- A held key on entry must not eject immediately, including a chained capture.
+ enter(1,0);player.whirl.launchHeld=true;input(1,1,true);Realms.updateTraversal(.1)
+ assert(player.whirl,'Holding Space from entry does not relaunch')
+ input(1,1);Realms.updateTraversal(.01);input(1,1,true);Realms.updateTraversal(.01)
+ assert(player.throw and player.throw.vx>0 and player.throw.vy>0,'A fresh Space press launches diagonally')
+ Profile.speedMode='slow';enter(1,0);steer(0,1,.46);checkThrow(0,1);Profile.speedMode='accelerate'
  enter(1,0);input(0,0);Realms.updateTraversal(2)
  assert(player.whirl,'Without direction the player keeps orbiting')
  for _,d in ipairs({{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1},{.2,.1}})do

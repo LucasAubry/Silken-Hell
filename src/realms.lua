@@ -142,7 +142,7 @@ local function captureTornado(fromX,fromY)
     local ex,ey=player.x+15-first.x,player.y+12-first.y
     player.throw=nil
     local inputX,inputY=Input.move()
-    player.whirl={tornado=first,time=1,age=0,inputX=inputX,inputY=inputY,dx=headingX/d,dy=headingY/d,
+    player.whirl={tornado=first,launchHeld=Input.tornadoLaunchHeld(),time=1,age=0,inputX=inputX,inputY=inputY,dx=headingX/d,dy=headingY/d,
         entryX=ex,entryY=ey,entryVX=flight and flight.vx or 0,entryVY=flight and flight.vy or 0,
         entryAngle=math.atan2(ey/10,ex/15),
         entryRotation=flight and age*7+math.sin(age*15)*.13+math.cos(heading)*.14 or 0,
@@ -198,8 +198,9 @@ function R.updateTraversal(dt)
             player.x=w.tornado.x+x-15;player.y=w.tornado.y+y-12
             Hazards.contact()
             if player.reset then player.whirl=nil;return end
-            local pressed=length>.001 and ((w.inputX or 0)==0 and (w.inputY or 0)==0
-                or math.abs(dx-(w.inputX or 0))>.25 or math.abs(dy-(w.inputY or 0))>.25)
+            local held=Input.tornadoLaunchHeld()
+            local pressed=held and not w.launchHeld
+            w.launchHeld=held
             w.inputX,w.inputY=dx,dy
             if pressed then
                 player.whirl=nil; player.throw={vx=w.dx*1050,vy=w.dy*1050,time=1.5}

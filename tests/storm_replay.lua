@@ -21,7 +21,8 @@ function T.run()
   if d<3 then return 0,0 end
   return dx/d,dy/d
  end
- Input.slow=function()return true end
+ Profile.speedMode='accelerate'
+ Input.slow=function()return not (player.whirl and (player.whirl.age or 0)>=1) end
  App.start(6);require('run_start').active=false
  local initial=State.hash();local states={};local patterns={};local captured,projected=false,false
  local function tick(dt)
@@ -35,6 +36,7 @@ function T.run()
  for _=1,3100 do Replay.update(Replay.step,tick)end
  assert(patterns[1] and patterns[2] and patterns[3] and captured and projected,'Recording covers three patterns and player-triggered launches')
  local recording=json.decode(json.encode(Replay.last));App.sessionLayout=nil;LevelLayouts.disabled=true
+ Profile.speedMode='slow' -- Playback must retain the recorded Space semantics.
  assert(Replay.play(recording));require('run_start').active=false;assert(State.hash()==initial,'Replay restores the initial boss state')
  local count=0
  while Replay.playing and count<2800 do Replay.update(1/47,tick);count=count+1 end

@@ -51,7 +51,7 @@ function R.begin(world)
             for n=1,10 do local key='6:'..n;layouts[key]=layouts[key] and require('sky').prepare(layouts[key]) or require('sky').layout(n,Arena.width) end
         end
         local seed=love.math.random(1,2147483646)
-        R.data={version=1,build=R.build(),world=world,seed=seed,width=Arena.width,height=600,skin=Characters.selected(),effects=require('skin_effects').snapshot(),startLevel=player.level,single=not not App.singleLevel,hardcore=not not App.hardcore,layouts=json.decode(json.encode(layouts)),session=App.sessionLayout~=nil,states={},duel=Secret.duel and {kind=Secret.duel.kind,name=Secret.duel.name,time=0} or nil,inputs={},checks={},frames=0,startedAt=os.time()}
+        R.data={version=1,speedMode=Profile.speedMode,build=R.build(),world=world,seed=seed,width=Arena.width,height=600,skin=Characters.selected(),effects=require('skin_effects').snapshot(),startLevel=player.level,single=not not App.singleLevel,hardcore=not not App.hardcore,layouts=json.decode(json.encode(layouts)),session=App.sessionLayout~=nil,states={},duel=Secret.duel and {kind=Secret.duel.kind,name=Secret.duel.name,time=0} or nil,inputs={},checks={},frames=0,startedAt=os.time()}
     end
     if not R.playing then require('replay_engine').remember(R.data.build) end
     R.rng=love.math.newRandomGenerator(R.data.seed);R.recording=not R.playing;R.enter()
@@ -124,6 +124,7 @@ end
 function R.validate(data)
     if type(data)=='table' and ((data.hardcore~=nil and type(data.hardcore)~='boolean') or data.world==8 and data.hardcore~=true) then return false,'Mode de replay invalide.' end
     if type(data)~='table' or type(data.version)~='number' or data.version%1~=0 or data.version<1 then return false,'Replay invalide.' end
+    if data.speedMode~=nil and data.speedMode~='slow' and data.speedMode~='accelerate' then return false,'Commandes de replay invalides.' end
     if data.effects~=nil then
         if type(data.effects)~='table' then return false,'Effets de replay invalides.' end
         for key,value in pairs(data.effects) do if not ({gold=true,hardcore=true,heartbreak=true})[key] or type(value)~='boolean' then return false,'Effets de replay invalides.' end end
