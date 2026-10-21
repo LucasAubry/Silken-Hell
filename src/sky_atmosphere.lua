@@ -1,7 +1,7 @@
 local A={}
-function A.draw(time)
- if not require('sky').openEdges() then return end
- local g=love.graphics;local width=Arena.width
+function A.draw(time,width)
+ if not width and not require('sky').openEdges() then return end
+ local g=love.graphics;width=width or Arena.width
  g.push('all');g.setShader();g.setLineWidth(1)
  -- Stable decorative seeds never consume the simulation's random stream.
  for i=1,105 do

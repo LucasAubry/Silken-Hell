@@ -3,6 +3,12 @@ function T.run(M,state,select)
  io.stdout:setvbuf('no');M.draftFilename='celestial-test-drafts.json';M.drafts={};M.applied={version=1,levels={}}
  select(6,1);state.category='Terrain';state.all=false;love.draw()
  local before=#M.layout.entities
+ local draw=Biome and Biome.draw or require('biome_floor').draw
+ local floor=require('biome_floor');local seen
+ floor.draw=function(world,w,h,t) if world==6 then seen=t end;return draw(world,w,h,t) end
+ state.clock=2;love.draw();assert(seen==2,'Sky preview uses the live game backdrop')
+ state.clock=3;love.draw();assert(seen==3 and #M.layout.entities==before,'Animated sky does not alter the map')
+ floor.draw=draw
  for _,e in ipairs(require('catalog')) do if e.kind=='electric_ground' then state.tool=e end end
  assert(state.tool,'Electric brush exists')
  local view=state.canvas

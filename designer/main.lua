@@ -236,7 +236,10 @@ function love.draw()
         state.mapCanvas:setFilter('linear','linear')
     end
     g.push('all');g.setCanvas(state.mapCanvas);g.origin();g.setScissor();g.setShader();g.clear(0,0,0,0)
-    g.setColor(1,1,1); g.draw(state.background)
+    if M.world==6 then
+        Biome.draw(6,M.layout.width,600,state.clock)
+        require('sky_atmosphere').draw(state.clock,M.layout.width)
+    else g.setColor(1,1,1);g.draw(state.background) end
     if state.grid then g.setColor(1,1,1,.09); for xx=0,M.layout.width,40 do g.line(xx,0,xx,600) end; for yy=0,600,40 do g.line(0,yy,M.layout.width,yy) end end
     local holes,lava={},{}
     local moving=state.drag and M.selected and brush(M.selected) and M.selected.points and M.selected

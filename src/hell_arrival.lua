@@ -16,19 +16,19 @@ function S.captureEnvironment(canvas)
 end
 function S.pose(t)
  local land=ease((t-6.8)/3)
- local angle=motion.sample({{4.2,-.68,0},{5.6,.58,0},{6.8,0,0}},t)
- local startX,startY=.53+.42*math.sin(-.68),.105+.32*math.cos(-.68)
+ local angle=motion.sample({{4.2,-.68,0},{5.3,.32,0}},t)
+ local startX,startY=.40+.25*math.sin(-.68),.105+.32*math.cos(-.68)
  local x=motion.sample({{0,.28,0},{1.3,.32,0},{2.8,.32,0},{3.5,.28,-.05},{4.2,startX,0}},t)
  local y=motion.sample({{0,1.16,-.24},{1.3,.64,-.12},{2.8,.40,-.24},{3.5,.18,0},{4.2,startY,0}},t)
- if t>=4.2 then x=.53+.42*math.sin(angle);y=.105+.32*math.cos(angle) end
+ if t>=4.2 then x=.40+.25*math.sin(angle);y=.105+.32*math.cos(angle) end
  local release=ease((t-3.1)/.45)
  return {x=x,y=y,progress=land,size=1.65-.65*land,
   waterline=.25+.95*ease((t-2.8)/3),opening=ease((t-3.3)/3.5),
   silk=t<5.3 and ease((t-3.65)/.55) or 0,angle=angle,
-  anchorX=.53,anchorY=.105-.2*ease((t-7.2)/1.2),
+  anchorX=.40,anchorY=.105-.2*ease((t-7.2)/1.2),
   mapAlpha=land,actorsAlpha=land,bubble=1-release,release=release,
   blur=14*(1-ease((t-2.65)/7.15)),
-  detached=t>=3.1,broken=t>=3.35,dir=t<3.1 and 'up' or t<5.6 and 'right' or t<6.8 and 'left' or 'up'}
+  detached=t>=3.1,broken=t>=3.35,dir=t<3.1 and 'up' or t<6.8 and 'right' or 'up'}
 end
 function S.position(t,w,h,sx,sy)
  local p=S.pose(t);local x,y=w*p.x,h*p.y
@@ -130,14 +130,33 @@ function S.draw(canvas,w,h)
  end
  -- Sample the actual flight path: dust trails follow the swing and the final fall.
  local flight=ease((t-4.2)/.3)*(1-ease((t-9.3)/.5))
- for i=1,22 do
-  local lag=.04+i*.018
+ for i=1,58 do
+  local lag=.025+i*.012
   local tx,ty=S.position(math.max(4.2,t-lag),w,h,sx,sy)
   local bx,by=S.position(math.max(4.2,t-lag-.035),w,h,sx,sy)
   local dx=math.sin(i*2.4)*size*.44;local dy=math.cos(i*1.7)*size*.22
-  g.setColor(.91,.65,.37,flight*(1-i/25)*.36);g.setLineWidth(scale)
+  g.setColor(.91,.65,.37,flight*(1-i/62)*.48);g.setLineWidth(scale)
   g.line(tx+dx,ty+dy,bx+dx,by+dy-3*scale)
   g.circle('fill',tx+dx,ty+dy,(.6+i%3*.25)*scale)
+ end
+ -- The released web snaps back while wind and embers rise past the falling actor.
+ local fall=ease((t-5.3)/.35)*(1-ease((t-9.15)/.65))
+ local snap=ease((t-5.3)/.45)
+ if t>=5.3 and t<5.75 then
+  local rx,ry=S.position(5.3,w,h,sx,sy)
+  silk.thread(attachX,attachY,attachX+(rx-attachX)*(1-snap),
+   attachY+(ry-attachY)*(1-snap),2*scale,1-snap)
+ end
+ for i=1,64 do
+  local side=i%2==0 and 1 or -1
+  local px=ax+side*w*(.08+(i*.073)% .38)
+  local py=h*((i*.173-(t-5.3)*(.38+i%5*.055))%1)
+  local length=(16+i%7*6)*scale
+  g.setLineWidth((.7+i%2*.35)*scale)
+  g.setColor(1,.68,.38,fall*(.09+i%4*.035))
+  g.line(px,py,px+side*length*.12,py-length)
+  g.setColor(1,.43,.12,fall*.5)
+  g.circle('fill',px,py,(.8+i%3*.4)*scale)
  end
  Characters.shadow(sx,sy,Characters.playerWidth*scale,p.dir,S.actor,p.mapAlpha)
  g.push();g.translate(ax,ay);g.rotate(math.sin(t*4.5)*.065*ease((t-5.3)/.3)*(1-p.progress));g.setColor(1,1,1);Characters.draw(0,0,size,p.dir,S.actor,2);g.pop()
