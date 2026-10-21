@@ -50,6 +50,18 @@ function T.run()
  Realms.holes={require('ground_holes').stroke({target.x,target.y},100)}
  Realms.updateTraversal(.2)
  assert(player.whirl and player.whirl.tornado==target and not player.throw and not player.reset,'Flight chains into another tornado over the void')
+ local captureX,captureY=player.x,player.y
+ Realms.updateTraversal(.001)
+ assert(math.sqrt((player.x-captureX)^2+(player.y-captureY)^2)<2,'Capture starts continuously from the incoming flight')
+ local w=player.whirl
+ assert(w.entryVX==1050 and w.entryVY==0,'Aspiration keeps incoming momentum')
+ Realms.updateTraversal(.238)
+ local beforeX,beforeY=player.x,player.y
+ Realms.updateTraversal(.001)
+ local joinX,joinY=player.x,player.y
+ Realms.updateTraversal(.001)
+ assert(math.sqrt((player.x-joinX)^2+(player.y-joinY)^2)<.4,'Joining the orbit does not teleport')
+ assert(math.abs((joinX-beforeX)-(player.x-joinX))<.03 and math.abs((joinY-beforeY)-(player.y-joinY))<.03,'Orbit entry preserves velocity')
  Realms.contact();assert(not player.reset,'Spinning remains above the void')
  steer(-1,0,.66);assert(player.throw and player.throw.vx<0,'Second tornado launches in the newly chosen direction')
  -- Grazing the visible vortex must count, even if neither sampled endpoint

@@ -37,8 +37,14 @@ local function drawPlayer(direction)
         love.graphics.setColor(1,1,1); return
     end
     if player.whirl or player.skyWhirl then
-        local g=love.graphics; g.push(); g.translate(player.x+15,player.y+12); g.rotate(Realms.clock*18)
-        g.setColor(1,1,1); Characters.draw(0,0,Characters.playerWidth,direction); g.pop(); return
+        local w=player.whirl
+        local age=w and math.max(0,.65-w.time) or 0
+        local u=math.min(1,age/.24);local ease=u*u*(3-2*u)
+        local rotation=w and (w.entryRotation or 0)+7*age+11*(age<.24 and .24*(u*u*u-.5*u*u*u*u) or age-.12) or Realms.clock*18
+        local lift=w and (w.entryLift or 0)*(1-ease) or 0
+        local g=love.graphics;g.push('all');g.translate(player.x+15,player.y+12-lift);g.rotate(rotation)
+        flightPose.walkPhase=(w and w.entryLegPhase or 0)+age*22
+        g.setColor(1,1,1);Characters.draw(0,0,Characters.playerWidth,direction,flightPose);g.pop();return
     end
     if player.falling then
         local scale=math.max(.05,(player.fallTimer or .32)/.32)

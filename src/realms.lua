@@ -136,8 +136,16 @@ local function captureTornado(fromX,fromY)
     local d=math.sqrt(headingX*headingX+headingY*headingY)
     if d<.001 then headingX,headingY,d=0,1,1 end
     player.x=fromX+dx*firstTime-15;player.y=fromY+dy*firstTime-12
+    local flight=player.throw
+    local age=flight and 1.5-flight.time or 0
+    local heading=flight and math.atan2(flight.vy,flight.vx) or 0
+    local ex,ey=player.x+15-first.x,player.y+12-first.y
     player.throw=nil
-    player.whirl={tornado=first,time=.65,dx=headingX/d,dy=headingY/d}
+    player.whirl={tornado=first,time=.65,dx=headingX/d,dy=headingY/d,
+        entryX=ex,entryY=ey,entryVX=flight and flight.vx or 0,entryVY=flight and flight.vy or 0,
+        entryAngle=math.atan2(ey/10,ex/15),
+        entryRotation=flight and age*7+math.sin(age*15)*.13+math.cos(heading)*.14 or 0,
+        entryLift=flight and 13+math.sin(age*12)*2.5 or 4,entryLegPhase=age*22}
     player.dashing=false
     return true
 end
@@ -156,14 +164,29 @@ function R.updateTraversal(dt)
             if not leaving then t.cooldown=math.max(0,(t.cooldown or 0)-dt) end
         end
         if player.whirl then
-            local w=player.whirl; w.time=w.time-dt; local a=R.clock*18
+            local w=player.whirl; w.time=w.time-dt
+            local age=math.max(0,.65-w.time);local duration=.24
+            local a=(w.entryAngle or 0)+age*18
             -- Aim remains controllable throughout the spin, including its last frame.
             local dx,dy=Input.move();local length=math.sqrt(dx*dx+dy*dy)
             if length>.001 then
                 w.dx,w.dy=dx/length,dy/length
                 player.lastMoveX,player.lastMoveY=w.dx,w.dy
             end
-            player.x=w.tornado.x+math.cos(a)*15-15; player.y=w.tornado.y+math.sin(a)*10-12
+            local x,y=math.cos(a)*15,math.sin(a)*10
+            if age<duration and w.entryX then
+                -- Match the incoming flight velocity, then join the orbit with
+                -- matching velocity too: no position or speed snap at either end.
+                local u=age/duration;local u2,u3=u*u,u*u*u
+                local endAngle=(w.entryAngle or 0)+duration*18
+                local function pull(start,velocity,target,tangent)
+                    return (2*u3-3*u2+1)*start+(u3-2*u2+u)*duration*velocity
+                        +(-2*u3+3*u2)*target+(u3-u2)*duration*tangent
+                end
+                x=pull(w.entryX,w.entryVX,math.cos(endAngle)*15,-math.sin(endAngle)*270)
+                y=pull(w.entryY,w.entryVY,math.sin(endAngle)*10,math.cos(endAngle)*180)
+            end
+            player.x=w.tornado.x+x-15;player.y=w.tornado.y+y-12
             R.contact()
             if player.reset then player.whirl=nil;return end
             if w.time<=0 then
