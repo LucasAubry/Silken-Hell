@@ -42,11 +42,26 @@ function T.run()
  Realms.updateTraversal(1.5);assert(player.reset and not player.throw,'Launch still falls at the sky edge')
  enter(1,0);steer(0,1,.66);checkThrow(0,1)
  Realms.holes={require('ground_holes').stroke({player.x+15,player.y+75},20)}
- Realms.updateTraversal(.2);assert(player.reset,'Thrown player still collides with drawn void zones')
+ Realms.updateTraversal(.2);assert(not player.reset and player.throw,'Thrown player flies across drawn void zones')
+ -- Capture is checked along the whole flight, even when a frame crosses a vortex.
+ enter(1,0);steer(1,0,.66)
+ local target={x=player.x+15+90,y=player.y+12,cooldown=0}
+ Realms.tornadoes[2]=target
+ Realms.holes={require('ground_holes').stroke({target.x,target.y},100)}
+ Realms.updateTraversal(.2)
+ assert(player.whirl and player.whirl.tornado==target and not player.throw and not player.reset,'Flight chains into another tornado over the void')
+ Realms.contact();assert(not player.reset,'Spinning remains above the void')
+ steer(-1,0,.66);assert(player.throw and player.throw.vx<0,'Second tornado launches in the newly chosen direction')
+ -- A short flight ending over a hole must fall as soon as its lift expires.
+ player.whirl=nil;player.x=Arena.width/2-15;player.y=288
+ player.throw={vx=1050,vy=0,time=.01};Realms.tornadoes={}
+ Realms.holes={require('ground_holes').stroke({Arena.width/2+10,300},60)}
+ Realms.updateTraversal(.02)
+ assert(player.reset and not player.throw,'Landing over void still falls')
  Campaign.biome=1;Realms.custom=true;enter(0,1);steer(-1,0,.66);checkThrow(-1,0)
  Realms.reset(6,1);assert(not player.whirl and not player.throw,'Reset clears traversal state')
  Replay.input=savedInput
- print('PASS tornado steering: eight headings, analog normalization, final-frame changes, release/entry fallback, controlled spin, fixed flight, cooldown, edge/hole hazards, custom arenas and replay-aware input')
+ print('PASS tornado steering: eight headings, analog normalization, final-frame changes, release/entry fallback, controlled spin, fixed flight, cooldown, void flight, chained capture, landing hazards, custom arenas and replay-aware input')
  love.event.quit()
 end
 return T

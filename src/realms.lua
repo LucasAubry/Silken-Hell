@@ -105,6 +105,21 @@ function R.travelPose(m)
     local scale=t<.22 and 1-t/.22 or (t-.22)/.22
     return math.max(.02,scale),18*(1-scale)
 end
+local function captureTornado()
+    if player.reset then return false end
+    for _,t in ipairs(R.tornadoes) do
+        if t.cooldown==0 and (player.x+15-t.x)^2+(player.y+12-t.y)^2<32^2 then
+            local dx,dy=player.lastMoveX or 0,player.lastMoveY or 1
+            local d=math.sqrt(dx*dx+dy*dy)
+            if d<.001 then dx,dy,d=0,1,1 end
+            player.throw=nil
+            player.whirl={tornado=t,time=.65,dx=dx/d,dy=dy/d}
+            player.dashing=false
+            return true
+        end
+    end
+    return false
+end
 function R.updateTraversal(dt)
     if Campaign.biome==5 or R.custom then
         R.traverse(player,dt,true)
@@ -131,20 +146,16 @@ function R.updateTraversal(dt)
             local steps=math.max(1,math.ceil(1050*step/6))
             for _=1,steps do
                 local hx,hy=Arena.move(player,t.vx*step/steps,t.vy*step/steps)
+                if captureTornado() then break end
                 R.contact(); if hx or hy or player.reset then t.time=0; break end
             end
             t.time=t.time-dt
-            if t.time<=0 then player.throw=nil end
-        elseif not player.reset then
-            for _,t in ipairs(R.tornadoes) do
-                if t.cooldown==0 and (player.x+15-t.x)^2+(player.y+12-t.y)^2<32^2 then
-                    local dx,dy=player.lastMoveX or 0,player.lastMoveY or 1
-                    local d=math.sqrt(dx*dx+dy*dy)
-                    if d<.001 then dx,dy,d=0,1,1 end
-                    -- Entry heading is the fallback until the player aims during the spin.
-                    player.whirl={tornado=t,time=.65,dx=dx/d,dy=dy/d}; player.dashing=false; break
-                end
+            if player.throw==t and t.time<=0 then
+                player.throw=nil
+                R.contact() -- Landing over a gap is dangerous again.
             end
+        elseif not player.reset then
+            captureTornado()
         end
     end
 end
@@ -277,7 +288,7 @@ function R.molePhase(age)
 end
 function R.contact()
     require('sky_weather').contact()
-    if not player.skyThrow and R.fallAt(player.x+15,player.y+12) then Hazards.kill(); if player.reset then player.falling=true end end
+    if not (player.throw or player.whirl or player.skyThrow or player.skyWhirl) and R.fallAt(player.x+15,player.y+12) then Hazards.kill(); if player.reset then player.falling=true end end
     if Campaign.biome==7 or R.custom then for _,p in ipairs(R.vents) do
         if Hazards.inEllipse(player.x+15,player.y+12,p,4) then Hazards.kill() end
     end end
