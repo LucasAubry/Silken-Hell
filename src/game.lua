@@ -599,10 +599,10 @@ function love.focus(focused)
     if not focused and App.state=='playing' then if Replay.playing then if not Replay.recovery then Replay.paused=true end else App.state='pause' end end
 end
 
-function App.practiceLevel(world,n)
+function App.practiceLevel(world,n,skipArrival)
     if not Worlds.canEnter(world) or n<1 or n>math.max(1,(Profile.levels or {})[world] or 1) or n>Worlds.levelCount(world) then return false end
     App.hardcore=false;App.practice=n;App.singleLevel=true;App.sessionLayout=nil;App.workshopMap=nil;Secret.duel=nil
-    Online.current=nil;App.start(world);return true
+    Online.current=nil;App.start(world,{skipArrival=skipArrival});return true
 end
 function App.leaveCustom()
     Replay.recording=false;Replay.input=nil;Workshop.validationRun=nil

@@ -37,6 +37,7 @@ function T.run()
      for i=2,#route do
       local dx,dy=math.abs(route[i].x-route[i-1].x),math.abs(route[i].y-route[i-1].y)
       assert(dx<.001 or dy<.001 or math.abs(dx-dy)<.001,'Routes use cardinal or diagonal launches')
+      assert(math.sqrt(dx*dx+dy*dy)>140,'Tornado footprints remain separated')
       assert(math.sqrt(dx*dx+dy*dy)<1050*1.5,'Every hop is within flight range')
       assert(route[i].x>30 and route[i].x<Arena.width-30 and route[i].y>30 and route[i].y<570,'Tornado stays on the map')
      end
@@ -44,7 +45,7 @@ function T.run()
      routeKeys[#routeKeys+1]=json.encode(route)
     end
    end
-   if b.phase=='orbit' and b.phaseAge>2.3 and b.phaseAge<2.32 then
+   if b.phase=='orbit' and b.phaseAge>2.4 and b.phaseAge<2.42 then
     assert(#Realms.tornadoes>=3,'Tornadoes appear progressively')
     local a,c=Realms.tornadoes[1],Realms.tornadoes[#Realms.tornadoes]
     assert(a.growth>c.growth,'Growth is staggered')

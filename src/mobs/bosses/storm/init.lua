@@ -24,21 +24,21 @@ function S.setPhase(phase)
   local anchorX,anchorY=clamp(player.x+15,60,Arena.width-60),clamp(player.y+12,65,535)
   local sx=anchorX<Arena.width/2 and 1 or -1;local sy=anchorY<300 and 1 or -1
   local spaceX=sx==1 and Arena.width-anchorX or anchorX;local spaceY=sy==1 and 600-anchorY or anchorY
-  local step=math.min(105,(spaceX-35)/4,(spaceY-35)/2)
-  S.radius=math.min(180,step*2);S.route={}
+  local step=math.min(190,(spaceX-35)/2,(spaceY-35))
+  S.radius=math.min(180,step*1.15);S.route={}
   -- Keep the circle visible near the edge without putting its inner rim on the player.
   local margin=S.radius+32
   local cx,cy=clamp(anchorX,margin,Arena.width-margin),clamp(anchorY,margin,600-margin)
   local dx,dy=cx-anchorX,cy-anchorY;local distance=math.sqrt(dx*dx+dy*dy)
   local shift=distance>0 and math.min(1,(S.radius-42)/distance) or 0
   S.cx,S.cy=anchorX+dx*shift,anchorY+dy*shift
-  local patterns={{{0,0},{1,0},{2,0},{3,0},{4,0}},{{0,0},{1,1},{2,2},{3,2},{4,2}},{{0,0},{1,0},{2,1},{3,1},{4,1}}}
+  local patterns={{{0,0},{1,1},{2,1},{2,0}},{{0,0},{0,1},{1,1},{2,0}},{{0,0},{1,0},{1,1},{2,1}}}
   for _,p in ipairs(patterns[S.pattern])do S.route[#S.route+1]={x=anchorX+p[1]*step*sx,y=anchorY+p[2]*step*sy}end
   S.fromX,S.fromY=S.x,S.y;S.startAngle=math.atan2(S.y-S.cy,S.x-S.cx)
   S.phaseTime=.8;S.spawned=0;S.nextSpawn=.6;S.orbitAngle=0
  elseif phase=='orbit' then
   S.phaseTime=setting('orbitDuration',14);S.shot=setting('firstShot',3.2)
-  S.holes={{x=S.cx,y=S.cy,r=S.radius,start=S.startAngle,arc=0,width=26}}
+  S.holes={{x=S.cx,y=S.cy,r=S.radius,start=S.startAngle,arc=0,width=17}}
  end
 end
 function S.reset(active)
@@ -79,7 +79,7 @@ function S.contact()
 end
 function S.fire()
  local a=math.atan2(player.y+12-S.y,player.x+15-S.x)
- local speed=265+50*(1-S.hp/S.maxHp)
+ local speed=610+100*(1-S.hp/S.maxHp)
  S.projectiles[#S.projectiles+1]={x=S.x,y=S.y,vx=math.cos(a)*speed,vy=math.sin(a)*speed,life=5,age=0}
 end
 local function pushPlayer(dt)
@@ -123,11 +123,11 @@ function S.update(dt)
   S.x=S.cx+math.cos(a)*S.radius;S.y=S.cy+math.sin(a)*S.radius
   S.dir=Art.direction(-math.sin(a),math.cos(a),S.dir)
   S.orbitAngle=a-S.startAngle
-  S.holes[1].arc=math.min(tau,math.max(0,S.orbitAngle-.15))
+  S.holes[1].arc=math.min(tau,math.max(0,S.orbitAngle-.8))
   if S.spawned<#S.route and S.phaseAge>=S.nextSpawn then
    S.spawned=S.spawned+1;local p=S.route[S.spawned]
-   Realms.tornadoes[#Realms.tornadoes+1]={x=p.x,y=p.y,cooldown=0,growth=0,growthDuration=setting('growthDuration',1.2)+((S.spawned+S.pattern)%3)*.18}
-   S.nextSpawn=S.nextSpawn+setting('tornadoInterval',.55)
+   Realms.tornadoes[#Realms.tornadoes+1]={x=p.x,y=p.y,cooldown=0,growth=0,growthDuration=setting('growthDuration',1.8)+((S.spawned+S.pattern)%3)*.18}
+   S.nextSpawn=S.nextSpawn+setting('tornadoInterval',.85)
   end
   S.shot=S.shot-dt*(S.attackRate or 1)
   if S.shot<=0 then S.fire();S.shot=S.shot+setting('shotInterval',.7)end
@@ -187,14 +187,22 @@ function S.draw()
  if not S.active or (S.defeated and not S.liberating)then return end
  local g=love.graphics;g.push('all')
  if S.phase=='sweepTell' then
-  local edge=S.sweepDir==1 and 38 or Arena.width-38
-  g.setColor(.25,.82,1,.15+.15*math.sin(S.clock*12)^2);g.ellipse('fill',edge,S.y,42,65)
-  g.setColor(.75,.95,1,.8);g.setLineWidth(3)
-  for i=0,2 do local x=edge-S.sweepDir*i*13;g.line(x-S.sweepDir*8,S.y-16,x+S.sweepDir*3,S.y,x-S.sweepDir*8,S.y+16)end
+  local edge=S.sweepDir==1 and 0 or Arena.width
+  local reach=12+10*math.min(1,S.phaseAge/.3)
+  g.setColor(.20,.12,.025);g.polygon('fill',edge,S.y-9,edge+S.sweepDir*reach,S.y,edge,S.y+9)
+  g.setColor(.96,.66,.12);g.polygon('fill',edge,S.y-6,edge+S.sweepDir*(reach-2),S.y,edge,S.y+3)
  else
   if S.phase=='sweep' then
    g.setColor(.7,.91,1,.45);g.setLineWidth(2)
    for i=1,16 do local x=S.x-S.sweepDir*(30+i*9);local y=S.y+math.sin(i*2.4)*60;g.line(x,y,x-S.sweepDir*30,y)end
+  end
+  if S.phase=='orbit' then
+   local a=S.startAngle+S.orbitAngle-.8
+   local x,y=S.cx+math.cos(a)*S.radius,S.cy+math.sin(a)*S.radius
+   local midX,midY=(x+S.x)/2,(y+S.y)/2+6
+   g.setColor(.12,.23,.28,.7);g.setLineWidth(3);g.line(S.x,S.y,midX,midY,x,y)
+   g.setColor(.88,.96,1,.95);g.setLineWidth(1.2);g.line(S.x,S.y,midX,midY,x,y)
+   require('cloud_snail').art(x,y,52,S.clock,a+math.pi/2,1)
   end
   g.setColor(1,1-S.flash,1-S.flash);bird()
  end

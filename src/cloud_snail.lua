@@ -91,9 +91,19 @@ function N.update(m,dt)
    if Realms.fallAt(m.x,m.y) then m.falling=true;m.fallTimer=0;Campaign.dropTear(m);return end
    if isTouching(player,m) then Hazards.kill('cloud_snail') end
    -- Sample by distance, not frame count; holes follow every sampled movement segment.
-   local rearX,rearY=m.x-m.vx*34,m.y-m.vy*34
-   if not m.cx then m.cx,m.cy=x-m.vx*34,y-m.vy*34 end
-   if (rearX-m.cx)^2+(rearY-m.cy)^2>=6^2 then N.trail(m.cx,m.cy,rearX,rearY,m.snailId);m.cx,m.cy=rearX,rearY end
+   if not m.cx then m.cx,m.cy=x,y;m.digPath={{x=x,y=y}};m.digDistance=0 end
+   local path=m.digPath or {{x=m.cx,y=m.cy}};m.digPath=path
+   local last=path[#path]
+   if (m.x-last.x)^2+(m.y-last.y)^2>=6^2 then
+    m.digDistance=(m.digDistance or 0)+math.sqrt((m.x-last.x)^2+(m.y-last.y)^2)
+    path[#path+1]={x=m.x,y=m.y}
+    while #path>2 do
+     local a,b=path[1],path[2];local length=math.sqrt((b.x-a.x)^2+(b.y-a.y)^2)
+     if m.digDistance-length<25 then break end
+     N.trail(a.x,a.y,b.x,b.y,m.snailId);m.digDistance=m.digDistance-length;table.remove(path,1)
+    end
+    m.cx,m.cy=m.x,m.y
+   end
   end
  end
 end

@@ -4,7 +4,7 @@ T.specs={
  wasp={{'firstRound','Première salve',.25,0},{'aim','Visée des charges',.2},{'larvaAim','Visée des larves',.5},{'reboundAim','Visée après rebond',.18},{'fatigue','Durée du KO',1.65},{'roundRest','Repos entre salves',.04},{'hiding','Durée du retrait',.22}},
  hedgehog={{'firstRoll','Première roulade',1.35,0},{'nextRoll','Avant la roulade',.65},{'firstShot','Premiers piquants',.28,0},{'shotInterval','Intervalle des piquants',1.25},{'stun','Durée de récupération',.45}},
  octopus={{'firstInk','Premier jet d’encre',2,0},{'inkInterval','Intervalle de l’encre',1.25},{'rageInk','Encre en furie',.85},{'firstCrabs','Premiers crabes',1.2,0},{'crabInterval','Intervalle des crabes',3.2},{'rageCrabs','Crabes en furie',2.5},{'barrage','Durée du barrage',3},{'barrageInterval','Tirs du barrage',.16}},
- storm={{'hidden','Avant la traversée',.9},{'firstShot','Première plume',3.2,0},{'shotInterval','Intervalle des plumes',.7},{'orbitDuration','Durée du cercle',14},{'tornadoInterval','Intervalle des tornades',.55},{'growthDuration','Croissance des tornades',1.2}},
+ storm={{'hidden','Avant la traversée',.9},{'firstShot','Première plume',3.2,0},{'shotInterval','Intervalle des plumes',.7},{'orbitDuration','Durée du cercle',14},{'tornadoInterval','Intervalle des tornades',.85},{'growthDuration','Croissance des tornades',1.8}},
  skeleton_head={{'intro','Avant l’attaque',1.2,0},{'openingSpit','Premier souffle',.9},{'rest','Repos',.9},{'roar','Durée du rugissement',1.1},{'bones','Durée des os',5.5},{'suction','Durée d’aspiration',6.5},{'spit','Durée du rejet',.85},{'recover','Récupération',1},{'bombRain','Pluie de bombes',4.2}}
 }
 T.specs.skeleton_fish=T.specs.skeleton_head

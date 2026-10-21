@@ -201,7 +201,7 @@ function R.updateTraversal(dt)
             local pressed=length>.001 and ((w.inputX or 0)==0 and (w.inputY or 0)==0
                 or math.abs(dx-(w.inputX or 0))>.25 or math.abs(dy-(w.inputY or 0))>.25)
             w.inputX,w.inputY=dx,dy
-            if w.age>=1 and pressed then
+            if pressed then
                 player.whirl=nil; player.throw={vx=w.dx*1050,vy=w.dy*1050,time=1.5}
                 -- Only the vortex we just left is locked; chains can revisit another.
                 for _,other in ipairs(R.tornadoes) do other.cooldown=other==w.tornado and 1.5 or 0 end

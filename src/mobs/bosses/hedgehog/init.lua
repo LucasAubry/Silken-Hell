@@ -50,6 +50,19 @@ function H.fire()
         H.projectiles[#H.projectiles+1]={x=H.x,y=H.y,vx=math.cos(a)*300,vy=math.sin(a)*300,life=5}
     end
 end
+function H.contact()
+    if not H.active or H.defeated or player.reset then return end
+    if not require('collision_shapes').touchRect('hedgehog',H.x-30,H.y-30,60,60) then return end
+    if H.phase~='ball' then Hazards.kill();return end
+    local length=math.max(.001,math.sqrt(H.vx*H.vx+H.vy*H.vy))
+    local dx,dy=H.vx/length,H.vy/length
+    -- Small swept shoves: every renewed contact pushes, walls are lethal.
+    for i=1,9 do
+        local hx,hy=Arena.move(player,dx*4,dy*4)
+        if hx or hy then Hazards.kill('hedgehog');return end
+        if Realms.fallAt(player.x+15,player.y+12) then Hazards.kill('hedgehog');return end
+    end
+end
 function H.update(dt)
 
     if not H.active or H.defeated then return end
@@ -77,11 +90,11 @@ function H.update(dt)
             H.dir=Art.direction(H.vx,H.vy,H.dir); H.rotation=H.rotation+dt/steps*9
             if (hx or hy) and H.bounceGrace<=0 then H.bounceGrace=.035; H.impact() end
             if H.defeated or H.phase~='ball' then break end
-            if require('collision_shapes').touchRect('hedgehog',H.x-30,H.y-30,60,60) then Hazards.kill(); return end
+            H.contact();if player.reset then return end
         end
     end
     if H.defeated then return end
-    if require('collision_shapes').touchRect('hedgehog',H.x-30,H.y-30,60,60) then Hazards.kill(); return end
+    H.contact();if player.reset then return end
     for i=#H.projectiles,1,-1 do
         local p=H.projectiles[i]; p.life=p.life-dt; local dead=p.life<=0
         local steps=math.max(1,math.ceil(300*dt/4))

@@ -548,12 +548,12 @@ function U.arrowArt(cx,cy,dir,hover,angle,ink)
     g.setColor(ink or (hover and {1,0.95,0.7} or gold));g.polygon('line',0,-24,24,0,0,24,-24,0)
     g.polygon('fill',dir*8,0,-dir*5,-8,-dir*5,8);g.pop()
 end
-function U.arrow(cx,cy,dir,callback)
+function U.arrow(cx,cy,dir,callback,disabled)
     local originalY=cy
     if U.pressed and U.pressed.state==App.state and U.pressed.x==cx-24 and U.pressed.y==cy-24 then cy=cy+3 end
     local mx,my=U.mouse();local hover=(mx-cx)^2+(my-cy)^2<24^2
-    U.arrowArt(cx,cy,dir,hover)
-    U.buttons[#U.buttons+1]={x=cx-24,y=originalY-24,w=48,h=48,run=callback}
+    U.arrowArt(cx,cy,dir,hover and not disabled,0,disabled and {.42,.39,.29,.5} or nil)
+    U.buttons[#U.buttons+1]={x=cx-24,y=originalY-24,w=48,h=48,run=callback,disabled=disabled}
 end
 
 function U.outlined(text,x,y,font,color,width)
@@ -611,8 +611,8 @@ function U.gameHud()
     if App.practice and not Replay.playing then
         if styled then
             local encounter=Bosses.any() or Raven.active or Wasp.active or Storm.active or Hedgehog.active or Abyss.boss or Octopus.active
-            paradise.status(U,'Entraînement · non classé',encounter and 28 or 688,encounter and 58 or 11,295,40)
-        else U.fitText('Entraînement · non classé',640,22,'small',{.8,.85,.9},140) end
+            paradise.status(U,'Entraînement · non classé',encounter and 28 or 710,encounter and 58 or 11,295,40)
+        else U.fitText('Entraînement',709,22,'body',{.8,.85,.9},120) end
     end
     if Campaign.biome==7 and not require('abyss_gate').active and not Abyss.encounterActive() then U.text('Charges : '..(player.charges or 0),790,22,'small',{.4,.9,1}) end
     if styled then paradise.draw(U)
@@ -624,6 +624,11 @@ function U.gameHud()
             U.outlined(Replay.ghost and 'Entraînement' or ('/ '..U.time(Replay.data.frames*Replay.step)),335,43,'small',gold,215)
         end
         U.outlined(string.format('%02d',player.level),564,16,'medium',nil,72)
+    end
+    if App.practice and not Replay.playing and not Secret.duel then
+        local limit=math.min(Worlds.levelCount(Campaign.world),(Profile.levels or {})[Campaign.world] or 1)
+        U.arrow(527,31,-1,function() App.practiceLevel(Campaign.world,player.level-1,true) end,player.level<=1)
+        U.arrow(673,31,1,function() App.practiceLevel(Campaign.world,player.level+1,true) end,player.level>=limit)
     end
     require('game_feedback').drawHud()
     if Replay.playing then

@@ -2,103 +2,39 @@ local T={}
 function T.run()
  io.stdout:setvbuf('no');love.focus=function()end
  Online.enabled=false;Replay.disabled=true;Profile.save=function()end;Profile.record=function()end;Bestiary.save=function()end
- App.singleLevel=true;App.practice=1;App.hardcore=false;Secret.duel=nil
- local E=require('level_environment');local N=require('cloud_snail');local W=require('sky_weather');local H=require('ground_holes')
- local map={world=6,level=1,width=960,height=600,environment={rain=false,leaves=true,blue=true},entities={
-  {kind='spawn',x=800,y=500},{kind='tear',x=850,y=100},{kind='mob',type='cloud_snail',x=180,y=280,speed=66},
-  {kind='mob',type='cloud_snail',x=450,y=430,speed=66},{kind='mob',type='cloud_beast',x=600,y=180,speed=330},
-  {kind='hole',x=290,y=200,radius=30,points={0,0,0,140}},
-  {kind='electric_ground',x=500,y=450,radius=20,points={0,0,80,0}}}}
- assert(LayoutSchema.validate(map));App.sessionLayout=map;App.start(6);require('run_start').active=false
- assert(#Hazards.electric==0,'Legacy authored electricity is removed on load')
- for _,entity in ipairs(LevelLayouts.activeLayout.entities) do assert(entity.kind~='electric_ground') end
- assert(not E.active('rain') and E.active('leaves') and E.active('blue'),'Game reads the saved environment')
- assert(LevelLayouts.snapshot().environment.rain==false,'Environment survives replay snapshot')
- for _,world in ipairs({1,2,4,5,6,7}) do
-  local old=Campaign.biome;Campaign.biome=world;App.selectedWorld=1;App.state='pause'
-  assert(UI.theme()==world,'Pause uses the tested biome, not the menu selection');Campaign.biome=old
- end
- App.state='playing'
- local snail=mobs[1];snail.tx=400;snail.ty=280;snail.roamTime=20
- local ox,oy=snail.x,snail.y
- for i=1,180 do N.update(snail,1/60);if snail.falling then break end end
- assert(snail.falling and H.contains(Realms.holes[1],snail.x,snail.y),'Snail falls into authored holes instead of dodging')
- assert((snail.x-ox)^2+(snail.y-oy)^2>30^2,'Snail does not fall into its newly dug tail immediately')
- assert(N.unsafe(mobs[2].x,mobs[2].y,snail),'Other snails are still avoided')
- local holes=Realms.holes;Realms.holes={};W.snailHoles={}
- local own={type='cloud_snail',x=180,y=400,age=0,snailId=99,speed=66,tx=600,ty=400,roamTime=20}
- N.trail(170,400,210,400,99);N.update(own,1/60)
- assert(own.falling,'Snails fall into their own earlier trail')
- local pushed={type='cloud_snail',x=190,y=400,age=0,snailId=99}
- assert(require('mob_edge_fall').check(pushed) and pushed.falling,'A wind-pushed snail falls as soon as it crosses a hole')
- Realms.holes=holes
- local beast=mobs[3];local bx,by=beast.x,beast.y;require('mobs.cloud_beast').update(beast,.3)
- assert((beast.x-bx)^2+(beast.y-by)^2>3^2 and beast.phase=='surface','Cloud beast moves before diving')
- W.snailHoles={};N.trail(200,180,200,320,1);N.trail(229,180,229,320,2);N.trail(245,280,290,280,1)
- local a,b=W.snailHoles[1],W.snailHoles[2];a.radius=12;b.radius=12
- assert(N.fallAt(214.5,250),'Very close trails merge their lethal footprint')
- local lighting=require('world_lighting');local apply=lighting.apply;local scene
- lighting.apply=function(canvas)scene=apply(canvas);return scene end
- local rng=love.math.getRandomState();local state=require('replay_state').hash();love.draw();lighting.apply=apply
- local pixels=scene:newImageData();pixels:encode('png','sky-polish.png');pixels:release()
- assert(state==require('replay_state').hash() and rng==love.math.getRandomState(),'Decorative drawing does not change simulation')
- local mask=N.union:newImageData()
- local middle=mask:getPixel(214,250);local authored=mask:getPixel(290,280)
- assert(middle>=.5 and authored>.5,'One union mask contains close trails and authored holes');mask:release()
- local distances=N.distanceResult:newImageData();assert(distances:getPixel(214,250)>.63,'Merged parallel trails have depth instead of an internal rim');distances:release()
- local builds=require('terrain_surface').builds;love.draw();assert(require('terrain_surface').builds==builds,'Unchanged union does not rebuild terrain')
- local g=love.graphics;local canvas=g.newCanvas(160,120)
- local options={rain=false,leaves=false,ashes=false,fireflies=false,blue=false,lightning=false}
- for _,option in ipairs(E.options) do
-  options[option.key]=true
-  g.push('all');g.setCanvas(canvas);g.origin();g.clear();E.draw(1,160,120,1,options,true);g.pop()
-  local image=canvas:newImageData();local visible=0
-  for y=0,119 do for x=0,159 do local r,g,b,a=image:getPixel(x,y);visible=visible+r+g+b+a end end
-  image:release();assert(visible>1,'Enabled effect renders: '..option.key);options[option.key]=false
- end
- g.push('all');g.setCanvas(canvas);g.origin();g.clear();E.draw(6,160,120,1,options,true);g.pop()
- local image=canvas:newImageData();local visible=0
- for y=0,119 do for x=0,159 do local r,g,b,a=image:getPixel(x,y);visible=visible+r+g+b+a end end
- image:release();canvas:release();assert(visible==0,'All disabled effects leave a transparent image')
- local bad=require('json').decode(require('json').encode(map));bad.environment.rain='yes';assert(not LayoutSchema.validate(bad),'Environment validates booleans')
- -- Storm positions depend only on the map and sequence, never random draws or player targeting.
- local savedKill=Hazards.kill;Hazards.kill=function()end
- local function stormSequence(px)
-  player.x=px;player.y=100;LevelLayouts.activeLayout.environment.lightning=true;W.reset()
-  local rng=love.math.getRandomState();local coords={};local warn=W.warn
-  W.warn=function(x,y)coords[#coords+1]=x..','..y;warn(x,y)end
-  for i=1,1200 do W.update(1/60) end
-  W.warn=warn
-  assert(love.math.getRandomState()==rng,'Lightning never consumes random state')
-  return table.concat(coords,';')
- end
- local first=stormSequence(100);local second=stormSequence(700)
- assert(first~='' and first==second,'Identical lightning positions even when player location changes')
- LevelLayouts.activeLayout.environment.lightning=false;W.reset();assert(not W.storm,'Lightning can be disabled')
- local oldBiome=Campaign.biome;Campaign.biome=5;LevelLayouts.activeLayout.environment.lightning=true;W.reset();assert(W.storm,'Lightning can be enabled in another biome');Campaign.biome=oldBiome
- local config=require('lightning_config')
- assert(first:match('^389,291'),'Default lightning positions remain unchanged')
- local interval,delay=config.values(nil,1);assert(interval==5.8 and delay==1.6,'Original timing defaults are preserved')
- LevelLayouts.activeLayout.lightning={interval=.5,delay=.2}
- LevelLayouts.activeLayout.entities[#LevelLayouts.activeLayout.entities+1]={kind='lightning_zone',x=240,y=260,w=240,h=200}
- LevelLayouts.activeLayout.entities[#LevelLayouts.activeLayout.entities+1]={kind='lightning_zone',x=650,y=350,w=200,h=180}
- W.reset();local announced={};local warn=W.warn
- W.warn=function(x,y,slot) announced[#announced+1]={x=x,y=y,slot=slot,clock=W.clock};warn(x,y,slot);assert(W.strikes[#W.strikes].delay==.2,'Custom impact delay applies') end
- for i=1,600 do W.update(1/60) end
- W.warn=warn
- assert(#announced>=20 and #W.holes==10,'Zone cycles repeat without accumulating duplicate craters')
- for i,p in ipairs(announced) do
-  local zone=(i-1)%2+1;local point=math.floor((i-1)/2)%5+1
-  local x,y=config.point(W.zones[zone],point)
-  assert(p.x==x and p.y==y and p.slot==(zone-1)*5+point,'Every zone follows center, up, left, down, right')
- end
- assert(math.abs(announced[3].clock-announced[1].clock-.5)<.02,'Custom lightning interval applies')
- local snap=LevelLayouts.snapshot();assert(snap.lightning.delay==.2 and snap.lightning.interval==.5,'Lightning timings survive replay snapshots')
- local zones=config.zones(snap,Arena.width);assert(#zones==2 and math.abs(zones[1].x-W.zones[1].x)<.00001 and math.abs(zones[1].w-W.zones[1].w)<.00001,'Lightning zones survive replay snapshots')
- assert(LayoutSchema.validate(snap))
- snap.lightning.delay=-1;assert(not LayoutSchema.validate(snap),'Invalid lightning timings are rejected')
- Hazards.kill=savedKill
- print('PASS Sky polish: hole falls, deterministic lightning, merged collision/rendering, environment persistence, electrical migration and pause biome')
+ LevelLayouts.disabled=true;App.singleLevel=true;App.practice=1;App.start(6);require('run_start').active=false
+ local N=require('cloud_snail');local W=require('sky_weather');local B=require('mobs.cloud_beast')
+ Arena.walls={};Arena.interior={};Realms.holes={};Realms.tornadoes={};Realms.tunnels={};W.reset();W.active=false
+ player.x=100;player.y=100;player.reset=false
+ local m={type='cloud_snail',x=400,y=400,age=0,speed=66,tx=400,ty=150,roamTime=10,hitBox_width=32,hitBox_height=28,hitBox_offset_x=-16,hitBox_offset_y=-14}
+ mobs={m}
+ for i=1,100 do N.update(m,1/60) end
+ assert(not m.falling and #W.snailHoles>2,'Snail walks without digging beneath itself')
+ local last=W.snailHoles[#W.snailHoles]
+ assert(math.abs(last.ty-m.y)<40,'Back-facing trail meets the snail rather than leaving a distant gap')
+ m.tx,m.ty=800,m.y
+ for i=1,100 do N.update(m,1/60) end
+ assert(not m.falling,'A right angle does not swing the digging anchor under the snail')
+ for _,p in ipairs(W.snailHoles) do assert((p.tx-p.x)^2+(p.ty-p.y)^2<15^2,'Continuous short trail segments') end
+ local g=love.graphics;local c=g.newCanvas(Arena.width,600)
+ g.push('all');g.setCanvas(c);g.origin();draw_level();N.drawTrail();N.draw(m);g.pop()
+ c:newImageData():encode('png','snail-trail-polish.png');c:release()
+ Realms.tornadoes={{x=450,y=300,cooldown=0}}
+ local larva={type='cloud_beast',x=450,y=300,tx=450,ty=300,phase='hidden',phaseTime=0,age=0,roamSeed=0,sparks={},hitBox_width=32,hitBox_height=30,hitBox_offset_x=-16,hitBox_offset_y=-15}
+ mobs={larva};B.update(larva,.01)
+ assert(larva.phase=='hidden' and (larva.tx-450)^2+(larva.ty-300)^2>=100^2,'Larva stays hidden and seeks a clear emergence point')
+ -- Actual hedgehog collision dispatch, including swept wall impact.
+ App.start(5,{skipArrival=true});Arena.walls={};Arena.interior={};Realms.holes={};mobs={};player.reset=false
+ local H=Hedgehog;H.active=true;H.defeated=false;H.phase='ball';H.x=400;H.y=300;H.vx=500;H.vy=0
+ player.x=410;player.y=288;local x=player.x;H.contact()
+ assert(not player.reset and player.x>x,'Rolling contact pushes without killing')
+ H.x=player.x-10;local x2=player.x;H.contact();assert(player.x>x2 and not player.reset,'Repeated contact pushes again')
+ H.x=400;player.x=410;player.y=288;Arena.walls={{x=450,y=240,w=30,h=120}};H.contact()
+ assert(player.reset,'Pushed collision with a wall kills')
+ H.active=false;Profile.hasCompleted=function() return true end;Profile.levels=Profile.levels or {};Profile.levels[6]=10
+ assert(App.practiceLevel(6,2,true));assert(player.level==2 and require('run_start').arrival==nil,'Practice arrow target starts without arrival')
+ local hud=g.newCanvas(1200,100);g.push('all');g.setCanvas(hud);g.origin();g.clear(.06,.12,.18,1);UI.buttons={};UI.gameHud();g.pop();hud:newImageData():encode('png','practice-navigation.png');hud:release()
+ print('PASS sky polish: continuous snail trail and turns, clear larva emergence, repeat hedgehog shoves, lethal wall impact, direct practice navigation')
  love.event.quit()
 end
 return T

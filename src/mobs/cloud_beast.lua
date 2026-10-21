@@ -14,12 +14,27 @@ local function heading(m)
  -- stable offset. Neither rendering time nor random generators are involved.
  return math.max(0,slot-1)*2.3999632297287+(m.x/Arena.width+m.y/600)*.2
 end
+local function tornadoAt(x,y)
+ for _,t in ipairs(Realms.tornadoes or {}) do
+  if not t.eject and (x-t.x)^2+(y-t.y)^2<100^2 then return true end
+ end
+ return false
+end
+function B.safeTarget(m)
+ if not tornadoAt(m.tx,m.ty) then return end
+ for ring=1,8 do for i=0,15 do
+  local a=i*math.pi/8+(m.roamSeed or 0)
+  local x,y=m.tx+math.cos(a)*ring*32,m.ty+math.sin(a)*ring*32
+  if x>40 and x<Arena.width-40 and y>40 and y<560 and not tornadoAt(x,y) and not Arena.blocked(x-16,y-15,32,30) then m.tx,m.ty=x,y;return end
+ end end
+end
 function B.update(m,dt)
  if m.dead or m.capture or m.is_frozen or m.tunnelTravel then return end
  if m.roamSeed==nil then m.roamSeed=heading(m) end
  m.age=m.age+dt;m.sparks=m.sparks or {}
  for i=#m.sparks,1,-1 do local p=m.sparks[i];p.age=p.age+dt;if p.age>.65 then table.remove(m.sparks,i) end end
  if type(m.phase)~='string' then phase(m,'surface',m.attackDelay and math.max(0,m.attackDelay-1.95) or 1.2);local a=require('mob_start_direction').angle(m) or m.roamSeed;m.vx=math.cos(a);m.vy=math.sin(a) end
+ if m.phase=='surface' and tornadoAt(m.x,m.y) then phase(m,'hidden',.3);m.tx,m.ty=m.x,m.y;B.safeTarget(m) end
  m.phaseTime=m.phaseTime-dt
  if m.phase=='surface' or m.phase=='dive' then
   local speed=m.phase=='surface' and 42 or 42*math.max(0,m.phaseTime/.45)
@@ -43,8 +58,9 @@ function B.update(m,dt)
    phase(m,'hidden',1.1)
    local a=m.age*2.399+m.roamSeed
    m.tx,m.ty=Arena.clearSpot(math.max(55,math.min(Arena.width-85,player.x+math.cos(a)*135)),math.max(55,math.min(515,player.y+math.sin(a)*120)),32,30)
-   m.tx,m.ty=m.tx+16,m.ty+15
+   m.tx,m.ty=m.tx+16,m.ty+15;B.safeTarget(m)
   elseif m.phase=='hidden' then
+   if tornadoAt(m.x,m.y) then m.phaseTime=.3;B.safeTarget(m);return end
    phase(m,'emerge',.4);splash(m)
    local dx,dy=player.x+15-m.x,player.y+12-m.y;local d=math.max(.001,math.sqrt(dx*dx+dy*dy))
    m.vx,m.vy=dx/d,dy/d;m.angle=math.atan2(dy,dx)-math.pi/2
