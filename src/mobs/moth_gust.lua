@@ -62,19 +62,30 @@ function G.update(m,dt)
 end
 local function cloudTexture()
  if G.cloud then return G.cloud end
- local data=love.image.newImageData(40,28)
+ local data=love.image.newImageData(64,32)
  for y=0,27 do for x=0,39 do
   local d=math.min(((x-11)/9)^2+((y-17)/7)^2,((x-21)/11)^2+((y-12)/10)^2,((x-30)/8)^2+((y-17)/7)^2)
   local alpha=math.max(0,math.min(1,(1-d)*3))
   local shade=.82+.18*(1-y/28)
   data:setPixel(x,y,shade,math.min(1,shade+.045),1,alpha)
  end end
- G.cloud=love.graphics.newImage(data);data:release();G.cloud:setFilter('linear','linear');return G.cloud
+ -- Both streaks and puffs share one texture and one reusable GPU batch.
+ for y=0,5 do for x=44,61 do
+  local alpha=(y==0 or y==5 or x==44 or x==61) and 0 or 1
+  data:setPixel(x,y,1,1,1,alpha)
+ end end
+ local g=love.graphics
+ G.cloud=g.newImage(data);data:release();G.cloud:setFilter('linear','linear')
+ G.puffQuad=g.newQuad(0,0,40,28,64,32)
+ G.streakQuad=g.newQuad(45,1,16,4,64,32)
+ G.batch=g.newSpriteBatch(G.cloud,128,'stream');G.lanes={}
+ return G.cloud
 end
 function G.draw(m)
  if m.phase~='gust' then return end
- local g=love.graphics;g.push('all');g.setShader();g.setLineWidth(2.6)
- local t=m.age or 0;local lanes={}
+ local g=love.graphics;g.push('all');g.setShader()
+ cloudTexture();local batch=G.batch;batch:clear()
+ local t=m.age or 0;local lanes=G.lanes;local angle=math.atan2(m.vy,m.vx)
  -- Nine wall-clipped lanes serve every streak and cloud puff in this frame.
  for lane=1,9 do
   local side=(lane-5)*6
@@ -85,22 +96,27 @@ function G.draw(m)
   local length=math.min(24+9*math.sin(i),lanes[lane]-distance)
   if length>0 then
    local x=m.x+m.vx*distance-m.vy*side;local y=m.y+m.vy*distance+m.vx*side
-   g.setColor(.84,.94,1,.78*(1-distance/G.range*.55))
-   g.line(x,y,x+m.vx*length,y+m.vy*length)
+   if x>=-36 and x<=Arena.width+36 and y>=-36 and y<=636 then
+    batch:setColor(.84,.94,1,.78*(1-distance/G.range*.55))
+    batch:add(G.streakQuad,x,y,angle,length/16,2.6/4,0,2)
+   end
   end
  end
- local cloud=cloudTexture();local count=Graphics.quality==1 and 32 or 56
+ local count=Graphics.quality==1 and 32 or 56
  for i=1,count do
   local lane=1+i%9;local side=(lane-5)*6
   local distance=(t*(280+i%5*35)+i*71)%G.range
   if distance>12 and distance<lanes[lane]-18 then
    local life=distance/G.range;local alpha=math.min(1,distance/65)*(1-life)*.42
    local x=m.x+m.vx*distance-m.vy*side;local y=m.y+m.vy*distance+m.vx*side
-   local size=.23+(i%5)*.07;local lift=math.sin(life*math.pi)*5
-   g.setColor(1,1,1,alpha)
-   g.draw(cloud,x,y-lift,math.atan2(m.vy,m.vx)+math.sin(i+t)*.12,size*1.5,size,20,14)
+   if x>=-24 and x<=Arena.width+24 and y>=-24 and y<=624 then
+    local size=.23+(i%5)*.07;local lift=math.sin(life*math.pi)*5
+    batch:setColor(1,1,1,alpha)
+    batch:add(G.puffQuad,x,y-lift,angle+math.sin(i+t)*.12,size*1.5,size,20,14)
+   end
   end
  end
+ g.setColor(1,1,1);g.draw(batch)
  g.pop()
 end
 return G

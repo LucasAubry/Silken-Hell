@@ -11,6 +11,23 @@ function T.run()
  end
  assert(V.clear(220,300,220,-50),'Sky edges remain open to wind')
  assert(not V.clear(220,300,850,500),'Rotated wall shelters the target')
+ local g=love.graphics;local target=g.newCanvas(Arena.width,600)
+ local flock={}
+ for i=1,12 do flock[i]={type='mist_moth',x=80+i*40,y=70+i*31,vx=1,vy=0,age=i*.13,phase='gust'} end
+ g.push('all');g.setCanvas(target);g.origin();g.clear()
+ for _,m in ipairs(flock) do G.draw(m) end
+ g.flushBatch();local before=g.getStats().drawcalls;local begun=love.timer.getTime()
+ for _=1,60 do for _,m in ipairs(flock) do G.draw(m) end end
+ g.flushBatch();local calls=g.getStats().drawcalls-before
+ print(string.format('Gust stress: 12 moths, 60 frames, %.3f ms/frame CPU submission, %.1f draw calls/frame',(love.timer.getTime()-begun)*1000/60,calls/60))
+ assert(calls<=12*60,'Each complete gust must use at most one GPU draw call')
+ local batch=G.batch;local texture=G.cloud
+ assert(batch:getBufferSize()==128,'Wind geometry stays bounded even during sustained gusts')
+ local rng=love.math.getRandomState()
+ for _,m in ipairs(flock) do G.draw(m) end
+ assert(G.batch==batch and G.cloud==texture,'Sustained gusts reuse their GPU resources')
+ assert(love.math.getRandomState()==rng,'Wind rendering must not consume gameplay randomness')
+ g.pop();target:release()
  local m={type='mist_moth',x=220,y=300,vx=1,vy=0,age=1,phase='gust'}
  local blocked=Arena.blocked;local calls=0
  Arena.blocked=function(...)calls=calls+1;return blocked(...)end
