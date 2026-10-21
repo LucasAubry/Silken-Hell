@@ -94,7 +94,7 @@ function A.draw()
     end
     g.setBlendMode('add')
     -- Bounded, deterministic motes: no growing particle arrays or per-frame random state.
-    local count=(world==1 or world==5) and 0 or world==4 and 28 or 76
+    local count=(world==1 or world==5 or world==2 and not require('level_environment').active('ashes')) and 0 or world==4 and 28 or 76
     for i=1,count do
         local seed=i*2.39996323+settings.seed
         local speed=world==2 and 17 or world==4 and 7 or 3

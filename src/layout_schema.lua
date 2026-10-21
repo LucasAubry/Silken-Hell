@@ -4,6 +4,7 @@ function S.migrate(layout)
     if type(layout)=='table' and type(layout.entities)=='table' then
         for i=#layout.entities,1,-1 do
             local e=layout.entities[i]
+            if e.kind=='electric_ground' then table.remove(layout.entities,i) end
             if e.kind=='mob' and e.type=='wind_cloud' then e.type='wind_bat' end
             if e.kind=='mob' and e.type=='imp' then e.type='lava_scorpion' end
             if e.kind=='mob' and e.type=='gull' then
@@ -30,6 +31,11 @@ function S.validate(l)
     if l.biome~=nil and not ({[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true})[l.biome] then return false,'Biome invalide.' end
     if l.difficulty~=nil and (type(l.difficulty)~='number' or l.difficulty%1~=0 or l.difficulty<1 or l.difficulty>5) then return false,'Difficulté entre 1 et 5.' end
     if l.difficultyExtra~=nil and (type(l.difficultyExtra)~='number' or l.difficultyExtra%1~=0 or l.difficultyExtra<0 or l.difficultyExtra>999 or (l.difficultyExtra>0 and l.difficulty~=5)) then return false,'Bonus rouge entre 0 et 999, au niveau 5.' end
+    if l.environment~=nil then
+        if type(l.environment)~='table' then return false,'Environnement invalide.' end
+        local allowed={rain=true,leaves=true,ashes=true,fireflies=true,blue=true}
+        for key,value in pairs(l.environment) do if not allowed[key] or type(value)~='boolean' then return false,'Effet environnemental invalide.' end end
+    end
     local spawn,gate=0,0
     for _,e in ipairs(l.entities) do
         if type(e)~='table' or not kinds[e.kind] or (e.kind=='mob' and not mobs[e.type]) or (e.kind=='boss' and not bosses[e.type]) or (e.kind=='abyss_part' and not ({skeleton_tail=true,skeleton_rib=true,skeleton_spine=true})[e.type]) then return false,'Objet inconnu.' end

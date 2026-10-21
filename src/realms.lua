@@ -378,6 +378,7 @@ function R.drawAnemoneElectric()
     end
 end
 function R.drawFireflies()
+    if not require('level_environment').active('blue') then return end
     if Abyss.encounterActive() then return end
     if Campaign.biome~=7 or Campaign.world==3 then return end
     local g=love.graphics; g.push('all'); g.setBlendMode('add')

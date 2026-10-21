@@ -24,7 +24,7 @@ end
 function H.contact()
     Realms.contact(); Abyss.contact(); AbyssTerrain.contact(); Bosses.contact(); Magma.contact(); Burning.contact()
     if H.inLava(player.x+15,player.y+12,5) then H.kill(); return end
-    require('electric_ground').contact(H.electric)
+
     if Wasp then Wasp.contact() end
     Storm.contact()
 end
@@ -48,7 +48,7 @@ function H.speed()
 end
 function H.drawFloor()
     require('lava_zones').drawAll(H.lava,UI.clock)
-    require('electric_ground').draw(H.electric,Graphics.effects and UI.clock or 0)
+
 end
 function H.draw()
     Magma.drawGround(); Burning.drawGround()

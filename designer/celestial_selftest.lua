@@ -9,14 +9,14 @@ function T.run(M,state,select)
  love.update(.5);love.draw();assert(seen==0 and state.clock==0,'Sky preview keeps the new backdrop frozen')
  love.update(2);love.draw();assert(seen==0 and #M.layout.entities==before,'Editor updates leave scenery and map unchanged')
  floor.draw=draw
- for _,e in ipairs(require('catalog')) do if e.kind=='electric_ground' then state.tool=e end end
- assert(state.tool,'Electric brush exists')
+ for _,e in ipairs(require('catalog')) do if e.kind=='hole' then state.tool=e end end
+ assert(state.tool,'Hole brush exists')
  local view=state.canvas
  local function point(x,y)return view.x+x*view.s,view.y+y*view.s end
  local x,y=point(320,180);love.mousepressed(x,y,1)
  x,y=point(320,400);love.mousemoved(x,y);love.draw();love.mousereleased(x,y,1)
- assert(#M.layout.entities==before+1 and M.validate(M.layout),'Electric brush paints a valid zone')
- local zone=M.layout.entities[#M.layout.entities];assert(zone.kind=='electric_ground' and #zone.points==4)
+ assert(#M.layout.entities==before+1 and M.validate(M.layout),'Hole brush paints a valid zone')
+ local zone=M.layout.entities[#M.layout.entities];assert(zone.kind=='hole' and #zone.points==4)
  M.undo(false);assert(#M.layout.entities==before);M.undo(true);assert(#M.layout.entities==before+1)
  state.tool=nil;local bat=M.add({kind='mob',type='wind_bat',speed=210},220,200)
  love.draw()
@@ -24,12 +24,24 @@ function T.run(M,state,select)
  local w=love.graphics.getWidth();love.mousepressed(w-227+80,280+3*39+16,1)
  assert(bat.dx==-1,'Direction button selects right to left')
  love.draw();love.mousepressed(w-227+80,280+3*39+16,1);assert(bat.dx==1,'Direction button selects left to right')
+ local snail
+ for _,entry in ipairs(require('catalog')) do
+  assert(entry.kind~='electric_ground' and entry.kind~='rain','Obsolete terrain tools are removed')
+  if entry.type=='cloud_snail' then snail=entry end
+ end
+ state.tool=snail;local mx,my=point(480,300);love.mousepressed(mx,my,1);love.draw()
+ assert(M.selected and M.selected.type=='cloud_snail','Real mouse placement of a snail must not crash')
+ state.tool=nil;state.category='Environnement';love.draw()
+ local rain=require('level_environment').enabled('rain',6,M.layout.environment);assert(rain,'Rain defaults on in Sky')
+ love.mousepressed(110,344,1);love.draw();assert(M.layout.environment.rain==false,'Environment toggle persists off')
+ M.undo(false);assert(require('level_environment').enabled('rain',6,M.layout.environment),'Environment participates in undo')
+ M.undo(true);assert(M.layout.environment.rain==false,'Environment participates in redo')
  assert(M.validate(M.layout));local saved=require('json').decode(love.filesystem.read(M.draftFilename))['6:1']
- assert(saved.entities[#saved.entities].dx==1,'Direction persists in drafts')
+ assert(saved.environment.rain==false and saved.entities[#saved.entities].type=='cloud_snail','Options and placed snail persist in drafts')
  local frames=0;state.testUpdate=function()
   frames=frames+1
   if frames==2 then love.graphics.captureScreenshot('celestial-editor.png') end
-  if frames==4 then print('PASS celestial editor: electric drawing, undo/redo, direction controls and persistence');love.event.quit() end
+  if frames==4 then print('PASS celestial editor: hole drawing, environment toggles, snail placement, undo/redo, direction controls and persistence');love.event.quit() end
  end
 end
 return T

@@ -40,6 +40,7 @@ function F.update(a,dt,wakes)
  end
 end
 function F.draw(a)
+ if not require('level_environment').active('blue') then return end
  local g=love.graphics;g.push('all');g.setBlendMode('add')
  for _,p in ipairs(a.lumenParticles)do
   local pulse=(.65+.2*math.sin(p.age*1.3+p.id))*(p.starVisibility or 1)

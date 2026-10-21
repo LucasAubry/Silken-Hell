@@ -173,6 +173,9 @@ function S.draw(zones,kind,time,alpha,biome)
   if p.temporary and not p.points then transientHole(p,alpha,biome)
   else fixed[#fixed+1]=p end
  end
+ -- The snail pass already draws these stationary holes as one union.
+ local unified=biome==6 and Campaign and Campaign.biome==6 and #require('sky_weather').snailHoles>0
+ if unified and (zones==Realms.holes or zones==require('sky_weather').holes) then return end
  drawSurface(fixed,kind,time,alpha,biome)
 end
 return S

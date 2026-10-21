@@ -27,7 +27,7 @@ function P.update(dt)
     end
     App.sessionLayout=r.layout; App.singleLevel=true; App.custom=true
     require('map_assets').load(r.layout)
-    Campaign.select(r.layout.world); player.level=r.layout.level; timer=0; player.death=0
+    Campaign.select(r.layout.world);App.selectedWorld=r.layout.biome or r.layout.world; player.level=r.layout.level; timer=0; player.death=0
     App.state='playing'; reset_level()
 end
 return P

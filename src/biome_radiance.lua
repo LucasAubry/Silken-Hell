@@ -58,6 +58,8 @@ function B.preview(biome,time)
 end
 function B.motes()
  if not B.active() then return end
+ local option=({[2]='ashes',[3]='fireflies',[5]='fireflies',[7]='blue'})[B.biome()]
+ if option and not require('level_environment').active(option) then return end
  local g=love.graphics;local biome=B.biome();local t=UI.clock;local tint=B.palettes[biome]
  g.push('all');g.setShader();g.setBlendMode('add')
  if not B.halo then

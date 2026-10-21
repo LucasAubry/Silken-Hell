@@ -391,6 +391,7 @@ function love.draw()
         Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false)
         Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
         require('sky_weather').drawAtmosphere()
+        require('level_environment').draw(Campaign.biome,Arena.width,600,Realms.clock,require('level_environment').settings())
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end;require('biome_radiance').motes()
         if not Secret.inArena() then Realms.drawDarkness(); Realms.drawFireflies(); Realms.drawAnemoneElectric() end
         Abyss.drawLights(); Bosses.drawLights();require('earth_light').draw();require('abyss_gate').draw(); BossFX.draw();Aftermath.draw();require('boss_liberation').draw()

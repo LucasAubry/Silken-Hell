@@ -8,9 +8,14 @@ function B.update(m,dt)
  if m.dead or m.capture or m.is_frozen or m.tunnelTravel then return end
  m.age=m.age+dt;m.sparks=m.sparks or {}
  for i=#m.sparks,1,-1 do local p=m.sparks[i];p.age=p.age+dt;if p.age>.65 then table.remove(m.sparks,i) end end
- if type(m.phase)~='string' then phase(m,'surface',.8) end
+ if type(m.phase)~='string' then phase(m,'surface',1.2);m.vx=math.cos(m.age*.7);m.vy=math.sin(m.age*.7) end
  m.phaseTime=m.phaseTime-dt
- if m.phase=='hidden' then
+ if m.phase=='surface' or m.phase=='dive' then
+  local speed=m.phase=='surface' and 42 or 42*math.max(0,m.phaseTime/.45)
+  local hx,hy=Arena.move(m,(m.vx or 1)*speed*dt,(m.vy or 0)*speed*dt)
+  if hx then m.vx=-(m.vx or 1) end;if hy then m.vy=-(m.vy or 0) end
+  m.angle=math.atan2(m.vy or 0,m.vx or 1)-math.pi/2
+ elseif m.phase=='hidden' then
   local dx,dy=m.tx-m.x,m.ty-m.y;local d=math.sqrt(dx*dx+dy*dy)
   if d>1 then Arena.move(m,dx/d*math.min(d,210*dt),dy/d*math.min(d,210*dt)) end
  elseif m.phase=='charge' then

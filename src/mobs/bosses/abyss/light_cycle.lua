@@ -108,7 +108,7 @@ function C.draw(a)
  if a.defeated then return end
  local g=love.graphics;g.push('all');g.setBlendMode('alpha')
  local mx,my=C.mouth(a)
- for _,p in ipairs(a.lumenParticles) do
+ for _,p in ipairs(require('level_environment').active('blue') and a.lumenParticles or {}) do
   local glow=.45+.25*math.sin(p.age*2+p.id)
   g.setColor(.2,.65,.9,.09);g.circle('fill',p.x,p.y,5)
   g.setColor(.45,.85,1,glow);g.circle('fill',p.x,p.y,1.3)

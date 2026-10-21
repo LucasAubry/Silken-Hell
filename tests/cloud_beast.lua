@@ -7,7 +7,7 @@ function T.run()
  Arena.walls={};Arena.interior={};W.storm=false
  player.x=600;player.y=300;player.reset=false
  local m={type='cloud_beast',x=250,y=200,age=0,phase=0,speed=330,hitBox_width=32,hitBox_height=30,hitBox_offset_x=-16,hitBox_offset_y=-15};mobs={m}
- B.update(m,.81);assert(m.phase=='dive' and #m.sparks==1)
+ B.update(m,1.21);assert(m.phase=='dive' and #m.sparks==1)
  B.update(m,.46);assert(m.phase=='hidden' and Realms.underground(m))
  local x=m.x;B.update(m,.5);assert(m.x~=x and not player.reset,'Travels underneath clouds')
  B.update(m,.61);assert(m.phase=='emerge' and #m.sparks>0)

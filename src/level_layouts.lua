@@ -8,6 +8,7 @@ local function copy(t)
 end
 function L.snapshot()
     local out={width=Arena.width,height=600,world=Campaign.world,level=player.level,entities={}}
+    if L.activeLayout and L.activeLayout.environment then out.environment=json.decode(json.encode(L.activeLayout.environment)) end
     local function put(kind,t,typ)
         local e=copy(t); e.kind=kind; e.type=typ; e.id='e'..(#out.entities+1); out.entities[#out.entities+1]=e; return e
     end

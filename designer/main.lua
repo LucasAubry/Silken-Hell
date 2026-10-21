@@ -20,7 +20,7 @@ local function button(label,x,y,w,h,fn,active)
         local f=state.fonts[16];local utf8=require('utf8')
         if f:getWidth(label)>w-24 then repeat local at=utf8.offset(label,-1);label=at and label:sub(1,at-1) or '' until label=='' or f:getWidth(label..'…')<=w-24;label=label..'…' end
     end
-    text(label,x+12,y+(h-18)/2,14,active and color.accent or color.text)
+    text(label,x+12,y+(h-18)/2,state.category=='Environnement' and 16 or 14,active and color.accent or color.text)
     state.buttons[#state.buttons+1]={x=x,y=y,w=w,h=h,fn=fn}
 end
 local function catalog(e)
@@ -50,7 +50,7 @@ local function inside(mx,my)
     local x,y=point(mx,my); return x>=0 and x<=M.layout.width and y>=0 and y<=600
 end
 local function snapped(v) return state.snap and math.floor(v/10+.5)*10 or math.floor(v+.5) end
-local function brush(e) return e and (e.kind=='hole' or e.kind=='lava' or e.kind=='electric_ground') end
+local function brush(e) return e and (e.kind=='hole' or e.kind=='lava') end
 -- Explicit time also freezes procedural sprites which use the real clock in game.
 local function drawArt(key,x,y,width,angle,height)
     Art.draw(key,x,y,width,angle,height,0)
@@ -70,8 +70,7 @@ local function entity(e,ghost,terrainDrawn)
         require('tornado_art').draw(Art,e.x,e.y,state.clock,94,ghost and .45 or 1)
     elseif e.kind=='lava' and e.points then
         if not terrainDrawn then require('lava_zones').draw(e,state.clock,ghost and .5 or 1,M.world) end
-    elseif e.kind=='electric_ground' then
-        require('electric_ground').draw({e},state.clock,ghost and .5 or 1)
+
     elseif e.kind=='hole' then
         if not terrainDrawn then require('terrain_surface').draw({e},'hole',state.clock,ghost and .5 or 1,M.world) end
     elseif e.kind=='rain' then g.setColor(.25,.6,1,.8); for i=-1,1 do g.line(e.x+i*8,e.y-18,e.x+i*8-5,e.y+7) end
@@ -202,15 +201,24 @@ function love.draw()
         end,state.tool and state.tool.kind==kind)
     else text('BIBLIOTHÈQUE',20,177,12,color.muted) end
     for i,cat in ipairs({'Mobs','Pièges','Terrain','Boss'}) do button(cat,14+(i-1)%2*114,203+math.floor((i-1)/2)*36,106,30,function() state.category=cat; state.scroll=0 end,state.category==cat) end
-    button(state.all and 'Tous les biomes' or 'Ce biome',14,280,220,30,function() state.all=not state.all; state.scroll=0 end,state.all)
+    button('Environnement',14,278,220,30,function() state.category='Environnement';state.tool=nil;M.selected=nil;state.scroll=0 end,state.category=='Environnement')
+    if state.category~='Environnement' then button(state.all and 'Tous les biomes' or 'Ce biome',14,316,220,30,function() state.all=not state.all; state.scroll=0 end,state.all) end
+    if state.category=='Environnement' then
+        for i,option in ipairs(require('level_environment').options) do
+            local enabled=require('level_environment').enabled(option.key,M.world,M.layout.environment)
+            button(option.label..(enabled and ' : oui' or ' : non'),14,324+(i-1)*48,220,40,function()
+                M.checkpoint();M.layout.environment=M.layout.environment or {};M.layout.environment[option.key]=not enabled;M.persist()
+            end,enabled)
+        end
+    end
     local palette={}
     for _,c in ipairs(C) do
         local cat=(c.kind=='boss' or c.kind=='abyss_gate') and 'Boss' or c.kind=='mob' and (c.type=='piege' or c.type=='scie') and 'Pièges' or c.kind=='mob' and 'Mobs' or (c.kind=='magma_spawner'  or c.kind=='vent' or c.kind=='tornado') and 'Pièges' or 'Terrain'
         if cat==state.category and (state.all or c.world==0 or c.world==M.world) then palette[#palette+1]=c end
     end
-    local max=math.max(1,math.floor((h-386)/68)); state.scroll=math.min(state.scroll,math.max(0,#palette-max))
+    local max=math.max(1,math.floor((h-420)/68)); state.scroll=math.min(state.scroll,math.max(0,#palette-max))
     for i=1,max do local c=palette[i+state.scroll]; if c then
-        local y=324+(i-1)*68
+        local y=358+(i-1)*68
         button('',14,y,220,60,function() state.tool=c; M.selected=nil; state.input=nil end,state.tool==c)
         if c.type=='cloud_beast' then require('mobs.cloud_beast').art(45,y+29,42,0,0)
         elseif c.type=='cloud_snail' then require('cloud_snail').art(45,y+29,42,0,0)
@@ -223,7 +231,7 @@ function love.draw()
         end
         text(label,77,y+((insect or M.workshop or M.devMode or brush(c)) and 20 or 8),(insect or brush(c)) and 16 or 12,nil,145); if not insect and not M.workshop and not M.devMode and not brush(c) then text(c.kind=='boss' and 'Rencontre' or c.kind=='mob' and 'Créature' or 'Placement',77,y+36,12,color.muted) end
     end end
-    if not M.workshop and not M.devMode then text('Molette : parcourir la liste',20,h-54,12,color.muted) end
+    if state.category~='Environnement' and not M.workshop and not M.devMode then text('Molette : parcourir la liste',20,h-54,12,color.muted) end
     local x,y,scale=bounds(); state.canvas={x=x,y=y,s=scale}
     if M.workshop then text(require('workshop_access').biomeNotice,270,148,16,color.muted,w-520) end
     text(Worlds.names[M.world]..(M.workshop and '' or ' / '..string.format('%02d',M.level)),270,174,18)
@@ -260,6 +268,7 @@ function love.draw()
             else local ghost=M.clone(state.tool); ghost.x=snapped(px); ghost.y=snapped(py); entity(ghost,true) end
         end
     end
+    require('level_environment').draw(M.world,M.layout.width,600,0,M.layout.environment,true)
     g.pop()
     g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1)
     g.draw(state.mapCanvas,x,y,0,scale,scale);g.pop()
@@ -295,7 +304,7 @@ function love.draw()
             text('Taille : '..state.brush*2,right,268,16)
             button('−',right,308,98,36,function() state.brush=math.max(4,state.brush-4) end)
             button('+',right+108,308,98,36,function() state.brush=math.min(120,state.brush+4) end)
-        elseif not M.workshop and not M.devMode then text('Clique sur le terrain pour placer.\n\nÉchap : sélectionner et déplacer.\n\nGlisse un objet pour le déplacer.\n\nSuppr : effacer.\nCmd+Z / Cmd+Maj+Z : annuler / rétablir.',right,270,14,color.muted,205) end
+        elseif state.category~='Environnement' and not M.workshop and not M.devMode then text('Clique sur le terrain pour placer.\n\nÉchap : sélectionner et déplacer.\n\nGlisse un objet pour le déplacer.\n\nSuppr : effacer.\nCmd+Z / Cmd+Maj+Z : annuler / rétablir.',right,270,14,color.muted,205) end
     end
     button(M.workshop and 'Vider la carte' or 'Restaurer l’original',right,h-110,207,34,function() M.restore(); state.status=M.workshop and 'Carte réinitialisée.' or 'Original restauré en brouillon. Appliquer pour le garder.' end)
     if not M.workshop and not M.devMode then text('Les niveaux personnalisés ne sont pas classés.',right,h-66,12,color.muted,210) end
@@ -321,7 +330,7 @@ function love.mousepressed(mx,my,button)
     if state.tool and brush(state.tool) and button==1 then
         M.selected=nil;state.stroke={kind=state.tool.kind,x=x,y=y,radius=state.brush,points={0,0}};return
     end
-    if state.tool and button==1 then M.add(state.tool,snapped(x),snapped(y));state.status=require('workshop_access').warning(state.tool,M.world) or ''; return end
+    if state.tool and button==1 then M.add(state.tool,snapped(x),snapped(y));state.status=''; return end
     M.selected=nil
     for i=#M.layout.entities,1,-1 do local e=M.layout.entities[i]
         local rx,ry=e.kind=='wall' and e.w/2 or 26,e.kind=='wall' and e.h/2 or 26

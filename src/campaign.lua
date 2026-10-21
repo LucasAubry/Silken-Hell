@@ -231,7 +231,7 @@ function C.draw()
     Hazards.drawFloor()
     Story.drawDecor(function()require('ocean_scenery').draw()end)
     C.drawCircles(); Abyss.drawSites()
-    if hell and not Secret.inArena() then
+    if hell and not Secret.inArena() and require('level_environment').active('ashes') then
         for i=1,32 do
             local x=(i*79+math.sin(larme_float_timer+i)*14)%(Arena.width-50)+25
             local y=(i*47-larme_float_timer*(12+i%9))%570+15

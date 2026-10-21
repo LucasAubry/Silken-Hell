@@ -158,7 +158,8 @@ function U.updatePress(dt)
 end
 function U.theme()
     local selected=(App.state=='rankings' or App.state=='boards') and U.boardWorld or App.selectedWorld
-    local w=selected==8 and 8 or Worlds.biome(selected or 1,1); local palette=Worlds.color(w)
+    local inLevel=App.state=='pause' or ((App.state=='settings' or App.state=='graphics') and U.returnTo=='pause')
+    local w=inLevel and Campaign.biome or selected==8 and 8 or Worlds.biome(selected or 1,1); local palette=Worlds.color(w)
     U.shader:send('time',U.clock); U.shader:send('biome',w)
     U.shader:send('deep',w==1 and {.91,.81,.65} or palette.floor); U.shader:send('fog',w==1 and {.96,.86,.70} or palette.ink)
     local tint=({[1]={1,.97,.89},[2]={1,.22,.08},[3]={.48,.91,.38},[4]={.15,.9,1},[5]={.75,.46,.22},[6]={.65,.87,1},[7]={.45,.48,1},[8]={.72,.55,1}})[w] or {1,.83,.47}

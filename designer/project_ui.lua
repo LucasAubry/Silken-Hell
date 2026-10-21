@@ -8,7 +8,7 @@ function V.init(model,state,drawText,drawButton,background)
  local add=M.add
  M.add=function(template,...)
   local result=add(template,...)
-  if M.workshop then S.status=require('workshop_access').warning(template,M.world) or '' end
+  if M.workshop then S.status='' end
   return result
  end
  local ok,err=P.importLegacy(M.save,M.drafts);if not ok then S.status=err end;V.library=P.list(M.save)

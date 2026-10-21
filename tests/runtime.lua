@@ -38,6 +38,7 @@ function T.run()
     if os.getenv('SILKEN_ECOSYSTEM_REVISION_TEST')=='1' then require('tests.ecosystem_revision').run();return end
     if os.getenv('SILKEN_CONTENT_CLEANUP_TEST')=='1' then require('tests.content_cleanup').run();return end
     if os.getenv('SILKEN_SKY_REPLAY_TEST')=='1' then require('tests.sky_replay').run();return end
+    if os.getenv('SILKEN_SKY_POLISH_TEST')=='1' then require('tests.sky_polish').run();return end
     if os.getenv('SILKEN_CLOUD_BEAST_TEST')=='1' then require('tests.cloud_beast').run();return end
     if os.getenv('SILKEN_CLOUD_SNAIL_TEST')=='1' then require('tests.cloud_snail').run();return end
     if os.getenv('SILKEN_MOTH_GUST_TEST')=='1' then require('tests.moth_gust').run();return end
