@@ -34,13 +34,16 @@ function T.run()
     if #patterns<3 then
      patterns[#patterns+1]=b.pattern;local route=b.route;local p=route[1]
      assert((p.x-b.cx)^2+(p.y-b.cy)^2<(b.radius-26)^2,'First tornado is inside the circle')
+     local diagonals,cardinals=0,0
      for i=2,#route do
       local dx,dy=math.abs(route[i].x-route[i-1].x),math.abs(route[i].y-route[i-1].y)
       assert(dx<.001 or dy<.001 or math.abs(dx-dy)<.001,'Routes use cardinal or diagonal launches')
+      if dx>.001 and dy>.001 then diagonals=diagonals+1 else cardinals=cardinals+1 end
       assert(math.sqrt(dx*dx+dy*dy)>140,'Tornado footprints remain separated')
       assert(math.sqrt(dx*dx+dy*dy)<1050*1.5,'Every hop is within flight range')
       assert(route[i].x>30 and route[i].x<Arena.width-30 and route[i].y>30 and route[i].y<570,'Tornado stays on the map')
      end
+     assert(diagonals>cardinals and cardinals>0,'Each route prioritizes diagonals while retaining a cardinal link')
      local last=route[#route];assert((last.x-b.cx)^2+(last.y-b.cy)^2>(b.radius+30)^2,'Last tornado escapes the ring')
      routeKeys[#routeKeys+1]=json.encode(route)
     end

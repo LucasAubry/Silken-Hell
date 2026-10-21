@@ -22,6 +22,8 @@ function S.setPhase(phase)
  elseif phase=='approach' then
   S.round=S.round+1;S.pattern=(S.round-1)%3+1
   local anchorX,anchorY=clamp(player.x+15,60,Arena.width-60),clamp(player.y+12,65,535)
+  -- JSON input round-tripping must not flip a route across the exact centerline.
+  anchorX,anchorY=math.floor(anchorX*1000+.5)/1000,math.floor(anchorY*1000+.5)/1000
   local sx=anchorX<Arena.width/2 and 1 or -1;local sy=anchorY<300 and 1 or -1
   local spaceX=sx==1 and Arena.width-anchorX or anchorX;local spaceY=sy==1 and 600-anchorY or anchorY
   local step=math.min(190,(spaceX-35)/2,(spaceY-35))
@@ -32,7 +34,8 @@ function S.setPhase(phase)
   local dx,dy=cx-anchorX,cy-anchorY;local distance=math.sqrt(dx*dx+dy*dy)
   local shift=distance>0 and math.min(1,(S.radius-42)/distance) or 0
   S.cx,S.cy=anchorX+dx*shift,anchorY+dy*shift
-  local patterns={{{0,0},{1,1},{2,1},{2,0}},{{0,0},{0,1},{1,1},{2,0}},{{0,0},{1,0},{1,1},{2,1}}}
+  -- Two diagonal links and one cardinal link in every authored route.
+  local patterns={{{0,0},{1,1},{2,0},{2,1}},{{0,0},{0,1},{1,0},{2,1}},{{0,0},{1,1},{1,0},{2,1}}}
   for _,p in ipairs(patterns[S.pattern])do S.route[#S.route+1]={x=anchorX+p[1]*step*sx,y=anchorY+p[2]*step*sy}end
   S.fromX,S.fromY=S.x,S.y;S.startAngle=math.atan2(S.y-S.cy,S.x-S.cx)
   S.phaseTime=.8;S.spawned=0;S.nextSpawn=.6;S.orbitAngle=0
