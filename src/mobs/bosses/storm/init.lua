@@ -41,7 +41,7 @@ function S.setPhase(phase)
   S.phaseTime=.8;S.spawned=0;S.nextSpawn=.6;S.orbitAngle=0
  elseif phase=='orbit' then
   S.phaseTime=setting('orbitDuration',14);S.shot=setting('firstShot',3.2)
-  S.holes={{x=S.cx,y=S.cy,r=S.radius,start=S.startAngle,arc=0,width=17}}
+  S.holes={{x=S.cx,y=S.cy,r=S.radius,start=S.startAngle-.8-25/S.radius,arc=0,width=require('cloud_snail').width+require('cloud_snail').mergeMargin}}
  end
 end
 function S.reset(active)
@@ -54,7 +54,13 @@ function S.holeAt(x,y)
  if not S.active or S.defeated then return false end
  for _,p in ipairs(S.holes)do
   local dx,dy=x-p.x,y-p.y;local angle=(math.atan2(dy,dx)-p.start)%tau
-  if math.abs(math.sqrt(dx*dx+dy*dy)-p.r)<p.width and (p.arc>=tau-.001 or angle<=p.arc)then return true end
+  local distance=math.abs(math.sqrt(dx*dx+dy*dy)-p.r)
+  if p.arc<tau and angle>p.arc then
+   local ax,ay=math.cos(p.start)*p.r,math.sin(p.start)*p.r
+   local bx,by=math.cos(p.start+p.arc)*p.r,math.sin(p.start+p.arc)*p.r
+   distance=math.sqrt(math.min((dx-ax)^2+(dy-ay)^2,(dx-bx)^2+(dy-by)^2))
+  end
+  if distance<p.width then return true end
  end
  return false
 end
@@ -65,8 +71,15 @@ function S.finish()
   objet.larme.x,objet.larme.y=Arena.clearSpot(clamp(S.cx or S.x,70,Arena.width-70)-15,clamp(S.cy or S.y,85,515)-20,30,40)
  end)
 end
+function S.snailPose()
+ if S.phase~='orbit' then return end
+ local a=S.startAngle+S.orbitAngle-.8
+ return S.cx+math.cos(a)*S.radius,S.cy+math.sin(a)*S.radius,a+math.pi/2
+end
 function S.contact()
  if not S.active or S.defeated or player.reset then return end
+ local sx,sy=S.snailPose()
+ if sx and require('collision_shapes').touchRect('cloud_snail',sx-16,sy-14,32,28) then Hazards.kill('cloud_snail');return end
  if S.holeAt(player.x+15,player.y+12) and not airborne() then Hazards.kill('storm');if player.reset then player.falling=true end;return end
  if S.phase=='sweepTell' or S.phase=='approach' then return end
  local dx,dy=player.x+15-S.x,player.y+12-S.y
@@ -126,7 +139,7 @@ function S.update(dt)
   S.x=S.cx+math.cos(a)*S.radius;S.y=S.cy+math.sin(a)*S.radius
   S.dir=Art.direction(-math.sin(a),math.cos(a),S.dir)
   S.orbitAngle=a-S.startAngle
-  S.holes[1].arc=math.min(tau,math.max(0,S.orbitAngle-.8))
+  S.holes[1].arc=math.min(tau,math.max(0,S.orbitAngle))
   if S.spawned<#S.route and S.phaseAge>=S.nextSpawn then
    S.spawned=S.spawned+1;local p=S.route[S.spawned]
    Realms.tornadoes[#Realms.tornadoes+1]={x=p.x,y=p.y,cooldown=0,growth=0,growthDuration=setting('growthDuration',1.8)+((S.spawned+S.pattern)%3)*.18}
@@ -166,25 +179,23 @@ function S.visibleBounds()
 end
 function S.drawGround()
  if not S.active or S.defeated then return end
- local g=love.graphics;g.push('all')
- -- Analytic arc mask: no per-frame terrain rebuild/readback while digging.
- S.ringShader=S.ringShader or g.newShader([[
- extern float radius;extern float startAngle;extern float arc;extern float thickness;extern float clock;
- vec4 effect(vec4 color,Image tex,vec2 uv,vec2 pixel){
-  vec2 p=(uv-.5)*(radius+48.)*2.;float a=mod(atan(p.y,p.x)-startAngle+6.2831853,6.2831853);
-  float noise=sin(atan(p.y,p.x)*23.+clock*.15)*1.8+sin(atan(p.y,p.x)*41.)*.8;
-  float d=abs(length(p)-radius)-thickness+noise;
-  if(a>arc||arc<.001||d>6.)discard;
-  vec3 deep=mix(vec3(.018,.055,.10),vec3(.035,.12,.20),.5+.5*sin(p.x*.035+p.y*.025+clock*.2));
-  vec3 rim=mix(vec3(.28,.44,.53),vec3(.83,.93,.96),smoothstep(-2.,3.,d));
-  return vec4(mix(deep,rim,smoothstep(-9.,0.,d)),1.-smoothstep(3.,6.,d))*color;
- }
- ]])
+ local g=love.graphics
+ S.ringShader=S.ringShader or g.newShader('assets/shaders/snail_arc_mask.glsl')
  for _,p in ipairs(S.holes)do
-  local shader=S.ringShader;shader:send('radius',p.r);shader:send('startAngle',p.start);shader:send('arc',p.arc);shader:send('thickness',p.width);shader:send('clock',S.clock)
-  g.setShader(shader);g.setColor(1,1,1);local size=(p.r+48)*2;g.draw(UI.pixel,p.x-size/2,p.y-size/2,0,size,size)
+  local size=math.ceil((p.r+64)*2)
+  if not S.ringMask or S.ringMask:getWidth()~=size then
+   if S.ringMask then S.ringMask:release() end
+   S.ringMask=g.newCanvas(size,size,{dpiscale=1});S.ringMask:setFilter('linear','linear')
+  end
+  g.push('all');g.setCanvas(S.ringMask);g.origin();g.setScissor();g.clear(0,0,0,1)
+  local shader=S.ringShader
+  shader:send('radius',p.r);shader:send('startAngle',p.start);shader:send('arc',p.arc)
+  shader:send('thickness',p.width);shader:send('size',size)
+  g.setShader(shader);g.setBlendMode('replace','premultiplied');g.setColor(1,1,1);g.draw(UI.pixel,0,0,0,size,size)
+  g.pop()
+  -- Exactly the biome's snail/cloud material, including its textured rounded rim.
+  require('terrain_surface').drawSkyField({image=S.ringMask,x=p.x-size/2,y=p.y-size/2,w=size,h=size,step=1},1)
  end
- g.pop()
 end
 function S.draw()
  if not S.active or (S.defeated and not S.liberating)then return end
@@ -200,12 +211,11 @@ function S.draw()
    for i=1,16 do local x=S.x-S.sweepDir*(30+i*9);local y=S.y+math.sin(i*2.4)*60;g.line(x,y,x-S.sweepDir*30,y)end
   end
   if S.phase=='orbit' then
-   local a=S.startAngle+S.orbitAngle-.8
-   local x,y=S.cx+math.cos(a)*S.radius,S.cy+math.sin(a)*S.radius
+   local x,y,angle=S.snailPose()
    local midX,midY=(x+S.x)/2,(y+S.y)/2+6
    g.setColor(.12,.23,.28,.7);g.setLineWidth(3);g.line(S.x,S.y,midX,midY,x,y)
    g.setColor(.88,.96,1,.95);g.setLineWidth(1.2);g.line(S.x,S.y,midX,midY,x,y)
-   require('cloud_snail').art(x,y,52,S.clock,a+math.pi/2,1)
+   require('cloud_snail').art(x,y,52,S.clock,angle,1)
   end
   g.setColor(1,1-S.flash,1-S.flash);bird()
  end

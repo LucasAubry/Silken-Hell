@@ -72,6 +72,15 @@ function T.run()
   if near then assert(player.reset,'Edge-adjacent player falls from the sweep')
   else assert(not player.reset and math.abs(player.x-start-70)<.1,'Center player is pushed a bounded distance')end
  end
+ for _,flying in ipairs({false,true})do
+  b=setup();b.setPhase('approach');b.setPhase('orbit');local x,y=b.snailPose()
+  player.x,player.y=x-15,y-12;player.throw=flying and {vx=1050,vy=0,time=1.5} or nil
+  b.contact();assert(player.reset,'Tethered snail kills on ground and during tornado flight')
+ end
+ b=setup();b.setPhase('approach');b.setPhase('orbit')
+ local hole=b.holes[1];local ax,ay=hole.x+math.cos(hole.start)*hole.r,hole.y+math.sin(hole.start)*hole.r
+ assert(b.holeAt(ax,ay),'New hole starts as a closed round cap')
+ assert(not b.holeAt(hole.x-math.cos(hole.start)*hole.r,hole.y-math.sin(hole.start)*hole.r),'Unexcavated arc stays solid')
  b=setup();b.setPhase('approach');b.setPhase('orbit');b.holes[1].arc=math.pi*2
  player.x=b.cx+b.radius-15;player.y=b.cy-12;player.throw={vx=1050,vy=0,time=1.5}
  b.x=player.x+15;b.y=player.y+12;local hp=b.hp;b.contact()

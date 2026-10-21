@@ -34,7 +34,7 @@ function B.update(m,dt)
  m.age=m.age+dt;m.sparks=m.sparks or {}
  for i=#m.sparks,1,-1 do local p=m.sparks[i];p.age=p.age+dt;if p.age>.65 then table.remove(m.sparks,i) end end
  if type(m.phase)~='string' then phase(m,'surface',m.attackDelay and math.max(0,m.attackDelay-1.95) or 1.2);local a=require('mob_start_direction').angle(m) or m.roamSeed;m.vx=math.cos(a);m.vy=math.sin(a) end
- if m.phase=='surface' and tornadoAt(m.x,m.y) then phase(m,'hidden',.3);m.tx,m.ty=m.x,m.y;B.safeTarget(m) end
+ if m.phase=='surface' and tornadoAt(m.x,m.y) then phase(m,'dive',.45);splash(m) end
  m.phaseTime=m.phaseTime-dt
  if m.phase=='surface' or m.phase=='dive' then
   local speed=m.phase=='surface' and 42 or 42*math.max(0,m.phaseTime/.45)

@@ -23,6 +23,13 @@ function T.run()
  local larva={type='cloud_beast',x=450,y=300,tx=450,ty=300,phase='hidden',phaseTime=0,age=0,roamSeed=0,sparks={},hitBox_width=32,hitBox_height=30,hitBox_offset_x=-16,hitBox_offset_y=-15}
  mobs={larva};B.update(larva,.01)
  assert(larva.phase=='hidden' and (larva.tx-450)^2+(larva.ty-300)^2>=100^2,'Larva stays hidden and seeks a clear emergence point')
+ larva.phase='surface';larva.phaseTime=1.2;larva.vx=1;larva.vy=0;larva.x=450;larva.y=300
+ B.update(larva,1/60)
+ assert(larva.phase=='dive' and larva.phaseTime>.4,'Tornado proximity starts a visible dive, never an instant disappearance')
+ for i=1,30 do B.update(larva,1/60) end
+ assert(larva.phase=='hidden','Submersion completes after its animation')
+ Realms.tornadoes={};larva.phase=nil;larva.phaseTime=0;larva.attackDelay=nil;larva.x=450;larva.y=300
+ B.update(larva,1/60);assert(larva.phase=='surface' and larva.phaseTime>1,'Default larva preserves its visible opening')
  -- Actual hedgehog collision dispatch, including swept wall impact.
  App.start(5,{skipArrival=true});Arena.walls={};Arena.interior={};Realms.holes={};mobs={};player.reset=false
  local H=Hedgehog;H.active=true;H.defeated=false;H.phase='ball';H.x=400;H.y=300;H.vx=500;H.vy=0
