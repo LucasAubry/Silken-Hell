@@ -7,7 +7,7 @@ function T.run()
  local function input(dx,dy) Replay.input={dx,dy,false} end
  local function enter(dx,dy)
   input(0,0)
-  Realms.holes={};Realms.tornadoes={{x=Arena.width/2,y=300,cooldown=0}};Realms.tunnels={}
+  mobs={};Realms.holes={};Realms.tornadoes={{x=Arena.width/2,y=300,cooldown=0}};Realms.tunnels={}
   player.reset=false;player.whirl=nil;player.throw=nil;player.x=Arena.width/2-15;player.y=288
   player.lastMoveX=dx;player.lastMoveY=dy;player.dashing=true
   Realms.updateTraversal(.01)
@@ -58,6 +58,23 @@ function T.run()
  Realms.holes={require('ground_holes').stroke({Arena.width/2+10,300},60)}
  Realms.updateTraversal(.02)
  assert(player.reset and not player.throw,'Landing over void still falls')
+ -- Level 3's left pair must recapture even after a rapid return trip.
+ player.reset=false;player.falling=false;player.throw=nil;player.whirl=nil;mobs={};Realms.holes={}
+ local upper={x=170*Arena.width/960,y=140,cooldown=1.4}
+ local lower={x=170*Arena.width/960,y=520,cooldown=0}
+ Realms.tornadoes={upper,lower};player.x=lower.x-15;player.y=lower.y-12
+ Realms.updateTraversal(.01);steer(0,-1,.66)
+ for i=1,30 do Realms.updateTraversal(1/60);if player.whirl then break end end
+ assert(player.whirl and player.whirl.tornado==upper,'Sky level 3 upper tornado recaptures a recently launched player')
+ steer(0,1,.66)
+ for i=1,30 do Realms.updateTraversal(1/60);if player.whirl then break end end
+ assert(player.whirl and player.whirl.tornado==lower,'Rapid return chains back to lower tornado')
+ -- A fast flight cannot tunnel through a small stationary enemy between frames.
+ player.whirl=nil;player.reset=false;player.falling=false;player.x=Arena.width/2-15;player.y=288
+ player.throw={vx=1050,vy=0,time=1.5};Realms.tornadoes={}
+ mobs={{type='wind_bat',x=player.x+15+25,y=300,hitBox_width=10,hitBox_height=10,hitBox_offset_x=-5,hitBox_offset_y=-5}}
+ Realms.updateTraversal(.05);assert(player.reset,'Flight detects monster collision between frame endpoints')
+ mobs={}
  -- Leaving any screen edge kills immediately, before the flight timer expires.
  for _,d in ipairs({{1,0},{-1,0},{0,1},{0,-1}}) do
   player.reset=false;player.falling=false;player.whirl=nil;Realms.tornadoes={};Realms.holes={}

@@ -8,8 +8,7 @@ function P.request()
     return r,raw
 end
 function P.update(dt)
-    -- History shares preview rendering, but must never consume editor map requests.
-    if not App.preview or App.historyPreview then return end
+    -- Every open game can receive an explicit test request from the editor.
     P.clock=P.clock+dt
     if P.clock<.15 then return end
     P.clock=0
@@ -28,15 +27,12 @@ function P.load(r)
             P.error=why;Workshop.status=why;App.state='workshop';return
         end
     end
+    if Replay.playing or Replay.ghost then Replay.stop() end
+    App.preview=true;App.historyPreview=false;App.hardcore=false;App.practice=nil;Secret.duel=nil
     App.sessionLayout=r.layout; App.singleLevel=true; App.custom=true
     require('map_assets').load(r.layout)
-    Campaign.select(r.layout.world);App.selectedWorld=r.layout.biome or r.layout.world; player.level=r.layout.level; timer=0; player.death=0
-    -- A new draft starts a new recording; otherwise replay layouts retain the old map.
-    Replay.leave()
-    Replay.playing=false
-    Replay.begin(r.layout.world)
-    App.state='playing'; reset_level()
-    Replay.leave()
+    App.start(r.layout.world,{skipArrival=true})
+    App.custom=true
     P.error=nil;return true
 end
 function P.reload()

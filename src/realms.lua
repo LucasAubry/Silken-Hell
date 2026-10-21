@@ -137,9 +137,12 @@ function R.updateTraversal(dt)
                 player.lastMoveX,player.lastMoveY=w.dx,w.dy
             end
             player.x=w.tornado.x+math.cos(a)*15-15; player.y=w.tornado.y+math.sin(a)*10-12
+            R.contact()
+            if player.reset then player.whirl=nil;return end
             if w.time<=0 then
                 player.whirl=nil; player.throw={vx=w.dx*1050,vy=w.dy*1050,time=1.5}
-                w.tornado.cooldown=1.5
+                -- Only the vortex we just left is locked; chains can revisit another.
+                for _,other in ipairs(R.tornadoes) do other.cooldown=other==w.tornado and 1.5 or 0 end
             end
         elseif player.throw then
             local t=player.throw; local step=math.min(dt,t.time)
@@ -294,6 +297,11 @@ function R.contact()
             Hazards.kill()
             if player.reset then player.falling=true end
             return
+        end
+    end
+    if player.throw or player.whirl or player.skyThrow or player.skyWhirl then
+        for _,m in ipairs(mobs) do
+            if not (m.dead or m.falling or m.hidden or m.capture) and isTouching(player,m) then Hazards.kill(m.type);break end
         end
     end
     require('sky_weather').contact()

@@ -43,6 +43,15 @@ function T.run()
  local pixels=canvas:newImageData();pixels:encode('png','preview-reload.png');pixels:release();canvas:release()
  migrated.entities[1].x=150;save(migrated);found.run()
  assert(math.abs(player.x+15-150*Arena.width/960)<.001,'Clicking reload applies the latest modification')
+ -- A normal open game receives Tester without launching a second process.
+ local previousRequest=love.filesystem.read('preview-request.json')
+ App.preview=false;App.state='menu';P.last='older';P.raw='old request';P.clock=0
+ love.filesystem.write('preview-request.json',json.encode({ticket='open-game-test',layout=updated}))
+ P.update(.2)
+ assert(App.preview and App.state=='playing' and P.last=='open-game-test','Normal game consumes editor test request')
+ assert(math.abs(player.x+15-200*Arena.width/960)<.001,'Open game loads requested map')
+ assert(tonumber(love.filesystem.read('preview-heartbeat.txt'))==os.time(),'Open game advertises availability to the editor')
+ if previousRequest then love.filesystem.write('preview-request.json',previousRequest) else love.filesystem.remove('preview-request.json') end
  love.filesystem.remove('preview-draft.json')
  print('PASS preview reload: latest edits, validation, ticket isolation, weather migration and closer cloud shadow');love.event.quit()
 end

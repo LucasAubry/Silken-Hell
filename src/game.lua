@@ -127,6 +127,8 @@ function love.load()
     elseif os.getenv('SILKEN_ONLINE_TEST')=='1' then love.filesystem.setIdentity('silken-hell-online-tests')
     elseif os.getenv('SILKEN_WORKSHOP_LIVE_TEST')=='1' then love.filesystem.setIdentity('silken-hell-workshop-tests') end
     App.preview=tonumber(os.getenv('SILKEN_PREVIEW_WORLD'))~=nil or require('platform').flag('--preview')
+    -- Ignore old editor requests when opening a normal game session.
+    if not App.preview then PreviewBridge.raw=love.filesystem.read('preview-request.json') end
     local request=App.preview and PreviewBridge.request()
     local previewLayout=request and request.layout
     if previewLayout then App.sessionLayout=previewLayout;App.singleLevel=true;App.custom=true end
@@ -644,7 +646,7 @@ function love.wheelmoved(_,y)
         UI.storyOffset=math.max(0,math.min(UI.storyLimit or math.huge,(UI.storyOffset or 0)-y*35))
     end
 end
-function love.quit() require('controller_usb').quit();if App.preview then love.filesystem.remove('preview-heartbeat.txt') end; Online.quit() end
+function love.quit() require('controller_usb').quit();love.filesystem.remove('preview-heartbeat.txt'); Online.quit() end
 
 function love.resize(w,h)
     require('render_motion').reset()
