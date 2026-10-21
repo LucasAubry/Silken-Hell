@@ -6,6 +6,19 @@ function T.run()
  local B=require('mobs.cloud_beast');local G=require('mobs.moth_gust');local W=require('sky_weather')
  Arena.walls={};Arena.interior={};W.storm=false
  player.x=600;player.y=300;player.reset=false
+ local function firstMoves()
+  mobs={}
+  for i=1,3 do mobs[i]={type='cloud_beast',x=200+i*130,y=180,age=0,phase=0,speed=330,
+   hitBox_width=32,hitBox_height=30,hitBox_offset_x=-16,hitBox_offset_y=-15} end
+  local random=love.math.getRandomState();local wallClock=love.timer.getTime
+  love.timer.getTime=function()error('Movement cannot read wall-clock time')end
+  for frame=1,20 do for _,beast in ipairs(mobs) do B.update(beast,1/60) end end
+  love.timer.getTime=wallClock
+  assert(love.math.getRandomState()==random,'Directions consume no random numbers')
+  for i=1,2 do assert(mobs[i].vx*mobs[i+1].vx+mobs[i].vy*mobs[i+1].vy<.5,'Neighbours move in clearly different directions') end
+  return require('json').encode(mobs)
+ end
+ local first=firstMoves();assert(firstMoves()==first,'Same layout and inputs reproduce every initial movement exactly')
  local m={type='cloud_beast',x=250,y=200,age=0,phase=0,speed=330,hitBox_width=32,hitBox_height=30,hitBox_offset_x=-16,hitBox_offset_y=-15};mobs={m}
  B.update(m,1.21);assert(m.phase=='dive' and #m.sparks==1)
  B.update(m,.46);assert(m.phase=='hidden' and Realms.underground(m))

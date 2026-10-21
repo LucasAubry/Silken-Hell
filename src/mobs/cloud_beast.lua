@@ -4,11 +4,22 @@ local function splash(m)
  m.sparks=m.sparks or {};m.sparks[#m.sparks+1]={x=m.x,y=m.y,age=0}
 end
 local function phase(m,name,time) m.phase=name;m.phaseTime=time end
+local function heading(m)
+ local slot=0
+ for _,other in ipairs(mobs) do
+  if other.type=='cloud_beast' then slot=slot+1 end
+  if other==m then break end
+ end
+ -- Layout order separates neighbouring swimmers; authored position adds a
+ -- stable offset. Neither rendering time nor random generators are involved.
+ return math.max(0,slot-1)*2.3999632297287+(m.x/Arena.width+m.y/600)*.2
+end
 function B.update(m,dt)
  if m.dead or m.capture or m.is_frozen or m.tunnelTravel then return end
+ if m.roamSeed==nil then m.roamSeed=heading(m) end
  m.age=m.age+dt;m.sparks=m.sparks or {}
  for i=#m.sparks,1,-1 do local p=m.sparks[i];p.age=p.age+dt;if p.age>.65 then table.remove(m.sparks,i) end end
- if type(m.phase)~='string' then phase(m,'surface',1.2);m.vx=math.cos(m.age*.7);m.vy=math.sin(m.age*.7) end
+ if type(m.phase)~='string' then phase(m,'surface',1.2);m.vx=math.cos(m.roamSeed);m.vy=math.sin(m.roamSeed) end
  m.phaseTime=m.phaseTime-dt
  if m.phase=='surface' or m.phase=='dive' then
   local speed=m.phase=='surface' and 42 or 42*math.max(0,m.phaseTime/.45)
@@ -30,7 +41,7 @@ function B.update(m,dt)
   if m.phase=='surface' or m.phase=='charge' then phase(m,'dive',.45);splash(m)
   elseif m.phase=='dive' then
    phase(m,'hidden',1.1)
-   local a=m.age*2.399
+   local a=m.age*2.399+m.roamSeed
    m.tx,m.ty=Arena.clearSpot(math.max(55,math.min(Arena.width-85,player.x+math.cos(a)*135)),math.max(55,math.min(515,player.y+math.sin(a)*120)),32,30)
    m.tx,m.ty=m.tx+16,m.ty+15
   elseif m.phase=='hidden' then
