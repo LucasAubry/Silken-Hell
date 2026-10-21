@@ -58,6 +58,24 @@ function T.run()
  Realms.holes={require('ground_holes').stroke({Arena.width/2+10,300},60)}
  Realms.updateTraversal(.02)
  assert(player.reset and not player.throw,'Landing over void still falls')
+ -- Leaving any screen edge kills immediately, before the flight timer expires.
+ for _,d in ipairs({{1,0},{-1,0},{0,1},{0,-1}}) do
+  player.reset=false;player.falling=false;player.whirl=nil;Realms.tornadoes={};Realms.holes={}
+  player.x=(d[1]>0 and Arena.width-2 or d[1]<0 and 2 or Arena.width/2)-15
+  player.y=(d[2]>0 and Arena.height-2 or d[2]<0 and 2 or 300)-12
+  player.throw={vx=d[1]*1050,vy=d[2]*1050,time=1.5}
+  Realms.updateTraversal(.02)
+  assert(player.reset and player.falling and not player.throw,'Flying out of each map edge kills immediately')
+ end
+ player.reset=false;player.falling=false;player.x=Arena.width/2-15;player.y=288
+ player.throw={vx=1050,vy=0,time=1.2}
+ local function state() return Replay.canonical({player.x,player.y,player.throw,player.death}) end
+ local before=state();local rng=love.math.getRandomState()
+ local canvas=love.graphics.newCanvas(1200,750)
+ love.graphics.push('all');love.graphics.setCanvas(canvas);love.graphics.clear(.08,.15,.22,1)
+ draw_player('right');love.graphics.pop()
+ assert(state()==before and love.math.getRandomState()==rng,'Flight effects never change simulation or replay RNG')
+ canvas:release();player.throw=nil
  Campaign.biome=1;Realms.custom=true;enter(0,1);steer(-1,0,.66);checkThrow(-1,0)
  Realms.reset(6,1);assert(not player.whirl and not player.throw,'Reset clears traversal state')
  Replay.input=savedInput

@@ -146,8 +146,9 @@ function R.updateTraversal(dt)
             local steps=math.max(1,math.ceil(1050*step/6))
             for _=1,steps do
                 local hx,hy=Arena.move(player,t.vx*step/steps,t.vy*step/steps)
+                R.contact(); if player.reset then t.time=0; break end
                 if captureTornado() then break end
-                R.contact(); if hx or hy or player.reset then t.time=0; break end
+                if hx or hy then t.time=0; break end
             end
             t.time=t.time-dt
             if player.throw==t and t.time<=0 then
@@ -287,6 +288,14 @@ function R.molePhase(age)
     else return 'dig',1-(t-4.3)/.7 end
 end
 function R.contact()
+    if player.throw or player.skyThrow then
+        local x,y=player.x+15,player.y+12
+        if x<0 or x>Arena.width or y<0 or y>Arena.height then
+            Hazards.kill()
+            if player.reset then player.falling=true end
+            return
+        end
+    end
     require('sky_weather').contact()
     if not (player.throw or player.whirl or player.skyThrow or player.skyWhirl) and R.fallAt(player.x+15,player.y+12) then Hazards.kill(); if player.reset then player.falling=true end end
     if Campaign.biome==7 or R.custom then for _,p in ipairs(R.vents) do

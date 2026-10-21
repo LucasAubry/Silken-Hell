@@ -44,6 +44,34 @@ local function drawPlayer(direction)
         Characters.draw(player.x+15,player.y+8+(1-scale)*20,Characters.playerWidth*scale,direction)
         love.graphics.setColor(1,1,1); return
     end
+    if player.throw and not player.reset then
+        local flight=player.throw
+        local age=1.5-flight.time
+        local angle=math.atan2(flight.vy,flight.vx)
+        local g=love.graphics
+        g.push('all')
+        g.translate(player.x+15,player.y+8)
+        g.rotate(angle)
+        -- Analytic streamlines: no particle allocation or gameplay RNG in rendering.
+        g.setLineWidth(1.6)
+        for i=1,14 do
+            local phase=(age*2.4+i*.618)%1
+            local side=(i%2==0 and 1 or -1)*(10+i%5*5)
+            local x=18-phase*115
+            g.setColor(.75,.91,1,math.sin(phase*math.pi)*.5)
+            g.line(x,side,x-12-i%4*5,side*.94)
+        end
+        g.rotate(-angle)
+        -- A lifted body and a light flutter keep the flight readable over gaps.
+        local lift=9+math.sin(age*12)*2.5
+        g.translate(0,-lift)
+        g.rotate(math.sin(age*15)*.13+math.cos(angle)*.14)
+        g.scale(1+math.sin(age*18)*.025,1-math.sin(age*18)*.025)
+        g.setColor(1,1,1)
+        Characters.draw(0,0,Characters.playerWidth,direction)
+        g.pop()
+        return
+    end
     Characters.shadow(player.x+15,player.y+8,Characters.playerWidth,direction,player)
     if (player.venom or 0)>0 then
         love.graphics.setColor(.24,1,.14,.2+.1*math.sin(larme_float_timer*10))
