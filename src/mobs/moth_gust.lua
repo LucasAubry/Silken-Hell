@@ -1,5 +1,5 @@
 -- Fixed-direction gusts; simulation never depends on visual effects or RNG.
-local G={range=1500,width=28,power=560}
+local G={range=1500,width=28,power=440}
 local Visibility=require('wind_visibility')
 local function aim(m)
  local dx,dy=player.x+15-m.x,player.y+12-m.y
@@ -36,7 +36,7 @@ function G.update(m,dt)
   local step=math.min(remaining,m.phaseTime,1/60)
   if m.phase=='gust' then
    -- Keep flying sideways while preserving the direction chosen at release.
-   Arena.move(m,-m.vy*60*step,m.vx*60*step)
+   Arena.move(m,-m.vy*30*step,m.vx*30*step)
    for _,other in ipairs(mobs) do
     if other~=m and other.type~='mist_moth' and not (other.dead or other.spent or other.falling or other.capture or other.tunnelTravel or other.abyssHeld)
      and not Realms.underground(other) and other.hitBox_width and other.hitBox_height and other.type~='scie' and other.type~='piege' and not other.ground then

@@ -21,17 +21,16 @@ function T.run()
  App.state='playing'
  local snail=mobs[1];snail.tx=400;snail.ty=280;snail.roamTime=20
  local ox,oy=snail.x,snail.y
- for i=1,180 do N.update(snail,1/60);assert(not snail.falling and not H.contains(Realms.holes[1],snail.x,snail.y),'Snail steers around authored holes') end
- assert((snail.x-ox)^2+(snail.y-oy)^2>30^2,'Avoidance keeps moving when a route exists')
- assert(N.unsafe(mobs[2].x,mobs[2].y,snail),'Other snails are avoided')
+ for i=1,180 do N.update(snail,1/60);if snail.falling then break end end
+ assert(snail.falling and H.contains(Realms.holes[1],snail.x,snail.y),'Snail falls into authored holes instead of dodging')
+ assert((snail.x-ox)^2+(snail.y-oy)^2>30^2,'Snail does not fall into its newly dug tail immediately')
+ assert(N.unsafe(mobs[2].x,mobs[2].y,snail),'Other snails are still avoided')
  local holes=Realms.holes;Realms.holes={};W.snailHoles={}
- local a,b=mobs[1],mobs[2]
- a.x,a.y,a.cx,a.cy,a.tx,a.ty,a.roamTime=180,400,nil,nil,600,400,20
- b.x,b.y,b.cx,b.cy,b.tx,b.ty,b.roamTime=420,400,nil,nil,80,400,20
- for i=1,180 do
-  N.update(a,1/60);N.update(b,1/60)
-  assert(not a.falling and not b.falling and (a.x-b.x)^2+(a.y-b.y)^2>=40^2,'Facing snails avoid each other and their trails')
- end
+ local own={type='cloud_snail',x=180,y=400,age=0,snailId=99,speed=66,tx=600,ty=400,roamTime=20}
+ N.trail(170,400,210,400,99);N.update(own,1/60)
+ assert(own.falling,'Snails fall into their own earlier trail')
+ local pushed={type='cloud_snail',x=190,y=400,age=0,snailId=99}
+ assert(require('mob_edge_fall').check(pushed) and pushed.falling,'A wind-pushed snail falls as soon as it crosses a hole')
  Realms.holes=holes
  local beast=mobs[3];local bx,by=beast.x,beast.y;require('mobs.cloud_beast').update(beast,.3)
  assert((beast.x-bx)^2+(beast.y-by)^2>3^2 and beast.phase=='surface','Cloud beast moves before diving')
@@ -49,7 +48,7 @@ function T.run()
  local distances=N.distanceResult:newImageData();assert(distances:getPixel(214,250)>.63,'Merged parallel trails have depth instead of an internal rim');distances:release()
  local builds=require('terrain_surface').builds;love.draw();assert(require('terrain_surface').builds==builds,'Unchanged union does not rebuild terrain')
  local g=love.graphics;local canvas=g.newCanvas(160,120)
- local options={rain=false,leaves=false,ashes=false,fireflies=false,blue=false}
+ local options={rain=false,leaves=false,ashes=false,fireflies=false,blue=false,lightning=false}
  for _,option in ipairs(E.options) do
   options[option.key]=true
   g.push('all');g.setCanvas(canvas);g.origin();g.clear();E.draw(1,160,120,1,options,true);g.pop()
@@ -62,7 +61,23 @@ function T.run()
  for y=0,119 do for x=0,159 do local r,g,b,a=image:getPixel(x,y);visible=visible+r+g+b+a end end
  image:release();canvas:release();assert(visible==0,'All disabled effects leave a transparent image')
  local bad=require('json').decode(require('json').encode(map));bad.environment.rain='yes';assert(not LayoutSchema.validate(bad),'Environment validates booleans')
- print('PASS Sky polish: movement, avoidance, merged collision/rendering, environment persistence, electrical migration and pause biome')
+ -- Storm positions depend only on the map and sequence, never random draws or player targeting.
+ local savedKill=Hazards.kill;Hazards.kill=function()end
+ local function stormSequence(px)
+  player.x=px;player.y=100;LevelLayouts.activeLayout.environment.lightning=true;W.reset()
+  local rng=love.math.getRandomState();local coords={};local warn=W.warn
+  W.warn=function(x,y)coords[#coords+1]=x..','..y;warn(x,y)end
+  for i=1,1200 do W.update(1/60) end
+  W.warn=warn
+  assert(love.math.getRandomState()==rng,'Lightning never consumes random state')
+  return table.concat(coords,';')
+ end
+ local first=stormSequence(100);local second=stormSequence(700)
+ assert(first~='' and first==second,'Identical lightning positions even when player location changes')
+ LevelLayouts.activeLayout.environment.lightning=false;W.reset();assert(not W.storm,'Lightning can be disabled')
+ local oldBiome=Campaign.biome;Campaign.biome=5;LevelLayouts.activeLayout.environment.lightning=true;W.reset();assert(W.storm,'Lightning can be enabled in another biome');Campaign.biome=oldBiome
+ Hazards.kill=savedKill
+ print('PASS Sky polish: hole falls, deterministic lightning, merged collision/rendering, environment persistence, electrical migration and pause biome')
  love.event.quit()
 end
 return T

@@ -20,12 +20,12 @@ vec4 effect(vec4 color,Image mask,vec2 uv,vec2 pixel){
  float scallop=.5+.5*sin(p.x*.11+p.y*.09+noise(p*.07)*4.0);
  vec3 rim=cloud*(.75+light*.32)+vec3(.15,.19,.22)*exp(-pow((lip+3.)/3.5,2.))*light;
  vec3 wall=mix(vec3(.13,.23,.36),cloud*.44,scallop*.35);
- vec3 deep=vec3(.018,.052,.105)+vec3(.025,.045,.065)*noise(p*.024+17.);
+ vec3 deep=vec3(.004,.012,.027)+vec3(.008,.014,.022)*noise(p*.024+17.);
  vec3 c=mix(rim,wall,smoothstep(-1.,8.,lip));
- c=mix(c,deep,smoothstep(10.,29.,d));
+ c=mix(c,deep,smoothstep(2.,12.,d));
  // A second soft cloud shelf conveys depth without a flat black oval.
  float shelf=exp(-pow((d-14.-scallop*3.)/3.5,2.));
- c+=vec3(.08,.12,.17)*shelf*light;
+ c+=vec3(.025,.04,.06)*shelf*light;
  float alpha=smoothstep(-11.,-5.,lip);
  return vec4(c,alpha)*color;
 }

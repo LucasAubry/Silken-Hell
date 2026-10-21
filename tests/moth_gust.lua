@@ -9,7 +9,7 @@ function T.run()
  player.x=355;player.y=288;player.reset=false;player.falling=false
  B.update(m,.4);assert(m.phase=='windup' and m.x==220 and player.x==355,'Tell is stationary and safe')
  B.update(m,.46);assert(m.phase=='gust' and player.x>355,'Gust pushes the player')
- assert(G.power>=500,'Wind has a strong push')
+ assert(G.power<500 and G.power>=400,'Wind push is reduced but remains effective')
  local vx,vy=m.vx,m.vy;player.y=360;B.update(m,.01)
  assert(m.vx==vx and m.vy==vy,'Gust keeps its direction when the player dodges');assert(m.y~=300,'Moth moves while firing')
  assert(not G.reaches(m,m.x-m.vy*50,m.y+m.vx*50) and G.reaches(m,m.x+m.vx*600,m.y+m.vy*600),'Wind stays narrow but crosses the arena')

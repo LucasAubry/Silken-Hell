@@ -33,7 +33,7 @@ function S.validate(l)
     if l.difficultyExtra~=nil and (type(l.difficultyExtra)~='number' or l.difficultyExtra%1~=0 or l.difficultyExtra<0 or l.difficultyExtra>999 or (l.difficultyExtra>0 and l.difficulty~=5)) then return false,'Bonus rouge entre 0 et 999, au niveau 5.' end
     if l.environment~=nil then
         if type(l.environment)~='table' then return false,'Environnement invalide.' end
-        local allowed={rain=true,leaves=true,ashes=true,fireflies=true,blue=true}
+        local allowed={rain=true,leaves=true,ashes=true,fireflies=true,blue=true,lightning=true}
         for key,value in pairs(l.environment) do if not allowed[key] or type(value)~='boolean' then return false,'Effet environnemental invalide.' end end
     end
     local spawn,gate=0,0

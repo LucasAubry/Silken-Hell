@@ -3,7 +3,7 @@ local S={strikes={},holes={},trails={},snailHoles={},mist={},mistCuts={},clock=0
 function S.reset()
  require('sky_trails').reset()
  S.strikes={};S.holes={};S.trails={};S.snailHoles={};S.mist={};S.mistCuts={};S.clock=0;S.phaseTime=4;S.seed=0
- S.storm=require('sky').openEdges();S.active=S.storm
+ S.storm=require('level_environment').active('lightning') and not Secret.inArena();S.active=S.storm or require('sky').openEdges()
  for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' or m.type=='wind_bat' or m.type=='cloud_snail' then S.active=true end end
 end
 function S.trail(x,y,tx,ty)
@@ -72,13 +72,13 @@ function S.warn(x,y)
  S.seed=S.seed+1
  S.strikes[#S.strikes+1]={x=x,y=y,age=0,delay=1.6,seed=S.seed}
 end
+-- Fixed map sequence: no RNG consumption and no targeting based on player movement.
 local function choose()
  S.seed=S.seed+1
  local spawn=levels[player.level].player_position
  for i=1,20 do
-  local x,y
-  if i==1 and S.seed%2==0 then x,y=player.x+15,player.y+12
-  else x=85+((S.seed*173+i*131)%(math.max(1,Arena.width-170)));y=85+(S.seed*109+i*97)%430 end
+  local x=85+((S.seed*173+i*131)%(math.max(1,Arena.width-170)))
+  local y=85+(S.seed*109+i*97)%430
   local safe=(x-spawn.x-15)^2+(y-spawn.y-12)^2>135^2 and not Arena.blocked(x-48,y-48,96,96)
   for _,p in ipairs(levels[player.level].larme_position) do if (x-p.x-15)^2+(y-p.y-39)^2<105^2 then safe=false end end
   for _,p in ipairs(S.holes) do if (x-p.x)^2+(y-p.y)^2<95^2 then safe=false end end
@@ -123,7 +123,7 @@ end
 function S.drawGround()
  if not S.active then return end
  local g=love.graphics;g.push('all');g.setShader()
- require('terrain_surface').draw(S.holes,'hole',S.clock,1,6)
+ require('terrain_surface').draw(S.holes,'hole',S.clock,1,Campaign.biome)
  g.pop()
 end
 function S.drawElectric()

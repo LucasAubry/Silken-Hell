@@ -41,16 +41,9 @@ function N.trail(x,y,tx,ty,owner)
  N.keys[k]=true
  list[#list+1]={x=x,y=y,tx=tx,ty=ty,owner=owner,radius=N.width*(.88+.24*(.5+.5*math.sin(tx*.11+ty*.08)))}
 end
--- Look ahead before moving: holes remain lethal, but a free route is preferred.
+-- Avoid solid obstacles and other snails, but never dodge the void.
 function N.unsafe(x,y,m)
- if x<45 or x>Arena.width-45 or y<45 or y>555 or Arena.blocked(x-16,y-14,32,28) then return true end
- if N.fallAt(x,y) or weather().fallAt(x,y) then return true end
- for _,p in ipairs(Realms.holes or {}) do
-  if p.points then
-   if require('ground_holes').contains(p,x,y) then return true end
-  elseif ((x-p.x)/p.rx)^2+((y-p.y)/p.ry)^2<1.5 then return true end
- end
- if Storm and Storm.holeAt and Storm.holeAt(x,y) then return true end
+ if Arena.blocked(x-16,y-14,32,28) then return true end
  for _,other in ipairs(mobs) do
   if other~=m and other.type=='cloud_snail' and not other.dead and not other.falling
    and (x-other.x)^2+(y-other.y)^2<48^2 then return true end
@@ -81,7 +74,7 @@ function N.update(m,dt)
  if m.dead then return end
  if m.falling then m.fallTimer=(m.fallTimer or 0)+dt;if m.fallTimer>=.5 then m.dead=true end;return end
  if not m.snailId then for i,other in ipairs(mobs) do if other==m then m.snailId=i;break end end end
- if N.fallAt(m.x,m.y,m.snailId) then m.falling=true;m.fallTimer=0;Campaign.dropTear(m);return end
+ if Realms.fallAt(m.x,m.y) then m.falling=true;m.fallTimer=0;Campaign.dropTear(m);return end
  if m.capture or m.is_frozen or m.tunnelTravel then return end
  m.age=m.age+dt;m.roamTime=(m.roamTime or 0)-dt
  if not m.tx or m.roamTime<=0 or (m.tx-m.x)^2+(m.ty-m.y)^2<14^2 then N.target(m) end
@@ -94,10 +87,11 @@ function N.update(m,dt)
   for _=1,steps do
    local x,y=m.x,m.y;local hitX,hitY=Arena.move(m,m.vx*distance/steps,m.vy*distance/steps)
    if hitX or hitY then m.roamTime=0;break end
-   if N.fallAt(m.x,m.y,m.snailId) then m.falling=true;m.fallTimer=0;Campaign.dropTear(m);return end
+   if Realms.fallAt(m.x,m.y) then m.falling=true;m.fallTimer=0;Campaign.dropTear(m);return end
    -- Sample by distance, not frame count; holes follow every sampled movement segment.
-   if not m.cx then m.cx,m.cy=x,y end
-   if (m.x-m.cx)^2+(m.y-m.cy)^2>=6^2 then N.trail(m.cx,m.cy,m.x,m.y,m.snailId);m.cx,m.cy=m.x,m.y end
+   local rearX,rearY=m.x-m.vx*34,m.y-m.vy*34
+   if not m.cx then m.cx,m.cy=x-m.vx*34,y-m.vy*34 end
+   if (rearX-m.cx)^2+(rearY-m.cy)^2>=6^2 then N.trail(m.cx,m.cy,rearX,rearY,m.snailId);m.cx,m.cy=rearX,rearY end
   end
  end
 end
