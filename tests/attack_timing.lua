@@ -25,7 +25,8 @@ function T.run()
   assert(player[field].vx==0 and player[field].vy==-1050,'Launch heading remains locked')
   player[field]=nil
  end
- m.x=220;m.y=300;G.update(m,.05);assert(player.x>355,'Wind resumes pushing after the projection ends')
+ m.x=220;m.y=300;mobs={m};G.update(m,.05)
+ local vx=G.playerVelocity(0,0,false,540);assert(vx>0,'Wind resumes pushing after the projection ends')
  for _,kind in ipairs({'jelly','light_jelly','worm'}) do
   local a={type=kind,attackDelay=4,attackInterval=2};local shots={}
   for frame=1,600 do if A.due(a,1/60,3,3) then shots[#shots+1]=frame/60 end end

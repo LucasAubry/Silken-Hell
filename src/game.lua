@@ -188,10 +188,11 @@ function App.move(dt)
     player.has_moved=(dx~=0 or dy~=0) and speed>0
     player.moveX=dx; player.moveY=dy
     -- Substeps prevent a dash from crossing a thin wall on a slow frame.
-    local steps=math.max(1,math.ceil(speed*dt/8))
+    local velocityX,velocityY=require('mobs.moth_gust').playerVelocity(dx*speed,dy*speed,player.dashing,speed)
+    local steps=math.max(1,math.ceil(math.sqrt(velocityX^2+velocityY^2)*dt/8))
     local openEdges=require('sky').openEdges()
     for _=1,steps do
-        local x,y=player.x+dx*speed*dt/steps,player.y+dy*speed*dt/steps
+        local x,y=player.x+velocityX*dt/steps,player.y+velocityY*dt/steps
         if not openEdges then x=math.max(23,math.min(Arena.width-53,x));y=math.max(23,math.min(553,y)) end
         if not willCollide(x,player.y) then player.x=x end
         if not willCollide(player.x,y) then player.y=y end
@@ -387,11 +388,18 @@ function love.draw()
         draw_shadow_dash()
         -- The former carrier stays behind its dropped tear; other creatures pass in front.
         local droppedCarrier=not Renaissance.active and objet.larme_dropped and Campaign.carrier or nil
+        for _,m in ipairs(mobs) do if m.type=='cloud_beast' and not m.ground then Campaign.drawMob(m) end end
         if droppedCarrier then
-            for _,m in ipairs(mobs) do if m==droppedCarrier and m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
+            for _,m in ipairs(mobs) do if m==droppedCarrier and m.type~='cloud_beast' and m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
             Campaign.drawTear()
         end
-        for _,m in ipairs(mobs) do if m~=droppedCarrier and m.type~='piege' and not m.ground then Campaign.drawMob(m) end end
+        -- Cloud larvae stay beneath snails regardless of authored entity order.
+        for layer=2,3 do
+            for _,m in ipairs(mobs) do
+                local mobLayer=m.type=='cloud_beast' and 1 or m.type=='cloud_snail' and 3 or 2
+                if mobLayer==layer and m~=droppedCarrier and m.type~='piege' and not m.ground then Campaign.drawMob(m) end
+            end
+        end
         Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false)
         Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
         require('sky_weather').drawAtmosphere()

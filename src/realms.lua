@@ -304,6 +304,9 @@ function R.contact()
             if not (m.dead or m.falling or m.hidden or m.capture) and isTouching(player,m) then Hazards.kill(m.type);break end
         end
     end
+    for _,m in ipairs(mobs) do
+        if m.type=='cloud_snail' and not (m.dead or m.falling or m.capture) and isTouching(player,m) then Hazards.kill('cloud_snail');break end
+    end
     require('sky_weather').contact()
     if not (player.throw or player.whirl or player.skyThrow or player.skyWhirl) and R.fallAt(player.x+15,player.y+12) then Hazards.kill(); if player.reset then player.falling=true end end
     if Campaign.biome==7 or R.custom then for _,p in ipairs(R.vents) do

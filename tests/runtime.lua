@@ -9,6 +9,7 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_WIND_BALANCE_TEST')=='1' then require('tests.wind_balance').run();return end
     if os.getenv('SILKEN_PREVIEW_RELOAD_TEST')=='1' then require('tests.preview_reload').run();return end
     if os.getenv('SILKEN_WIND_SNAIL_TEST')=='1' then require('tests.wind_snail_performance').run();return end
     if os.getenv('SILKEN_BOSS_TIMING_TEST')=='1' then require('tests.boss_timing').run();return end

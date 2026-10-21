@@ -1,5 +1,5 @@
 -- Fixed-direction gusts; simulation never depends on visual effects or RNG.
-local G={range=1500,width=28,power=440}
+local G={range=1500,width=28,power=440,playerPower=300}
 local Visibility=require('wind_visibility')
 local function aim(m)
  local dx,dy=player.x+15-m.x,player.y+12-m.y
@@ -44,19 +44,11 @@ function G.update(m,dt)
      for _=1,steps do
       if not G.reaches(m,other.x,other.y) then break end
       Arena.move(other,m.vx*G.power*step/steps,m.vy*G.power*step/steps)
+      -- Forced travel must not join the old digging point to the new position.
+      if other.type=='cloud_snail' then other.cx=nil;other.cy=nil end
       if require('mob_edge_fall').check(other) then break end
      end
     end
-   end
-  end
-  if m.phase=='gust' and not (player.reset or player.falling or player.tunnelTravel or player.abyssHeld or player.whirl or player.throw or player.skyWhirl or player.skyThrow) then
-   local steps=math.max(1,math.ceil(G.power*step/4))
-   for _=1,steps do
-    if not G.reaches(m,player.x+15,player.y+12) then break end
-    local dx,dy=m.vx*G.power*step/steps,m.vy*G.power*step/steps
-    if not willCollide(player.x+dx,player.y) then player.x=player.x+dx end
-    if not willCollide(player.x,player.y+dy) then player.y=player.y+dy end
-    Hazards.contact();if player.reset then break end
    end
   end
   remaining=remaining-step;m.phaseTime=m.phaseTime-step
@@ -67,6 +59,25 @@ function G.update(m,dt)
   end
  end
  return true
+end
+-- Combine walking and wind before collision checks, so opposing forces cancel
+-- without a temporary step into a hole between walking and the gust update.
+function G.playerVelocity(vx,vy,sprinting,sprintSpeed)
+ if player.reset or player.falling or player.tunnelTravel or player.abyssHeld or player.whirl or player.throw or player.skyWhirl or player.skyThrow then return vx,vy end
+ local wx,wy=0,0
+ for _,m in ipairs(mobs) do
+  if m.type=='mist_moth' and m.phase=='gust' and not (m.dead or m.falling or m.capture or m.is_frozen)
+   and G.reaches(m,player.x+15,player.y+12) then wx=wx+m.vx*G.playerPower;wy=wy+m.vy*G.playerPower end
+ end
+ local force=math.sqrt(wx*wx+wy*wy)
+ if force>0 and sprinting and sprintSpeed>0 then
+  local nx,ny=wx/force,wy/force;local against=vx*nx+vy*ny
+  if against<0 then
+   local scale=math.min(1,G.playerPower/sprintSpeed)
+   vx=vx+nx*against*(scale-1);vy=vy+ny*against*(scale-1)
+  end
+ end
+ return vx+wx,vy+wy
 end
 local function cloudTexture()
  if G.cloud then return G.cloud end

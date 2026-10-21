@@ -75,6 +75,7 @@ function N.update(m,dt)
  if m.falling then m.fallTimer=(m.fallTimer or 0)+dt;if m.fallTimer>=.5 then m.dead=true end;return end
  if not m.snailId then for i,other in ipairs(mobs) do if other==m then m.snailId=i;break end end end
  if Realms.fallAt(m.x,m.y) then m.falling=true;m.fallTimer=0;Campaign.dropTear(m);return end
+ if not m.capture and isTouching(player,m) then Hazards.kill('cloud_snail') end
  if m.capture or m.is_frozen or m.tunnelTravel then return end
  m.age=m.age+dt;m.roamTime=(m.roamTime or 0)-dt
  if not m.tx or m.roamTime<=0 or (m.tx-m.x)^2+(m.ty-m.y)^2<14^2 then N.target(m) end
@@ -88,6 +89,7 @@ function N.update(m,dt)
    local x,y=m.x,m.y;local hitX,hitY=Arena.move(m,m.vx*distance/steps,m.vy*distance/steps)
    if hitX or hitY then m.roamTime=0;break end
    if Realms.fallAt(m.x,m.y) then m.falling=true;m.fallTimer=0;Campaign.dropTear(m);return end
+   if isTouching(player,m) then Hazards.kill('cloud_snail') end
    -- Sample by distance, not frame count; holes follow every sampled movement segment.
    local rearX,rearY=m.x-m.vx*34,m.y-m.vy*34
    if not m.cx then m.cx,m.cy=x-m.vx*34,y-m.vy*34 end
