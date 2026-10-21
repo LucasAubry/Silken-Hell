@@ -630,6 +630,7 @@ function U.gameHud()
         U.iconButton(1070,31,'pause',function() if not Replay.job then Replay.paused=not Replay.paused end end,nil,styled)
         U.button('Quitter',1100,13,95,36,function() Replay.stop() end)
     else
+        if App.preview and not App.historyPreview then U.button('Recharger',835,13,160,36,function() if not PreviewBridge.reload() then App.state='pause' end end) end
         U.iconButton(1090,31,'pause',function() App.state='pause' end,nil,styled)
         U.iconButton(1150,31,'restart',App.restartCurrent,nil,styled)
     end
@@ -832,7 +833,7 @@ function U.draw()
         U.panel(300,235,600,350); U.text(Secret.duel and 'Duel terminé' or App.practice and 'Entraînement terminé' or 'Carte terminée',330,265,'heading',white,540,'center')
         U.text(U.time(Scoring.total(timer,player.death))..' · '..player.death..' morts ('..Scoring.label(player.death)..')',330,325,'body',gold,540,'center')
         if App.workshopMap then U.button('Donner une étoile',375,380,450,42,function() Workshop.star(App.workshopMap) end,App.workshopMap.starred) end
-        U.button('Rejouer',375,441,450,42,App.restartCurrent)
+        U.button(App.preview and not App.historyPreview and 'Recharger les modifications' or 'Rejouer',375,441,450,42,App.preview and not App.historyPreview and PreviewBridge.reload or App.restartCurrent)
         U.button(Secret.duel and 'Retour au Sanctuaire' or App.practice and 'Retour aux mondes' or 'Retour au Workshop',375,497,450,42,function() if Workshop.validationRun then Workshop.resumePublication() elseif Secret.duel then Secret.open() elseif App.practice then App.leaveCustom();App.state='worlds' else App.leaveCustom(); Workshop.open() end end)
     elseif App.state=='entry' then U.entry()
     elseif App.state=='graphics' then Graphics.draw()
@@ -847,11 +848,14 @@ function U.draw()
         U.board(185,220,390,true); U.board(625,220,390,false)
         U.button('Retour',490,657,220,38,function() App.state='menu' end)
     elseif App.state=='pause' then
-        U.panel(390,355,420,Secret.inArena() and 315 or 265); U.text('Un instant suspendu',410,378,'heading',white,380,'center')
+        local preview=App.preview and not App.historyPreview
+        U.panel(390,355,420,(Secret.inArena() or preview) and 315 or 265); U.text('Un instant suspendu',410,378,'heading',white,380,'center')
         U.button('Reprendre',420,435,360,44,function() App.state='playing' end,false,true)
         U.button('Paramètres',420,490,360,40,function() App.state='settings'; U.returnTo='pause' end)
         U.button('Retour au menu',420,541,360,40,App.leaveCustom)
-        if Secret.inArena() then U.button('Retour au Sanctuaire',420,592,360,40,Secret.returnToSanctuary) end
+        if preview then U.button('Recharger les modifications',420,592,360,40,PreviewBridge.reload)
+        elseif Secret.inArena() then U.button('Retour au Sanctuaire',420,592,360,40,Secret.returnToSanctuary) end
+        if preview and PreviewBridge.error then U.text(PreviewBridge.error,200,686,'body',{1,.5,.35},800,'center') end
     elseif App.state=='victory' then
         require('victory_screen').draw()
     end

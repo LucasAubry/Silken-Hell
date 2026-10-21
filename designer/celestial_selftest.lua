@@ -119,6 +119,10 @@ function T.run(M,state,select)
  local savedLightning=require('json').decode(love.filesystem.read(M.draftFilename))['6:1']
  assert(savedLightning.lightning.delay==.8 and savedLightning.entities[#savedLightning.entities].kind=='lightning_zone','Lightning settings and zones persist')
  state.details=M.selected;love.draw();assert(require('creature_details').text(M.selected):find('milieu → haut → gauche → bas → droite',1,true),'Behavior describes the exact cycle');state.details=nil
+ state.previewTicket='editor-reload-test';state.previewKey=M.key();M.persist()
+ local f=assert(require('platform').open(M.save..'/preview-draft.json','rb'));local draft=require('json').decode(f:read('*a'));f:close()
+ assert(draft.ticket==state.previewTicket and draft.layout.lightning.delay==.8,'Latest edits are published for the test reload button')
+ state.previewTicket=nil;state.previewKey=nil
  local frames=0;state.testUpdate=function()
   frames=frames+1
   if frames==2 then love.graphics.captureScreenshot('celestial-editor.png') end

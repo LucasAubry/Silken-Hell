@@ -4,7 +4,12 @@ function S.migrate(layout)
     if type(layout)=='table' and type(layout.entities)=='table' then
         for i=#layout.entities,1,-1 do
             local e=layout.entities[i]
-            if e.kind=='electric_ground' then table.remove(layout.entities,i) end
+            if e.kind=='rain' or e.kind=='lightning' then
+                layout.environment=layout.environment or {}
+                local key=e.kind=='rain' and 'rain' or 'lightning'
+                if layout.environment[key]==nil then layout.environment[key]=true end
+                table.remove(layout.entities,i)
+            elseif e.kind=='electric_ground' then table.remove(layout.entities,i) end
             if e.kind=='mob' and e.type=='wind_cloud' then e.type='wind_bat' end
             if e.kind=='mob' and e.type=='imp' then e.type='lava_scorpion' end
             if e.kind=='mob' and e.type=='gull' then

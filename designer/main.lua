@@ -81,7 +81,7 @@ local function entity(e,ghost,terrainDrawn)
 
     elseif e.kind=='hole' then
         if not terrainDrawn then require('terrain_surface').draw({e},'hole',state.clock,ghost and .5 or 1,M.world) end
-    elseif e.kind=='rain' then g.setColor(.25,.6,1,.8); for i=-1,1 do g.line(e.x+i*8,e.y-18,e.x+i*8-5,e.y+7) end
+
     elseif e.kind=='current' then g.setColor(.2,.85,1,.2); g.ellipse('fill',e.x,e.y,e.rx,e.ry); text(e.dx==1 and '>' or '<',e.x-6,e.y-9,18)
     elseif e.type=='larva' then Art.drawWorm('down',e.x,e.y,30,0)
     elseif e.type=='magma_larva' then
@@ -138,17 +138,26 @@ local function selection(e)
     g.pop()
 end
 
+local function publishPreviewDraft()
+    if not state.previewTicket or state.previewKey~=M.key() then return end
+    local path=M.save..'/preview-draft.json'
+    local f=require('platform').open(path..'.new','wb');if not f then return end
+    f:write(json.encode({ticket=state.previewTicket,layout=M.layout,workshop=M.workshop==true}));f:close()
+    require('platform').replace(path..'.new',path)
+end
 local function apply()
     local ok,msg=M.apply(); state.status=msg; state.error=not ok; return ok
 end
 local function preview()
     local valid,why=M.validate(M.layout);if not valid then state.status=why;state.error=true;return end
     if not apply() then return end
+    state.previewKey=M.key()
     state.previewTicket=tostring(os.time())..'-'..tostring(love.timer.getTime())
     local request=json.encode({ticket=state.previewTicket,layout=M.layout,workshop=M.workshop==true})
     local f=assert(require('platform').open(M.save..'/preview-request.json.new','wb')); f:write(request); f:close()
     local saved,err=require('platform').replace(M.save..'/preview-request.json.new',M.save..'/preview-request.json')
     if not saved then state.status=err;state.error=true;return end
+    publishPreviewDraft()
     local h=require('platform').open(M.save..'/preview-heartbeat.txt','rb'); local heartbeat=h and tonumber(h:read('*a')) or 0; if h then h:close() end
     if heartbeat and os.time()-heartbeat<5 then state.status=M.workshop and 'Carte rechargée.' or 'Niveau rechargé dans la fenêtre de test.'; return end
     if state.launching and love.timer.getTime()-state.launching<25 then state.status=M.workshop and 'Démarrage du test…' or 'Le jeu démarre ; le dernier niveau sélectionné sera chargé.'; return end
@@ -195,6 +204,10 @@ function love.load()
     M.init(project,save,tonumber(os.getenv('SILKEN_WORKSHOP_BIOME')));if M.workshop then state.status='' end
     if os.getenv('SILKEN_DESIGNER_TEST')~='1' or os.getenv('SILKEN_CREATOR_PROJECT_TEST')=='1' then
         require('project_model').install(M);Projects=require('project_ui');Projects.init(M,state,text,button,backdrop);state.status=''
+    end
+    local persist=M.persist
+    M.persist=function(...)
+        local ok,err=persist(...);if not err then publishPreviewDraft() end;return ok,err
     end
     M.launchTarget=launchTarget
     backdrop()

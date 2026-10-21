@@ -25,7 +25,7 @@ function L.snapshot()
     end
     if Raven.active then for _,n in ipairs(Raven.nests) do put('nest',n) end end
     for _,r in ipairs(Arena.interior) do put('wall',{x=r.x+r.w/2,y=r.y+r.h/2,w=r.w,h=r.h,rotation=r.rotation}) end
-    for kind,list in pairs({magma_spawner=Magma.spawners,lava=Hazards.lava,electric_ground=Hazards.electric,vent=Realms.vents,hole=Realms.holes,tunnel=Realms.tunnels,tornado=Realms.tornadoes,current=Realms.current,rain=Realms.rainSites}) do
+    for kind,list in pairs({magma_spawner=Magma.spawners,lava=Hazards.lava,electric_ground=Hazards.electric,vent=Realms.vents,hole=Realms.holes,tunnel=Realms.tunnels,tornado=Realms.tornadoes,current=Realms.current}) do
         for _,p in ipairs(list) do put(kind,p) end
     end
     for kind,b in pairs({merle=Raven,wasp=Wasp,hedgehog=Hedgehog,octopus=Octopus,storm=Storm}) do
@@ -145,8 +145,8 @@ function L.apply(layout)
         elseif e.kind=='nest' then nests[#nests+1]=e
         elseif e.kind=='light' then -- assigned below
         else
-            local list=({magma_spawner=Magma.spawners,lava=Hazards.lava,electric_ground=Hazards.electric,vent=Realms.vents,hole=Realms.holes,tunnel=Realms.tunnels,tornado=Realms.tornadoes,current=Realms.current,rain=Realms.rainSites})[e.kind]
-            if list and not (e.kind=='rain' and Campaign.biome==5) then e.rx=e.rx or 35; e.ry=e.ry or 25; e.phase=e.phase or 0; e.seed=e.seed or 1; e.cooldown=0; e.dx=e.dx or 1; list[#list+1]=e end
+            local list=({magma_spawner=Magma.spawners,lava=Hazards.lava,electric_ground=Hazards.electric,vent=Realms.vents,hole=Realms.holes,tunnel=Realms.tunnels,tornado=Realms.tornadoes,current=Realms.current})[e.kind]
+            if list then e.rx=e.rx or 35; e.ry=e.ry or 25; e.phase=e.phase or 0; e.seed=e.seed or 1; e.cooldown=0; e.dx=e.dx or 1; list[#list+1]=e end
         end
     end
     for _,b in ipairs({Raven,Wasp,Hedgehog,Octopus,Storm}) do b.active=false end

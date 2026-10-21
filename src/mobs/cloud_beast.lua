@@ -69,7 +69,7 @@ function B.art(x,y,size,time,angle,amount)
 end
 function B.draw(m)
  local amount=m.phase=='hidden' and 0 or m.phase=='dive' and math.max(0,m.phaseTime/.45) or m.phase=='emerge' and math.min(1,1-m.phaseTime/.4) or 1
- if amount>0 then Art.contactShadow(m.x,m.y+13,17*amount,6*amount,.28*amount);B.art(m.x,m.y+(1-amount)*10,45,m.age,m.angle,amount) end
+ if amount>0 then Art.contactShadow(m.x,m.y+5+(1-amount)*10,17*amount,6*amount,.28*amount);B.art(m.x,m.y+(1-amount)*10,45,m.age,m.angle,amount) end
  local g=love.graphics;g.push('all');g.setShader()
  for _,p in ipairs(m.sparks or {}) do
   local t=p.age/.65
