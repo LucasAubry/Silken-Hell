@@ -56,7 +56,9 @@ function A.draw(kind,x,y,size,time,angle,phase)
  local flap=(kind=='wind_bat' or kind=='lava_scorpion') and 1 or moth and (.9+.1*math.cos(t*11)) or (.94+.06*math.cos(t*39))
  if moth and phase=='windup' then flap=1.13 elseif moth and phase=='gust' then flap=.76+.24*math.cos(t*29) end
  g.push('all');g.translate(x,y)
- if require('art').shadowAllowed() then
+ if Campaign and Campaign.biome==6 then
+  require('art').contactShadow(3,17,(size or 72)*.37,12,.34)
+ elseif require('art').shadowAllowed() then
   g.setColor(.015,.035,.08,.32);g.ellipse('fill',3,15,(size or 72)*.34,11)
  end
  if not directional[kind] then g.rotate(angle or 0) end

@@ -80,6 +80,7 @@ function A.add(key,path)
 end
 -- Subtle contact shadow copied from the actual transparent sprite/mesh.
 function A.shadowAllowed()
+    if Campaign and Campaign.biome==6 then return true end
     local actor=require('servant_art').current
     return not (actor and actor.has_larme)
 end
@@ -126,6 +127,19 @@ function A.contactShadow(x,y,rx,ry,opacity)
         local ox,oy=g.transformPoint(0,0)
         local dx,dy=g.inverseTransformPoint(ox+4,oy+7)
         g.draw(A.paradiseContact,x+dx,y+dy,0,rx*1.12,ry*1.18)
+        g.pop();return
+    end
+    if Campaign and Campaign.biome==6 then
+        if not A.skyContact then
+            local vertices={{0,0,0,0,1,1,1,1}}
+            for i=0,40 do
+                local angle=i*math.pi/20
+                vertices[#vertices+1]={math.cos(angle),math.sin(angle),0,0,1,1,1,0}
+            end
+            A.skyContact=g.newMesh(vertices,'fan','static')
+        end
+        g.setColor(.018,.035,.065,math.min(.75,(opacity or .28)*1.8)*alpha)
+        g.draw(A.skyContact,x+3,y+3,0,rx*1.28,ry*1.4)
         g.pop();return
     end
     for i=12,1,-1 do
