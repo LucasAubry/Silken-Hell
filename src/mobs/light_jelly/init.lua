@@ -4,6 +4,7 @@ return function(A)
    if m.is_frozen or m.abyssHeld then return end
    local before=m.age;m.age=m.age+dt
    local vx,vy=math.cos(m.age*.6),math.sin(m.age*.7)
+   vx,vy=require('mob_start_direction').motion(m,vx,vy)
    Arena.move(m,vx*m.speed*dt,vy*m.speed*dt);m.angle=math.atan2(vy,vx)-math.pi/2
    Realms.capture(m);if m.is_frozen then return end
    if math.floor((before+(m.shotOffset or 0))/3)<math.floor((m.age+(m.shotOffset or 0))/3) then A.emit(m) end

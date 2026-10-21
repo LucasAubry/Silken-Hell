@@ -1,5 +1,6 @@
 local g=love.graphics
 local M,C,json,Worlds,Art,Biome,Projects
+local Directions
 local state={all=true,world=1,level=1,category='Mobs',tool=nil,brush=28,grid=true,snap=true,scroll=0,buttons={},status='Choisis un objet à gauche, puis clique sur le terrain.',clock=0}
 local color={bg={.018,.027,.045},panel={.035,.065,.10},line={.20,.39,.55},text={.87,.94,1},muted={.53,.66,.77},accent={.40,.74,1}}
 local function q(s) return "'"..s:gsub("'","'\\''").."'" end
@@ -20,7 +21,7 @@ local function button(label,x,y,w,h,fn,active)
         local f=state.fonts[16];local utf8=require('utf8')
         if f:getWidth(label)>w-24 then repeat local at=utf8.offset(label,-1);label=at and label:sub(1,at-1) or '' until label=='' or f:getWidth(label..'…')<=w-24;label=label..'…' end
     end
-    text(label,x+12,y+(h-18)/2,state.category=='Environnement' and 16 or 14,active and color.accent or color.text)
+    text(label,x+12,y+(h-18)/2,16,active and color.accent or color.text)
     state.buttons[#state.buttons+1]={x=x,y=y,w=w,h=h,fn=fn}
 end
 local function catalog(e)
@@ -56,10 +57,10 @@ local function drawArt(key,x,y,width,angle,height)
     Art.draw(key,x,y,width,angle,height,0)
 end
 local function entity(e,ghost,terrainDrawn)
-    local c=catalog(e); g.setColor(1,1,1,ghost and .45 or 1)
-    if e.type=='cloud_beast' then require('mobs.cloud_beast').art(e.x,e.y,45,0,0);return end
-    if e.type=='cloud_snail' then require('cloud_snail').art(e.x,e.y,45,0,0);return end
-    if e.type=='dragonfly' or e.type=='mist_moth' or e.type=='wind_bat' or e.type=='lava_scorpion' then require('sky_insect_art').draw(e.type,e.x,e.y,e.type=='wind_bat' and 48 or 64,0,e.type=='wind_bat' and (e.dx==-1 and math.pi/2 or -math.pi/2) or nil);return end
+    local c=catalog(e);local departure=Directions.angle(e); g.setColor(1,1,1,ghost and .45 or 1)
+    if e.type=='cloud_beast' then require('mobs.cloud_beast').art(e.x,e.y,45,0,departure and departure-math.pi/2 or 0);return end
+    if e.type=='cloud_snail' then require('cloud_snail').art(e.x,e.y,45,0,departure or 0);return end
+    if e.type=='dragonfly' or e.type=='mist_moth' or e.type=='wind_bat' or e.type=='lava_scorpion' then require('sky_insect_art').draw(e.type,e.x,e.y,e.type=='wind_bat' and 48 or 64,0,departure and departure-math.pi/2 or e.type=='wind_bat' and (e.dx==-1 and math.pi/2 or -math.pi/2) or nil);return end
     if e.kind=='mob' and (e.type=='piege' or e.type=='scie') then require('trap_art').draw(e.type,e.x,e.y,e.type=='scie' and 60 or 52,M.world,false,0);return end
     if e.kind=='wall' and M.world==5 then
         g.push('all');g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180)
@@ -96,6 +97,9 @@ local function entity(e,ghost,terrainDrawn)
             end
             drawArt('skeleton_tail',e.x-width*.405,e.y,100,0,145)
             if (e.skeletonStage or 10)==10 then drawArt('skeleton_head',e.x+width*.29,e.y,170,0,150) end
+        elseif departure and (e.type=='jelly' or e.type=='fish' or e.type=='spinner' or e.type=='blackbird_chick') then
+            drawArt((e.type=='spinner' and 'serpent' or e.type=='blackbird_chick' and 'merle' or e.type)..'_'..e.startDirection,e.x,e.y,size)
+        elseif departure and e.type=='light_jelly' then drawArt(c.art,e.x,e.y,size,departure-math.pi/2)
         else drawArt(c.art,e.x,e.y,size) end
     end
     if e.kind=='spawn' then g.setColor(.3,1,.7,.75); g.circle('line',e.x,e.y,32) end
@@ -137,6 +141,9 @@ local function loadArt()
         if not love.filesystem.getInfo(require('asset_paths').resolve(path)) then path='assets/sprites/directional/'..c.art..'.png' end
         Art.add(c.art,path)
     end end
+    for _,name in ipairs({'fish','jelly','serpent','merle'}) do for _,dir in ipairs({'up','down','left','right'}) do
+        local key=name..'_'..dir;Art.add(key,'assets/sprites/directional/'..key..'.png')
+    end end
     for _,key in ipairs({'skeleton_spine','skeleton_rib','skeleton_tail'}) do Art.add(key,'assets/sprites/'..key..'.png') end
 end
 function love.load()
@@ -155,6 +162,7 @@ function love.load()
     love.filesystem.setRequirePath(love.filesystem.getRequirePath()..';src/?.lua;src/?/init.lua')
     require('editor_icon').install()
     json=require 'json'; Worlds=require 'worlds'; Art=require 'art'; Biome=require 'biome_floor'
+    Directions=require('mob_start_direction')
     C=require 'catalog'; M=require 'model'; state.fonts={}
     for _,size in ipairs({12,14,16,18,22,28}) do state.fonts[size]=g.newFont(size) end
     loadArt()
@@ -290,17 +298,20 @@ function love.draw()
             row=row+1
         end end
         local yy=280+row*39
-        if e.type=='wind_bat' then button(e.dx==-1 and 'Droite → gauche' or 'Gauche → droite',right,yy,207,34,function() M.checkpoint();e.dx=e.dx==-1 and 1 or -1;M.persist() end);yy=yy+42 end
+        if Directions.supported(e) then button('Départ : '..(Directions.labels[e.startDirection] or (e.type=='wind_bat' and e.dx and (e.dx==-1 and 'Gauche' or 'Droite') or 'par défaut')),right,yy,207,34,function() state.directionPicker=e end);yy=yy+42 end
         if e.kind=='wall' then button('Tourner de 90°',right,yy,207,34,M.rotate);yy=yy+42 end
         if e.kind=='mob' and e.type~='piege' and e.type~='scie' then
-            button(e.has_larme and 'Porte une larme : oui' or 'Porte une larme : non',right,yy,207,32,function() M.checkpoint(); e.has_larme=not e.has_larme; M.persist() end,e.has_larme); yy=yy+42
+            button(e.has_larme and 'Porte une larme : oui' or 'Porte une larme : non',right,yy,207,32,function() M.checkpoint(); e.has_larme=not e.has_larme;if not Directions.supported(e) then e.startDirection=nil end; M.persist() end,e.has_larme); yy=yy+42
         end
         if e.type=='mole' or e.type=='worm' then button(e.startUnderground and 'Départ : sous terre' or 'Départ : en surface',right,yy,207,32,function() M.checkpoint();e.startUnderground=not e.startUnderground;M.persist() end,e.startUnderground);yy=yy+42 end
         button('Dupliquer',right,yy,99,34,function() local t=M.clone(e); M.add(t,math.min(M.layout.width-40,e.x+30),math.min(560,e.y+30)) end)
         button('Supprimer',right+108,yy,99,34,M.delete)
+        if e.kind=='mob' or e.kind=='boss' then button('Comportement',right,yy+42,207,34,function() state.details=e end) end
     else
         text(state.tool and state.tool.name or 'Aucun objet sélectionné',right,212,18,nil,208)
-        if state.tool and brush(state.tool) then
+        if state.tool and (state.tool.kind=='mob' or state.tool.kind=='boss') then
+            button('Comportement',right,262,207,34,function() state.details=state.tool end)
+        elseif state.tool and brush(state.tool) then
             text('Taille : '..state.brush*2,right,268,16)
             button('−',right,308,98,36,function() state.brush=math.max(4,state.brush-4) end)
             button('+',right+108,308,98,36,function() state.brush=math.min(120,state.brush+4) end)
@@ -319,9 +330,31 @@ function love.draw()
         if not M.workshop and not M.devMode then text('Entrée : enregistrer · Échap : annuler',w/2-230,h/2+65,14,color.muted,460) end
     end
     if Projects then Projects.drawPublication() end
+    local modal=state.directionPicker or state.details
+    if modal then
+        state.buttons={}
+        local width=math.min(620,w-60);local height=state.directionPicker and 350 or 410
+        local x,y=(w-width)/2,(h-height)/2
+        g.setColor(0,0,0,.78);g.rectangle('fill',0,0,w,h)
+        g.setColor(color.panel);g.rectangle('fill',x,y,width,height,10)
+        text(state.directionPicker and 'Direction de départ' or catalog(modal).name,x+24,y+24,22,nil,width-48)
+        if state.directionPicker then
+            for i,dir in ipairs({'up','left','down','right','default'}) do
+                local label=Directions.labels[dir] or 'Par défaut'
+                button(label,x+24,y+74+(i-1)*42,width-48,34,function()
+                    M.checkpoint();modal.startDirection=dir~='default' and dir or nil;M.persist();state.directionPicker=nil
+                end,modal.startDirection==dir or dir=='default' and not modal.startDirection)
+            end
+        else
+            g.setFont(state.fonts[18]);g.setColor(color.text)
+            g.printf(require('creature_details').text(modal),x+24,y+78,width-48)
+        end
+        button('Fermer',x+width-144,y+height-50,120,34,function() state.directionPicker=nil;state.details=nil end)
+    end
 end
 function love.mousepressed(mx,my,button)
     for _,b in ipairs(state.buttons) do if mx>=b.x and mx<=b.x+b.w and my>=b.y and my<=b.y+b.h then if button==1 then b.fn() end; return end end
+    if state.directionPicker or state.details then return end
     if Projects and ((not M.currentProject and not M.devMode) or Projects.publication) then return end
     if not inside(mx,my) then return end
     state.input=nil; love.keyboard.setTextInput(false)
@@ -347,6 +380,7 @@ function love.mousepressed(mx,my,button)
     end
 end
 function love.mousemoved(mx,my)
+    if state.directionPicker or state.details then return end
     if Projects and ((not M.currentProject and not M.devMode) or Projects.publication) then return end
     if state.stroke then
         local x,y=point(mx,my);local e=state.stroke;local p=e.points
@@ -372,9 +406,10 @@ function love.mousereleased(mx,my,button)
     end
     if state.drag then M.persist();state.drag=nil end
 end
-function love.wheelmoved(x,y) if love.mouse.getX()<250 then state.scroll=math.max(0,state.scroll-y) end end
+function love.wheelmoved(x,y) if state.directionPicker or state.details then return end;if love.mouse.getX()<250 then state.scroll=math.max(0,state.scroll-y) end end
 function love.textinput(s) if Projects and Projects.text(s) then return end;if state.input then if state.input=='templateName' then state.inputText=(state.inputText..s:gsub('[%c]','')):sub(1,60) else state.inputText=state.inputText..s:gsub('[^%d%.%-]','') end end end
 function love.keypressed(key)
+    if state.directionPicker or state.details then if key=='escape' then state.directionPicker=nil;state.details=nil end;return end
     if Projects and Projects.key(key) then return end
     if state.input then
         if key=='backspace' then state.inputText=state.inputText:sub(1,-2)

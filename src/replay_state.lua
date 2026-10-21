@@ -1,7 +1,7 @@
 -- Compare the simulated world, not just the player's route. Quantization avoids
 -- treating insignificant floating-point roundoff as a different encounter.
 local S={}
-local fields={'type','kind','x','y','cx','cy','vx','vy','tx','ty','angle','speed','age','life','time','clock',
+local fields={'startDirection','type','kind','x','y','cx','cy','vx','vy','tx','ty','angle','speed','age','life','time','clock',
  'snailId','pendingEggs','hits','touching','hatch','jumpCooldown','owner','id','frozen','eggSerial','volley','cast','damageGrace','contactGrace','jumpHeight','snare','phase','phaseTime','phaseAge','hp','maxHp','active','defeated','hidden','taken','dead','reset','falling',
  'fallTimer','charges','overload','cooldown','radius','r','rx','ry','w','h','rotation','seed','dir','burst','shot','bolt',
  'boltsRemaining','volleyClock','patrolClock','fishCharge','fishWave','electric','spent','committed',

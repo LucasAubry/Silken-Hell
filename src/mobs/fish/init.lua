@@ -9,6 +9,7 @@ return function(R)
             vx=vx+(leader.x+offset-m.x)*.12; vy=vy+(leader.y+math.abs(m.slot-leaderIndex)*24-m.y)*.12
             local length=math.max(1,math.sqrt(vx*vx+vy*vy)); vx=vx/length; vy=vy/length
         end
+        vx,vy=require('mob_start_direction').motion(m,vx,vy)
         return vx,vy,speed,dangerous
     end
     return require('mobs.shared.realm_behavior')(R,motion)

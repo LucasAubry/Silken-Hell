@@ -22,8 +22,25 @@ function T.run(M,state,select)
  love.draw()
  -- x, y, speed occupy three rows; direction is the first control below them.
  local w=love.graphics.getWidth();love.mousepressed(w-227+80,280+3*39+16,1)
- assert(bat.dx==-1,'Direction button selects right to left')
- love.draw();love.mousepressed(w-227+80,280+3*39+16,1);assert(bat.dx==1,'Direction button selects left to right')
+ assert(state.directionPicker==bat,'Departure control opens its selector')
+ love.draw();local h=love.graphics.getHeight();local yy=(h-350)/2
+ love.mousepressed(w/2,yy+74+42+16,1);assert(bat.startDirection=='left')
+ local insect=require('sky_insect_art');local drawInsect=insect.draw;local facing
+ insect.draw=function(kind,x,y,size,t,angle,...) if kind=='wind_bat' and x==bat.x and y==bat.y then facing=insect.facing(angle) end;return drawInsect(kind,x,y,size,t,angle,...) end
+ love.draw();assert(facing=='left','Editor PNG faces the authored direction')
+ insect.draw=drawInsect
+ M.undo(false);assert(not M.layout.entities[#M.layout.entities].startDirection,'Departure supports undo')
+ M.undo(true);bat=M.layout.entities[#M.layout.entities];assert(bat.startDirection=='left','Departure supports redo');M.selected=bat
+ state.details=bat;love.draw();local count=#M.layout.entities
+ love.mousepressed(400,300,1);assert(#M.layout.entities==count,'Behaviour sheet blocks map clicks')
+ love.keypressed('escape');assert(not state.details)
+ local original=M.clone(M.layout)
+ for _,kind in ipairs({'blackbird_chick','spinner','jelly','fish','light_jelly','cloud_beast','cloud_snail','mist_moth','wind_bat'}) do
+  for _,dir in ipairs({'up','down','left','right'}) do
+   M.add({kind='mob',type=kind,speed=80,startDirection=dir},400,300);love.draw()
+  end
+ end
+ M.layout=original;M.selected=nil;M.persist()
  local snail
  for _,entry in ipairs(require('catalog')) do
   assert(entry.kind~='electric_ground' and entry.kind~='rain','Obsolete terrain tools are removed')
@@ -38,6 +55,7 @@ function T.run(M,state,select)
  M.undo(true);assert(M.layout.environment.rain==false,'Environment participates in redo')
  assert(M.validate(M.layout));local saved=require('json').decode(love.filesystem.read(M.draftFilename))['6:1']
  assert(saved.environment.rain==false and saved.entities[#saved.entities].type=='cloud_snail','Options and placed snail persist in drafts')
+ state.details=bat
  local frames=0;state.testUpdate=function()
   frames=frames+1
   if frames==2 then love.graphics.captureScreenshot('celestial-editor.png') end

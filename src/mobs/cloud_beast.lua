@@ -19,7 +19,7 @@ function B.update(m,dt)
  if m.roamSeed==nil then m.roamSeed=heading(m) end
  m.age=m.age+dt;m.sparks=m.sparks or {}
  for i=#m.sparks,1,-1 do local p=m.sparks[i];p.age=p.age+dt;if p.age>.65 then table.remove(m.sparks,i) end end
- if type(m.phase)~='string' then phase(m,'surface',1.2);m.vx=math.cos(m.roamSeed);m.vy=math.sin(m.roamSeed) end
+ if type(m.phase)~='string' then phase(m,'surface',1.2);local a=require('mob_start_direction').angle(m) or m.roamSeed;m.vx=math.cos(a);m.vy=math.sin(a) end
  m.phaseTime=m.phaseTime-dt
  if m.phase=='surface' or m.phase=='dive' then
   local speed=m.phase=='surface' and 42 or 42*math.max(0,m.phaseTime/.45)

@@ -3,6 +3,7 @@ local L={disabled=false}
 local fields={'x','y','speed','rota','radius','phase','rx','ry','dx','seed','w','h','electric','has_larme','elite','startUnderground','customName','schoolId','spawnDelay','spawnInterval','movementRate','attackRate','skeletonStage','rotation'}
 local function copy(t)
     local r={}; for _,k in ipairs(fields) do if type(t[k])=="number" or type(t[k])=="boolean" then r[k]=t[k] end end
+    if t.startDirection then r.startDirection=t.startDirection end
     if t.points then r.points={};for i,v in ipairs(t.points) do r.points[i]=v end end
     return r
 end
@@ -88,7 +89,8 @@ function L.spawn(e)
     local m=mobs[#mobs]; if (kind=='worm' or kind=='mole') and e.startUnderground~=nil then m.age=e.startUnderground and 0 or (kind=='mole' and 2.7 or 1.6) end; m.startUnderground=e.startUnderground; m.has_larme=e.has_larme or false; m.electric=e.electric; if kind=='wind_bat' then m.dx=e.dx==-1 and -1 or 1;m.speed=e.speed and e.speed>0 and e.speed or 210;m.hitBox_width=24;m.hitBox_height=16;m.hitBox_offset_x=-12;m.hitBox_offset_y=-8 end
     if m.has_larme then Campaign.carrier=m; objet.larme_dropped=false end
     if m.type=='scie' then setup_rotor(m) elseif m.type=='spinner' then setup_spinner(m) end
-    if m.imgs then m.img=m.imgs.down or m.imgs.up end
+    require('mob_start_direction').apply(m,e)
+    if m.imgs then m.img=(m.startDirection and m.imgs[m.dir]) or m.imgs.down or m.imgs.up end
     if kind=='ange' or kind=='snake' then require('mobs.shared.floating').hitbox(m) end
 end
 -- Older campaign drafts can omit every tear. Keep Hell completable without
