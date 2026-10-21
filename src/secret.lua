@@ -139,7 +139,8 @@ function S.mousepressed(x,y)
     for i,p in ipairs(S.portals) do
         local bx,by=C.bossPosition(i,#S.portals,Arena.width)
         local radius=p.type=='skeleton_head' and 108 or p.type=='wasp' and 98 or 82
-        local d=((x-bx)/radius)^2+((y-by)/112)^2
+        local groupScale=C.layoutScale(Arena.width)
+        local d=((x-bx)/(radius*groupScale))^2+((y-by)/(112*groupScale))^2
         if d<=1 and (not distance or d<distance) then best,distance=i,d end
     end
     if best then S.page=best;S.nearest=best;Audio.play('selection');return true end
