@@ -22,7 +22,7 @@ function S.migrate(layout)
     return layout
 end
 -- The retired identifier remains readable for old saves and Workshop maps only.
-local kinds={abyss_gate=true,abyss_part=true,magma_spawner=true,spawn=true,tear=true,wall=true,mob=true,boss=true,nest=true,light=true,lava=true,electric_ground=true,vent=true,hole=true,tunnel=true,tornado=true,current=true,rain=true}
+local kinds={lightning_zone=true,abyss_gate=true,abyss_part=true,magma_spawner=true,spawn=true,tear=true,wall=true,mob=true,boss=true,nest=true,light=true,lava=true,electric_ground=true,vent=true,hole=true,tunnel=true,tornado=true,current=true,rain=true}
 local mobs={cloud_beast=true,cloud_snail=true,wind_bat=true,dragonfly=true,mist_moth=true,magma_larva=true,ange=true,snake=true,piege=true,scie=true,spinner=true,lava_scorpion=true,crab=true,abyss_fish=true,light_jelly=true,lanternfish=true,waspling=true,larva=true,blackbird_chick=true,fish=true,mole=true,worm=true,jelly=true}
 local bosses={skeleton_head=true,storm=true,merle=true,hellserpent=true,wasp=true,hedgehog=true,octopus=true,skeleton_fish=true}
 function S.validate(l)
@@ -36,6 +36,10 @@ function S.validate(l)
         local allowed={rain=true,leaves=true,ashes=true,fireflies=true,blue=true,lightning=true}
         for key,value in pairs(l.environment) do if not allowed[key] or type(value)~='boolean' then return false,'Effet environnemental invalide.' end end
     end
+    if l.lightning~=nil then
+        if type(l.lightning)~='table' then return false,'Réglages des éclairs invalides.' end
+        for key,value in pairs(l.lightning) do if not require('lightning_config').valid(key,value) then return false,'Délais des éclairs : de 0,1 à 120 secondes.' end end
+    end
     local spawn,gate=0,0
     for _,e in ipairs(l.entities) do
         if type(e)~='table' or not kinds[e.kind] or (e.kind=='mob' and not mobs[e.type]) or (e.kind=='boss' and not bosses[e.type]) or (e.kind=='abyss_part' and not ({skeleton_tail=true,skeleton_rib=true,skeleton_spine=true})[e.type]) then return false,'Objet inconnu.' end
@@ -47,6 +51,7 @@ function S.validate(l)
         if e.skeletonStage and (e.skeletonStage%1~=0 or e.skeletonStage<8 or e.skeletonStage>10) then return false,'Stade du squelette invalide.' end
         if not e.x or not e.y or e.x<0 or e.x>l.width or e.y<0 or e.y>600 then return false,'Un objet sort du terrain.' end
         for _,key in ipairs({'w','h','rx','ry','radius'}) do if e[key] and e[key]<1 then return false,'Les dimensions doivent être positives.' end end
+        if e.kind=='lightning_zone' and (not e.w or not e.h or e.w<80 or e.h<80 or e.x-e.w/2<0 or e.x+e.w/2>l.width or e.y-e.h/2<0 or e.y+e.h/2>600) then return false,'La zone d’éclairs doit rester dans la carte (80 minimum).' end
         if e.kind=='wall' and (not e.w or not e.h) then return false,'Dimensions du mur manquantes.' end
         if e.points~=nil then
             if (e.kind~='hole' and e.kind~='lava' and e.kind~='electric_ground') or type(e.points)~='table' or #e.points<2 or #e.points>512 or #e.points%2~=0 then return false,'Dessin de zone invalide.' end

@@ -10,11 +10,13 @@ local function copy(t)
 end
 function L.snapshot()
     local out={width=Arena.width,height=600,world=Campaign.world,level=player.level,entities={}}
+    if L.activeLayout and L.activeLayout.lightning then out.lightning=json.decode(json.encode(L.activeLayout.lightning)) end
     if L.activeLayout and L.activeLayout.environment then out.environment=json.decode(json.encode(L.activeLayout.environment)) end
     local function put(kind,t,typ)
         local e=copy(t); e.kind=kind; e.type=typ; e.id='e'..(#out.entities+1); out.entities[#out.entities+1]=e; return e
     end
     put('spawn',{x=player.x+15,y=player.y+12})
+    for _,zone in ipairs(require('lightning_config').zones(L.activeLayout,Arena.width)) do put('lightning_zone',zone) end
     for _,p in ipairs(levels[player.level].larme_position) do put('tear',{x=p.x+15,y=p.y+39}) end
     local schools={}; local nextSchool=0
     for _,m in ipairs(mobs) do

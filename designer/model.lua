@@ -45,6 +45,10 @@ function M.undo(redo)
 end
 function M.add(template,x,y)
     M.checkpoint(); local e=M.clone(template); e.name=nil; e.art=nil; e.world=nil
+    if e.kind=='lightning_zone' then
+        x=math.max(e.w/2,math.min(M.layout.width-e.w/2,x));y=math.max(e.h/2,math.min(600-e.h/2,y))
+        M.layout.environment=M.layout.environment or {};M.layout.environment.lightning=true
+    end
     e.x=x; e.y=y; e.id=tostring(love.timer.getTime())..'-'..tostring(#M.layout.entities+1)
     if e.kind=='spawn' then for i=#M.layout.entities,1,-1 do if M.layout.entities[i].kind=='spawn' then table.remove(M.layout.entities,i) end end end
     M.layout.entities[#M.layout.entities+1]=e; M.selected=e; M.persist(); return e

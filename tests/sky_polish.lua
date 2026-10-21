@@ -76,6 +76,27 @@ function T.run()
  assert(first~='' and first==second,'Identical lightning positions even when player location changes')
  LevelLayouts.activeLayout.environment.lightning=false;W.reset();assert(not W.storm,'Lightning can be disabled')
  local oldBiome=Campaign.biome;Campaign.biome=5;LevelLayouts.activeLayout.environment.lightning=true;W.reset();assert(W.storm,'Lightning can be enabled in another biome');Campaign.biome=oldBiome
+ local config=require('lightning_config')
+ assert(first:match('^389,291'),'Default lightning positions remain unchanged')
+ local interval,delay=config.values(nil,1);assert(interval==5.8 and delay==1.6,'Original timing defaults are preserved')
+ LevelLayouts.activeLayout.lightning={interval=.5,delay=.2}
+ LevelLayouts.activeLayout.entities[#LevelLayouts.activeLayout.entities+1]={kind='lightning_zone',x=240,y=260,w=240,h=200}
+ LevelLayouts.activeLayout.entities[#LevelLayouts.activeLayout.entities+1]={kind='lightning_zone',x=650,y=350,w=200,h=180}
+ W.reset();local announced={};local warn=W.warn
+ W.warn=function(x,y,slot) announced[#announced+1]={x=x,y=y,slot=slot,clock=W.clock};warn(x,y,slot);assert(W.strikes[#W.strikes].delay==.2,'Custom impact delay applies') end
+ for i=1,600 do W.update(1/60) end
+ W.warn=warn
+ assert(#announced>=20 and #W.holes==10,'Zone cycles repeat without accumulating duplicate craters')
+ for i,p in ipairs(announced) do
+  local zone=(i-1)%2+1;local point=math.floor((i-1)/2)%5+1
+  local x,y=config.point(W.zones[zone],point)
+  assert(p.x==x and p.y==y and p.slot==(zone-1)*5+point,'Every zone follows center, up, left, down, right')
+ end
+ assert(math.abs(announced[3].clock-announced[1].clock-.5)<.02,'Custom lightning interval applies')
+ local snap=LevelLayouts.snapshot();assert(snap.lightning.delay==.2 and snap.lightning.interval==.5,'Lightning timings survive replay snapshots')
+ local zones=config.zones(snap,Arena.width);assert(#zones==2 and math.abs(zones[1].x-W.zones[1].x)<.00001 and math.abs(zones[1].w-W.zones[1].w)<.00001,'Lightning zones survive replay snapshots')
+ assert(LayoutSchema.validate(snap))
+ snap.lightning.delay=-1;assert(not LayoutSchema.validate(snap),'Invalid lightning timings are rejected')
  Hazards.kill=savedKill
  print('PASS Sky polish: hole falls, deterministic lightning, merged collision/rendering, environment persistence, electrical migration and pause biome')
  love.event.quit()

@@ -12,7 +12,7 @@ end
 function E.active(key)
  return E.enabled(key,Campaign.biome,E.settings())
 end
-function E.draw(world,w,h,t,settings,editor)
+function E.draw(world,w,h,t,settings,editor,layout)
  local g=love.graphics;g.push('all');g.setShader();g.setBlendMode('alpha');g.setLineWidth(1)
  if E.enabled('rain',world,settings) then
   for i=1,95 do
@@ -23,6 +23,8 @@ function E.draw(world,w,h,t,settings,editor)
  if editor and E.enabled('lightning',world,settings) then
   -- Frozen preview, never advance or spawn real strikes inside the editor.
   local x,y=w*.73,h*.46
+  local zones=require('lightning_config').zones(layout,w)
+  if zones[1] then x,y=zones[1].x,zones[1].y end
   local points={x-12,y-100,x+5,y-70,x-6,y-44,x+8,y-22,x,y}
   g.setColor(.40,.65,1,.3);g.setLineWidth(9);g.line(points)
   g.setColor(.86,.95,1,.95);g.setLineWidth(2);g.line(points)

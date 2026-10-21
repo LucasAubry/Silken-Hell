@@ -1,8 +1,10 @@
 -- Sky hazards use simulation time only; drawing never changes their state.
-local S={strikes={},holes={},trails={},snailHoles={},mist={},mistCuts={},clock=0,phaseTime=4,active=false,storm=false,seed=0}
+local S={zones={},strikes={},holes={},trails={},snailHoles={},mist={},mistCuts={},clock=0,phaseTime=4,active=false,storm=false,seed=0}
 function S.reset()
  require('sky_trails').reset()
  S.strikes={};S.holes={};S.trails={};S.snailHoles={};S.mist={};S.mistCuts={};S.clock=0;S.phaseTime=4;S.seed=0
+ S.zones=require('lightning_config').zones(LevelLayouts.activeLayout,Arena.width)
+ S.zoneStep=#S.zones>0 and 0 or nil
  S.storm=require('level_environment').active('lightning') and not Secret.inArena();S.active=S.storm or require('sky').openEdges()
  for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' or m.type=='wind_bat' or m.type=='cloud_snail' then S.active=true end end
 end
@@ -68,12 +70,20 @@ function S.contact()
  if not S.active or player.skyThrow or player.tunnelTravel then return end
  if require('sky_trails').near(player.x,player.y,30,24,function(p)return S.clock-p.time>=.22 and touches(p) end) then Hazards.kill('electric_trail');return end
 end
-function S.warn(x,y)
+function S.warn(x,y,zoneSlot)
  S.seed=S.seed+1
- S.strikes[#S.strikes+1]={x=x,y=y,age=0,delay=1.6,seed=S.seed}
+ local _,delay=require('lightning_config').values(LevelLayouts.activeLayout,player.level)
+ S.strikes[#S.strikes+1]={x=x,y=y,age=0,delay=delay,seed=S.seed,zoneSlot=zoneSlot}
 end
 -- Fixed map sequence: no RNG consumption and no targeting based on player movement.
 local function choose()
+ if #S.zones>0 then
+  S.zoneStep=S.zoneStep%5+1
+  for i,zone in ipairs(S.zones) do
+   local x,y=require('lightning_config').point(zone,S.zoneStep);S.warn(x,y,(i-1)*5+S.zoneStep)
+  end
+  return
+ end
  S.seed=S.seed+1
  local spawn=levels[player.level].player_position
  for i=1,20 do
@@ -97,16 +107,20 @@ function S.update(dt)
   local p=S.strikes[i];p.age=p.age+dt
   if p.age>=p.delay and not p.spent then
    p.spent=true
-   local hole=require('ground_holes').stroke({p.x-5,p.y+2,p.x+4,p.y-3,p.x+6,p.y+3},34);hole.seed=p.seed
-   S.holes[#S.holes+1]=hole
+   local exists=false
+   if p.zoneSlot then for _,hole in ipairs(S.holes) do if hole.zoneSlot==p.zoneSlot then exists=true;break end end end
+   if not exists then
+    local hole=require('ground_holes').stroke({p.x-5,p.y+2,p.x+4,p.y-3,p.x+6,p.y+3},34);hole.seed=p.seed;hole.zoneSlot=p.zoneSlot
+    S.holes[#S.holes+1]=hole
+   end
    BossFX.burst(p.x,p.y,{.78,.88,1},.55)
    if (player.x+15-p.x)^2+(player.y+12-p.y)^2<42^2 then Hazards.kill('sky_lightning');if player.reset then player.falling=true end end
   end
   if p.age>p.delay+.45 then table.remove(S.strikes,i) end
  end
- if S.storm and #S.holes<8 then
+ if S.storm and (#S.zones>0 or #S.holes<8) then
   S.phaseTime=S.phaseTime-dt
-  if S.phaseTime<=0 then choose();S.phaseTime=math.max(3.6,6-player.level*.2) end
+  if S.phaseTime<=0 then choose();S.phaseTime=require('lightning_config').values(LevelLayouts.activeLayout,player.level) end
  end
 end
 function S.fallAt(x,y)
@@ -114,6 +128,7 @@ function S.fallAt(x,y)
  return false
 end
 function S.resize(ratio)
+ for _,zone in ipairs(S.zones or {}) do zone.x=zone.x*ratio;zone.w=zone.w*ratio end
  local snail=require("cloud_snail");snail.list=nil;snail.revision=(snail.revision or 0)+1
  for _,list in ipairs({S.strikes,S.mist,S.mistCuts,S.snailHoles}) do for _,p in ipairs(list) do p.x=p.x*ratio;if p.tx then p.tx=p.tx*ratio end end end
  require('sky_trails').resize(S.trails,ratio)

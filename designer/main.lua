@@ -58,6 +58,13 @@ local function drawArt(key,x,y,width,angle,height)
 end
 local function entity(e,ghost,terrainDrawn)
     local c=catalog(e);local departure=Directions.angle(e); g.setColor(1,1,1,ghost and .45 or 1)
+    if e.kind=='lightning_zone' then
+        g.push('all');g.setShader();g.setLineWidth(2)
+        g.setColor(.4,.7,1,ghost and .06 or .10);g.rectangle('fill',e.x-e.w/2,e.y-e.h/2,e.w,e.h)
+        g.setColor(.55,.83,1,ghost and .4 or .9);g.rectangle('line',e.x-e.w/2,e.y-e.h/2,e.w,e.h)
+        for i=1,5 do local x,y=require('lightning_config').point(e,i);g.circle(i==1 and 'fill' or 'line',x,y,5) end
+        g.pop();return
+    end
     if e.type=='cloud_beast' then require('mobs.cloud_beast').art(e.x,e.y,45,0,departure and departure-math.pi/2 or 0);return end
     if e.type=='cloud_snail' then require('cloud_snail').art(e.x,e.y,45,0,departure or 0);return end
     if e.type=='dragonfly' or e.type=='mist_moth' or e.type=='wind_bat' or e.type=='lava_scorpion' then require('sky_insect_art').draw(e.type,e.x,e.y,e.type=='wind_bat' and 48 or 64,0,departure and departure-math.pi/2 or e.type=='wind_bat' and (e.dx==-1 and math.pi/2 or -math.pi/2) or nil);return end
@@ -294,7 +301,7 @@ function love.draw()
             else local ghost=M.clone(state.tool); ghost.x=snapped(px); ghost.y=snapped(py); entity(ghost,true) end
         end
     end
-    require('level_environment').draw(M.world,M.layout.width,600,0,M.layout.environment,true)
+    require('level_environment').draw(M.world,M.layout.width,600,0,M.layout.environment,true,M.layout)
     selection(M.selected)
     for _,e in ipairs(M.layout.entities) do carrierBadge(e) end
     g.pop()
@@ -326,11 +333,24 @@ function love.draw()
         if e.type=='mole' or e.type=='worm' then button(e.startUnderground and 'Départ : sous terre' or 'Départ : en surface',right,yy,207,32,function() M.checkpoint();e.startUnderground=not e.startUnderground;M.persist() end,e.startUnderground);yy=yy+42 end
         button('Dupliquer',right,yy,99,34,function() local t=M.clone(e); M.add(t,math.min(M.layout.width-40,e.x+30),math.min(560,e.y+30)) end)
         button('Supprimer',right+108,yy,99,34,M.delete)
-        if e.kind=='mob' or e.kind=='boss' then button('Comportement',right,yy+42,207,34,function() state.details=e end) end
+        if e.kind=='mob' or e.kind=='boss' or e.kind=='lightning_zone' then button('Comportement',right,yy+42,207,34,function() state.details=e end) end
         if require('mob_attack_timing').spec(e) or require('boss_attack_timing').spec(e) then button('Attaques',right,yy+84,207,34,function() state.attackSettings=e;state.timingError=nil;state.attackPage=1 end) end
+    elseif state.category=='Environnement' and not state.tool then
+        text('Éclairs',right,212,18)
+        local interval,delay=require('lightning_config').values(M.layout,M.level)
+        for i,row in ipairs({{'interval','Intervalle (s)',interval},{'delay','Avant impact (s)',delay}}) do
+            local key='lightning_'..row[1];local yy=254+(i-1)*80
+            text(row[2],right,yy,16)
+            button(state.input==key and state.inputText..'|' or tostring(row[3])..' s',right,yy+26,207,36,function()state.input=key;state.inputText=tostring(row[3]);love.keyboard.setTextInput(true)end)
+        end
+        button('Ajouter une zone',right,432,207,36,function()
+            for _,entry in ipairs(C) do if entry.kind=='lightning_zone' then state.tool=entry;break end end
+        end)
+        button('Comportement',right,478,207,36,function()state.details={kind='lightning_zone'}end)
+        button('Valeurs par défaut',right,524,207,36,function()M.checkpoint();M.layout.lightning=nil;M.persist();state.input=nil;love.keyboard.setTextInput(false)end)
     else
         text(state.tool and state.tool.name or 'Aucun objet sélectionné',right,212,18,nil,208)
-        if state.tool and (state.tool.kind=='mob' or state.tool.kind=='boss') then
+        if state.tool and (state.tool.kind=='mob' or state.tool.kind=='boss' or state.tool.kind=='lightning_zone') then
             button('Comportement',right,262,207,34,function() state.details=state.tool end)
         elseif state.tool and brush(state.tool) then
             text('Taille : '..state.brush*2,right,268,16)
@@ -404,7 +424,7 @@ function love.mousepressed(mx,my,button)
         local rx,ry=e.kind=='wall' and e.w/2 or 26,e.kind=='wall' and e.h/2 or 26
         local ex=e.type=='skeleton_fish' and e.x+M.layout.width*.32 or e.x
         local dx,dy=x-ex,y-e.y
-        if e.kind=='abyss_part' or e.kind=='abyss_gate' or e.kind=='wall' then
+        if e.kind=='abyss_part' or e.kind=='abyss_gate' or e.kind=='wall' or e.kind=='lightning_zone' then
             local a=(e.rotation or 0)*math.pi/180
             dx,dy=math.cos(a)*dx+math.sin(a)*dy,-math.sin(a)*dx+math.cos(a)*dy
             rx,ry=math.max(12,e.w/2),math.max(12,e.h/2)
@@ -427,8 +447,10 @@ function love.mousemoved(mx,my)
         return
     end
     if state.drag and M.selected then local x,y=point(mx,my)
-        M.selected.x=math.max(25,math.min(M.layout.width-25,snapped(x-state.drag.dx)))
-        M.selected.y=math.max(25,math.min(575,snapped(y-state.drag.dy)))
+        local rx=M.selected.kind=='lightning_zone' and M.selected.w/2 or 25
+        local ry=M.selected.kind=='lightning_zone' and M.selected.h/2 or 25
+        M.selected.x=math.max(rx,math.min(M.layout.width-rx,snapped(x-state.drag.dx)))
+        M.selected.y=math.max(ry,math.min(600-ry,snapped(y-state.drag.dy)))
     end
 end
 function love.mousereleased(mx,my,button)
@@ -459,7 +481,11 @@ function love.keypressed(key)
                 end
             end
             local v=tonumber(state.inputText)
-            if state.attackSettings then
+            if state.input:match('^lightning_') then
+                local key=state.input:sub(11)
+                if not require('lightning_config').valid(key,v) then state.status='Délais des éclairs : de 0,1 à 120 secondes.';state.error=true;return end
+                M.checkpoint();M.layout.lightning=M.layout.lightning or {};M.layout.lightning[key]=v;M.persist();state.status='';state.error=false
+            elseif state.attackSettings then
                 local boss=state.attackSettings.kind=='boss'
                 local timing=boss and require('boss_attack_timing') or require('mob_attack_timing')
                 if not timing.valid(state.attackSettings,state.input,v) then
@@ -467,7 +493,13 @@ function love.keypressed(key)
                     return
                 end
                 M.checkpoint();if boss then state.attackSettings.bossTimings=state.attackSettings.bossTimings or {};state.attackSettings.bossTimings[state.input]=v else state.attackSettings[state.input]=v end;M.persist();state.timingError=nil
-            elseif v and M.selected then M.checkpoint(); M.selected[state.input]=v; M.persist() end
+            elseif v and M.selected then
+                if M.selected.kind=='lightning_zone' then
+                    local e=M.clone(M.selected);e[state.input]=v
+                    if not e.w or not e.h or e.w<80 or e.h<80 or e.x-e.w/2<0 or e.x+e.w/2>M.layout.width or e.y-e.h/2<0 or e.y+e.h/2>600 then state.status='La zone doit rester dans la carte (80 minimum).';state.error=true;return end
+                end
+                M.checkpoint(); M.selected[state.input]=v; M.persist()
+            end
             state.input=nil; love.keyboard.setTextInput(false)
         elseif key=='escape' then state.input=nil; love.keyboard.setTextInput(false) end
         return

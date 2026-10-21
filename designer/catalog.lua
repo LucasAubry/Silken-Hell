@@ -5,6 +5,7 @@ local function add(kind,type,name,art,world,defaults)
 end
 add('spawn',nil,'Départ du joueur','original',0)
 add('tear',nil,'Cercle de larme','tear_ring',0)
+add('lightning_zone',nil,'Zone d’éclairs',nil,0,{w=240,h=200})
 add('wall',nil,'Mur',nil,0,{w=100,h=24,rotation=0})
 for _,v in ipairs({
  {'waspling','Petite guêpe','waspling_down',2,95},{'larva','Petit ver','worm_down',5,72},{'blackbird_chick','Petit merle','merle_down',1,77},

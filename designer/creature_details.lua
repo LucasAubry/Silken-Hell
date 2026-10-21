@@ -11,6 +11,7 @@ local descriptions={
  fish='Déplacement : nage lentement en banc.\n\nAttaque : les poissons visent le joueur, puis chargent ensemble en ligne droite. Leur contact est mortel.'
 }
 function D.text(e)
+ if e.kind=='lightning_zone' then return require('lightning_config').description end
  if descriptions[e.type] then return descriptions[e.type] end
  local id=e.type=='skeleton_head' and 'skeleton_fish' or e.type
  for _,entry in ipairs(require('bestiary').entries) do if entry.id==id then return entry.text end end

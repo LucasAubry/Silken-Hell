@@ -107,6 +107,18 @@ function T.run(M,state,select)
  local unmarked=state.mapCanvas:newImageData();local nr,ng,nb=unmarked:getPixel(728,202)
  assert(math.abs(nr-r)+math.abs(ng-g)+math.abs(nb-b)>.1,'Disabling tear ownership removes its badge')
  unmarked:release();marked.has_larme=true;love.draw()
+ state.category='Environnement';state.tool=nil;M.selected=nil;love.draw()
+ local right=love.graphics.getWidth()-227
+ love.mousepressed(right+90,296,1);state.inputText='2.5';love.keypressed('return');love.draw()
+ love.mousepressed(right+90,376,1);state.inputText='0.8';love.keypressed('return')
+ assert(M.layout.lightning.interval==2.5 and M.layout.lightning.delay==.8,'Editor exposes both lightning timings')
+ love.draw();love.mousepressed(right+90,448,1);assert(state.tool.kind=='lightning_zone','Zone placement button')
+ local mx,my=point(700,440);love.mousepressed(mx,my,1);state.tool=nil;love.draw()
+ assert(M.selected.kind=='lightning_zone' and M.layout.environment.lightning,'Placing a zone enables lightning')
+ assert(M.validate(M.layout),'Lightning zone and timings are valid')
+ local savedLightning=require('json').decode(love.filesystem.read(M.draftFilename))['6:1']
+ assert(savedLightning.lightning.delay==.8 and savedLightning.entities[#savedLightning.entities].kind=='lightning_zone','Lightning settings and zones persist')
+ state.details=M.selected;love.draw();assert(require('creature_details').text(M.selected):find('milieu → haut → gauche → bas → droite',1,true),'Behavior describes the exact cycle');state.details=nil
  local frames=0;state.testUpdate=function()
   frames=frames+1
   if frames==2 then love.graphics.captureScreenshot('celestial-editor.png') end
