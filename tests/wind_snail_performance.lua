@@ -30,6 +30,15 @@ function T.run()
  G.update(moth,.05);assert(snail.edgeFall~=nil and snail.falling,'Pushed snail falls as soon as it leaves the arena')
  assert(objet.larme_dropped and objet.larme.x>=0 and objet.larme.x<Arena.width-30,'Carrier tear stays reachable')
  F.update(snail,.6);assert(snail.edgeGone and snail.dead and not isTouching(player,snail),'Fallen creature disappears and loses collision')
+ -- A nearby island across a hole is not a recoverable drop location.
+ Realms.custom=true;Realms.holes={{x=Arena.width/2,y=300,rx=45,ry=320,points={0,-300,0,300}}}
+ Arena.walls={};player.x=90;player.y=280;objet.larme_dropped=false
+ local carrier={x=Arena.width/2+30,y=300,has_larme=true,falling=true}
+ Campaign.dropTear(carrier)
+ local tx,ty=objet.larme.x+15,objet.larme.y+20
+ assert(tx<Arena.width/2-45,'Tear stays on the reachable side of the void')
+ assert(require('tear_safe_drop').safe(tx,ty),'Dropped tear has room for the player away from holes')
+ local previousX=objet.larme.x;Campaign.dropTear(carrier);assert(objet.larme.x==previousX,'Tear drops only once')
  for _,kind in ipairs({'wind_bat','mist_moth','dragonfly','waspling','ange','blackbird_chick'}) do
   local actor={type=kind,x=-20,y=200};assert(not F.check(actor) and not actor.falling,'Flying monster remains airborne: '..kind)
  end

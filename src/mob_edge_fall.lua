@@ -4,9 +4,7 @@ function F.check(m)
  if flying[m.type] or m.type=='piege' or m.type=='scie' or m.dead or m.edgeFall~=nil or m.edgeGone or m.tunnelTravel or m.abyssHeld then return false end
  if m.x>=0 and m.x<=Arena.width and m.y>=0 and m.y<=600 then return false end
  m.edgeFall=0;m.falling=true
- -- A required tear must stay reachable even when its carrier leaves the map.
- local x,y=m.x,m.y;m.x=math.max(45,math.min(Arena.width-45,x));m.y=math.max(45,math.min(555,y))
- Campaign.dropTear(m);m.x,m.y=x,y
+ Campaign.dropTear(m)
  return true
 end
 function F.update(m,dt)

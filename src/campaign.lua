@@ -304,7 +304,9 @@ function C.dropTear(m)
     if not m or not m.has_larme or objet.larme_dropped then return false end
     C.carrier=m;objet.larme_dropped=true
     objet.larme.taken=false;objet.larme.abyssHeld=nil
-    objet.larme.x=m.x-15;objet.larme.y=m.y-20
+    local x,y=m.x,m.y
+    if m.falling or m.edgeFall~=nil or Realms.fallAt(x,y) then x,y=require('tear_safe_drop').position(x,y) end
+    objet.larme.x=x-15;objet.larme.y=y-20
     return true
 end
 function C.updateTear(dt)
