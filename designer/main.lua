@@ -103,7 +103,19 @@ local function entity(e,ghost,terrainDrawn)
         else drawArt(c.art,e.x,e.y,size) end
     end
     if e.kind=='spawn' then g.setColor(.3,1,.7,.75); g.circle('line',e.x,e.y,32) end
-    if e.has_larme then g.setColor(Worlds.color(M.world).tear); g.circle('fill',e.x+21,e.y+20,6) end
+end
+-- Draw carrier badges separately so procedural sprites cannot skip them.
+local function carrierBadge(e)
+    if not e.has_larme then return end
+    local x,y=e.x+28,e.y-28
+    x=math.max(17,math.min(M.layout.width-17,x));y=math.max(17,math.min(583,y))
+    g.push('all');g.setShader();g.setLineWidth(2)
+    g.setColor(.015,.035,.065,.95);g.circle('fill',x,y,15)
+    g.setColor(.55,.85,1,1);g.circle('line',x,y,15)
+    g.setColor(.78,.94,1,1)
+    g.polygon('fill',x,y-10,x-7,y+1,x+7,y+1);g.circle('fill',x,y+2,7)
+    g.setColor(1,1,1,1);g.ellipse('fill',x-2,y+1,2,3)
+    g.pop()
 end
 local function selection(e)
     if not e then return end
@@ -284,6 +296,7 @@ function love.draw()
     end
     require('level_environment').draw(M.world,M.layout.width,600,0,M.layout.environment,true)
     selection(M.selected)
+    for _,e in ipairs(M.layout.entities) do carrierBadge(e) end
     g.pop()
     g.push('all');g.setShader();g.setBlendMode('alpha','premultiplied');g.setColor(1,1,1)
     g.draw(state.mapCanvas,x,y,0,scale,scale);g.pop()
