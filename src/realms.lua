@@ -105,20 +105,41 @@ function R.travelPose(m)
     local scale=t<.22 and 1-t/.22 or (t-.22)/.22
     return math.max(.02,scale),18*(1-scale)
 end
-local function captureTornado()
+-- The visible vortex is ~94 px wide; include the spider's footprint.
+local tornadoCaptureRadius=56
+local function captureTornado(fromX,fromY)
     if player.reset then return false end
+    local x,y=player.x+15,player.y+12
+    fromX,fromY=fromX or x,fromY or y
+    local dx,dy=x-fromX,y-fromY
+    local length=dx*dx+dy*dy
+    local first,firstTime
     for _,t in ipairs(R.tornadoes) do
-        if t.cooldown==0 and (player.x+15-t.x)^2+(player.y+12-t.y)^2<32^2 then
-            local dx,dy=player.lastMoveX or 0,player.lastMoveY or 1
-            local d=math.sqrt(dx*dx+dy*dy)
-            if d<.001 then dx,dy,d=0,1,1 end
-            player.throw=nil
-            player.whirl={tornado=t,time=.65,dx=dx/d,dy=dy/d}
-            player.dashing=false
-            return true
+        if (t.cooldown or 0)<=0 then
+            local ox,oy=fromX-t.x,fromY-t.y
+            local c=ox*ox+oy*oy-tornadoCaptureRadius^2
+            local hit
+            if c<=0 then hit=0
+            elseif length>0 then
+                local dot=ox*dx+oy*dy
+                local discriminant=dot*dot-length*c
+                if discriminant>=0 then
+                    local entry=(-dot-math.sqrt(discriminant))/length
+                    if entry>=0 and entry<=1 then hit=entry end
+                end
+            end
+            if hit and (not firstTime or hit<firstTime) then first,firstTime=t,hit end
         end
     end
-    return false
+    if not first then return false end
+    local headingX,headingY=player.lastMoveX or 0,player.lastMoveY or 1
+    local d=math.sqrt(headingX*headingX+headingY*headingY)
+    if d<.001 then headingX,headingY,d=0,1,1 end
+    player.x=fromX+dx*firstTime-15;player.y=fromY+dy*firstTime-12
+    player.throw=nil
+    player.whirl={tornado=first,time=.65,dx=headingX/d,dy=headingY/d}
+    player.dashing=false
+    return true
 end
 function R.updateTraversal(dt)
     if Campaign.biome==5 or R.custom then
@@ -127,7 +148,13 @@ function R.updateTraversal(dt)
         for _,m in ipairs(R.larvae) do R.traverse(m,dt,false) end
     end
     if R.custom then
-        for _,t in ipairs(R.tornadoes) do t.cooldown=math.max(0,t.cooldown-dt) end
+        for _,t in ipairs(R.tornadoes) do
+            -- Never expire the departure lock while still inside its capture area,
+            -- including a long frame immediately after launch.
+            local leaving=player.throw and (t.cooldown or 0)>0
+                and (player.x+15-t.x)^2+(player.y+12-t.y)^2<=tornadoCaptureRadius^2
+            if not leaving then t.cooldown=math.max(0,(t.cooldown or 0)-dt) end
+        end
         if player.whirl then
             local w=player.whirl; w.time=w.time-dt; local a=R.clock*18
             -- Aim remains controllable throughout the spin, including its last frame.
@@ -148,9 +175,10 @@ function R.updateTraversal(dt)
             local t=player.throw; local step=math.min(dt,t.time)
             local steps=math.max(1,math.ceil(1050*step/6))
             for _=1,steps do
+                local fromX,fromY=player.x+15,player.y+12
                 local hx,hy=Arena.move(player,t.vx*step/steps,t.vy*step/steps)
                 R.contact(); if player.reset then t.time=0; break end
-                if captureTornado() then break end
+                if captureTornado(fromX,fromY) then break end
                 if hx or hy then t.time=0; break end
             end
             t.time=t.time-dt

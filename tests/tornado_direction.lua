@@ -52,6 +52,22 @@ function T.run()
  assert(player.whirl and player.whirl.tornado==target and not player.throw and not player.reset,'Flight chains into another tornado over the void')
  Realms.contact();assert(not player.reset,'Spinning remains above the void')
  steer(-1,0,.66);assert(player.throw and player.throw.vx<0,'Second tornado launches in the newly chosen direction')
+ -- Grazing the visible vortex must count, even if neither sampled endpoint
+ -- lies inside its capture circle. Keep a genuine near miss outside it.
+ for _,offset in ipairs({40,55.98,57}) do
+  player.reset=false;player.falling=false;player.whirl=nil;Realms.holes={};mobs={}
+  player.x=300-15;player.y=300+offset-12
+  local vortex={x=303,y=300,cooldown=0};Realms.tornadoes={vortex}
+  player.throw={vx=1050,vy=0,time=1.5}
+  Realms.updateTraversal(6/1050)
+  assert((player.whirl~=nil)==(offset<56),'Swept vortex edge detection: '..offset)
+ end
+ -- Overlapping capture zones choose the first encountered, not entity order.
+ player.reset=false;player.falling=false;player.whirl=nil;player.x=285;player.y=288
+ local near={x=355,y=300,cooldown=0};local far={x=359,y=300,cooldown=0}
+ Realms.tornadoes={far,near};player.throw={vx=1050,vy=0,time=1.5}
+ Realms.updateTraversal(6/1050)
+ assert(player.whirl and player.whirl.tornado==near,'Earliest encountered tornado wins')
  -- A short flight ending over a hole must fall as soon as its lift expires.
  player.whirl=nil;player.x=Arena.width/2-15;player.y=288
  player.throw={vx=1050,vy=0,time=.01};Realms.tornadoes={}
