@@ -115,7 +115,7 @@ local function captureTornado(fromX,fromY)
     local length=dx*dx+dy*dy
     local first,firstTime
     for _,t in ipairs(R.tornadoes) do
-        if (t.cooldown or 0)<=0 then
+        if (t.cooldown or 0)<=0 and not t.eject and (t.growth==nil or t.growth>=1) then
             local ox,oy=fromX-t.x,fromY-t.y
             local c=ox*ox+oy*oy-tornadoCaptureRadius^2
             local hit
@@ -141,7 +141,8 @@ local function captureTornado(fromX,fromY)
     local heading=flight and math.atan2(flight.vy,flight.vx) or 0
     local ex,ey=player.x+15-first.x,player.y+12-first.y
     player.throw=nil
-    player.whirl={tornado=first,time=.65,dx=headingX/d,dy=headingY/d,
+    local inputX,inputY=Input.move()
+    player.whirl={tornado=first,time=1,age=0,inputX=inputX,inputY=inputY,dx=headingX/d,dy=headingY/d,
         entryX=ex,entryY=ey,entryVX=flight and flight.vx or 0,entryVY=flight and flight.vy or 0,
         entryAngle=math.atan2(ey/10,ex/15),
         entryRotation=flight and age*7+math.sin(age*15)*.13+math.cos(heading)*.14 or 0,
@@ -155,7 +156,15 @@ function R.updateTraversal(dt)
         for _,m in ipairs(mobs) do if not m.ground and m.type~='piege' then R.traverse(m,dt,false) end end
         for _,m in ipairs(R.larvae) do R.traverse(m,dt,false) end
     end
-    if R.custom then
+    if R.custom or R.stormActive() then
+        for i=#R.tornadoes,1,-1 do
+            local t=R.tornadoes[i]
+            if t.growth then t.growth=math.min(1,t.growth+dt/(t.growthDuration or 1.2)) end
+            if t.eject then
+                t.x=t.x+t.eject*850*dt
+                if t.x< -100 or t.x>Arena.width+100 then table.remove(R.tornadoes,i) end
+            end
+        end
         for _,t in ipairs(R.tornadoes) do
             -- Never expire the departure lock while still inside its capture area,
             -- including a long frame immediately after launch.
@@ -164,8 +173,8 @@ function R.updateTraversal(dt)
             if not leaving then t.cooldown=math.max(0,(t.cooldown or 0)-dt) end
         end
         if player.whirl then
-            local w=player.whirl; w.time=w.time-dt
-            local age=math.max(0,.65-w.time);local duration=.24
+            local w=player.whirl;w.age=(w.age or 0)+dt;w.time=math.max(0,1-w.age)
+            local age=w.age;local duration=.24
             local a=(w.entryAngle or 0)+age*18
             -- Aim remains controllable throughout the spin, including its last frame.
             local dx,dy=Input.move();local length=math.sqrt(dx*dx+dy*dy)
@@ -187,9 +196,12 @@ function R.updateTraversal(dt)
                 y=pull(w.entryY,w.entryVY,math.sin(endAngle)*10,math.cos(endAngle)*180)
             end
             player.x=w.tornado.x+x-15;player.y=w.tornado.y+y-12
-            R.contact()
+            Hazards.contact()
             if player.reset then player.whirl=nil;return end
-            if w.time<=0 then
+            local pressed=length>.001 and ((w.inputX or 0)==0 and (w.inputY or 0)==0
+                or math.abs(dx-(w.inputX or 0))>.25 or math.abs(dy-(w.inputY or 0))>.25)
+            w.inputX,w.inputY=dx,dy
+            if w.age>=1 and pressed then
                 player.whirl=nil; player.throw={vx=w.dx*1050,vy=w.dy*1050,time=1.5}
                 -- Only the vortex we just left is locked; chains can revisit another.
                 for _,other in ipairs(R.tornadoes) do other.cooldown=other==w.tornado and 1.5 or 0 end
@@ -200,7 +212,7 @@ function R.updateTraversal(dt)
             for _=1,steps do
                 local fromX,fromY=player.x+15,player.y+12
                 local hx,hy=Arena.move(player,t.vx*step/steps,t.vy*step/steps)
-                R.contact(); if player.reset then t.time=0; break end
+                Hazards.contact(); if player.reset then t.time=0; break end
                 if captureTornado(fromX,fromY) then break end
                 if hx or hy then t.time=0; break end
             end
@@ -520,6 +532,9 @@ function R.drawDarkness()
     end end
     g.setBlendMode('alpha'); g.setColor(1,1,1)
 end
+function R.drawTornadoes()
+    for _,t in ipairs(R.tornadoes) do local growth=t.growth or 1;local size=math.max(.025,growth*growth*(3-2*growth));require('tornado_art').draw(Art,t.x,t.y,R.clock,94*size) end
+end
 function R.drawGround()
     local g=love.graphics
     require('sky_weather').drawGround()
@@ -528,7 +543,6 @@ function R.drawGround()
     for _,t in ipairs(R.tunnels) do
         EarthMound.draw(t.x,t.y)
     end
-    for _,t in ipairs(R.tornadoes) do require('tornado_art').draw(Art,t.x,t.y,R.clock,94) end
     if Campaign.biome==4 or Campaign.biome==7 or R.custom then
         for _,c in ipairs(R.current) do
             g.setColor(.2,.75,.85,.18)

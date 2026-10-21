@@ -34,7 +34,6 @@ function B.load(entries,nests,lights)
             else boss.reset(false); boss.active=true; boss.x=e.x; boss.y=e.y end
             while #mobs>count do table.remove(mobs) end
             player.x,player.y=px,py
-            if e.type=='storm' then Realms.tornadoes={} end
             if e.type=='merle' then
                 boss.setupNests(#nests>=2 and require('json').decode(require('json').encode(nests)) or nil)
             end

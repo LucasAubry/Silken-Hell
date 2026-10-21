@@ -38,7 +38,7 @@ local function drawPlayer(direction)
     end
     if player.whirl or player.skyWhirl then
         local w=player.whirl
-        local age=w and math.max(0,.65-w.time) or 0
+        local age=w and (w.age or math.max(0,.65-w.time)) or 0
         local u=math.min(1,age/.24);local ease=u*u*(3-2*u)
         local rotation=w and (w.entryRotation or 0)+7*age+11*(age<.24 and .24*(u*u*u-.5*u*u*u*u) or age-.12) or Realms.clock*18
         local lift=w and (w.entryLift or 0)*(1-ease) or 0

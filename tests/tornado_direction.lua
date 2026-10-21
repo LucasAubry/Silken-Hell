@@ -19,7 +19,15 @@ function T.run()
   input(dx,dy)
   local x,y=player.x,player.y;App.move(dt)
   assert(player.x==x and player.y==y,'Directional input cannot walk out of the tornado')
-  Realms.clock=.2;Realms.updateTraversal(dt)
+  Realms.clock=.2
+  if dt>.4 then
+   -- Every launch now requires a fresh direction after the one-second wait.
+   local w=player.whirl;local aimX,aimY=dx,dy
+   if aimX==0 and aimY==0 then aimX,aimY=w.dx,w.dy end
+   input(0,0);Realms.updateTraversal(1.01)
+   assert(player.whirl,'No automatic launch after the wait')
+   input(aimX,aimY);Realms.updateTraversal(1/60)
+  else Realms.updateTraversal(dt) end
  end
  local function checkThrow(dx,dy)
   local length=math.sqrt(dx*dx+dy*dy);dx,dy=dx/length,dy/length
@@ -31,6 +39,11 @@ function T.run()
   assert(math.abs(player.x-x-dx*42)<.01 and math.abs(player.y-y-dy*42)<.01,'After launch, changing input no longer steers the throw')
   assert(Realms.tornadoes[1].cooldown>1,'Cooldown prevents immediate recapture')
  end
+ enter(1,0);input(1,0);Realms.updateTraversal(.5)
+ assert(player.whirl,'Cannot leave during the first second')
+ Realms.updateTraversal(2);assert(player.whirl,'Holding the entry direction does not auto-launch')
+ input(0,0);Realms.updateTraversal(.01);input(0,-1);Realms.updateTraversal(.01)
+ assert(player.throw and player.throw.vy==-1050,'Fresh direction after one second launches')
  for _,d in ipairs({{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1},{.2,.1}})do
   enter(0,1);steer(-d[1],-d[2],.2);assert(player.whirl,'Spin lasts until release')
   steer(d[1],d[2],.46);checkThrow(d[1],d[2])

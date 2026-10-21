@@ -245,7 +245,7 @@ function C.draw()
             g.setColor(1,.38+i%3*.12,.10,0.35); g.circle('fill',x,y,1+i%2)
         end
     end
-    Hazards.draw(); Realms.drawGround(); Ocean.drawGround(); Octopus.drawGround(); Raven.drawGround(); Wasp.drawGround(); Storm.drawGround(); Bosses.drawGround(); require('sky_weather').drawElectric(); Arena.drawWalls(hell)
+    Hazards.draw(); Realms.drawGround(); Ocean.drawGround(); Octopus.drawGround(); Raven.drawGround(); Wasp.drawGround(); Storm.drawGround(); Bosses.drawGround(); require('sky_weather').drawElectric();Realms.drawTornadoes(); Arena.drawWalls(hell)
     g.setColor(1,1,1)
 end
 function C.tearCarried()

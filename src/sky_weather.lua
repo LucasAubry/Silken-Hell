@@ -5,7 +5,7 @@ function S.reset()
  S.strikes={};S.holes={};S.trails={};S.snailHoles={};S.mist={};S.mistCuts={};S.clock=0;S.phaseTime=4;S.seed=0
  S.zones=require('lightning_config').zones(LevelLayouts.activeLayout,Arena.width)
  S.zoneStep=#S.zones>0 and 0 or nil
- S.storm=require('level_environment').active('lightning') and not Secret.inArena();S.active=S.storm or require('sky').openEdges()
+ S.storm=require('level_environment').active('lightning') and not Secret.inArena() and not Realms.stormActive();S.active=S.storm or require('sky').openEdges()
  for _,m in ipairs(mobs) do if m.type=='dragonfly' or m.type=='mist_moth' or m.type=='wind_bat' or m.type=='cloud_snail' then S.active=true end end
 end
 function S.trail(x,y,tx,ty)
