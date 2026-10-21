@@ -105,18 +105,24 @@ local function bake(field,biome)
  g.draw(field.image,0,0,0,field.step,field.step);g.pop()
  return field.surface
 end
-local function drawSurface(zones,kind,time,alpha,biome)
- local field=S.field(zones,kind);if not field then return end
+-- Authored holes and live snail trails share exactly the same cloud material.
+function S.drawSkyField(field,alpha)
+ if not require('biome_floor').cache then return end
  local g=love.graphics;g.push('all')
- if biome==6 and kind=='hole' and require('biome_floor').cache then
   local floor=require('biome_floor')
   S.skyShader=S.skyShader or g.newShader('assets/shaders/sky_hole.glsl')
   local shader=S.skyShader;shader:send('floorImage',floor.cache.canvas);shader:send('floorSize',{floor.worldWidth,floor.worldHeight})
   shader:send('worldOrigin',{field.x,field.y});shader:send('worldSize',{field.w,field.h})
   shader:send('sampleStep',{1/field.image:getWidth(),1/field.image:getHeight()})
   g.setShader(shader);g.setColor(1,1,1,alpha or 1);g.draw(field.image,field.x,field.y,0,field.step,field.step)
-  g.pop();return
+ g.pop()
+end
+local function drawSurface(zones,kind,time,alpha,biome)
+ local field=S.field(zones,kind);if not field then return end
+ if biome==6 and kind=='hole' and require('biome_floor').cache then
+  S.drawSkyField(field,alpha);return
  end
+ local g=love.graphics;g.push('all')
  -- Stone lips never animate: shade once, then composite a single texture.
  if kind~='lava' then
   local image=bake(field,biome)

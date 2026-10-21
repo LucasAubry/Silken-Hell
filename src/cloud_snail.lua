@@ -55,42 +55,32 @@ function N.update(m,dt)
   end
  end
 end
-local function paintTrail()
- local g=love.graphics;g.push('all');g.setShader();g.setLineStyle('smooth')
- -- The opening retains its collision footprint. Successively inset floors
- -- descend beneath the upper lip, exposing a shaded vertical wall.
- local layers={
-  {5,0,{.40,.52,.63}}, {2,0,{.09,.15,.23}},
-  {0,0,{.16,.25,.35}}, {-2,1,{.12,.19,.28}},
-  {-4,3,{.08,.13,.21}}, {-6,4,{.045,.078,.135}},
-  {-8,5,{.02,.039,.078}}, {-10,6,{.006,.014,.034}},
- }
- for _,layer in ipairs(layers) do
-  g.setColor(layer[3]);local inset,depth=layer[1]*N.width/23,layer[2]*N.width/23
-  for _,p in ipairs(weather().snailHoles or {}) do
-   local radius=(p.radius or N.width)+inset;g.setLineWidth(radius*2)
-   g.line(p.x,p.y+depth,p.tx,p.ty+depth)
-   g.circle('fill',p.x,p.y+depth,radius)
-   g.circle('fill',p.tx,p.ty+depth,radius)
-  end
- end
- g.pop()
-end
--- Permanent terrain only needs repainting when its geometry changes.
+-- Extend a GPU distance mask only when a new segment is eaten. The cloud
+-- shader stays live, so the rim follows the same moving sky as authored holes.
 function N.drawTrail()
  local list=weather().snailHoles or {};local g=love.graphics
  if #list==0 then return end
  local width=math.ceil(Arena.width)
  if not N.canvas or N.canvas:getWidth()~=width then
   if N.canvas then N.canvas:release() end
-  N.canvas=g.newCanvas(width,600,{dpiscale=1});N.drawList=nil
+  N.canvas=g.newCanvas(width,600,{dpiscale=1});N.canvas:setFilter('linear','linear');N.drawList=nil
  end
- if N.drawList~=list or N.drawCount~=#list or N.drawRevision~=N.revision then
-  g.push('all');g.setCanvas(N.canvas);g.origin();g.setScissor();g.setShader();g.clear()
-  paintTrail();g.pop()
-  N.drawList=list;N.drawCount=#list;N.drawRevision=N.revision
+ local rebuild=N.drawList~=list or N.drawRevision~=N.revision or (N.drawCount or 0)>#list
+ if rebuild or N.drawCount~=#list then
+  N.maskShader=N.maskShader or g.newShader('assets/shaders/snail_hole_mask.glsl')
+  g.push('all');g.setCanvas(N.canvas);g.origin();g.setScissor();g.setShader(N.maskShader)
+  if rebuild then g.clear(0,0,0,1);N.drawCount=0 end
+  -- Maximum signed distance joins overlapping capsules without painted seams.
+  g.setBlendMode('lighten','premultiplied');g.setColor(1,1,1)
+  for i=(N.drawCount or 0)+1,#list do
+   local p=list[i];local radius=p.radius or N.width;local margin=radius+18
+   N.maskShader:send('ends',{p.x,p.y,p.tx,p.ty});N.maskShader:send('radius',radius)
+   g.rectangle('fill',math.min(p.x,p.tx)-margin,math.min(p.y,p.ty)-margin,
+    math.abs(p.tx-p.x)+margin*2,math.abs(p.ty-p.y)+margin*2)
+  end
+  g.pop();N.drawList=list;N.drawCount=#list;N.drawRevision=N.revision
  end
- g.push('all');g.setShader();g.setColor(1,1,1);g.setBlendMode('alpha','premultiplied');g.draw(N.canvas);g.pop()
+ require('terrain_surface').drawSkyField({image=N.canvas,x=0,y=0,w=width,h=600,step=1},1)
 end
 function N.art(x,y,size,time,angle,alpha) require('cloud_snail_art').draw(x,y,size,time,angle,alpha) end
 function N.draw(m)

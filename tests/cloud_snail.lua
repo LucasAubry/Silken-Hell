@@ -25,7 +25,14 @@ function T.run()
  W.drawGround=function(...)order[#order+1]='ground';return ground(...)end
  N.drawTrail=function(...)order[#order+1]='holes';return holes(...)end
  W.drawElectric=function(...)order[#order+1]='electric';return electric(...)end
+ local surface=require('terrain_surface');local shared=surface.drawSkyField;local sharedCalls=0
+ surface.drawSkyField=function(...)sharedCalls=sharedCalls+1;return shared(...)end
+ local builds=surface.builds
  local state=require('json').encode(require('replay_state').snapshot());love.draw()
+ assert(sharedCalls>0,'Snail holes use the authored cloud-hole material')
+ local mask=N.canvas;local drawn=N.drawCount;love.draw()
+ assert(N.canvas==mask and N.drawCount==drawn and surface.builds<=builds+1,'Unchanged trails reuse their distance mask')
+ surface.drawSkyField=shared
  W.drawGround,N.drawTrail,W.drawElectric=ground,holes,electric
  local index={};for i,key in ipairs(order) do index[key]=i end
  assert(index.holes<index.ground and index.ground<index.electric,'Snail holes render below all hazards and electric traces')
