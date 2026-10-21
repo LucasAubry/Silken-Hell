@@ -345,7 +345,7 @@ function love.draw()
                 local label=({attackDelay='Délai initial (s)',attackDuration='Durée (s)',attackInterval='Repos (s)'})[key]
                 if modal.type=='magma_larva' then label='Mèche (s)' elseif modal.type=='dragonfly' then label='Traînée après (s)' end
                 text(label,x+24,y+82+row*58,18)
-                local value=state.input==key and state.inputText..'|' or modal[key]~=nil and tostring(modal[key]) or 'Par défaut'
+                local value=state.input==key and state.inputText..'|' or tostring(modal[key] or spec[key])..' s'
                 button(value,x+width-220,y+74+row*58,196,40,function() state.input=key;state.inputText=tostring(modal[key] or spec[key]);state.timingError=nil;love.keyboard.setTextInput(true) end)
                 row=row+1
             end end
