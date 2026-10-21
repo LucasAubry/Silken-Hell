@@ -21,6 +21,8 @@ function load_player()
 end
 
 
+-- Presentation-only pose: flutter the existing leg rig without changing gameplay state.
+local flightPose={walkMoving=true,sanctuaryPlayer=true}
 local function drawPlayer(direction)
     if require('sky_weather').playerHidden() then return end
     if Abyss and (Abyss.playerHidden() or Abyss.playerVisibility()==0) then return end
@@ -65,10 +67,11 @@ local function drawPlayer(direction)
         -- A lifted body and a light flutter keep the flight readable over gaps.
         local lift=9+math.sin(age*12)*2.5
         g.translate(0,-lift)
-        g.rotate(math.sin(age*15)*.13+math.cos(angle)*.14)
+        g.rotate(age*7+math.sin(age*15)*.13+math.cos(angle)*.14)
         g.scale(1+math.sin(age*18)*.025,1-math.sin(age*18)*.025)
         g.setColor(1,1,1)
-        Characters.draw(0,0,Characters.playerWidth,direction)
+        flightPose.walkPhase=age*22
+        Characters.draw(0,0,Characters.playerWidth,direction,flightPose)
         g.pop()
         return
     end

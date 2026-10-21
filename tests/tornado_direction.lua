@@ -73,7 +73,16 @@ function T.run()
  local before=state();local rng=love.math.getRandomState()
  local canvas=love.graphics.newCanvas(1200,750)
  love.graphics.push('all');love.graphics.setCanvas(canvas);love.graphics.clear(.08,.15,.22,1)
- draw_player('right');love.graphics.pop()
+ local draw=Characters.draw;local poses={}
+ Characters.draw=function(x,y,width,dir,pose,...)
+  assert(pose and pose.walkMoving and pose~=player,'Flight animates a separate leg pose')
+  poses[#poses+1]=pose.walkPhase
+  return draw(x,y,width,dir,pose,...)
+ end
+ draw_player('right')
+ player.throw.time=1.1;draw_player('right');player.throw.time=1.2
+ Characters.draw=draw;love.graphics.pop()
+ assert(#poses==2 and poses[2]>poses[1],'Leg flutter advances with flight time')
  assert(state()==before and love.math.getRandomState()==rng,'Flight effects never change simulation or replay RNG')
  canvas:release();player.throw=nil
  Campaign.biome=1;Realms.custom=true;enter(0,1);steer(-1,0,.66);checkThrow(-1,0)
