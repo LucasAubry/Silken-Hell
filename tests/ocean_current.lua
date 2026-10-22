@@ -46,7 +46,10 @@ function T.run()
  end
  Hazards.kill=kill
  local g=love.graphics;local canvas=g.newCanvas(960,600);local rng=love.math.getRandomState()
+ local nearest=C.nearest;local queries=0
+ C.nearest=function(...)queries=queries+1;return nearest(...)end
  g.push('all');g.setCanvas(canvas);g.origin();require('biome_floor').draw(4,960,600,2);C.draw(zone,2);g.pop()
+ C.nearest=nearest;assert(queries==0,'Current particles never scan the full path for collision')
  assert(love.math.getRandomState()==rng);canvas:newImageData():encode('png','ocean-current.png');canvas:release()
  print('PASS ocean currents: brush footprint, drift, drag, direction, overlaps, walls, jelly timing; hidden larva safe in every tornado state')
  love.event.quit()

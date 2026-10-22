@@ -8,10 +8,12 @@ function C.path(e)
  if c and c.points==p and c.count==#p and c.rx==rx and c.ry==ry and c.lastX==p[#p-1] and c.lastY==p[#p] then return c end
  if c and c.band then c.band:release() end
  c={points=p,count=#p,lastX=p[#p-1],lastY=p[#p],segments={},length=0,rx=rx,ry=ry};C.cache[e]=c
+ c.x0,c.y0,c.x1,c.y1=require('ground_holes').bounds(e)
  for i=3,#p,2 do
   local x,y=p[i-2],p[i-1];local dx,dy=p[i]-x,p[i+1]-y;local length=math.sqrt(dx*dx+dy*dy)
   if length>.001 then
-   c.segments[#c.segments+1]={x=x,y=y,dx=dx/length,dy=dy/length,length=length,start=c.length}
+   local nx,ny=dx/length/rx,dy/length/ry
+   c.segments[#c.segments+1]={x=x,y=y,dx=dx/length,dy=dy/length,length=length,start=c.length,nx=nx,ny=ny,inverse=1/(nx*nx+ny*ny)}
    c.length=c.length+length
   end
  end
@@ -19,9 +21,14 @@ function C.path(e)
 end
 function C.sample(c,d)
  d=math.max(0,math.min(c.length,d))
- for i,s in ipairs(c.segments) do if d<=s.start+s.length or i==#c.segments then
-  local t=d-s.start;return s.x+s.dx*t,s.y+s.dy*t,s.dx,s.dy
- end end
+ -- Arc lengths are sorted; long hand-drawn paths need only a few comparisons.
+ local lo,hi=1,#c.segments
+ while lo<hi do
+  local mid=math.floor((lo+hi)/2);local s=c.segments[mid]
+  if d<=s.start+s.length then hi=mid else lo=mid+1 end
+ end
+ local s=c.segments[lo]
+ if s then local t=d-s.start;return s.x+s.dx*t,s.y+s.dy*t,s.dx,s.dy end
  return 0,0,1,0
 end
 function C.nearest(e,x,y)
@@ -29,8 +36,7 @@ function C.nearest(e,x,y)
  x,y=x-e.x,y-e.y
  local best,along=math.huge,0
  for _,s in ipairs(c.segments) do
-  local dx,dy=s.dx/c.rx,s.dy/c.ry
-  local t=math.max(0,math.min(s.length,((x-s.x)/c.rx*dx+(y-s.y)/c.ry*dy)/(dx*dx+dy*dy)))
+  local t=math.max(0,math.min(s.length,((x-s.x)/c.rx*s.nx+(y-s.y)/c.ry*s.ny)*s.inverse))
   local d=((x-s.x-s.dx*t)/c.rx)^2+((y-s.y-s.dy*t)/c.ry)^2
   if d<best then best=d;along=s.start+t end
  end
@@ -38,13 +44,18 @@ function C.nearest(e,x,y)
  return best,along,c
 end
 function C.contains(e,x,y)
- if e.points then return C.nearest(e,x,y)<=1 end
+ if e.points then
+  local c=C.path(e);local px,py=x-e.x,y-e.y
+  if px<c.x0 or px>c.x1 or py<c.y0 or py>c.y1 then return false end
+  return C.nearest(e,x,y)<=1
+ end
  return ((x-e.x)/(e.rx or 50))^2+((y-e.y)/(e.ry or 150))^2<=1
 end
 function C.sign(e) return e.dx==-1 and -1 or 1 end
-function C.direction(e,x,y)
+function C.direction(e,x,y,along,c)
  if not e.points then return C.sign(e),0 end
- local _,along,c=C.nearest(e,x,y);local sign=C.sign(e)
+ if not c then local distance;distance,along,c=C.nearest(e,x,y) end
+ local sign=C.sign(e)
  local px,py,dx,dy=C.sample(c,along)
  -- Aim ahead around bends and gently return to the centre of the channel.
  local ahead=along+sign*24
@@ -57,10 +68,19 @@ function C.direction(e,x,y)
 end
 function C.velocity(x,y,vx,vy,zones)
  local fx,fy,count=0,0,0
- for _,e in ipairs(zones or {}) do if C.contains(e,x,y) then
-  local dx,dy=C.direction(e,x,y);local speed=e.speed or 80
-  fx,fy=fx+dx*speed,fy+dy*speed;count=count+1
- end end
+ for _,e in ipairs(zones or {}) do
+  local inside,along,c
+  if e.points then
+   c=C.path(e);local px,py=x-e.x,y-e.y
+   if px>=c.x0 and px<=c.x1 and py>=c.y0 and py<=c.y1 then
+    local distance;distance,along=C.nearest(e,x,y);inside=distance<=1
+   end
+  else inside=C.contains(e,x,y) end
+  if inside then
+   local dx,dy=C.direction(e,x,y,along,c);local speed=e.speed or 80
+   fx,fy=fx+dx*speed,fy+dy*speed;count=count+1
+  end
+ end
  if count==0 then return vx,vy end
  return vx*.65+fx/count,vy*.65+fy/count
 end
@@ -94,7 +114,9 @@ function C.draw(e,time,editor)
    x,y=e.x+x-dy*c.rx*side,e.y+y+dx*c.ry*side
    local trail=18+i%4*5;local tail=math.max(0,math.min(c.length,d-sign*trail))
    local ax,ay,adx,ady=C.sample(c,tail);ax,ay=e.x+ax-ady*c.rx*side,e.y+ay+adx*c.ry*side
-   if C.contains(e,x,y) and C.contains(e,ax,ay) then
+   -- Both endpoints are sampled on the path, offset by at most 65% of
+   -- its radius. They are already inside the channel: no full path scan.
+   do
     local fade=math.min(1,d/20,(c.length-d)/20)
     g.setLineWidth(i%3==0 and 2 or 1);g.setColor(.58,.94,1,(.30+i%3*.08)*fade);g.line(ax,ay,x,y)
     if i%4==0 then g.setColor(.83,.98,1,.55*fade);g.circle('fill',x,y,1.6) end
