@@ -130,7 +130,7 @@ function L.apply(layout)
     local bossEntities={}; local nests={}
     for _,raw in ipairs(layout.entities) do
         local e=copy(raw); e.type=raw.type; e.kind=raw.kind; e.x=e.x*scale
-        if (e.kind=='hole' or e.kind=='lava' or e.kind=='electric_ground') and e.points then
+        if (e.kind=='hole' or e.kind=='lava' or e.kind=='electric_ground' or e.kind=='current') and e.points then
             for i=1,#e.points,2 do e.points[i]=e.points[i]*scale end
             e.rx=(e.rx or e.radius)*scale;e.ry=e.ry or e.radius
         end

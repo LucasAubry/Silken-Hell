@@ -251,10 +251,6 @@ function R.update(dt)
                 school.angle=math.atan2(player.y+12-y/#school.members,player.x+15-x/#school.members)
             end
         end
-        for _,c in ipairs(R.current) do if Hazards.inEllipse(player.x+15,player.y+12,c,0) then
-            local x=player.x+c.dx*40*dt
-            if not willCollide(x,player.y) then player.x=x end
-        end end
     end
     R.updateProjectiles(dt)
     R.updateFireflies(dt)
@@ -362,7 +358,7 @@ function R.contact()
     end
     if player.throw or player.whirl or player.skyThrow or player.skyWhirl then
         for _,m in ipairs(mobs) do
-            if not (m.dead or m.falling or m.hidden or m.capture) and isTouching(player,m) then Hazards.kill(m.type);break end
+            if not (m.dead or m.falling or m.hidden or m.capture or R.underground(m) or m.type=='cloud_beast' and m.phase=='emerge') and isTouching(player,m) then Hazards.kill(m.type);break end
         end
     end
     for _,m in ipairs(mobs) do
@@ -542,12 +538,7 @@ function R.drawGround()
         EarthMound.draw(t.x,t.y)
     end
     if Campaign.biome==4 or Campaign.biome==7 or R.custom then
-        for _,c in ipairs(R.current) do
-            g.setColor(.2,.75,.85,.18)
-            for i=1,12 do local y=c.y-170+i*28; local x=c.x+math.sin(R.clock*2+i)*15
-                g.line(x-10*c.dx,y-3,x,y,x-10*c.dx,y+3)
-            end
-        end
+        for _,c in ipairs(R.current) do require('ocean_current').draw(c,R.clock) end
         for i=1,((Campaign.biome==4 or Campaign.biome==7) and not Abyss.encounterActive()) and 25 or 0 do local x=(i*97)%Arena.width; local y=(i*59-R.clock*15)%600
             g.setColor(.55,.9,1,.22); g.circle('line',x,y,2+i%3)
         end

@@ -110,7 +110,7 @@ function S.drawSkyField(field,alpha)
  if not require('biome_floor').cache then return end
  local g=love.graphics;g.push('all')
   local floor=require('biome_floor')
-  S.skyShader=S.skyShader or g.newShader('assets/shaders/sky_hole.glsl')
+  S.skyShader=S.skyShader or g.newShader(love.filesystem.read('assets/shaders/sky_clouds.glsl')..love.filesystem.read('assets/shaders/sky_hole.glsl'))
   local shader=S.skyShader;shader:send('floorImage',floor.cache.canvas);shader:send('floorSize',{floor.worldWidth,floor.worldHeight})
   shader:send('worldOrigin',{field.x,field.y});shader:send('worldSize',{field.w,field.h})
   shader:send('sampleStep',{1/field.image:getWidth(),1/field.image:getHeight()})

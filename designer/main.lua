@@ -51,7 +51,7 @@ local function inside(mx,my)
     local x,y=point(mx,my); return x>=0 and x<=M.layout.width and y>=0 and y<=600
 end
 local function snapped(v) return state.snap and math.floor(v/10+.5)*10 or math.floor(v+.5) end
-local function brush(e) return e and (e.kind=='hole' or e.kind=='lava') end
+local function brush(e) return e and (e.kind=='hole' or e.kind=='lava' or e.kind=='current') end
 -- Explicit time also freezes procedural sprites which use the real clock in game.
 local function drawArt(key,x,y,width,angle,height)
     Art.draw(key,x,y,width,angle,height,0)
@@ -82,7 +82,8 @@ local function entity(e,ghost,terrainDrawn)
     elseif e.kind=='hole' then
         if not terrainDrawn then require('terrain_surface').draw({e},'hole',state.clock,ghost and .5 or 1,M.world) end
 
-    elseif e.kind=='current' then g.setColor(.2,.85,1,.2); g.ellipse('fill',e.x,e.y,e.rx,e.ry); text(e.dx==1 and '>' or '<',e.x-6,e.y-9,18)
+    elseif e.kind=='current' then
+        require('ocean_current').draw(e,state.clock,true)
     elseif e.type=='larva' then Art.drawWorm('down',e.x,e.y,30,0)
     elseif e.type=='magma_larva' then
         local a=Art.images.magma_larva;local size=38
@@ -129,7 +130,7 @@ local function selection(e)
     g.push('all');g.setShader();g.setColor(1,.85,.08,1);g.setLineWidth(3)
     local size=e.kind=='boss' and (e.type=='octopus' and 360 or 110) or 70
     local w,h=e.w and e.w+10 or e.type=='skeleton_head' and 180 or size+10,e.h and e.h+10 or e.type=='skeleton_head' and 160 or size+10
-    g.translate(e.x,e.y);g.rotate((e.rotation or 0)*math.pi/180)
+    g.translate(e.x,e.y);g.rotate((e.kind=='current' and 0 or e.rotation or 0)*math.pi/180)
     if brush(e) and e.points then
         local x0,y0,x1,y1=require('ground_holes').bounds(e);g.rectangle('line',x0-5,y0-5,x1-x0+10,y1-y0+10,4)
     elseif e.type=='skeleton_fish' then
@@ -217,7 +218,7 @@ function love.load()
     state.editorSound=love.audio.newSource('assets/audio/effects/editeur start.mp3','static');state.editorSound:setVolume(.65);state.editorSound:play()
     if os.getenv('SILKEN_DESIGNER_TEST')=='1' and os.getenv('SILKEN_CELESTIAL_EDITOR_TEST')=='1' then require('celestial_selftest').run(M,state,select);return end
     if os.getenv('SILKEN_DESIGNER_TEST')=='1' and os.getenv('SILKEN_MAP_PREVIEW_TEST')=='1' then require('preview_selftest').run(M,state,select);return end
-    if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require(os.getenv('SILKEN_EDITOR_DRAWING_TEST')=='1' and 'drawing_selftest' or os.getenv('SILKEN_GROUND_HOLES_TEST')=='1' and 'holes_selftest' or M.projects and 'project_selftest' or M.workshop and 'workshop_selftest' or 'selftest').run(M,state,select,apply,preview) end
+    if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require(os.getenv('SILKEN_OCEAN_CURRENT_TEST')=='1' and 'current_selftest' or os.getenv('SILKEN_EDITOR_DRAWING_TEST')=='1' and 'drawing_selftest' or os.getenv('SILKEN_GROUND_HOLES_TEST')=='1' and 'holes_selftest' or M.projects and 'project_selftest' or M.workshop and 'workshop_selftest' or 'selftest').run(M,state,select,apply,preview) end
 end
 function love.draw()
     if not M then return end
@@ -239,9 +240,9 @@ function love.draw()
     button('Rétablir',w-390,120,94,30,function() M.undo(true) end)
     button(state.grid and 'Grille : oui' or 'Grille : non',w-286,120,124,30,function() state.grid=not state.grid end)
     button(state.snap and 'Aimant : oui' or 'Aimant : non',w-152,120,132,30,function() state.snap=not state.snap end)
-    if M.world==6 or M.world==2 then
-        local kind=M.world==6 and 'hole' or 'lava'
-        button(M.world==6 and 'Dessiner les trous' or 'Dessiner la lave',14,166,220,30,function()
+    if M.world==6 or M.world==2 or M.world==4 then
+        local kind=M.world==6 and 'hole' or M.world==4 and 'current' or 'lava'
+        button(M.world==6 and 'Dessiner les trous' or M.world==4 and 'Dessiner un courant' or 'Dessiner la lave',14,166,220,30,function()
             for _,c in ipairs(C) do if c.kind==kind then state.tool=c;M.selected=nil;state.input=nil;state.category='Terrain';state.all=false;state.scroll=0;break end end
         end,state.tool and state.tool.kind==kind)
     else text('BIBLIOTHÈQUE',20,177,12,color.muted) end
@@ -304,8 +305,10 @@ function love.draw()
     require('terrain_surface').draw(holes,'hole',state.clock,1,M.world)
     require('editor_terrain').draw(lava,M.world,state.clock)
     require('biome_borders').draw(M.world,M.layout.width,M.level)
-    if moving then require('brush_preview').draw(moving) end
-    if state.stroke then require('brush_preview').draw(state.stroke) end
+    if moving and moving.kind~='current' then require('brush_preview').draw(moving) end
+    if state.stroke then
+        if state.stroke.kind=='current' then require('ocean_current').draw(state.stroke,state.clock,true) else require('brush_preview').draw(state.stroke) end
+    end
     for _,e in ipairs(M.layout.entities) do if e.kind~='mob' and e.kind~='boss' and e.kind~='spawn' then entity(e,false,true) end end
     for _,e in ipairs(M.layout.entities) do if e.kind=='mob' or e.kind=='boss' or e.kind=='spawn' then entity(e) end end
     if state.tool then local mx,my=love.mouse.getPosition(); local px,py=point(mx,my)
@@ -328,16 +331,19 @@ function love.draw()
         if e.kind=='mob' or e.kind=='boss' then
             button('Créer '..(e.kind=='boss' and 'ce boss' or 'ce monstre'),right,232,207,28,function() state.input='templateName';state.inputText=e.customName or catalog(e).name;love.keyboard.setTextInput(true) end)
         end
-        local defaults=e.kind=='boss' and {movementRate=1,attackRate=1} or e.kind=='magma_spawner' and {spawnDelay=1,spawnInterval=3} or {}
+        local defaults=e.kind=='current' and {speed=80} or e.kind=='boss' and {movementRate=1,attackRate=1} or e.kind=='magma_spawner' and {spawnDelay=1,spawnInterval=3} or {}
         local row=0
-        for _,f in ipairs({'x','y','w','h','rx','ry','speed','phase','dx','rota','radius','spawnDelay','spawnInterval','movementRate','attackRate','rotation'}) do if (e[f]~=nil or defaults[f]~=nil) and not (e.kind=='wall' and f=='rotation') and not (e.type=='wind_bat' and f=='dx') then
+        for _,f in ipairs({'x','y','w','h','rx','ry','speed','phase','dx','rota','radius','spawnDelay','spawnInterval','movementRate','attackRate','rotation'}) do if (e[f]~=nil or defaults[f]~=nil) and not (e.kind=='wall' and f=='rotation') and not (e.type=='wind_bat' and f=='dx') and not (e.kind=='current' and (f=='dx' or f=='rotation')) then
             local value=e[f] or defaults[f]
-            local yy=272+row*39; text(({rotation='Angle (°)',movementRate='Dépl. ×',attackRate='Attaques ×',spawnDelay='Début (s)',spawnInterval='Intervalle (s)',speed='Vitesse',radius='Rayon',phase='Phase',w='Largeur',h='Hauteur'})[f] or f:upper(),right,yy+8,12,color.muted,M.projects and 103 or nil)
+            local yy=272+row*39; text(({rotation='Angle (°)',movementRate='Dépl. ×',attackRate='Attaques ×',spawnDelay='Début (s)',spawnInterval='Intervalle (s)',speed='Vitesse',radius='Rayon',phase='Phase',w='Largeur',h='Hauteur'})[f] or f:upper(),right,yy+8,e.kind=='current' and 16 or 12,color.muted,M.projects and 103 or nil)
             local label=state.input==f and state.inputText..'|' or tostring(math.floor(value*100+.5)/100)
             button(label,right+(M.projects and 110 or 88),yy,M.projects and 95 or 117,34,function() state.input=f; state.inputText=tostring(value); love.keyboard.setTextInput(true) end,state.input==f)
             row=row+1
         end end
         local yy=280+row*39
+        if e.kind=='current' then
+            button(e.dx==-1 and 'Sens : inversé' or 'Sens : du tracé',right,yy,207,34,function() M.checkpoint();e.dx=e.dx==-1 and 1 or -1;M.persist() end);yy=yy+42
+        end
         if Directions.supported(e) then button('Départ : '..(Directions.labels[e.startDirection] or (e.type=='wind_bat' and e.dx and (e.dx==-1 and 'Gauche' or 'Droite') or 'par défaut')),right,yy,207,34,function() state.directionPicker=e end);yy=yy+42 end
         if e.kind=='wall' then button('Tourner de 90°',right,yy,207,34,M.rotate);yy=yy+42 end
         if e.kind=='mob' and e.type~='piege' and e.type~='scie' then
@@ -429,7 +435,7 @@ function love.mousepressed(mx,my,button)
     local x,y=point(mx,my)
     if button==2 then state.tool=nil;state.stroke=nil end
     if state.tool and brush(state.tool) and button==1 then
-        M.selected=nil;state.stroke={kind=state.tool.kind,x=x,y=y,radius=state.brush,points={0,0}};return
+        M.selected=nil;state.stroke={kind=state.tool.kind,x=x,y=y,radius=state.brush,points={0,0},dx=state.tool.dx,speed=state.tool.speed};return
     end
     if state.tool and button==1 then M.add(state.tool,snapped(x),snapped(y));state.status=''; return end
     M.selected=nil
@@ -442,7 +448,7 @@ function love.mousepressed(mx,my,button)
             dx,dy=math.cos(a)*dx+math.sin(a)*dy,-math.sin(a)*dx+math.cos(a)*dy
             rx,ry=math.max(12,e.w/2),math.max(12,e.h/2)
         elseif e.type=='skeleton_head' then rx,ry=85,75 end
-        local hit=brush(e) and e.points and require('ground_holes').contains(e,x,y)
+        local hit=brush(e) and e.points and (e.kind=='current' and require('ocean_current').contains(e,x,y) or e.kind~='current' and require('ground_holes').contains(e,x,y))
             or not (brush(e) and e.points) and math.abs(dx)<=rx and math.abs(dy)<=ry
         if hit then M.selected=e; M.checkpoint(); state.drag={dx=x-e.x,dy=y-e.y}; break end
     end
@@ -472,7 +478,8 @@ function love.mousereleased(mx,my,button)
         local points={};local e=state.stroke
         for i=1,#e.points,2 do points[i]=e.x+e.points[i];points[i+1]=e.y+e.points[i+1] end
         local hole=require('ground_holes').stroke(points,e.radius,e.kind)
-        M.add(hole,hole.x,hole.y);M.selected=nil;state.stroke=nil;state.status='';return
+        if e.kind=='current' then hole.dx=e.dx==-1 and -1 or 1;hole.speed=e.speed or 80 end
+        M.add(hole,hole.x,hole.y);if e.kind~='current' then M.selected=nil end;state.stroke=nil;state.status='';return
     end
     if state.drag then M.persist();state.drag=nil end
 end
@@ -507,6 +514,7 @@ function love.keypressed(key)
                 end
                 M.checkpoint();if boss then state.attackSettings.bossTimings=state.attackSettings.bossTimings or {};state.attackSettings.bossTimings[state.input]=v else state.attackSettings[state.input]=v end;M.persist();state.timingError=nil
             elseif v and M.selected then
+                if M.selected.kind=='current' and state.input=='speed' and (v<1 or v>300) then state.status='Force du courant entre 1 et 300.';state.error=true;return end
                 if M.selected.kind=='lightning_zone' then
                     local e=M.clone(M.selected);e[state.input]=v
                     if not e.w or not e.h or e.w<80 or e.h<80 or e.x-e.w/2<0 or e.x+e.w/2>M.layout.width or e.y-e.h/2<0 or e.y+e.h/2>600 then state.status='La zone doit rester dans la carte (80 minimum).';state.error=true;return end

@@ -59,7 +59,7 @@ function S.validate(l)
         if e.kind=='lightning_zone' and (not e.w or not e.h or e.w<80 or e.h<80 or e.x-e.w/2<0 or e.x+e.w/2>l.width or e.y-e.h/2<0 or e.y+e.h/2>600) then return false,'La zone d’éclairs doit rester dans la carte (80 minimum).' end
         if e.kind=='wall' and (not e.w or not e.h) then return false,'Dimensions du mur manquantes.' end
         if e.points~=nil then
-            if (e.kind~='hole' and e.kind~='lava' and e.kind~='electric_ground') or type(e.points)~='table' or #e.points<2 or #e.points>512 or #e.points%2~=0 then return false,'Dessin de zone invalide.' end
+            if (e.kind~='hole' and e.kind~='lava' and e.kind~='electric_ground' and e.kind~='current') or type(e.points)~='table' or #e.points<2 or #e.points>512 or #e.points%2~=0 then return false,'Dessin de zone invalide.' end
             local count=0
             for i,v in pairs(e.points) do
                 count=count+1
@@ -70,6 +70,8 @@ function S.validate(l)
             if count~=#e.points then return false,'Dessin de zone incomplet.' end
             if not e.radius or e.radius<4 or e.radius>120 then return false,'Taille du pinceau entre 4 et 120.' end
         end
+        if e.kind=='current' and e.dx~=nil and e.dx~=1 and e.dx~=-1 then return false,'Sens du courant invalide.' end
+        if e.kind=='current' and e.speed~=nil and (e.speed<1 or e.speed>300) then return false,'Force du courant entre 1 et 300.' end
         if e.kind=='electric_ground' and not e.points then return false,'Dessine la zone électrique.' end
         if e.type=='wind_bat' and e.dx~=nil and e.dx~=1 and e.dx~=-1 then return false,'Sens de traversée invalide.' end
         for _,key in ipairs(require('mob_attack_timing').keys) do if e[key]~=nil and not require('mob_attack_timing').valid(e,key,e[key]) then return false,'Durée d’attaque invalide (0 à 120 s ; durée et repos : 0,1 s minimum ; bête : délai de 1,95 s minimum).' end end

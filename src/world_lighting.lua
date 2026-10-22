@@ -165,7 +165,7 @@ function L.apply(scene)
  L.composite:send('emissionMask',L.emissionMask)
  L.composite:send('lightMap',L.map);L.composite:send('lightStep',{1/L.map:getWidth(),1/L.map:getHeight()})
  local biome=require('biome_radiance').biome()
- local ambient=biome==3 and .67 or biome==6 and .88 or .96
+ local ambient=biome==3 and .67 or biome==6 and 1 or .96
  L.composite:send('ambient',ambient)
  L.composite:send('bloomMap',L.bloomB)
  L.composite:send('bloomStrength',biome==3 and .28 or biome==6 and .10 or .07)

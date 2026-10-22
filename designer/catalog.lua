@@ -29,7 +29,7 @@ add('vent',nil,'Anémone électrique','electric_anemone',7,{rx=30,ry=23})
 add('tunnel',nil,'Tunnel (par paire)','earth_tunnel',5)
 add('hole',nil,'Dessiner un trou',nil,6,{radius=28,points={0,0}})
 add('tornado',nil,'Tornade','cloud_snare',6)
-add('current',nil,'Courant marin',nil,4,{rx=50,ry=150,dx=1})
+add('current',nil,'Dessiner un courant',nil,4,{radius=28,points={0,0},dx=1,speed=80})
 add('light',nil,'Source de lumière','tear_ring',7)
 add('nest',nil,'Nid du Merle','nest',1,{rx=34,ry=25})
 for _,v in ipairs({{'storm','Merle noir','merle_flight_down',6},{'merle','L’Œuf du Merle','merle_down',1},{'wasp','Les Guêpes brûlées','wasp_down',2},{'hedgehog','Hérisson Brise-Roche','hedgehog_down',5},{'octopus','Pieuvre des Larmes Noires','octopus_extended_down',4},{'skeleton_head','Le Monstre d’os','skeleton_head',7}}) do add('boss',v[1],v[2],v[3],v[4],{movementRate=1,attackRate=1}) end

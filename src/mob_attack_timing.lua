@@ -2,7 +2,7 @@
 local A={keys={'attackDelay','attackDuration','attackInterval'}}
 A.specs={
  mist_moth={attackDelay=.85,attackDuration=2,attackInterval=2.5},
- jelly={attackDelay=3,attackInterval=3.5},light_jelly={attackDelay=3,attackInterval=3},
+ jelly={attackDelay=1,attackInterval=3.5},light_jelly={attackDelay=3,attackInterval=3},
  worm={attackDelay=3.6,attackInterval=4},fish={attackDelay=2.3,attackDuration=.7,attackInterval=2.3},
  lava_scorpion={attackDelay=1.5,attackDuration=3,attackInterval=2},
  cloud_beast={attackDelay=3.15,attackDuration=.9},

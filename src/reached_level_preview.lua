@@ -33,7 +33,7 @@ function P.draw(world,time)
    elseif e.kind=='tear' or e.kind=='light' then Art.draw('tear_ring',e.x,e.y,38)
    elseif e.kind=='electric_ground' then require('electric_ground').draw({e},time,1)
    elseif e.kind=='rain' then g.setColor(.25,.6,1,.8);for i=-1,1 do g.line(e.x+i*8,e.y-18,e.x+i*8-5,e.y+7) end
-   elseif e.kind=='current' then g.setColor(.2,.85,1,.2);g.ellipse('fill',e.x,e.y,e.rx,e.ry)
+   elseif e.kind=='current' then require('ocean_current').draw(e,time)
    elseif e.kind=='hole' or e.kind=='lava' then
    else
     local entry

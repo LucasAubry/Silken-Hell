@@ -189,6 +189,7 @@ function App.move(dt)
     player.moveX=dx; player.moveY=dy
     -- Substeps prevent a dash from crossing a thin wall on a slow frame.
     local velocityX,velocityY=require('mobs.moth_gust').playerVelocity(dx*speed,dy*speed,player.dashing,speed)
+    velocityX,velocityY=require('ocean_current').velocity(player.x+15,player.y+12,velocityX,velocityY,Realms.current)
     local steps=math.max(1,math.ceil(math.sqrt(velocityX^2+velocityY^2)*dt/8))
     local openEdges=require('sky').openEdges()
     for _=1,steps do
@@ -446,7 +447,7 @@ function love.draw()
         end
         love.graphics.setColor(1,1,1)
         local psychedelic=App.state=='playing' and Psyche.bind()
-        if not psychedelic and Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
+        if not psychedelic and Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==6 and 0 or Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
         if RunStart.arrival and RunStart.scene() and App.state=='playing' then require('cinematic_fx').draw(RunStart.scene(),sceneCanvas,w,h)
         else love.graphics.draw(sceneCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale) end; love.graphics.setShader()
         if App.state=='playing' then Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
