@@ -428,6 +428,7 @@ function love.draw()
         if not queenScene then drawFrame() end
         if queenScene then Campaign.drawTear(true) end
         Story.drawWallMessage()
+        Storm.drawFog();Bosses.drawFog()
         Prism.endScene();love.graphics.setCanvas()
         sceneCanvas=require('world_lighting').apply(gameCanvas)
     elseif App.state=='bossWorld' then

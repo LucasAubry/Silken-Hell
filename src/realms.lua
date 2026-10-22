@@ -1,6 +1,7 @@
 local EarthMound=require 'earth_mound'
 local R={rain={},current={},clock=0,schools={},bolts={},eggs={},larvae={},holes={},rainSites={}}
 local function add(kind,x,y,speed,elite)
+    if kind=='plankton' then return require('mobs.plankton').spawn(x,y,speed) end
     if kind=='fish' then
         local school={age=#R.schools*.45,angle=0,members={}}
         R.schools[#R.schools+1]=school
@@ -31,6 +32,7 @@ function R.spawn(w,n)
     if w==7 then
         Abyss.spawn(n)
     elseif w==4 then
+        add('plankton',350,200,90)
         for i=1,2+math.floor(n/3) do Octopus.spawnCrab(100+i*105,i%2==0 and 440 or 150,90+n*3) end
         add('fish',110,130+a,90+n*6); add('jelly',650,450-a,48+n*2)
         if n>=3 then add('fish',650,110,110) end
@@ -358,7 +360,7 @@ function R.contact()
     end
     if player.throw or player.whirl or player.skyThrow or player.skyWhirl then
         for _,m in ipairs(mobs) do
-            if not (m.dead or m.falling or m.hidden or m.capture or R.underground(m) or m.type=='cloud_beast' and m.phase=='emerge') and isTouching(player,m) then Hazards.kill(m.type);break end
+            if not (m.type=='plankton' or m.dead or m.falling or m.hidden or m.capture or R.underground(m) or m.type=='cloud_beast' and m.phase=='emerge') and isTouching(player,m) then Hazards.kill(m.type);break end
         end
     end
     for _,m in ipairs(mobs) do
@@ -621,7 +623,7 @@ function R.underground(m)
     return false
 end
 function R.capture(m)
-    if m.tunnelTravel or R.underground(m) then return end
+    if m.dead or m.spent or m.tunnelTravel or R.underground(m) then return end
     if not m.is_frozen then
         for _,t in ipairs(mobs) do if (t.type=='piege' or t.capture) and not t.active and isTouching(m,t) then
             freeze(m,2); t.active=true
@@ -630,8 +632,9 @@ function R.capture(m)
     end
     -- Captured creatures stop moving, but their bodies remain lethal even when
     -- their individual behavior returns early while frozen.
-    if m.is_frozen and not m.dead and not m.spent and isTouching(player,m) then Hazards.kill(m.type) end
+    if m.type~='plankton' and m.is_frozen and not m.dead and not m.spent and isTouching(player,m) then Hazards.kill(m.type) end
 end
+MobBehaviors.plankton=require('mobs.plankton')
 MobBehaviors.fish=require('mobs.fish')(R)
 MobBehaviors.jelly=require('mobs.jelly')(R)
 MobBehaviors.worm=require('mobs.worm')(R)

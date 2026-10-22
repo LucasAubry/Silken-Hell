@@ -47,7 +47,11 @@ with tempfile.TemporaryDirectory(prefix='silken-build-') as folder:
     else:
         cache = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share')) / 'silken-hell'
     cache.mkdir(parents=True, exist_ok=True)
-    staged = cache / 'Silken Hell.love.new'
-    shutil.copyfile(output, staged)
-    staged.replace(cache / 'Silken Hell.love')
+    with tempfile.NamedTemporaryFile(prefix='publish-', suffix='.love', dir=cache, delete=False) as stage_file:
+        staged = Path(stage_file.name)
+    try:
+        shutil.copyfile(output, staged)
+        staged.replace(cache / 'Silken Hell.love')
+    finally:
+        staged.unlink(missing_ok=True)
 print(f'dist/game.love : {len(paths)} fichiers, jeu et éditeur à jour')

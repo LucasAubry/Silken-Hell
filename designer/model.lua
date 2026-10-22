@@ -24,11 +24,15 @@ function M.init(project,save,workshopBiome)
     if not M.workshop then require("campaign_order").migrate(require("abyss_sequence").migrate(M.applied)) end
     M.select(workshopBiome or 1,1)
 end
+local function prepare(layout)
+    local result=require('layout_schema').splitAbyss(require('layout_schema').migrate(M.clone(layout)))
+    if not M.workshop and result.world==6 then result=require('sky').prepare(result) end
+    return result
+end
 function M.select(world,level)
     M.world=world; M.level=M.workshop and 1 or level; M.history={}; M.future={}; M.selected=nil
     local key=M.key()
-    M.layout=require('layout_schema').splitAbyss(require('layout_schema').migrate(M.clone(M.drafts[key] or M.applied.levels[key] or (M.workshop and require('workshop_maps').blank(world) or assert(M.defaults.levels[key])))))
-    if not M.workshop and world==6 then M.layout=require('sky').prepare(M.layout) end
+    M.layout=prepare(M.drafts[key] or M.applied.levels[key] or (M.workshop and require('workshop_maps').blank(world) or assert(M.defaults.levels[key])))
 end
 function M.persist()
     M.drafts[M.key()]=M.clone(M.layout); M.dirty[M.key()]=true
@@ -84,6 +88,10 @@ function M.apply()
     return true,exported and 'Appliqué au jeu. Recharge ce niveau pour voir les changements.' or 'Appliqué au jeu ; export dans le projet indisponible.'
 end
 function M.restore()
-    M.checkpoint(); M.layout=require('layout_schema').splitAbyss(require('layout_schema').migrate(M.clone(M.workshop and require('workshop_maps').blank(M.world) or M.defaults.levels[M.key()]))); M.selected=nil; M.persist()
+    local original=M.workshop and require('workshop_maps').blank(M.world) or M.defaults.levels[M.key()]
+    if not original then return false,'Carte d’origine introuvable.' end
+    local restored=prepare(original)
+    M.checkpoint(); M.layout=restored; M.selected=nil; M.persist()
+    return true
 end
 return M

@@ -39,19 +39,20 @@ function V.load()
 end
 -- Bake vector primitives into one mesh per arm instead of issuing thousands
 -- of individual polygon/ellipse calls every frame. Moving arms reuse their mesh.
+local circles={}
 local function meshBuilder(reusable)
-    local vertices=reusable or {};local count=0;local tr,tg,tb,ta=1,1,1,1;local x,y,angle=0,0,0;local stack={}
+    local vertices=reusable or {};local count=0;local tr,tg,tb,ta=1,1,1,1;local x,y,angle=0,0,0;local stack={};local cosine,sine=1,0
     local g={}
     function g.setColor(r,b,c,a) tr,tg,tb,ta=r,b,c,a end
-    function g.push() stack[#stack+1]={x,y,angle} end
-    function g.pop() local t=table.remove(stack);x,y,angle=t[1],t[2],t[3] end
-    function g.translate(dx,dy) x=x+math.cos(angle)*dx-math.sin(angle)*dy;y=y+math.sin(angle)*dx+math.cos(angle)*dy end
-    function g.rotate(a) angle=angle+a end
+    function g.push() stack[#stack+1]={x,y,angle,cosine,sine} end
+    function g.pop() local t=table.remove(stack);x,y,angle,cosine,sine=t[1],t[2],t[3],t[4],t[5] end
+    function g.translate(dx,dy) x=x+cosine*dx-sine*dy;y=y+sine*dx+cosine*dy end
+    function g.rotate(a) angle=angle+a;cosine,sine=math.cos(angle),math.sin(angle) end
     local function vertex(px,py)
         count=count+1
         local v=vertices[count]
         if not v then v={0,0,0,0,1,1,1,1};vertices[count]=v end
-        v[1]=x+math.cos(angle)*px-math.sin(angle)*py;v[2]=y+math.sin(angle)*px+math.cos(angle)*py
+        v[1]=x+cosine*px-sine*py;v[2]=y+sine*px+cosine*py
         v[5],v[6],v[7],v[8]=tr,tg,tb,ta
     end
     function g.polygon(mode,...)
@@ -59,9 +60,14 @@ local function meshBuilder(reusable)
         for i=3,#p-2,2 do vertex(p[1],p[2]);vertex(p[i],p[i+1]);vertex(p[i+2],p[i+3]) end
     end
     function g.ellipse(mode,cx,cy,rx,ry,segments)
+        local circle=circles[segments]
+        if not circle then
+            circle={};circles[segments]=circle
+            for i=0,segments do local a=i*math.pi*2/segments;circle[i]={math.cos(a),math.sin(a)} end
+        end
         for i=0,segments-1 do
-            local a,b=i*math.pi*2/segments,(i+1)*math.pi*2/segments
-            vertex(cx,cy);vertex(cx+math.cos(a)*rx,cy+math.sin(a)*ry);vertex(cx+math.cos(b)*rx,cy+math.sin(b)*ry)
+            local a,b=circle[i],circle[i+1]
+            vertex(cx,cy);vertex(cx+a[1]*rx,cy+a[2]*ry);vertex(cx+b[1]*rx,cy+b[2]*ry)
         end
     end
     function g.circle(mode,cx,cy,r,segments) g.ellipse(mode,cx,cy,r,r,segments) end

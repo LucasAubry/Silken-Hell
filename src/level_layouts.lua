@@ -80,6 +80,7 @@ function L.spawn(e)
     elseif kind=='abyss_fish' or kind=='light_jelly' or kind=='lanternfish' then Abyss.add(kind,e.x,e.y,e.speed or 55)
     elseif kind=='waspling' or kind=='larva' or kind=='blackbird_chick' then
         mobs[#mobs+1]={type=kind,x=e.x,y=e.y,cx=e.x,cy=e.y,age=0,dir='down',speed=e.speed or 90,radius=e.radius or 48,hitBox_width=22,hitBox_height=22,hitBox_offset_x=-11,hitBox_offset_y=-11}
+    elseif kind=='plankton' then require('mobs.plankton').spawn(e.x,e.y,e.speed)
     elseif kind=='fish' then
         local school=e.schoolId and L.schools[e.schoolId]
         if not school then school={age=0,angle=0,members={}}; Realms.schools[#Realms.schools+1]=school; if e.schoolId then L.schools[e.schoolId]=school end end

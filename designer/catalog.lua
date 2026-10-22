@@ -11,6 +11,7 @@ for _,v in ipairs({
  {'waspling','Petite guêpe','waspling_down',2,95},{'larva','Petit ver','worm_down',5,72},{'blackbird_chick','Petit merle','merle_down',1,77},
  {'ange','Ange gardien','catalog_ange',1,2},{'snake','Serpent céleste','catalog_snake',1,2},
  {'lava_scorpion','Scorpion de lave',false,2,85},{'spinner','Serpent tournoyant','serpent_down',2,105},
+ {'plankton','Plancton',false,4,90},
  {'fish','Poisson-lame','fish_down',4,110},{'jelly','Méduse électrique','jelly_down',4,50},{'crab','Crabe','crab_open',4,100},
  {'worm','Ver de terre','worm_down',5,90},{'mole','Taupe','mole_down',5,145},
  {'cloud_beast','Bête des nuages',false,6,330},

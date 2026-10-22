@@ -65,6 +65,7 @@ local function entity(e,ghost,terrainDrawn)
         for i=1,5 do local x,y=require('lightning_config').point(e,i);g.circle(i==1 and 'fill' or 'line',x,y,5) end
         g.pop();return
     end
+    if e.type=='plankton' then require('mobs.plankton').art(e.x,e.y,12,state.clock);return end
     if e.type=='cloud_beast' then require('mobs.cloud_beast').art(e.x,e.y,45,0,departure and departure-math.pi/2 or 0);return end
     if e.type=='cloud_snail' then require('cloud_snail').art(e.x,e.y,45,0,departure or 0);return end
     if e.type=='dragonfly' or e.type=='mist_moth' or e.type=='wind_bat' or e.type=='lava_scorpion' then require('sky_insect_art').draw(e.type,e.x,e.y,e.type=='wind_bat' and 48 or 64,0,departure and departure-math.pi/2 or e.type=='wind_bat' and (e.dx==-1 and math.pi/2 or -math.pi/2) or nil);return end
@@ -115,6 +116,12 @@ end
 -- Draw carrier badges separately so procedural sprites cannot skip them.
 local function carrierBadge(e)
     if not e.has_larme then return end
+    if e.type=='plankton' then
+        g.push('all');g.setColor(.78,.94,1,1)
+        local x,y=e.x,e.y-14
+        g.polygon('fill',x,y-12,x-6,y,x+6,y);g.circle('fill',x,y,6)
+        g.pop();return
+    end
     local x,y=e.x+28,e.y-28
     x=math.max(17,math.min(M.layout.width-17,x));y=math.max(17,math.min(583,y))
     g.push('all');g.setShader();g.setLineWidth(2)
@@ -216,6 +223,8 @@ function love.load()
     if ok and type(templates)=='table' then for _,t in ipairs(templates) do if t.kind=='mob' or t.kind=='boss' then C[#C+1]=t end end end
     state.templates=ok and type(templates)=='table' and templates or {}
     state.editorSound=love.audio.newSource('assets/audio/effects/editeur start.mp3','static');state.editorSound:setVolume(.65);state.editorSound:play()
+    if os.getenv('SILKEN_DESIGNER_TEST')=='1' and os.getenv('SILKEN_RESTORE_EDITOR_TEST')=='1' then require('restore_selftest').run(M,state,select);return end
+    if os.getenv('SILKEN_DESIGNER_TEST')=='1' and os.getenv('SILKEN_PLANKTON_TEST')=='1' then require('plankton_selftest').run(M,state,select);return end
     if os.getenv('SILKEN_DESIGNER_TEST')=='1' and os.getenv('SILKEN_CELESTIAL_EDITOR_TEST')=='1' then require('celestial_selftest').run(M,state,select);return end
     if os.getenv('SILKEN_DESIGNER_TEST')=='1' and os.getenv('SILKEN_MAP_PREVIEW_TEST')=='1' then require('preview_selftest').run(M,state,select);return end
     if os.getenv('SILKEN_DESIGNER_TEST')=='1' then require(os.getenv('SILKEN_OCEAN_CURRENT_TEST')=='1' and 'current_selftest' or os.getenv('SILKEN_EDITOR_DRAWING_TEST')=='1' and 'drawing_selftest' or os.getenv('SILKEN_GROUND_HOLES_TEST')=='1' and 'holes_selftest' or M.projects and 'project_selftest' or M.workshop and 'workshop_selftest' or 'selftest').run(M,state,select,apply,preview) end
@@ -266,11 +275,12 @@ function love.draw()
     for i=1,max do local c=palette[i+state.scroll]; if c then
         local y=358+(i-1)*68
         button('',14,y,220,60,function() state.tool=c; M.selected=nil; state.input=nil end,state.tool==c)
-        if c.type=='cloud_beast' then require('mobs.cloud_beast').art(45,y+29,42,0,0)
+        if c.type=='plankton' then require('mobs.plankton').art(45,y+29,24,state.clock)
+        elseif c.type=='cloud_beast' then require('mobs.cloud_beast').art(45,y+29,42,0,0)
         elseif c.type=='cloud_snail' then require('cloud_snail').art(45,y+29,42,0,0)
         elseif c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion' then require('sky_insect_art').draw(c.type,45,y+29,42,0)
         elseif c.type=='larva' then Art.drawLarva(45,y+29,22,0,0) elseif c.art then g.setColor(1,1,1); local a=Art.images[c.art]; local width=math.min(42,44*a.w/a.h); drawArt(c.art,45,y+29,width) end
-        local insect=c.type=='cloud_beast' or c.type=='cloud_snail' or c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion';local label=c.name
+        local insect=c.type=='plankton' or c.type=='cloud_beast' or c.type=='cloud_snail' or c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion';local label=c.name
         if insect then
             local utf8=require('utf8');local font=state.fonts[16]
             if font:getWidth(label)>145 then repeat local at=utf8.offset(label,-1);label=at and label:sub(1,at-1) or '' until label=='' or font:getWidth(label..'…')<=145;label=label..'…' end
@@ -377,7 +387,7 @@ function love.draw()
             button('+',right+108,308,98,36,function() state.brush=math.min(120,state.brush+4) end)
         elseif state.category~='Environnement' and not M.workshop and not M.devMode then text('Clique sur le terrain pour placer.\n\nÉchap : sélectionner et déplacer.\n\nGlisse un objet pour le déplacer.\n\nSuppr : effacer.\nCmd+Z / Cmd+Maj+Z : annuler / rétablir.',right,270,14,color.muted,205) end
     end
-    button(M.workshop and 'Vider la carte' or 'Restaurer l’original',right,h-110,207,34,function() M.restore(); state.status=M.workshop and 'Carte réinitialisée.' or 'Original restauré en brouillon. Appliquer pour le garder.' end)
+    button(M.workshop and 'Vider la carte' or 'Restaurer l’original',right,h-110,207,34,function() local ok,err=M.restore();state.error=ok==false;if ok==false then state.status=err or 'Restauration impossible.' else state.status=M.workshop and 'Carte réinitialisée.' or 'Original restauré en brouillon. Appliquer pour le garder.' end end)
     if not M.workshop and not M.devMode then text('Les niveaux personnalisés ne sont pas classés.',right,h-66,12,color.muted,210) end
     g.setColor(.025,.034,.047); g.rectangle('fill',0,h-30,w,30)
     text(state.status~='' and state.status or (M.workshop and require('workshop_access').biomeNotice or ''),18,h-23,16,state.error and {1,.46,.4} or color.muted,w-30)

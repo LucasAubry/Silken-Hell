@@ -19,9 +19,16 @@ CACHE_DIR="$HOME/Library/Application Support/Silken Hell"
 mkdir -p "$CACHE_DIR"
 printf '%s\n' "$GAME_DIR" > "$CACHE_DIR/project-path.txt"
 # Lancer une version publiée, sans reconstruire ni télécharger les fichiers iCloud.
-if [[ ! -s "$CACHE_DIR/Silken Hell.love" || "$GAME_DIR/dist/game.love" -nt "$CACHE_DIR/Silken Hell.love" ]]; then
-  cp "$GAME_DIR/dist/game.love" "$CACHE_DIR/Silken Hell.love.new"
-  mv -f "$CACHE_DIR/Silken Hell.love.new" "$CACHE_DIR/Silken Hell.love"
+# Une archive déjà en cache permet de lancer même si iCloud a déchargé dist/.
+DIST_AVAILABLE=1
+if [[ -s "$CACHE_DIR/Silken Hell.love" && "$(stat -f %Sf "$GAME_DIR/dist/game.love" 2>/dev/null || true)" == *dataless* ]]; then DIST_AVAILABLE=0; fi
+if [[ ! -s "$CACHE_DIR/Silken Hell.love" || ( "$DIST_AVAILABLE" == 1 && "$GAME_DIR/dist/game.love" -nt "$CACHE_DIR/Silken Hell.love" ) ]]; then
+  # Chaque lancement possède sa copie : deux ouvertures ne se volent plus le .new.
+  CACHE_STAGE=$(mktemp "$CACHE_DIR/publish.XXXXXX")
+  trap 'rm -f "$CACHE_STAGE"' EXIT
+  cp -p "$GAME_DIR/dist/game.love" "$CACHE_STAGE"
+  mv -f "$CACHE_STAGE" "$CACHE_DIR/Silken Hell.love"
+  trap - EXIT
 fi
 if [[ "${SILKEN_PREPARE_ONLY:-0}" == 1 ]]; then exit 0; fi
 export SILKEN_ASSET_ARCHIVE="$CACHE_DIR/Silken Hell.love"

@@ -96,6 +96,9 @@ function B.draw(over)
         end
     end
 end
+function B.drawFog()
+    for _,item in ipairs(B.items) do if item.boss.drawFog then item.boss.drawFog() end end
+end
 function B.drawLights()
     for _,item in ipairs(B.items) do if item.kind=='skeleton_fish' then item.boss.drawLights() end end
 end

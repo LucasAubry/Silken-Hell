@@ -251,6 +251,9 @@ end
 function C.tearCarried()
     return not Renaissance.active and C.carrier~=nil and not objet.larme_dropped
 end
+function C.tearScale()
+    return C.tearCarried() and C.carrier.type=='plankton' and require('mobs.plankton').tearScale or 1
+end
 function C.drawTear(overlay)
     if require('boss_liberation').busy() then return end
     if Ending.active and not require('final_spider').defeated then return end
@@ -262,9 +265,11 @@ function C.drawTear(overlay)
     if objet.larme.abyssHeld or (C.carrier and not objet.larme_dropped and (Realms.underground(C.carrier) or C.carrier.tunnelTravel)) then return end
     local g=love.graphics
     if not objet.larme.taken then
-        local x,y=objet.larme.x,objet.larme.y+math.sin(UI.clock*2)*3
+        local scale=C.tearScale()
+        local x,y=objet.larme.x,objet.larme.y+math.sin(UI.clock*2)*3*scale
         local fx=require('tear_fx');g.push('all')
         if C.tearCarried() then g.translate(require('render_motion').offset(C.carrier)) end
+        g.translate(x+15,y+20);g.scale(scale,scale);g.translate(-x-15,-y-20)
         local tint=Worlds.color(C.biome).tear
         fx.draw(x+15,y+20,tint,UI.clock);g.setColor(tint)
         local sx,sy=fx.breath(UI.clock)
@@ -323,7 +328,8 @@ function C.updateTear(dt)
         if not objet.larme_dropped then
             local m=C.carrier; local dx,dy=0,1
             if m.dir=='up' then dy=-1 elseif m.dir=='left' then dx,dy=-1,0 elseif m.dir=='right' then dx,dy=1,0 end
-            objet.larme.x=m.x-15-dx*36; objet.larme.y=m.y-20-dy*36
+            local offset=m.type=='plankton' and require('mobs.plankton').tearOffset or 36
+            objet.larme.x=m.x-15-dx*offset; objet.larme.y=m.y-20-dy*offset
         end
     elseif #levels[player.level].larme_position>0 and not Bosses.hud().active and not (Abyss and Abyss.active and Abyss.open) and not Raven.active and not Wasp.active and not Hedgehog.active and not Octopus.active and not Storm.active and not (Abyss and Abyss.boss) then select_tp_larme(dt) end
 end
