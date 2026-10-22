@@ -116,22 +116,33 @@ function L.renderEmissionMask()
  end
  g.pop()
 end
-function L.renderMap()
- local g=love.graphics;local shader=L.sourceShader
- -- Large obstacles cast first; rotate each occluder in its own local space.
- local walls={}
- if App.state~='bossWorld' then
-  for _,wall in ipairs(Arena.interior) do walls[#walls+1]=wall end
+-- Preserve the original sort and occluder values, rebuilding only on edits.
+function L.prepareBlockers()
+ local walls=App.state~='bossWorld' and Arena.interior or {}
+ local snapshot=L.wallSnapshot;local changed=not snapshot or #snapshot~=#walls
+ if not changed then for i,wall in ipairs(walls) do
+  local old=snapshot[i]
+  if old.wall~=wall or old.x~=wall.x or old.y~=wall.y or old.w~=wall.w or old.h~=wall.h or old.rotation~=wall.rotation then changed=true;break end
+ end end
+ if not changed then return L.blockerCount end
+ L.wallSnapshot={};local sorted={}
+ for i,wall in ipairs(walls) do
+  L.wallSnapshot[i]={wall=wall,x=wall.x,y=wall.y,w=wall.w,h=wall.h,rotation=wall.rotation};sorted[i]=wall
  end
- table.sort(walls,function(a,b)return a.w*a.h>b.w*b.h end)
- local count=math.min(24,#walls)
+ table.sort(sorted,function(a,b)return a.w*a.h>b.w*b.h end)
+ L.blockerCount=math.min(24,#sorted)
  for i=1,24 do
-  local wall=walls[i]
+  local wall=sorted[i]
   if wall then
    L.blockers[i]={wall.x+wall.w/2,wall.y+wall.h/2,wall.w/2,wall.h/2}
    local angle=(wall.rotation or 0)*math.pi/180;L.rotations[i]={math.cos(angle),math.sin(angle)}
   else L.blockers[i]={0,0,0,0};L.rotations[i]={1,0} end
  end
+ return L.blockerCount
+end
+function L.renderMap()
+ local g=love.graphics;local shader=L.sourceShader
+ local count=L.prepareBlockers()
  shader:send('blockerCount',count);shader:send('blockers',unpack(L.blockers));shader:send('rotations',unpack(L.rotations))
  shader:send('arenaSize',{Arena.width,600})
  g.setCanvas(L.map);g.clear(0,0,0,1);g.origin();g.scale(L.map:getWidth()/Arena.width,L.map:getHeight()/600)

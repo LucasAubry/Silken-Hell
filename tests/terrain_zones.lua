@@ -133,7 +133,10 @@ function T.run()
   g.push('all');g.setCanvas(joined);g.origin();g.clear(.3,.4,.5)
   surface.draw({loop,branch},kind,2);g.pop()
   local data=joined:newImageData();local cr,cg,cb=data:getPixel(320,260)
-  if kind=='hole' then assert(cr<.08 and cg<.12 and cb<.20 and cb>cr,'Closed hole centre remains a dark blue depth') end
+  if kind=='hole' then
+   local y=260/require('biome_floor').worldHeight
+   assert(math.abs(cr-(.09+.29*y))<.015 and math.abs(cg-(.19+.39*y))<.015 and math.abs(cb-(.32+.42*y))<.015,'Closed hole centre uses the shared cinematic sky gradient')
+  end
   local sample={data:getPixel(360,250)};data:release()
   g.push('all');g.setCanvas(joined);g.origin();g.clear(.3,.4,.5)
   surface.draw({branch,loop},kind,2);g.pop()

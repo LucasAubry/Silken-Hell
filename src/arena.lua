@@ -3,16 +3,25 @@ function A.configure(w,h)
     A.height=600; A.width=math.max(600,math.floor(600*w/h+0.5))
 end
 function A.mapX(x) return 28+(x-50)/700*(A.width-56) end
+-- Walls keep their angle until an editor action, resize or encounter changes it.
+local wallAngles=setmetatable({},{__mode='k'})
+local function wallAngle(r)
+    local rotation=r.rotation or 0;local entry=wallAngles[r]
+    if not entry or entry.rotation~=rotation then
+        local a=rotation*math.pi/180;local c,s=math.cos(a),math.sin(a)
+        entry={rotation=rotation,c=c,s=s,ac=math.abs(c),as=math.abs(s)};wallAngles[r]=entry
+    end
+    return entry
+end
 function A.blocked(x,y,w,h,walls)
     for _,r in ipairs(walls or A.walls) do
-        local a=(r.rotation or 0)*math.pi/180
-        local c,s=math.cos(a),math.sin(a)
+        local angle=wallAngle(r);local c,s=angle.c,angle.s
         local dx,dy=x+w/2-r.x-r.w/2,y+h/2-r.y-r.h/2
         -- Separating axes of the player rectangle and the rotated wall.
-        if math.abs(dx)<w/2+math.abs(c)*r.w/2+math.abs(s)*r.h/2
-            and math.abs(dy)<h/2+math.abs(s)*r.w/2+math.abs(c)*r.h/2
-            and math.abs(dx*c+dy*s)<r.w/2+math.abs(c)*w/2+math.abs(s)*h/2
-            and math.abs(-dx*s+dy*c)<r.h/2+math.abs(s)*w/2+math.abs(c)*h/2
+        if math.abs(dx)<w/2+angle.ac*r.w/2+angle.as*r.h/2
+            and math.abs(dy)<h/2+angle.as*r.w/2+angle.ac*r.h/2
+            and math.abs(dx*c+dy*s)<r.w/2+angle.ac*w/2+angle.as*h/2
+            and math.abs(-dx*s+dy*c)<r.h/2+angle.as*w/2+angle.ac*h/2
             and not (Hazards and Hazards.openEdge(r,x,y,w,h)) then return true end
     end
     return false

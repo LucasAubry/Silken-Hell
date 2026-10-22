@@ -1,16 +1,30 @@
 -- Authored brush strokes share exactly the same footprint in editor and game.
 local H={cache=setmetatable({},{__mode='k'}),shared={},order={},builds=0}
-function H.bounds(e)
+-- Compare numeric points without allocating their text signature every draw.
+-- Keep a snapshot so edits in place invalidate this cache too.
+local descriptions=setmetatable({},{__mode='k'})
+local function describe(e)
  local p=e.points;local rx,ry=e.rx or e.radius or 28,e.ry or e.radius or 28
+ local c=descriptions[e];local same=c and c.rx==rx and c.ry==ry and #c.points==#p
+ if same then for i=1,#p do if c.points[i]~=p[i] then same=false;break end end end
+ if same then return c end
+ c={rx=rx,ry=ry,points={},signature=table.concat(p,',')..':'..rx..':'..ry}
  local x0,y0,x1,y1=p[1],p[2],p[1],p[2]
- for i=3,#p,2 do x0=math.min(x0,p[i]);x1=math.max(x1,p[i]);y0=math.min(y0,p[i+1]);y1=math.max(y1,p[i+1]) end
- return x0-rx,y0-ry,x1+rx,y1+ry
+ for i=1,#p,2 do
+  c.points[i],c.points[i+1]=p[i],p[i+1]
+  x0=math.min(x0,p[i]);x1=math.max(x1,p[i]);y0=math.min(y0,p[i+1]);y1=math.max(y1,p[i+1])
+ end
+ c.x0,c.y0,c.x1,c.y1=x0-rx,y0-ry,x1+rx,y1+ry;descriptions[e]=c
+ return c
+end
+function H.bounds(e)
+ local c=describe(e);return c.x0,c.y0,c.x1,c.y1
 end
 -- Fill pockets enclosed by the brush footprint, including crossed/retraced paths.
 -- The open inside of an L-shaped stroke remains untouched.
 function H.geometry(e)
  local p=e.points;local rx,ry=e.rx or e.radius or 28,e.ry or e.radius or 28
- local signature=table.concat(p,',')..':'..rx..':'..ry
+ local signature=describe(e).signature
  local cache=H.cache[e]
  if cache and cache.signature==signature then return cache end
  -- Layout entities are copied on every retry; geometry belongs to the shape,
