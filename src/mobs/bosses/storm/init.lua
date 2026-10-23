@@ -23,7 +23,7 @@ end
 function S.spawnSnails()
  S.snails={};local ax,ay=S.anchor();S.snailAnchorX,S.snailAnchorY=ax,ay;local nx,ny=-math.sin(S.angle),math.cos(S.angle)
  for i=1,S.wave do
-  local rope=155+(i-1)*42;local spread=(i-(S.wave+1)/2)*48
+  local slot=i-(S.wave+1)/2;local rope=110+math.abs(slot)*14;local spread=slot*52
   S.snails[i]={id=i,x=ax-math.cos(S.angle)*rope+nx*spread,y=ay-math.sin(S.angle)*rope+ny*spread,
    vx=S.vx*.6,vy=S.vy*.6,rope=rope,phase='tethered',age=0,angle=S.angle,lift=0}
  end
@@ -36,7 +36,7 @@ function S.setPhase(phase)
   S.y=155
   local dx,dy=side,0;local d=1
   S.angle=math.atan2(dy,dx);S.vx=dx/d*650;S.vy=dy/d*650
-  S.fogHits=0;S.fogAmount=0;S.fogRows=0;S.cleanStage=nil
+  S.fogHits=0;S.fogAmount=0;S.fogTarget=0;S.smoke={};S.fogRows=0;S.cleanStage=nil
   S.phaseTime=setting('hidden',.9);S.dir=side==1 and 'right' or 'left';S.spawnSnails()
  elseif phase=='charge' then
   S.phaseTime=(Arena.width*.5+100)/650
@@ -114,42 +114,22 @@ local function trail(p)
 end
 function S.updateSnails(dt)
  local ax,ay=S.anchor();local pending=0
- local anchorVX=(ax-(S.snailAnchorX or ax))/math.max(dt,.0001)
- local anchorVY=(ay-(S.snailAnchorY or ay))/math.max(dt,.0001)
  S.snailAnchorX,S.snailAnchorY=ax,ay
- -- Soft separation leaves each captive and each silk thread readable.
- for i=1,#S.snails-1 do local a=S.snails[i]
-  if a.phase=='tethered' then for j=i+1,#S.snails do local b=S.snails[j]
-   if b.phase=='tethered' then
-    local dx,dy=b.x-a.x,b.y-a.y;local d=length(dx,dy)
-    if d<48 then
-     local nx,ny=d>.001 and dx/d or -math.sin(S.angle),d>.001 and dy/d or math.cos(S.angle)
-     local impulse=(48-d)*16*dt
-     a.vx,a.vy=a.vx-nx*impulse,a.vy-ny*impulse;b.vx,b.vy=b.vx+nx*impulse,b.vy+ny*impulse
-    end
-   end
-  end end
- end
+ local forwardX,forwardY=math.cos(S.angle),math.sin(S.angle)
+ local baseX,baseY=ax-forwardX*110,ay-forwardY*110
+ -- Keep the fan reachable during the hunt instead of throwing captives offscreen.
+ if S.phase=='hunt' then baseX=clamp(baseX,125,Arena.width-125);baseY=clamp(baseY,135,465) end
  for _,p in ipairs(S.snails)do
   p.age=p.age+dt
   if p.phase=='tethered' then
    pending=pending+1
-   local dx,dy=ax-p.x,ay-p.y;local d=math.max(.001,length(dx,dy));local nx,ny=dx/d,dy/d
-   -- Slack rope exerts no force. A taut rope pulls without removing tangential inertia.
-   if d>p.rope then
-    local radial=(p.vx-anchorVX)*nx+(p.vy-anchorVY)*ny
-    local force=math.max(0,(d-p.rope)*48-radial*9)
-    p.vx=p.vx+nx*force*dt;p.vy=p.vy+ny*force*dt
-   end
-   local friction=math.exp(-.65*dt);p.vx=p.vx*friction;p.vy=p.vy*friction
-   local speed=length(p.vx,p.vy);if speed>720 then p.vx=p.vx/speed*720;p.vy=p.vy/speed*720 end
-   p.x=p.x+p.vx*dt;p.y=p.y+p.vy*dt
-   dx,dy=p.x-ax,p.y-ay;d=math.max(.001,length(dx,dy))
-   if d>p.rope*1.06 then
-    p.x=ax+dx/d*p.rope*1.06;p.y=ay+dy/d*p.rope*1.06
-    local outward=(p.vx-anchorVX)*dx/d+(p.vy-anchorVY)*dy/d
-    if outward>0 then p.vx=p.vx-dx/d*outward;p.vy=p.vy-dy/d*outward end
-   end
+   local slot=p.id-(S.wave+1)/2
+   local tx=baseX-forwardX*math.abs(slot)*14-forwardY*slot*52
+   local ty=baseY-forwardY*math.abs(slot)*14+forwardX*slot*52
+   local dx,dy=tx-p.x,ty-p.y;local d=math.max(.001,length(dx,dy))
+   local move=math.min(d*(1-math.exp(-7*dt)),650*dt)
+   local mx,my=dx/d*move,dy/d*move
+   p.x,p.y=p.x+mx,p.y+my;p.vx,p.vy=mx/math.max(dt,.0001),my/math.max(dt,.0001)
    if length(p.vx,p.vy)>1 then p.angle=math.atan2(p.vy,p.vx)end
    if S.phase=='hunt' or S.phase=='charge' then p.lift=math.max(0,p.lift-dt*60);trail(p)
    else p.lift=math.min(22,p.lift+dt*65)end
@@ -192,6 +172,7 @@ function S.update(dt)
  if not S.active or S.defeated or player.reset then return end
  local steps=math.max(1,math.ceil(dt/(1/120)));local step=dt/steps
  for _=1,steps do
+  require('mobs.bosses.storm.fog').update(S,step)
   S.clock=S.clock+step;S.phaseAge=S.phaseAge+step;S.phaseTime=S.phaseTime-step
   S.flash=math.max(0,S.flash-step);S.contactGrace=math.max(0,S.contactGrace-step)
   for i=#S.bursts,1,-1 do local b=S.bursts[i];b.age=b.age+step;if b.age>.75 then table.remove(S.bursts,i)end end
@@ -233,6 +214,7 @@ function S.resize(r)
  if S.fogFront then S.fogFront=S.fogFront*r end
  if S.snailAnchorX then S.snailAnchorX=S.snailAnchorX*r end
  S.x=S.x*r;if S.exitX then S.exitX=S.exitX*r end
+ for _,p in ipairs(S.smoke or {}) do p.x=p.x*r end
  S.nest.x=S.nest.x*r
  for _,p in ipairs(S.snails)do p.x=p.x*r;if p.tx then p.tx=p.tx*r end end
  for _,p in ipairs(S.holes)do p.x=p.x*r;p.tx=p.tx*r end

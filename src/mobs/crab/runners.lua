@@ -22,7 +22,7 @@ function R.spawn(level)
    if safe then x,y=xx,yy;break end
   end
   if x then
-   Octopus.spawnCrab(x,y,390+level*18)
+   Octopus.spawnCrab(x,y,95+level*3)
    local c=mobs[#mobs];c.oceanRunner=true;c.runnerSeed=level*51+i*137;c.runnerStep=0;R.turn(c)
   end
  end

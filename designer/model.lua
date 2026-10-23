@@ -88,10 +88,13 @@ function M.apply()
     return true,exported and 'Appliqué au jeu. Recharge ce niveau pour voir les changements.' or 'Appliqué au jeu ; export dans le projet indisponible.'
 end
 function M.restore()
-    local original=M.workshop and require('workshop_maps').blank(M.world) or M.defaults.levels[M.key()]
-    if not original then return false,'Carte d’origine introuvable.' end
-    local restored=prepare(original)
-    M.checkpoint(); M.layout=restored; M.selected=nil; M.persist()
+    M.checkpoint()
+    local empty=M.clone(M.layout)
+    empty.entities={};empty.environment={};empty.lightning=nil
+    -- An intentionally empty sky draft must not be regenerated on reopening.
+    if empty.world==6 then empty.skyRevision=6 end
+    M.layout=empty;M.selected=nil;M.persist()
     return true
 end
+
 return M

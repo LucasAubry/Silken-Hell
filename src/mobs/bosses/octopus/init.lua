@@ -298,7 +298,8 @@ function O.inkCrab(c,dt)
         if Hazards.inEllipse(c.x,c.y,p,0) then inside=true;break end
     end
     Audio.inkContact(c,inside,c.x,c.y)
-    if inside and not c.inked then c.inked=true;c.frenzy=true;c.frenzyTurn=0 end
+    if inside and not c.inked then c.frenzyTurn=0 end
+    c.inked=inside;c.frenzy=inside or nil
 end
 function O.updateCrabs(dt)
     for i=#O.crabs,1,-1 do local c=O.crabs[i]
@@ -325,7 +326,7 @@ function O.crabSpeedLimit()
     return math.max(0,300*player.speed*Hazards.speed()*(Input.slow() and 1 or 1.8))
 end
 function O.crabSpeed(c)
-    local requested=c.speed*1.3*(c.inked and (1.5+.2*math.sin((c.age or 0)*19)) or c.frenzy and 1.4 or 1)*((player.ink or 0)>0 and 1.75 or 1)*((O.rider or O.crabRage>0) and 1.45 or 1)
+    local requested=c.speed*1.3*(c.inked and (1.5+.2*math.sin((c.age or 0)*19)) or 1)
     return math.min(requested,O.crabSpeedLimit())
 end
 function O.walkCrab(c,dt,contact)

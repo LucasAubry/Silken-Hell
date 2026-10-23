@@ -1,8 +1,23 @@
 local F={}
 function F.impact(s)
  s.fogHits=(s.fogHits or 0)+1
- -- By the last captive, the arena is fully hidden; keep it hidden until sweeping.
- s.fogAmount=math.min(1,s.fogHits/math.max(1,s.wave-1))
+ s.fogTarget=math.min(1,s.fogHits/math.max(1,s.wave-1))
+ s.smoke=s.smoke or {};s.smoke[#s.smoke+1]={x=s.x,y=s.y,age=0}
+end
+function F.update(s,dt)
+ for i=#(s.smoke or {}),1,-1 do
+  local p=s.smoke[i];p.age=p.age+dt
+  if p.age>4 then table.remove(s.smoke,i) end
+ end
+ local oldest=s.smoke and s.smoke[#s.smoke]
+ if not oldest or oldest.age>.35 then
+  s.fogAmount=math.min(s.fogTarget or 0,(s.fogAmount or 0)+dt*.55)
+ end
+end
+function F.smokePuff(p,i)
+ local t=p.age;local a=i*2.399;local travel=15*t+22*t*t
+ return p.x+math.cos(a)*travel,p.y+math.sin(a)*travel*.65-18*t,
+  8+(22+i%4*3)*t,math.min(1,t/.35)*.58*math.max(0,math.min(1,(4-t)/2))
 end
 function F.alphaAt(s,x,y)
  local function smooth(a,b,v)local t=math.max(0,math.min(1,(v-a)/(b-a)));return t*t*(3-2*t)end
@@ -30,8 +45,7 @@ function F.pushedCloud(s,index)
  local radius=22+index%5*3+math.min(1,front/Arena.width)*10
  return x,y,radius,gather*(s.fogAmount or 0)
 end
-local function drawPushedClouds(s)
- if s.cleanStage~='dash' then return end
+local function bindPuffs(s)
  local g=love.graphics
  F.puffShader=F.puffShader or g.newShader([[
  extern number seed;
@@ -52,7 +66,11 @@ local function drawPushedClouds(s)
  }
  ]])
  g.setShader(F.puffShader)
- F.puffShader:send('clock',s.clock);F.puffShader:send('direction',s.sweepDir)
+ F.puffShader:send('clock',s.clock);F.puffShader:send('direction',s.sweepDir or 1)
+end
+local function drawPushedClouds(s)
+ if s.cleanStage~='dash' then return end
+ local g=love.graphics;bindPuffs(s)
  for i=1,F.parcelCount do
   local x,y,r,alpha=F.pushedCloud(s,i)
   if x and x+r>=0 and x-r<=Arena.width then
@@ -63,7 +81,7 @@ local function drawPushedClouds(s)
  g.setShader();g.setColor(1,1,1)
 end
 function F.draw(s)
- if not s.active or s.defeated or (s.fogAmount or 0)<=0 then return end
+ if not s.active or s.defeated or (s.fogAmount or 0)<=0 and #(s.smoke or {})==0 then return end
  local g=love.graphics
  F.shader=F.shader or g.newShader([[
  extern vec2 arenaSize;
@@ -112,12 +130,15 @@ function F.draw(s)
  g.draw(F.pixel,0,0,0,Arena.width,600)
  g.setShader()
  drawPushedClouds(s)
- for _,b in ipairs(s.bursts) do if b.kind=='impact' then
-  for layer=1,5 do
-   local t=b.age/.75;g.setColor(.83,.94,1,(1-t)*.045)
-   g.circle('fill',b.x,b.y,18+t*(80+layer*24))
-  end
- end end
+ if not s.cleanStage or s.cleanStage=='hold' then
+  bindPuffs(s)
+  for _,p in ipairs(s.smoke or {}) do for i=1,16 do
+   local x,y,r,alpha=F.smokePuff(p,i)
+   F.puffShader:send('seed',i*2.399);g.setColor(1,1,1,alpha)
+   g.draw(F.pixel,x-r,y-r,0,r*2,r*2)
+  end end
+ end
+
  g.pop()
 end
 return F

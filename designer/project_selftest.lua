@@ -17,6 +17,8 @@ function T.run(M,state,select,apply,preview)
  M.layout.entities={};assert(M.apply(),'Incomplete draft can be saved')
  V.home();V.open(assert(P.load(M.save,world.id)));assert(#M.layout.entities==0,'Even incomplete work survives leaving')
  M.restore();M.undo(false);assert(#M.layout.entities==0,'Clear is undoable');M.undo(true)
+ assert(#M.layout.entities==0,'Clear removes even spawn and tear')
+ M.add({kind='spawn'},100,300);M.add({kind='tear'},800,300);assert(M.apply())
  V.openPublish();local e=M.currentProject.entries[M.currentProject.current]
  V.field(e,'name');V.text('La cité bleue');V.key('return');V.field(e,'author',24);V.text('Lucas');V.key('return');e.difficulty=4;M.persist()
  local old=os.execute;local launches=0;os.execute=function()launches=launches+1;return 0 end

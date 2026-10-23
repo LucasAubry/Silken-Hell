@@ -7,13 +7,28 @@ function T.run()
  App.sessionLayout=layout;App.singleLevel=true;LevelLayouts.disabled=false
  App.start(6);require('run_start').active=false;require('retry_wait').reset()
  local s=Bosses.items[1].boss;local Fog=require('mobs.bosses.storm.fog')
+ -- Ordinary ocean crabs accelerate only while physically in black ink.
+ local pools=Octopus.inkPools;Octopus.inkPools={{x=400,y=300,rx=40,ry=30,life=5}}
+ local crab={x=400,y=300,speed=120,age=0}
+ Octopus.inkCrab(crab,.01);assert(crab.inked and crab.frenzy)
+ local fast=Octopus.crabSpeed(crab);crab.x=700;Octopus.inkCrab(crab,.01)
+ assert(not crab.inked and not crab.frenzy and Octopus.crabSpeed(crab)<fast)
+ local calm=Octopus.crabSpeed(crab);player.ink=4;Octopus.crabRage=5;crab.frenzy=true
+ assert(Octopus.crabSpeed(crab)==calm,'Only ink under the crab changes its speed')
+ player.ink=0;Octopus.crabRage=0;Octopus.inkPools=pools
+ local smoke={x=320,y=250,age=.1};local sx,sy,r1=Fog.smokePuff(smoke,1)
+ assert(math.abs(sx-320)<5 and math.abs(sy-250)<5,'Smoke starts at the explosion')
+ smoke.age=1;local _,_,r2=Fog.smokePuff(smoke,1);assert(r2>r1,'Smoke swells gradually')
+
  local kill=Hazards.kill;Hazards.kill=function()end
  s.wave=4;s.setPhase('tell');s.setPhase('hunt');s.x=480;s.y=250;s.hp=4
  local previous=0
  for i=1,3 do
   local snail=s.snails[i];snail.phase='strike';snail.x=s.x;snail.y=s.y;snail.age=0
   s.updateSnails(1/120)
-  assert(s.fogAmount>previous,'Each explosion thickens the fog');previous=s.fogAmount
+  assert(s.fogTarget>previous,'Each explosion raises the fog target');previous=s.fogTarget
+  local before=s.fogAmount;Fog.update(s,.1);assert(s.fogAmount==before,'Smoke emerges locally before filling the map')
+  Fog.update(s,2.4)
  end
  assert(s.fogAmount==1 and s.snails[4].phase=='tethered','Last snail remains in opaque fog')
  -- Fully opaque fog produces identical pixels over black and white backgrounds.

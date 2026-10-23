@@ -1,6 +1,6 @@
 local W={}
 function W.begin(s)
- s.cleanIndex=1;s.fogRows=0;s.fogFront=0;s.cleanStage='hold';s.cleanClock=.8
+ s.cleanIndex=1;s.fogRows=0;s.fogFront=0;s.cleanStage='hold';s.cleanClock=2.4
  s.sweepDir=s.x<Arena.width/2 and 1 or -1
 end
 function W.update(s,dt,moveToward)
@@ -13,13 +13,13 @@ function W.update(s,dt,moveToward)
   if s.cleanClock<=0 then s.cleanStage='approach' end
  elseif s.cleanStage=='approach' then
   local start=s.sweepDir==1 and -110 or Arena.width+110
-  if moveToward(start,y,1050,dt) then
-   s.x=start;s.y=y;s.vx=s.sweepDir*1450;s.vy=0;s.angle=s.sweepDir==1 and 0 or math.pi
+  if moveToward(start,y,1600,dt) then
+   s.x=start;s.y=y;s.vx=s.sweepDir*2900;s.vy=0;s.angle=s.sweepDir==1 and 0 or math.pi
    s.cleanStage='dash';s.fogFront=start
   end
  elseif s.cleanStage=='dash' then
   local before=s.x
-  s.vx=s.sweepDir*1450;s.vy=0;s.x=s.x+s.vx*dt;s.y=y;s.fogFront=s.x
+  s.vx=s.sweepDir*2900;s.vy=0;s.x=s.x+s.vx*dt;s.y=y;s.fogFront=s.x
   -- The broad air wake seals only scars crossed by this pass.
   local left,right=math.min(before,s.x)-65,math.max(before,s.x)+65
   for _,p in ipairs(s.holes) do
@@ -34,7 +34,7 @@ function W.update(s,dt,moveToward)
  elseif s.cleanStage=='settle' then
   s.cleanClock=s.cleanClock-dt
   if s.cleanClock<=0 then
-   s.holes={};s.trailKeys={};s.fogAmount=0;s.groundRevision=s.groundRevision+1
+   s.holes={};s.trailKeys={};s.fogAmount=0;s.fogTarget=0;s.smoke={};s.groundRevision=s.groundRevision+1
    s.cleanStage=nil;return true
   end
  end

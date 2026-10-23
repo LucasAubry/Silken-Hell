@@ -29,8 +29,7 @@ function X.install(M)
   local ok,err=M.persist();return ok,ok and 'Projet enregistré.' or err
  end
  function M.restore()
-  if M.devMode then return oldRestore() end
-  M.checkpoint();M.layout=require('workshop_maps').blank(M.world);M.selected=nil;return M.persist()
+  return oldRestore()
  end
  function M.openDev()
   if M.currentProject then local ok,err=M.persist();if not ok then return nil,err end end

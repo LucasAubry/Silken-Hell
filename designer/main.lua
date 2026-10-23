@@ -387,7 +387,7 @@ function love.draw()
             button('+',right+108,308,98,36,function() state.brush=math.min(120,state.brush+4) end)
         elseif state.category~='Environnement' and not M.workshop and not M.devMode then text('Clique sur le terrain pour placer.\n\nÉchap : sélectionner et déplacer.\n\nGlisse un objet pour le déplacer.\n\nSuppr : effacer.\nCmd+Z / Cmd+Maj+Z : annuler / rétablir.',right,270,14,color.muted,205) end
     end
-    button(M.workshop and 'Vider la carte' or 'Restaurer l’original',right,h-110,207,34,function() local ok,err=M.restore();state.error=ok==false;if ok==false then state.status=err or 'Restauration impossible.' else state.status=M.workshop and 'Carte réinitialisée.' or 'Original restauré en brouillon. Appliquer pour le garder.' end end)
+    button('Vider la carte',right,h-110,207,34,function() local ok,err=M.restore();state.error=ok==false;if ok==false then state.status=err or 'Restauration impossible.' else state.status='Carte vidée.' end end)
     if not M.workshop and not M.devMode then text('Les niveaux personnalisés ne sont pas classés.',right,h-66,12,color.muted,210) end
     g.setColor(.025,.034,.047); g.rectangle('fill',0,h-30,w,30)
     text(state.status~='' and state.status or (M.workshop and require('workshop_access').biomeNotice or ''),18,h-23,16,state.error and {1,.46,.4} or color.muted,w-30)
