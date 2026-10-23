@@ -20,7 +20,18 @@ function T.run()
   g.push('all');setCanvas(c);g.setCanvas=function(target,...)if target==nil then return setCanvas(c) end;return setCanvas(target,...)end
   love.draw();g.setCanvas=setCanvas;setCanvas();g.pop();c:newImageData():encode('png','history-'..name..'.png');c:release()
  end
- H.open();capture('menu');assert(#UI.buttons==8 and H.scenes[1].label=='Le début' and H.scenes[2].label=='Paradis → Ciel' and H.scenes[3].label=='Ciel → Terre' and H.scenes[4].label=='Terre → Océan' and H.scenes[5].label=='Océan → Abysse' and H.scenes[6].label=='Abysse → Enfer' and H.scenes[7].label=='Enfer → Renaissance','Beginning, six biome transitions and Return')
+ local seen,transitions=Profile.prologueSeen,Profile.transitionsSeen
+ Profile.prologueSeen=false;Profile.transitionsSeen={}
+ H.open();UI.draw();assert(#UI.buttons==1,'Undiscovered scenes are hidden')
+ for _,scene in ipairs(H.scenes) do assert(H.play(scene.id)==false and not App.historyPreview,'Locked scenes cannot be launched directly') end
+ Profile.prologueSeen=true;Profile.transitionsSeen={['5']=true}
+ H.open();UI.draw();assert(#UI.buttons==3 and UI.buttons[2],'Only discovered scenes and Return are visible')
+ assert(not H.unlocked(H.scenes[2]) and H.unlocked(H.scenes[3]),'Unlocking is per transition, not inferred from later worlds')
+ Profile.transitionsSeen={boss_abyss=true};for _,scene in ipairs(H.scenes) do if scene.world then Profile.transitionsSeen[tostring(scene.world)]=true end end
+ H.open();capture('menu');assert(#UI.buttons==9 and H.scenes[1].label=='Introduction' and H.scenes[2].label=='Chapitre 1' and H.scenes[6].label=='Le Monstre d’os' and H.scenes[7].label=='Chapitre 5' and H.scenes[8].label=='Fin','Introduction, five chapters, ending and Return')
+ -- Preview must preserve the progression that was present at launch.
+ profile=snapshot({stats=Profile.stats,biomes=Profile.biomeStats,achievements=Profile.achievements,completed=Profile.completed,seen=Profile.prologueSeen,name=Profile.name})
+
  local bridge=require('preview_bridge');local request=bridge.request
  local requests=0
  bridge.request=function()
@@ -67,8 +78,8 @@ function T.run()
  App.historyPreview=true;Replay.data={layouts={['5:1']={world=2}}};Replay.recording=true
  assert(next(LevelLayouts.read())==nil,'History ignores replay layouts even if replay state is stale')
  Replay.recording=false;Replay.data=nil;App.historyPreview=nil
- H.play('sky');C.advance(.05);love.keypressed('escape');assert(App.state=='history' and not App.historyPreview,'Escape returns directly to History')
- H.play('paradise');capture('return');local back
+ H.play('paradise_sky');C.advance(.05);love.keypressed('escape');assert(App.state=='history' and not App.historyPreview,'Escape returns directly to History')
+ H.play('intro');capture('return');local back
  for _,button in ipairs(UI.buttons) do if button.x==28 then back=button end end
  assert(back);back.run();assert(App.state=='history','Visible return button works')
  UI.draw();Input.index=2;love.keypressed('return');assert(App.historyPreview and require('sky_arrival').fromParadise,'Keyboard launches the selected transition')
@@ -77,8 +88,9 @@ function T.run()
  assert(App.state=='history' and not App.historyPreview,'Ended playback cannot leave History in a playable level')
  for i=1,5 do love.update(.05) end
  assert(App.state=='history','Chooser remains open after automatic return')
+ Profile.prologueSeen,Profile.transitionsSeen=seen,transitions
  Profile.record,Online.start,Replay.begin=record,online,begin
- print('PASS History: all seven scene buttons, automatic return, Escape, return button, keyboard, no progression/bestiary/online/replay/RNG changes')
+ print('PASS History: all eight scene buttons, automatic return, Escape, return button, keyboard, no progression/bestiary/online/replay/RNG changes')
  love.event.quit()
 end
 return T

@@ -24,7 +24,7 @@ function T.run()
    assert(Abyss.playerHidden(),'Swallowed player stays hidden before the spit')
    Psyche.death(100,100);App.simulate(.4);assert(not Psyche.deathPulse,'Death effect expires even during the intro')
    App.capture='abyss-arrival-empty.png'
-  elseif frame==9 then I.update(I.current,1.1);App.capture='abyss-arrival-left.png'
+  elseif frame==9 then if I.current.arrival.cinematic then I.update(I.current,require('abyss_boss_arrival').lead) end;I.update(I.current,1.1);App.capture='abyss-arrival-left.png'
   elseif frame==11 then I.update(I.current,2.15-I.current.arrival.age);local mx,my=I.current.mouth();assert(I.current.head.x>0 and I.current.head.x-I.current.head.w/3<0,'Only the head emerges from the wall during the spit');assert(math.abs(player.x+15-mx)<1 and math.abs(player.y+12-my)<1,'Player emerges at the particle source');assert(not Abyss.playerHidden());I.update(I.current,.25);assert(player.x+15>mx and player.x+15<Arena.width/2,'Player travels out of the mouth');assert(I.current.open and #I.current.lumenParticles==300 and #I.current.returnShots==0);App.capture='abyss-arrival-spit.png'
   elseif frame==13 then local a=I.current;I.update(a,1);assert(not I.current and #a.lumenParticles==300 and a.returnShotTimer>1,'Fight starts after particles settle');App.capture='abyss-arrival-ready.png'
   elseif frame==15 then

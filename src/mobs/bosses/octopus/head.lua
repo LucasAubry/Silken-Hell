@@ -1,3 +1,4 @@
+local Art=require('art')
 -- Separate painted mantle; the articulated vector arms keep their gameplay reach.
 local H={}
 function H.draw(a,x,y,angle,scale,flash)

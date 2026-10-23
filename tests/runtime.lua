@@ -9,6 +9,7 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_ABYSS_BOSS_ARRIVAL_TEST')=='1' then require('tests.abyss_boss_arrival').run();return end
     if os.getenv('SILKEN_STORM_FOLLOW_TEST')=='1' then require('tests.storm_follow').run();return end
     if os.getenv('SILKEN_STORM_FLIGHT_TEST')=='1' then require('tests.storm_flight').run();return end
     if os.getenv('SILKEN_WRAP_BOSSES_TEST')=='1' then require('tests.wrap_bosses').run();return end

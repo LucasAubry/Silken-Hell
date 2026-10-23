@@ -1,3 +1,4 @@
+local Art=require('art')
 -- Generated transparent shell with progressive cracks overlaid in game.
 local E={}
 function E.draw(x,y,size,cracks,angle)

@@ -8,8 +8,9 @@ local function pose(a,x)
 end
 function I.start(a)
  I.current=a
- a.arrival={age=0};a.lumenParticles={};a.returnShots={};a.open=false
+ a.arrival={age=0,elapsed=0,cinematic=Campaign.world==7 and player.level==10 and not App.sessionLayout and not App.workshopMap and not Secret.duel and (App.historyPreview or not (App.preview or App.practice or App.singleLevel or App.hardcore))};a.lumenParticles={};a.returnShots={};a.open=false
  pose(a,-180);player.x=Arena.width/2-15;player.y=300-12
+ if a.arrival.cinematic then require('abyss_boss_arrival').prepare() end
 end
 function I.finish(a)
  I.current=nil;a.arrival=nil;a.open=false;a.returnMouth=0;a.returnShotTimer=1.4
@@ -22,7 +23,9 @@ function I.retry(a)
 end
 function I.update(a,dt)
  local intro=a.arrival;if not intro then return false end
- intro.age=intro.age+dt;a.clock=a.clock+dt
+ intro.elapsed=intro.elapsed+dt
+ intro.age=intro.cinematic and math.max(0,intro.elapsed-require('abyss_boss_arrival').lead) or intro.elapsed
+ a.clock=a.clock+dt
  local t=intro.age
  if t>.65 then
   local u=math.min(1,(t-.65)/1.4)
@@ -55,6 +58,10 @@ function I.update(a,dt)
   end
  end
  if t>=3.15 then
+  if intro.cinematic and not (App.historyPreview or Replay.playing or Replay.ghost or App.preview or App.practice or App.singleLevel or App.hardcore or App.sessionLayout) then
+   Profile.transitionsSeen=Profile.transitionsSeen or {}
+   if not Profile.transitionsSeen.boss_abyss then Profile.transitionsSeen.boss_abyss=true;Profile.save() end
+  end
   I.current=nil;a.arrival=nil;a.open=false;a.returnMouth=0;a.returnShotTimer=1.3
   a.returnPX=player.x+15;a.returnPY=player.y+12
   for _,p in ipairs(a.lumenParticles) do p.wakeVx=0;p.wakeVy=0 end

@@ -93,6 +93,8 @@ function P.load()
         end
         Achievements.check(score,P.achievements)
     end
+    -- Older saves reached this encounter before its History entry existed.
+    if (P.levels[7] or 0)>=10 or P.completed[7] then P.transitionsSeen.boss_abyss=true end
     if Achievements.unlocked({id='flawless_all'}) then P.achievements.flawless_all=true end
     if not data:match('statsVersion=1') then
         for _,score in ipairs(P.scores) do

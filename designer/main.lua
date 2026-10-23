@@ -58,6 +58,7 @@ local function drawArt(key,x,y,width,angle,height)
 end
 local function entity(e,ghost,terrainDrawn)
     local c=catalog(e);local departure=Directions.angle(e); g.setColor(1,1,1,ghost and .45 or 1)
+    if e.kind=='boss' and require('boss_art').draw(e.type,e.x,e.y,e.type=='octopus' and 360 or e.type=='storm' and 150 or 120) then return end
     if e.kind=='lightning_zone' then
         g.push('all');g.setShader();g.setLineWidth(2)
         g.setColor(.4,.7,1,ghost and .06 or .10);g.rectangle('fill',e.x-e.w/2,e.y-e.h/2,e.w,e.h)
@@ -176,7 +177,7 @@ local function preview()
 
 end
 local function loadArt()
-    local paths={original='assets/skins/base_marron/down.png',tear_ring='assets/textures/aureole.png',catalog_ange='assets/monstres/paradis/ange/ange_down.png',catalog_snake='assets/monstres/paradis/serpent/snake_down.png',catalog_trap='assets/monstres/paradis/pieges/piege.png'}
+    local paths={merle_egg='assets/monstres/paradis/merle/merle_egg.png',merle_flight='assets/monstres/paradis/merle/merle_flight.png',octopus_extended_down='assets/monstres/ocean/poulpe/octopus_extended_down.png',original='assets/skins/base_marron/down.png',tear_ring='assets/textures/aureole.png',catalog_ange='assets/monstres/paradis/ange/ange_down.png',catalog_snake='assets/monstres/paradis/serpent/snake_down.png',catalog_trap='assets/monstres/paradis/pieges/piege.png'}
     for _,c in ipairs(C) do if c.art and not Art.images[c.art] then
         local path=paths[c.art] or 'assets/sprites/'..c.art..'.png'
         if not love.filesystem.getInfo(require('asset_paths').resolve(path)) then path='assets/sprites/directional/'..c.art..'.png' end
@@ -275,7 +276,8 @@ function love.draw()
     for i=1,max do local c=palette[i+state.scroll]; if c then
         local y=358+(i-1)*68
         button('',14,y,220,60,function() state.tool=c; M.selected=nil; state.input=nil end,state.tool==c)
-        if c.type=='plankton' then require('mobs.plankton').art(45,y+29,24,state.clock)
+        if c.kind=='boss' and require('boss_art').draw(c.type,45,y+29,c.type=='merle' and 22 or 42) then
+        elseif c.type=='plankton' then require('mobs.plankton').art(45,y+29,24,state.clock)
         elseif c.type=='cloud_beast' then require('mobs.cloud_beast').art(45,y+29,42,0,0)
         elseif c.type=='cloud_snail' then require('cloud_snail').art(45,y+29,42,0,0)
         elseif c.type=='dragonfly' or c.type=='mist_moth' or c.type=='wind_bat' or c.type=='lava_scorpion' then require('sky_insect_art').draw(c.type,45,y+29,42,0)

@@ -1,3 +1,4 @@
+local Art=require('art')
 local Timing=require('boss_attack_timing')
 local TentacleVector=require 'mobs.bosses.octopus.tentacle'
 local Head=require 'mobs.bosses.octopus.head'

@@ -1,12 +1,13 @@
 local H={}
 H.scenes={
- {id='intro',label='Le début'},
- {id='paradise_sky',label='Paradis → Ciel'},
- {id='sky_earth',label='Ciel → Terre'},
- {id='earth_ocean',label='Terre → Océan'},
- {id='ocean_abyss',label='Océan → Abysse'},
- {id='abyss_hell',label='Abysse → Enfer'},
- {id='hell_renaissance',label='Enfer → Renaissance'},
+ {id='intro',label='Introduction'},
+ {id='paradise_sky',label='Chapitre 1',world=6},
+ {id='sky_earth',label='Chapitre 2',world=5},
+ {id='earth_ocean',label='Chapitre 3',world=4},
+ {id='ocean_abyss',label='Chapitre 4',world=7},
+ {id='boss_abyss',label='Le Monstre d’os',unlock='boss_abyss'},
+ {id='abyss_hell',label='Chapitre 5',world=2},
+ {id='hell_renaissance',label='Fin',world=3},
 }
 local fields={'selectedWorld','hardcore','preview','practice','singleLevel','sessionLayout','workshopMap','entryFromWorld','custom','runSkin','runEffects'}
 function H.open()
@@ -21,6 +22,8 @@ function H.close()
   love.math.setRandomState(H.saved.rng)
   H.saved=nil
  end
+ H.bossPreview=nil
+ require('mobs.bosses.abyss.arrival').current=nil
  App.historyPreview=nil
  local C=require('run_start');C.active=false;C.arrival=nil;C.arrivalKind=nil;C.goAge=nil
  require('prologue').paused=false
@@ -35,17 +38,33 @@ function H.update(dt)
  if not App.historyPreview then return end
  if App.state=='prologue' then require('prologue').update(dt);return end
  if App.state=='pause' then return end
+ if H.bossPreview then
+  local I=require('mobs.bosses.abyss.arrival')
+  if I.current then I.update(I.current,math.min(dt,.05)) end
+  if not I.current then H.close() end
+  return
+ end
  local C=require('run_start')
  if App.state=='playing' and C.arrival then C.advance(dt)
  else H.close() end
 end
+function H.unlocked(scene)
+ if scene.id=='intro' then return Profile.prologueSeen==true end
+ return (Profile.transitionsSeen or {})[scene.unlock or tostring(scene.world)]==true
+end
 function H.play(id)
+ local available=false
+ for _,scene in ipairs(H.scenes) do
+  if scene.id==id and H.unlocked(scene) then available=true;break end
+ end
+ if not available then return false end
  if H.saved then H.close() end
  H.saved={rng=love.math.getRandomState(),world=Campaign.world,biome=Campaign.biome,level=player.level}
  for _,key in ipairs(fields) do H.saved[key]=App[key] end
  App.historyPreview=true;App.preview=true;Replay.recording=false;Replay.input=nil;UI.buttons={};UI.pressed=nil
  if id=='story' then require('prologue').open(true)
  elseif id=='intro' then require('prologue_mystery').open()
+ elseif id=='boss_abyss' then H.startWorld(7);player.level=10;reset_level();H.bossPreview=true
  elseif id=='abyss_hell' then H.startWorld(2);require('run_start').beginHellArrival()
  elseif id=='hell_renaissance' then H.startWorld(3);require('run_start').beginRenaissanceArrival()
  elseif id=='ocean_abyss' then H.startWorld(7);require('run_start').beginAbyssArrival()
@@ -56,8 +75,12 @@ function H.play(id)
 end
 function H.draw()
  UI.text('Histoire',340,90,'heading',{.96,.94,.86},520,'center')
- for i,scene in ipairs(H.scenes) do
-  UI.button(scene.label,150+((i-1)%2)*480,190+math.floor((i-1)/2)*95,420,64,function()H.play(scene.id)end)
+ local i=0
+ for _,scene in ipairs(H.scenes) do
+  if H.unlocked(scene) then
+   i=i+1
+   UI.button(scene.label,150+((i-1)%2)*480,190+math.floor((i-1)/2)*95,420,64,function()H.play(scene.id)end)
+  end
  end
  UI.button('Retour',450,640,300,48,function()App.state='menu';Input.index=1 end)
 end

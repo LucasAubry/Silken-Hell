@@ -33,7 +33,7 @@ add('tornado',nil,'Tornade','cloud_snare',6)
 add('current',nil,'Dessiner un courant',nil,4,{radius=28,points={0,0},dx=1,speed=80})
 add('light',nil,'Source de lumière','tear_ring',7)
 add('nest',nil,'Nid du Merle','nest',1,{rx=34,ry=25})
-for _,v in ipairs({{'storm','Merle noir','merle_flight_down',6},{'merle','L’Œuf du Merle','merle_down',1},{'wasp','Les Guêpes brûlées','wasp_down',2},{'hedgehog','Hérisson Brise-Roche','hedgehog_down',5},{'octopus','Pieuvre des Larmes Noires','octopus_extended_down',4},{'skeleton_head','Le Monstre d’os','skeleton_head',7}}) do add('boss',v[1],v[2],v[3],v[4],{movementRate=1,attackRate=1}) end
+for _,v in ipairs({{'storm','Merle noir','merle_flight',6},{'merle','L’Œuf du Merle','merle_egg',1},{'wasp','Les Guêpes brûlées','wasp_down',2},{'hedgehog','Hérisson Brise-Roche','hedgehog_down',5},{'octopus','Pieuvre des Larmes Noires','octopus_extended_down',4},{'skeleton_head','Le Monstre d’os','skeleton_head',7}}) do add('boss',v[1],v[2],v[3],v[4],{movementRate=1,attackRate=1}) end
 add('abyss_gate',nil,'Tête du passage','skeleton_open',7,{w=540,h=648})
 add('abyss_part','skeleton_tail','Queue du Léviathan','skeleton_tail',7,{w=100,h=145,rotation=0})
 add('abyss_part','skeleton_rib','Côte du Léviathan','skeleton_rib',7,{w=18,h=110,rotation=0})

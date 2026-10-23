@@ -444,6 +444,7 @@ function love.draw()
         sceneCanvas=require('world_lighting').apply(gameCanvas)
     end
     local w,h=love.graphics.getDimensions()
+    local bossArrival=App.state=='playing' and require('abyss_boss_arrival').current()
     if App.state=='playing' or App.state=='bossWorld' then
         local scale,x,y=App.viewport(w,h)
         local shakeX,shakeY=BossFX.offset();if App.state=='playing' then local gx,gy=require('abyss_gate').shake();shakeX,shakeY=shakeX+gx,shakeY+gy end;if App.state=='bossWorld' then shakeX,shakeY=0,0 end
@@ -455,7 +456,8 @@ function love.draw()
         love.graphics.setColor(1,1,1)
         local psychedelic=App.state=='playing' and Psyche.bind()
         if not psychedelic and Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==6 and 0 or Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
-        if RunStart.arrival and RunStart.scene() and App.state=='playing' then require('cinematic_fx').draw(RunStart.scene(),sceneCanvas,w,h)
+        if bossArrival then require('cinematic_fx').draw(bossArrival,sceneCanvas,w,h)
+        elseif RunStart.arrival and RunStart.scene() and App.state=='playing' then require('cinematic_fx').draw(RunStart.scene(),sceneCanvas,w,h)
         else love.graphics.draw(sceneCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale) end; love.graphics.setShader()
         if App.state=='playing' then Octopus.drawInk(w,h); Bosses.drawInk(w,h) end
     elseif App.state=='prologue' then
@@ -477,7 +479,7 @@ function love.draw()
     end
     local s=math.min(w/1200,h/750)
     love.graphics.push(); love.graphics.translate((w-1200*s)/2,(h-750*s)/2); love.graphics.scale(s)
-    local sceneArrival=App.state=='playing' and RunStart.arrival and RunStart.scene()~=nil
+    local sceneArrival=bossArrival or App.state=='playing' and RunStart.arrival and RunStart.scene()~=nil
     if sceneArrival or App.historyPreview and App.state=='playing' then UI.buttons={};RunStart.draw()
     elseif App.state~='credits' then UI.draw();Input.draw();if App.state~='prologue' then require('discovery_notice').draw();RunStart.draw() end end
     if App.historyPreview then require('history').drawBack()
