@@ -39,21 +39,21 @@ function T.run()
    local angle=boss.angle;local phase=boss.phase;boss.update(1/120)
    if phase=='hunt' and boss.phase=='hunt' then
     local delta=(boss.angle-angle+math.pi)%(2*math.pi)-math.pi
-    assert(math.abs(delta)<.021,'Flight turns remain gradual')
+    assert(math.abs(delta)<=2.6/120+.0001,'Flight bends without abrupt heading changes')
     assert(boss.x>0 and boss.x<Arena.width and boss.y>0 and boss.y<600,'Hunting flight remains in the arena')
    end
    route[tick]=string.format('%.9f,%.9f',boss.x,boss.y)
   end
   Hazards.kill=saved;return table.concat(route,';')
  end
- assert(flight(20)==flight(900),'Merle trajectory must not track the player')
+ assert(flight(20)~=flight(900),'Straight runs aim at the player at each border')
  local lethal=setup();lethal.setPhase('hunt');lethal.x=480;lethal.y=300
  player.x=465;player.y=288;player.reset=false;lethal.contact();assert(player.reset,'Touching the Merle hurts the player')
  local b=setup();assert(b.wave==1 and #b.snails==1 and b.x<0,'First wave starts offscreen with one snail')
  Hazards.kill=function()end
  for _=1,180 do b.update(1/60)end
  assert(#b.holes>0,'Dragging excavates a narrow trail')
- assert(b.holes[1].radius==(require('cloud_snail').width+require('cloud_snail').mergeMargin)/2,'Hole radius halved')
+ assert(b.holes[1].initialRadius==(require('cloud_snail').width+require('cloud_snail').mergeMargin),'Same cloud hole radius as biome snails')
  b.spawnSnails();local p=b.snails[1];local beforeX,beforeY=p.x,p.y
  b.angle=b.angle+.02;b.vx=0;b.vy=350;b.updateSnails(1/120)
  assert(math.sqrt((p.x-beforeX)^2+(p.y-beforeY)^2)<20,'Turn does not teleport the snail')
@@ -76,7 +76,7 @@ function T.run()
  -- Cleanup is now five broad dash passes, never a tour of individual scars.
  b.holes={{x=100,y=100,tx=120,ty=100,radius=7.74},{x=800,y=480,tx=820,ty=480,radius=7.74}}
  b.x=110;b.y=100;b.advanceWave=true;b.setPhase('clean');b.update(.01)
- assert(not b.holes[1].closing and not b.holes[2].closing,'Fog hold leaves holes intact until the dash')
+ assert(not b.holes[1].closing and not b.holes[2].closing,'Short approach leaves holes intact until the dash')
  local passes={}
  for i=1,2400 do
   b.update(1/60)

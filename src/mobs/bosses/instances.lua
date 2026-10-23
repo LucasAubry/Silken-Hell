@@ -121,6 +121,7 @@ function B.resize(ratio)
         local b=item.boss
         if item.kind=='wasp' or item.kind=='storm' or item.kind=='skeleton_fish' then b.resize(ratio) else
         if b.x then b.x=b.x*ratio end
+        if b.resizeWrap then b.resizeWrap(ratio) end
         if b.head then b.head.x=b.head.x*ratio end
         if b.origin then b.origin.x=b.origin.x*ratio; b.buildBones() end
         for _,key in ipairs({'projectiles','strikes','nests','eggs','chicks','minions','pools','shots','skins','crabs','wounds','lightSites','waves','mines','octopuses','lures','orbs','vortices','sparks','rifts','counterShots','trail','ambient','threads','plankton','corpses','inkPools','blasts'}) do

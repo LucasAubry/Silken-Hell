@@ -174,6 +174,10 @@ function App.move(dt)
     if player.abyssKnock or player.abyssHeld or player.abyssSpit or player.whirl or player.throw or player.skyWhirl or player.skyThrow or player.tunnelTravel then player.has_moved=false; player.dashing=false; return end
     local k=Profile.keys
     local dx,dy=Input.move()
+    if (player.inkCoat or 0)>0 then
+        local a=math.sin((player.inkWobble or 0)*11)*.55
+        dx,dy=dx*math.cos(a)-dy*math.sin(a),dx*math.sin(a)+dy*math.cos(a)
+    end
     player.has_moved=dx~=0 or dy~=0
     if dx~=0 then direction=dx>0 and 'right' or 'left'; player.last_mouve=dx>0 and 'player.x+' or 'player.x-' end
     if dy~=0 then direction=dy>0 and 'down' or 'up'; player.last_mouve=dy>0 and 'player.y+' or 'player.y-' end
@@ -296,6 +300,8 @@ function App.simulate(dt)
     larme_float_timer=larme_float_timer+dt
     player.venom=math.max(0,player.venom-dt)
     player.ink=math.max(0,(player.ink or 0)-dt)
+    player.inkCoat=math.max(0,(player.inkCoat or 0)-dt)
+    player.inkWobble=(player.inkWobble or 0)+dt
     Abyss.updatePlayer(dt)
     Aftermath.update(dt)
     update_shadow_dash(dt); update_freezes(dt); App.move(dt)
@@ -700,7 +706,7 @@ function love.resize(w,h)
         for _,p in ipairs(Hedgehog.projectiles) do p.x=p.x*ratio end
     end
     if Octopus.active then
-        Octopus.x=Octopus.x*ratio
+        Octopus.x=Octopus.x*ratio;Octopus.resizeWrap(ratio)
         for _,list in ipairs({Octopus.projectiles,Octopus.crabs,Octopus.wounds,Octopus.inkPools,Octopus.blasts}) do for _,p in ipairs(list) do p.x=p.x*ratio; if p.tx then p.tx=p.tx*ratio end; if p.fromX then p.fromX=p.fromX*ratio end end end
     end
     for _,b in ipairs(Ocean.bubbles) do b.x=b.x*ratio end

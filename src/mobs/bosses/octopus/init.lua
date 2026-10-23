@@ -676,4 +676,5 @@ function O.drawInk(width,height)
     end
     g.pop()
 end
+require('mobs.bosses.octopus.wrap').install(O)
 return O

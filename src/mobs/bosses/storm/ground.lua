@@ -11,7 +11,7 @@ function G.draw(s)
  end
  local g=love.graphics;local width=math.ceil(Arena.width)
  if not s.groundCache or s.groundCache.width~=width then
-  if s.groundCache then for _,k in ipairs({'canvas','distanceA','distanceB','distanceResult'})do local v=s.groundCache[k];if v then v:release()end end end
+  if s.groundCache then for _,k in ipairs({'canvas','distanceA','distanceB','distanceResult','union'})do local v=s.groundCache[k];if v then v:release()end end end
   s.groundCache={width=width,canvas=g.newCanvas(width,600,{dpiscale=1}),snapshots={}}
  end
  local cache=s.groundCache;local dirty={math.huge,math.huge,-math.huge,-math.huge};local active=false
@@ -50,7 +50,19 @@ function G.draw(s)
   g.pop()
   if active then
    local region;if not full then region=dirty end
-   require('hole_union_distance').build(cache.canvas,cache,region)
+   local surface=require('terrain_surface');local zones={}
+   for _,source in ipairs({Realms.holes or {},require('sky_weather').holes or {}})do
+    for _,h in ipairs(source)do if not h.temporary then zones[#zones+1]=h end end
+   end
+   local field=surface.field(zones,'hole')
+   local edge=require('sky_void').edgeField(width)
+   cache.union=cache.union or g.newCanvas(width,600,{dpiscale=1})
+   g.push('all');g.setCanvas(cache.union);g.origin();g.setScissor();g.setShader();g.clear(0,0,0,1)
+   g.setBlendMode('lighten','premultiplied');g.setColor(1,1,1);g.draw(cache.canvas)
+   g.draw(edge.image,0,0,0,edge.step,edge.step)
+   if field then g.draw(field.image,field.x,field.y,0,field.step,field.step)end
+   g.pop()
+   require('hole_union_distance').build(cache.union,cache,region)
   end
  end
  -- A cached distance field must never resurrect the last erased scar.

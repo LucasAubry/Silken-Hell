@@ -55,24 +55,26 @@ function T.run()
  end
  -- Both drawing and physics use the transformed tail attachment, not the centre.
  for _,angle in ipairs({0,math.pi/3,math.pi,math.pi*1.4}) do
-  s.angle=angle;local ax,ay=s.anchor();local flap=1+math.sin(s.clock*14)*.025
+  s.angle=angle;s.flightRoll=math.cos(angle)<0 and -1 or 1;local ax,ay=s.anchor();local flap=1+math.sin(s.clock*14)*.025
   local flip=math.cos(angle)<0 and -1 or 1
   assert(math.abs((ax-s.x)*math.cos(angle)+(ay-s.y)*math.sin(angle)+60*flap)<.001)
   assert(math.abs(-(ax-s.x)*math.sin(angle)+(ay-s.y)*math.cos(angle)-58*flip/flap)<.001)
  end
  local last=s.snails[4];last.phase='strike';last.x=s.x;last.y=s.y;last.age=0
  s.updateSnails(1/120);s.updateSnails(1/120)
+ for i=1,230 do if s.phase=='clean' then break end;s.updateSnails(1/120)end
  assert(s.hp==0 and not s.defeated and s.phase=='clean','Final victory waits for the clearing dashes')
  s.holes={{x=120,y=55,tx=130,ty=55,radius=8},{x=820,y=540,tx=830,ty=540,radius=8}}
- s.update(.2)
- assert(s.cleanStage=='hold' and s.fogAmount==1 and not s.holes[1].closing,'Opaque beat before the first dash')
+ local near,far=s.holes[1],s.holes[2]
+ s.update(.04)
+ assert(s.cleanStage=='approach' and s.fogAmount==1 and not s.holes[1].closing,'Short approach before the first dash')
  local passes={};local partial=false;local captured=false
  for i=1,2400 do
   s.update(1/60)
   if s.cleanStage=='dash' then
    passes[s.cleanIndex]=true
    if s.cleanIndex==1 and s.x>400 and s.x<560 then
-    assert(s.holes[1].closing and not s.holes[2].closing,'Only the swept band closes its holes')
+    assert((near.closing or false)==(s.sweepDir==1) and not far.closing,'Only the traversed portion closes its holes')
     assert(Fog.alphaAt(s,s.sweepDir==1 and 100 or 860,60)==0,'Wake clears behind the boss')
     assert(Fog.alphaAt(s,480,540)==1,'Untouched bands stay opaque')
     partial=true
