@@ -12,13 +12,12 @@ local function segmentDistance(x,y,ax,ay,bx,by)
 end
 local function pose()
  local flap=1+math.sin(S.clock*14)*.025
- return flap,S.flightRoll or (math.cos(S.angle)<0 and -1 or 1)
+ return flap,math.cos(S.angle)<0 and -1 or 1
 end
 function S.anchor()
  -- The same transform as the sprite, at the tip of its lower tail feathers.
- local flap,flip=pose();local x,y=-60*flap,58*flip/flap
- local c,s=math.cos(S.angle),math.sin(S.angle)
- return S.x+x*c-y*s,S.y+x*s+y*c
+ local flap,flip=pose()
+ return S.x-60*flap*flip,S.y+58/flap
 end
 function S.spawnSnails()
  S.snails={};local ax,ay=S.anchor();S.snailAnchorX,S.snailAnchorY=ax,ay
@@ -36,7 +35,7 @@ function S.setPhase(phase)
   S.x=side==1 and -100 or Arena.width+100
   S.y=155
   local dx,dy=side,0;local d=1
-  S.angle=math.atan2(dy,dx);S.flightRoll=side;S.vx=dx/d*650;S.vy=dy/d*650
+  S.angle=math.atan2(dy,dx);S.vx=dx/d*650;S.vy=dy/d*650
   S.fogHits=0;S.fogAmount=0;S.fogTarget=0;S.smoke={};S.fogRows=0;S.cleanStage=nil
   S.phaseTime=setting('hidden',.9);S.dir=side==1 and 'right' or 'left';S.spawnSnails()
  elseif phase=='charge' then
@@ -160,7 +159,12 @@ local function moveToward(x,y,speed,dt)
 end
 local function clean(dt)
  if require('mobs.bosses.storm.sweep').update(S,dt,moveToward) then
-  if S.hp==0 then S.finish() else S.setPhase('leave') end
+  if S.hp==0 then S.finish() else
+   if S.advanceWave then S.wave=S.wave+1 end
+   S.advanceWave=false
+   S.setPhase('tell')
+   S.setPhase('charge')
+  end
  end
 end
 function S.update(dt)
@@ -193,8 +197,6 @@ function S.update(dt)
    if S.advanceWave then S.wave=S.wave+1 end
    S.setPhase('tell')
   end
-  local rollTarget=math.cos(S.angle)<0 and -1 or 1
-  S.flightRoll=(S.flightRoll or rollTarget)+(rollTarget-(S.flightRoll or rollTarget))*(1-math.exp(-10*step))
   S.dir=Art.direction(math.cos(S.angle),math.sin(S.angle),S.dir)
   if S.phase~='tell' and S.phase~='return' then S.updateSnails(step)end
   S.contact()
@@ -241,7 +243,7 @@ function S.draw()
   local key='merle_flight';local a=Art.images[key]
   local scale=150/math.max(a.w,a.h);local flap,flip=pose()
   g.setColor(1,1-S.flash*.4,1-S.flash*.4)
-  Art.draw(key,S.x,S.y,a.w*scale*flap,S.angle,a.h*scale*flip/flap)
+  Art.draw(key,S.x,S.y,a.w*scale*flap*flip,0,a.h*scale/flap)
  end
  for _,b in ipairs(S.bursts)do
   local t=b.age/.75;local radius=b.kind=='impact' and 75 or 28

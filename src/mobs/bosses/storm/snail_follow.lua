@@ -1,5 +1,5 @@
 -- Fixed distance slots on the bird's actual route: no rotating fan or shortcuts.
-local F={gap=70,lead=140}
+local F={gap=70,lead=220}
 local function length(x,y)return math.sqrt(x*x+y*y)end
 function F.reset(s)
  s.snailRoute={};s.snailDistance=0
