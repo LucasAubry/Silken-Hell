@@ -280,6 +280,9 @@ function App.simulate(dt)
 
     local arrival=require('mobs.bosses.abyss.arrival')
     if arrival.current and arrival.update(arrival.current,dt) then timer=timer+dt;RunDetails.tick(dt);return end
+    if require('hell_boss_arrival').update(dt) then timer=timer+dt;RunDetails.tick(dt);return end
+    if require('sky_boss_arrival').update(dt) then timer=timer+dt;RunDetails.tick(dt);return end
+    if require('queen_boss_arrival').update(dt) then timer=timer+dt;RunDetails.tick(dt);return end
     require('abyss_gate').update(dt)
     Secret.updateDuel(dt);if App.state~='playing' then return end
     if Ending.active then
@@ -378,9 +381,14 @@ function love.draw()
     end
     require('retry_wait').beginDraw()
     local sceneCanvas=gameCanvas
+    local stagedBoss=App.state=='playing' and (require('hell_boss_arrival').current() or require('sky_boss_arrival').current() or require('queen_boss_arrival').current())
     love.graphics.clear(0.013,0.025,0.035)
     if App.state=='playing' then
         refreshSceneResolution()
+        local backdrop=require('boss_arrival_backdrop')
+        if stagedBoss and backdrop.ready(stagedBoss,gameCanvas) then sceneCanvas=stagedBoss.background
+        else
+        if stagedBoss then backdrop.begin(stagedBoss) end
         love.graphics.setCanvas(gameCanvas); love.graphics.clear(); love.graphics.origin(); love.graphics.setColor(1,1,1)
         Prism.beginScene(gameCanvas)
         draw_level()
@@ -437,6 +445,8 @@ function love.draw()
         Storm.drawFog();Bosses.drawFog()
         Prism.endScene();love.graphics.setCanvas()
         sceneCanvas=require('world_lighting').apply(gameCanvas)
+        if stagedBoss then backdrop.capture(stagedBoss,sceneCanvas);sceneCanvas=stagedBoss.background end
+        end
     elseif App.state=='bossWorld' then
         refreshSceneResolution()
         sceneCanvas=gameCanvas
@@ -444,7 +454,7 @@ function love.draw()
         sceneCanvas=require('world_lighting').apply(gameCanvas)
     end
     local w,h=love.graphics.getDimensions()
-    local bossArrival=App.state=='playing' and require('abyss_boss_arrival').current()
+    local bossArrival=App.state=='playing' and (require('abyss_boss_arrival').current() or require('hell_boss_arrival').current() or require('sky_boss_arrival').current() or require('queen_boss_arrival').current())
     if App.state=='playing' or App.state=='bossWorld' then
         local scale,x,y=App.viewport(w,h)
         local shakeX,shakeY=BossFX.offset();if App.state=='playing' then local gx,gy=require('abyss_gate').shake();shakeX,shakeY=shakeX+gx,shakeY+gy end;if App.state=='bossWorld' then shakeX,shakeY=0,0 end
@@ -456,7 +466,8 @@ function love.draw()
         love.graphics.setColor(1,1,1)
         local psychedelic=App.state=='playing' and Psyche.bind()
         if not psychedelic and Graphics.effects and Graphics.quality>1 and App.state=='playing' then polishShader:send('strength',Campaign.biome==6 and 0 or Campaign.biome==7 and .18 or .65);love.graphics.setShader(polishShader) end
-        if bossArrival then require('cinematic_fx').draw(bossArrival,sceneCanvas,w,h)
+        if stagedBoss then stagedBoss.draw(sceneCanvas,w,h)
+        elseif bossArrival then require('cinematic_fx').draw(bossArrival,sceneCanvas,w,h)
         elseif RunStart.arrival and RunStart.scene() and App.state=='playing' then require('cinematic_fx').draw(RunStart.scene(),sceneCanvas,w,h)
         else love.graphics.draw(sceneCanvas,x+shakeX*scale,y+shakeY*scale,0,scale,scale) end; love.graphics.setShader()
         if App.state=='playing' then Octopus.drawInk(w,h); Bosses.drawInk(w,h) end

@@ -155,6 +155,9 @@ function C.reset(options)
             if options and options.retry then arrival.retry(encounter);require('psychedelic_fx').reset() else arrival.start(encounter) end
         end
     end
+    require('hell_boss_arrival').reset(options)
+    require('sky_boss_arrival').reset(options)
+    require('queen_boss_arrival').reset(options)
     if App.state=='playing' then Bestiary.encounter() end
 end
 function C.spawnHell(n)

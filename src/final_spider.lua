@@ -54,6 +54,7 @@ function F.updateCharge(dt)
  if length(F.x-F.chargeX,F.y-F.chargeY)<4 or F.phaseTime>1.7 then F.phase='recover';F.phaseTime=0;F.target=nil end
 end
 function F.reset(active)
+ F.introSnare=false;F.introContact=false
  F.landed=nil;F.weaveResume=nil;F.weaveX=nil;F.weaveY=nil;F.weaveAngle=nil;F.weaveCount=nil;F.weaveFired=nil;F.weaveSide=nil
  Escape.reset(F)
  F.id=0;F.frozen=0;F.eggSerial=0;F.pendingEggs=0;F.bombs={};F.bursts={};F.cast=0;F.damageGrace=0
@@ -191,8 +192,9 @@ local function updateBehavior(dt)
  F.damageGrace=math.max(0,F.damageGrace-dt);F.cast=math.max(0,F.cast-dt)
  F.layPulse=math.max(0,(F.layPulse or 0)-dt)
  F.jumpCooldown=math.max(0,(F.jumpCooldown or 0)-dt)
- F.clock=F.clock+dt;F.phaseTime=F.phaseTime+dt;F.flash=math.max(0,F.flash-dt);F.snare=math.max(0,F.snare-dt);F.webGrace=math.max(0,(F.webGrace or 0)-dt)
+ F.clock=F.clock+dt;F.phaseTime=F.phaseTime+dt;F.flash=math.max(0,F.flash-dt);F.snare=F.introSnare and F.snare or math.max(0,F.snare-dt);F.webGrace=math.max(0,(F.webGrace or 0)-dt)
  Escape.struggle(F,dt)
+ if F.introSnare and F.snare<=0 then F.introSnare=false end
  if F.defeated then
   F.settle(dt)
   if F.jumpHeight<=0 then
@@ -210,6 +212,12 @@ local function updateBehavior(dt)
   if Campaign.canCollect() and Aftermath.canEnter() and isTouching(player,objet.larme) then
    require('psychedelic_fx').collect(objet.larme.x+15,objet.larme.y+20,player.x+15,player.y+12)
    Profile.record('tears');objet.larme.taken=true;Ending.openReunion()
+  end
+  return
+ end
+ if F.introContact then
+  if F.snare<=0 and require('collision_shapes').touchCircle('queen',F.x,F.y,27) then
+   F.introContact=false;F.cornerPending=false;F.enraged=false;F.beginCombat()
   end
   return
  end
@@ -378,7 +386,7 @@ function F.drawGround()
  g.pop()
 end
 function F.draw(skipGround)
- if not F.active then return end
+ if not F.active or require('queen_boss_arrival').active then return end
  if not skipGround then F.drawGround() end
  local g=love.graphics;g.push('all')
  require('queen_weave').draw(F);Brood.draw(F)

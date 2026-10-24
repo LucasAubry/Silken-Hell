@@ -2,12 +2,15 @@ local H={}
 H.scenes={
  {id='intro',label='Introduction'},
  {id='paradise_sky',label='Chapitre 1',world=6},
+ {id='boss_sky',label='Le Merle noir',unlock='boss_sky'},
  {id='sky_earth',label='Chapitre 2',world=5},
  {id='earth_ocean',label='Chapitre 3',world=4},
  {id='ocean_abyss',label='Chapitre 4',world=7},
  {id='boss_abyss',label='Le Monstre d’os',unlock='boss_abyss'},
  {id='abyss_hell',label='Chapitre 5',world=2},
+ {id='boss_hell',label='Les Guêpes brûlées',unlock='boss_hell'},
  {id='hell_renaissance',label='Fin',world=3},
+ {id='boss_queen',label='La Gardienne de la Soie',unlock='boss_queen'},
 }
 local fields={'selectedWorld','hardcore','preview','practice','singleLevel','sessionLayout','workshopMap','entryFromWorld','custom','runSkin','runEffects'}
 function H.open()
@@ -23,6 +26,9 @@ function H.close()
   H.saved=nil
  end
  H.bossPreview=nil
+ require('hell_boss_arrival').active=false
+ require('sky_boss_arrival').active=false
+ require('queen_boss_arrival').active=false
  require('mobs.bosses.abyss.arrival').current=nil
  App.historyPreview=nil
  local C=require('run_start');C.active=false;C.arrival=nil;C.arrivalKind=nil;C.goAge=nil
@@ -38,6 +44,11 @@ function H.update(dt)
  if not App.historyPreview then return end
  if App.state=='prologue' then require('prologue').update(dt);return end
  if App.state=='pause' then return end
+ if H.bossPreview=='hell' or H.bossPreview=='sky' or H.bossPreview=='queen' then
+  local B=require(H.bossPreview=='queen' and 'queen_boss_arrival' or H.bossPreview=='sky' and 'sky_boss_arrival' or 'hell_boss_arrival');B.update(math.min(dt,.05))
+  if not B.active then H.close() end
+  return
+ end
  if H.bossPreview then
   local I=require('mobs.bosses.abyss.arrival')
   if I.current then I.update(I.current,math.min(dt,.05)) end
@@ -64,6 +75,9 @@ function H.play(id)
  App.historyPreview=true;App.preview=true;Replay.recording=false;Replay.input=nil;UI.buttons={};UI.pressed=nil
  if id=='story' then require('prologue').open(true)
  elseif id=='intro' then require('prologue_mystery').open()
+ elseif id=='boss_queen' then H.startWorld(3);player.level=1;reset_level();H.bossPreview='queen'
+ elseif id=='boss_sky' then H.startWorld(6);player.level=10;reset_level();H.bossPreview='sky'
+ elseif id=='boss_hell' then H.startWorld(2);player.level=10;reset_level();H.bossPreview='hell'
  elseif id=='boss_abyss' then H.startWorld(7);player.level=10;reset_level();H.bossPreview=true
  elseif id=='abyss_hell' then H.startWorld(2);require('run_start').beginHellArrival()
  elseif id=='hell_renaissance' then H.startWorld(3);require('run_start').beginRenaissanceArrival()
@@ -79,7 +93,7 @@ function H.draw()
  for _,scene in ipairs(H.scenes) do
   if H.unlocked(scene) then
    i=i+1
-   UI.button(scene.label,150+((i-1)%2)*480,190+math.floor((i-1)/2)*95,420,64,function()H.play(scene.id)end)
+   UI.button(scene.label,70+((i-1)%3)*370,190+math.floor((i-1)/3)*95,320,64,function()H.play(scene.id)end)
   end
  end
  UI.button('Retour',450,640,300,48,function()App.state='menu';Input.index=1 end)

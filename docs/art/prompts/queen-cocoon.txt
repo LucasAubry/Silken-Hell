@@ -1,0 +1,5 @@
+Tool: built-in image_gen
+References: assets/monstres/renaissance/reine/queen.png; assets/monstres/renaissance/reine/egg.png
+Output: assets/monstres/renaissance/reine/cocoon.png
+
+Create one NEW hanging silk cocoon sprite matching these two supplied GAME STYLE REFERENCES exactly. Image 1 is the spider boss style reference; image 2 is the ivory silk/egg palette and pixel-art style reference, not an edit target. A closed large cocoon with a narrow tied neck at its top, plump lower oval body, broad diagonal wraps of silk. Pixel art: coarse visible square pixel steps, thick nearly black pixel outline, restricted ivory/cream/beige palette, flat 3-tone shading, simple chunky crossing silk bands like reference 2. Match the visual pixel size and simplicity of the references. NOT photorealistic, NOT painted, no fine hairlike fibers, no smooth gradients, no glow or halo. Single centered complete sprite isolated on genuinely transparent alpha, generous margins. No spider visible, no legs, no face, no text, no backdrop or ground or shadow. No long thread (game code draws that).
