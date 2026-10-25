@@ -9,6 +9,7 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_VISUAL_COHERENCE_TEST')=='1' then require('tests.visual_coherence').run();return end
     if os.getenv('SILKEN_QUEEN_BOSS_ARRIVAL_TEST')=='1' then require('tests.queen_boss_arrival').run();return end
     if os.getenv('SILKEN_SKY_BOSS_ARRIVAL_TEST')=='1' then require('tests.sky_boss_arrival').run();return end
     if os.getenv('SILKEN_HELL_BOSS_ARRIVAL_TEST')=='1' then require('tests.hell_boss_arrival').run();return end

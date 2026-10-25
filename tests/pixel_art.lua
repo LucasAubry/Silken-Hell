@@ -20,7 +20,10 @@ function T.run()
   F.drawSource(image,50,60,.4,.17,.23,11,23);g.draw=draw;assert(called)
   count=count+1
  end
- assert(count==163,'Retained pixel-art illustrations must be registered')
+ local expected=0
+ for _ in pairs(require('json').decode(love.filesystem.read('assets/pixel-art.json'))) do expected=expected+1 end
+ assert(expected>0 and count==expected,'Every retained pixel-art illustration must be registered')
+ assert(F.image('assets/textures/background_paradie.png')==F.image('assets/environments/paradis/background_paradie.png'),'Legacy aliases must share the same crisp texture')
  for _,path in ipairs({'assets/environments/paradis/encre-atlas.json','assets/environments/paradis/characters-ink.json','assets/monstres/serviteurs/frames.json'}) do
   for name,frame in pairs(require('json').decode(love.filesystem.read(path))) do
    local image=F.image(frame.path);local w,h=image:getDimensions()

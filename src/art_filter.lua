@@ -1,6 +1,9 @@
 -- Preserve crisp pixel edges and the original game-space dimensions.
 local F={images={}}
-F.pixelArt=require('json').decode(love.filesystem.read('assets/pixel-art.json') or '{}')
+-- Normalize legacy names once so relocated art keeps its pixel filtering and pivots.
+local entries=require('json').decode(love.filesystem.read('assets/pixel-art.json') or '{}')
+F.pixelArt={}
+for path,entry in pairs(entries) do F.pixelArt[require('asset_paths').resolve(path)]=entry end
 function F.binaryAlpha(path)
  return path and ((F.pixelArt[path] and F.pixelArt[path].binaryAlpha) or path:match('^assets/skins/commun/') or path:match('^assets/skins/integrated/') or path:match('^assets/skins/accessoires/') or path:match('^assets/skins/maxance/') or path:match('^assets/skins/cocon/'))~=nil
 end

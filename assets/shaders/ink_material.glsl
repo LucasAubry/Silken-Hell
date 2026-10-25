@@ -18,16 +18,19 @@ vec4 inkSurface(vec4 source,Image tex,vec2 uv) {
     vec4 right=inkSample(tex,uv+vec2(texel_step.x,0.));
     vec4 up=inkSample(tex,uv-vec2(0.,texel_step.y));
     vec4 down=inkSample(tex,uv+vec2(0.,texel_step.y));
-    float edge=max(abs(inkValue(left)-inkValue(right)),abs(inkValue(up)-inkValue(down)));
+    // Ignore transparent RGB: it must not draw a second outline inside a sprite.
+    float horizontal=abs(inkValue(left)-inkValue(right))*min(left.a,right.a);
+    float vertical=abs(inkValue(up)-inkValue(down))*min(up.a,down.a);
+    float edge=max(horizontal,vertical);
     float inside=smoothstep(.16,.42,edge);
     float rim=(1.-min(min(left.a,right.a),min(up.a,down.a)))*smoothstep(.3,.9,source.a);
     // Flat painted shadow bands, with a narrow soft boundary to avoid shimmer.
-    float bands=value*7.;
-    float painted=(floor(bands)+smoothstep(.38,.62,fract(bands)))/7.;
+    float bands=value*10.;
+    float painted=(floor(bands)+smoothstep(.3,.7,fract(bands)))/10.;
     float amount=mix(1.,.38,scenery)*strength;
-    float tone=mix(value,painted,.78*amount*smoothstep(.035,.16,value));
+    float tone=mix(value,painted,.48*amount*smoothstep(.035,.16,value));
     // Draw contours inside the existing silhouette: never grow or replace alpha.
-    float contour=max(inside*.34,rim*.68)*amount;
+    float contour=max(inside*.20,rim*.42)*amount;
     tone*=1.-contour;
     // A single RGB multiplier retains every authored hue and saturation.
     float gain=min(tone/max(value,.001),1./max(value,.001));

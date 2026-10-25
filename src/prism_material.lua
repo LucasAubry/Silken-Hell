@@ -93,7 +93,9 @@ function M.load()
   local s=current or (info.ink and not info.protected and M.inkShader or M.shader)
   local values=state(s)
   rect(s,values,x/iw,y/ih,w/iw,h/ih)
-  step(s,values,math.max(1,w/192)/iw,math.max(1,h/192)/ih)
+  -- A square source-pixel footprint keeps outlines equal on long sprites.
+  local pixel=math.max(1,math.max(w,h)/192)
+  step(s,values,pixel/iw,pixel/ih)
   scalar(s,values,'scenery',info.scenery)
   scalar(s,values,'premultiplied',alpha=='premultiplied' and 1 or 0)
   scalar(s,values,'strength',1)
@@ -103,7 +105,6 @@ end
 function M.beginScene(target)
  M.target=target
  local values=state(M.shader)
- scalar(M.shader,values,'clock',Graphics.effects and UI.clock or 0)
  scalar(M.shader,values,'strength',1)
 end
 function M.endScene() M.target=nil end

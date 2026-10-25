@@ -56,7 +56,7 @@ function T.run()
   if reference then
    local x,y,w,h=quad:getViewport()
    if shader:hasUniform('sprite_rect') then shader:send('sprite_rect',{x/384,y/96,w/384,h/96}) end
-   if shader:hasUniform('texel_step') then shader:send('texel_step',{math.max(1,w/192)/384,math.max(1,h/192)/96}) end
+   if shader:hasUniform('texel_step') then shader:send('texel_step',{math.max(1,math.max(w,h)/192)/384,math.max(1,math.max(w,h)/192)/96}) end
    if shader:hasUniform('scenery') then shader:send('scenery',options.scenery or 0) end
    if shader:hasUniform('premultiplied') then shader:send('premultiplied',options.alpha=='premultiplied' and 1 or 0) end
    if shader:hasUniform('strength') then shader:send('strength',options.strength==nil and 1 or options.strength) end
