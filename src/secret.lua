@@ -17,7 +17,7 @@ function S.catalog()
     table.sort(S.normalBosses,function(a,b) return Worlds.rank(a.world)<Worlds.rank(b.world) end)
     for _,entry in ipairs(S.normalBosses) do
         if entry.type=='merle' then entry.art='merle_egg';entry.name='L’Œuf du Merle'
-        elseif entry.type=='storm' then entry.name='Merle noir';entry.art='merle_flight_down'
+        elseif entry.type=='storm' then entry.name='L’Escargot d’orage';entry.art='cloud_snail_down'
         elseif entry.type=='skeleton_head' then entry.name='Le Monstre d’os' end
     end
     S.demonBosses={}

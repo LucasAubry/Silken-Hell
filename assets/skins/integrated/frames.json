@@ -79,23 +79,22 @@
     "path": "assets/skins/integrated/ecume.png",
     "frames": {
       "down": {
-        "x": 15,
-        "y": 92,
-        "w": 695,
-        "h": 567
+        "x": 14,
+        "y": 308,
+        "w": 497,
+        "h": 455
       },
       "up": {
-        "path": "assets/skins/integrated/ecume_up.png",
-        "x": 119,
-        "y": 68,
-        "w": 1191,
-        "h": 986
+        "x": 531,
+        "y": 300,
+        "w": 483,
+        "h": 428
       },
       "profil": {
-        "x": 1455,
-        "y": 92,
-        "w": 703,
-        "h": 573
+        "x": 1041,
+        "y": 340,
+        "w": 480,
+        "h": 426
       }
     }
   },
@@ -145,6 +144,29 @@
         "y": 36,
         "w": 1350,
         "h": 1005
+      }
+    }
+  },
+  "lanterne": {
+    "path": "assets/skins/integrated/lanterne.png",
+    "frames": {
+      "down": {
+        "x": 34,
+        "y": 303,
+        "w": 493,
+        "h": 421
+      },
+      "up": {
+        "x": 557,
+        "y": 307,
+        "w": 480,
+        "h": 431
+      },
+      "profil": {
+        "x": 1068,
+        "y": 324,
+        "w": 449,
+        "h": 413
       }
     }
   }

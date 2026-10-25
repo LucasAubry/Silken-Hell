@@ -7,8 +7,7 @@ function P.draw(kind,x,y,size)
  if kind=='merle' then
   require('mobs.bosses.raven.egg').draw(x,y,size/2,0)
  elseif kind=='storm' then
-  local a=Art.images.merle_flight;local scale=size/math.max(a.w,a.h)
-  Art.draw('merle_flight',x,y,a.w*scale,0,a.h*scale)
+  require('cloud_snail_art').draw(x,y,size,0,math.pi/2)
  else
   if not P.octopus then
    local chunk=assert(love.filesystem.load('src/mobs/bosses/octopus/init.lua'))

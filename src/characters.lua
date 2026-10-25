@@ -199,6 +199,7 @@ function C.portrait(index,x,y,size,dir,locked,walk,marineOverlay)
         C.skinShader:send('sideView',pose=='left')
         C.skinShader:send('frontView',pose=='down')
         C.skinShader:send('brownSkin',index==1)
+        C.skinShader:send('marinePattern',index==4 and 1 or index==10 and 2 or 0)
         C.skinShader:send('locked',locked==true)
         g.setShader(C.skinShader)
     end
@@ -244,10 +245,10 @@ function C.shadow(x,y,size,dir,walk,opacity)
         vec4 effect(vec4 color,Image image,vec2 uv,vec2 pixel) {
             float radius=length((uv-.5)*2.);
             float shade=1.-smoothstep(.35,1.,radius);
-            return vec4(.012,.009,.007,shade*color.a);
+            return vec4(color.rgb,shade*color.a);
         }
     ]])
-    g.push('all');g.setShader(C.shadowShader);g.setBlendMode('alpha');g.setColor(1,1,1,.78*(opacity or 1))
+    g.push('all');g.setShader(C.shadowShader);g.setBlendMode('alpha');local tint=require('shadow_palette').color();g.setColor(tint[1],tint[2],tint[3],.60*(opacity or 1))
     local rx,ry=size*.48,size*.245
     g.draw(UI.pixel,x-rx,y+size*.20-ry,0,rx*2,ry*2)
     g.pop()

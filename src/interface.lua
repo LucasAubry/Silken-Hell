@@ -133,6 +133,7 @@ function U.mouse(x,y)
     return (x-(g.getWidth()-1200*s)/2)/s,(y-(g.getHeight()-750*s)/2)/s
 end
 function U.click(x,y)
+    require('crash_report').note('click',tostring(App.state)..' '..math.floor(x)..','..math.floor(y))
     local dropdown=App.state=='workshop' and Workshop.dropdown
     if dropdown and dropdown.bounds then
         local b=dropdown.bounds
@@ -503,7 +504,7 @@ function U.bestiary()
     local page=U.bestPage or 1
     for j=1,8 do local row=rows[(page-1)*8+j]; local index=row and row.index; local e=row and row.entry
         if e then local y=165+(j-1)*51; local seen=Bestiary.known(e)
-            U.button(seen and e.name or '???',125,y,330,43,function() U.bestSelected=index;U.bestScroll=0;U.bestHardcore=false;U.bestVariant=Bestiary.defaultVariant(e,Bestiary.worldFilter) end,not seen,U.bestSelected==index)
+            U.button(seen and e.name or '???',125,y,330,43,function() require('crash_report').note('bestiary.select',e.id);U.bestSelected=index;U.bestScroll=0;U.bestHardcore=false;U.bestVariant=Bestiary.defaultVariant(e,Bestiary.worldFilter) end,not seen,U.bestSelected==index)
         end
     end
     local e=Bestiary.entries[U.bestSelected or 0]

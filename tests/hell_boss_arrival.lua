@@ -21,7 +21,7 @@ function T.run()
  end
  local function advance(t)while B.active and B.age<t-1e-6 do App.simulate(math.min(1/60,t-B.age))end end
  advance(1.5);capture('cracks');advance(3.5);capture('emergence');advance(5.7);capture('flight');advance(7.4);capture('formation')
- assert(B.captures==1 and B.boss.active,'The real arena is rendered only once and the encounter stays active')
+ assert(B.captures>1 and B.boss.active,'The real arena keeps animating while the encounter stays frozen')
  assert(B.pose(1,4.5).fissure>B.pose(1,5).fissure and B.pose(1,5.6).fissure==0,'Fissures shrink away')
  for i=1,3 do local p=B.pose(i,5.9);assert(p.x<0 or p.x>Arena.width or p.y<0,'All bees leave the arena before returning') end
  assert(Wasp.hp==hp and player.death==deaths and Wasp.elapsed==0 and Wasp.round==0,'No combat during the film')

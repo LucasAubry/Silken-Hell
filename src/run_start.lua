@@ -80,6 +80,7 @@ end
 function C.launch()
  if C.arrival or not C.active or App.state~='playing' or Replay.playing then return false end
  C.active=false;C.goAge=0;C.countdown=nil;Audio.play('startRun')
+ if require('queen_boss_arrival').current() then C.goAge=nil end
  require('game_feedback').emit('start',player.x+15,player.y+8)
  return true
 end
@@ -95,6 +96,7 @@ function C.suspend()
 end
 function C.advance(dt)
  if App.state~='playing' then C.suspend();return 0 end
+ if C.active or C.arrival then require('ambient_motion').update(dt) end
  if C.arrival then
   local step=math.min(dt,.05);C.arrival=C.arrival+step
   local scene=C.scene()

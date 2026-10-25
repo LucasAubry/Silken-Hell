@@ -4,13 +4,13 @@ T.specs={
  wasp={{'firstRound','Première salve',.25,0},{'aim','Visée des charges',.2},{'larvaAim','Visée des larves',.5},{'reboundAim','Visée après rebond',.18},{'fatigue','Durée du KO',1.65},{'roundRest','Repos entre salves',.04},{'hiding','Durée du retrait',.22}},
  hedgehog={{'firstRoll','Première roulade',1.35,0},{'nextRoll','Avant la roulade',.65},{'firstShot','Premiers piquants',.28,0},{'shotInterval','Intervalle des piquants',1.25},{'stun','Durée de récupération',.45}},
  octopus={{'firstInk','Premier jet d’encre',2,0},{'inkInterval','Intervalle de l’encre',1.25},{'rageInk','Encre en furie',.85},{'firstCrabs','Premiers crabes',1.2,0},{'crabInterval','Intervalle des crabes',3.2},{'rageCrabs','Crabes en furie',2.5},{'barrage','Durée du barrage',3},{'barrageInterval','Tirs du barrage',.16}},
- storm={{'hidden','Avant la charge',.9},{'turnInterval','Intervalle des virages',2.1},{'huntDuration','Durée de la poursuite',18},{'riseDuration','Envol des escargots',.65},{'returnDelay','Avant le retour',.7}},
+ storm={{'hidden','Avant la charge',1.15},{'chargeDuration','Durée de la charge',.95},{'recoverDuration','Repos entre les charges',2.1}},
  skeleton_head={{'intro','Avant l’attaque',1.2,0},{'openingSpit','Premier souffle',.9},{'rest','Repos',.9},{'roar','Durée du rugissement',1.1},{'bones','Durée des os',5.5},{'suction','Durée d’aspiration',6.5},{'spit','Durée du rejet',.85},{'recover','Récupération',1},{'bombRain','Pluie de bombes',4.2}}
 }
 T.specs.skeleton_fish=T.specs.skeleton_head
 function T.spec(e) return e.kind=='boss' and T.specs[e.type] end
 function T.valid(e,key,value)
- if e.type=='storm' and ({firstBolt=true,salvoRest=true,boltInterval=true,volleyInterval=true,firstShot=true,shotInterval=true,orbitDuration=true,tornadoInterval=true,growthDuration=true})[key] then return type(value)=='number' and value==value and value>=0 and value<=120 end
+ if e.type=='storm' and ({turnInterval=true,huntDuration=true,riseDuration=true,returnDelay=true,firstBolt=true,salvoRest=true,boltInterval=true,volleyInterval=true,firstShot=true,shotInterval=true,orbitDuration=true,tornadoInterval=true,growthDuration=true})[key] then return type(value)=='number' and value==value and value>=0 and value<=120 end
  for _,row in ipairs(T.spec(e) or {}) do if row[1]==key then return type(value)=='number' and value==value and value>=(row[4] or .01) and value<=120 end end
  return false
 end

@@ -151,8 +151,8 @@ function F.landingVolley() F.fire(F,true) end
 function F.updateWebs(dt)
  Brood.update(F,dt)
  local p=playerPoint()
- for i=#F.webs,1,-1 do local w=F.webs[i];w.owner=w.owner or 0;w.age=(w.age or 0)+dt;local xx,yy=w.x+w.vx*dt,w.y+w.vy*dt
-  local wallX,wallY,wallT=Brood.impact(w.x,w.y,xx,yy)
+ for i=#F.webs,1,-1 do local w=F.webs[i];w.owner=w.owner or 0
+  local xx,yy,wallX,wallY,wallT=require('queen_projectile').step(w,dt)
   local victim,first=nil,wallT or 2
   for _,b in ipairs(F.babies) do if b.id~=w.owner and b.phase~='intro_jump' then local hit,t=segment(w.x,w.y,xx,yy,b,25);if hit and t<first then victim=b;first=t end end end
   if w.owner~=0 and F.phase~='intro_jump' then local hit,t=segment(w.x,w.y,xx,yy,F,27);if hit and t<first then victim=F;first=t end end
@@ -407,13 +407,7 @@ function F.draw(skipGround)
  F.spider(0,0,62,'queen',facing,F)
  ArtSet.clutch(0,0,62,F.carried,facing);F.drawGriefTear(facing);g.pop()
  if F.frozen>0 then web(F.x,F.y-F.jumpHeight,35,.8) end
- for _,w in ipairs(F.webs) do
-  local a=math.atan2(w.vy,w.vx);local dx,dy=math.cos(a),math.sin(a)
-  g.setShader();g.setColor(.18,.24,.12,.3);g.setLineWidth(4);g.line(w.x-dx*17+2,w.y-dy*17+5,w.x+2,w.y+5)
-  g.setColor(.88,.94,.73,.7);g.setLineWidth(1.2);g.line(w.x-dx*17,w.y-dy*17,w.x,w.y)
-  local c=Heirs.color(w.owner or 0);g.setColor(c[1],c[2],c[3]);ArtSet.draw('web_shot',w.x,w.y,26,a)
- end
- Escape.draw(F)
+ for _,w in ipairs(F.webs) do require('queen_projectile').draw(w) end
  if F.gate then
   local x=Arena.width*.5;g.setColor(1,1,1);ArtSet.draw('web_gate',x,50,104,0,125)
   UI.text('Retrouvailles',x-90,83,'small',{.85,1,.9},180,'center')

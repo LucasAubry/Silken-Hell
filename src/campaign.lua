@@ -41,6 +41,8 @@ function C.positions(n)
     return points
 end
 function C.reset(options)
+    require('crash_report').note('level.reset',tostring(C.world)..':'..tostring(player.level))
+    require('ambient_motion').reset()
     require('retry_wait').reset()
     require('boss_liberation').reset()
     shader_effect_timer=0;shake_timer=0;cameraShakeX=0;cameraShakeY=0;ghost_timer=0
@@ -155,8 +157,11 @@ function C.reset(options)
             if options and options.retry then arrival.retry(encounter);require('psychedelic_fx').reset() else arrival.start(encounter) end
         end
     end
+    require('egg_boss_arrival').reset(options)
     require('hell_boss_arrival').reset(options)
     require('sky_boss_arrival').reset(options)
+    require('octopus_boss_arrival').reset(options)
+    require('hedgehog_boss_arrival').reset(options)
     require('queen_boss_arrival').reset(options)
     if App.state=='playing' then Bestiary.encounter() end
 end
@@ -306,6 +311,8 @@ local function drawMob(m)
     servants.current=previous
 end
 function C.drawMob(m)
+    local arrival=require('hedgehog_boss_arrival')
+    if arrival.current() then m=arrival.molePose(m,arrival.age) end
     require('render_motion').draw(m,drawMob,m)
 end
 function C.dropTear(m)

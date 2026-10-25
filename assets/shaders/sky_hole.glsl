@@ -16,18 +16,20 @@ vec4 effect(vec4 color,Image mask,vec2 uv,vec2 pixel){
  // continues to its torn edge, with shadowed vertical layers below it.
  vec3 surface=Texel(floorImage,(p-normal*8.)/floorSize).rgb;
  float light=clamp(.5+dot(normal,vec2(.4,.8))*.5,0.,1.);
- vec3 cloud=surface*.65+vec3(.33,.43,.53);
+ vec3 cloud=surface*.55+vec3(.19,.24,.30);
  float scallop=.5+.5*sin(p.x*.11+p.y*.09+noise(p*.07)*4.0);
- vec3 rim=cloud*(.75+light*.32)+vec3(.15,.19,.22)*exp(-pow((lip+3.)/3.5,2.))*light;
+ vec3 rim=cloud*(.72+light*.22);
+ float occlusion=exp(-pow((lip-4.)/7.,2.));
+ rim*=1.-occlusion*(.12+.08*(1.-light));
  // Open air uses the cinematic's sky gradient, without the cloud cover.
  // The raised rim still distinguishes safe clouds from a fall.
- vec3 deep=skyBlueColor(p,floorSize);
- vec3 wall=mix(deep,cloud*.44,scallop*.35);
+ vec3 deep=skyBlueColor(p,floorSize)*.82;
+ vec3 wall=mix(deep*.70,cloud*.60,scallop*.40);
  vec3 c=mix(rim,wall,smoothstep(-1.,8.,lip));
- c=mix(c,deep,smoothstep(2.,12.,d));
+ c=mix(c,deep,smoothstep(8.,32.,d));
  // A second soft cloud shelf conveys depth without a flat black oval.
  float shelf=exp(-pow((d-14.-scallop*3.)/3.5,2.));
- c+=vec3(.025,.04,.06)*shelf*light;
+ c+=vec3(.012,.022,.036)*shelf*light;
  float alpha=smoothstep(-11.,-5.,lip);
  return vec4(c,alpha)*color;
 }

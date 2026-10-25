@@ -1,7 +1,4 @@
-if os.getenv('SILKEN_TEST')=='1' then
-    io.stdout:setvbuf('no')
-    function love.errorhandler(message) print(debug.traceback(message,2));return function() return 1 end end
-end
+if os.getenv('SILKEN_TEST')=='1' then io.stdout:setvbuf('no') end
 require 'player'
 require 'world'
 require 'objet'
@@ -280,8 +277,11 @@ function App.simulate(dt)
 
     local arrival=require('mobs.bosses.abyss.arrival')
     if arrival.current and arrival.update(arrival.current,dt) then timer=timer+dt;RunDetails.tick(dt);return end
+    if require('egg_boss_arrival').update(dt) then timer=timer+dt;RunDetails.tick(dt);return end
     if require('hell_boss_arrival').update(dt) then timer=timer+dt;RunDetails.tick(dt);return end
     if require('sky_boss_arrival').update(dt) then timer=timer+dt;RunDetails.tick(dt);return end
+    if require('octopus_boss_arrival').update(dt) then timer=timer+dt;RunDetails.tick(dt);return end
+    if require('hedgehog_boss_arrival').update(dt) then timer=timer+dt;RunDetails.tick(dt);return end
     if require('queen_boss_arrival').update(dt) then timer=timer+dt;RunDetails.tick(dt);return end
     require('abyss_gate').update(dt)
     Secret.updateDuel(dt);if App.state~='playing' then return end
@@ -380,8 +380,9 @@ function love.draw()
         return
     end
     require('retry_wait').beginDraw()
+    require('ambient_motion').beginDraw()
     local sceneCanvas=gameCanvas
-    local stagedBoss=App.state=='playing' and (require('hell_boss_arrival').current() or require('sky_boss_arrival').current() or require('queen_boss_arrival').current())
+    local stagedBoss=App.state=='playing' and (require('egg_boss_arrival').current() or require('hell_boss_arrival').current() or require('sky_boss_arrival').current() or require('queen_boss_arrival').current() or require('octopus_boss_arrival').current() or require('hedgehog_boss_arrival').current())
     love.graphics.clear(0.013,0.025,0.035)
     if App.state=='playing' then
         refreshSceneResolution()
@@ -417,6 +418,7 @@ function love.draw()
         end
         Realms.drawCreatures(); Raven.draw(); Hedgehog.draw(); Octopus.draw(); Storm.draw(); Wasp.draw(false); Bosses.draw(false)
         Wasp.draw(true); Bosses.draw(true); Abyss.drawBones(); AbyssTerrain.draw()
+        if stagedBoss and stagedBoss.drawWorld then stagedBoss.drawWorld() end
         require('sky_weather').drawAtmosphere()
         require('level_environment').draw(Campaign.biome,Arena.width,600,Realms.clock,require('level_environment').settings())
         Burning.drawMobs(); if not Secret.inArena() then Atmosphere.draw() end;require('biome_radiance').motes()
@@ -439,6 +441,7 @@ function love.draw()
         love.graphics.setColor(1,1,1)
         if RunStart.arrival then RunStart.drawArrivalActor();if Ending.active then Ending.drawFamily() end elseif Ending.active then Ending.drawPlayer();Ending.drawFamily() elseif not (require('abyss_gate').active and require('abyss_gate').closing and require('abyss_gate').age>.22) then draw_player(direction) end
         if not (RunStart.arrival and RunStart.scene()) and not (require('abyss_gate').active and require('abyss_gate').closing) then draw_player_beacon() end;if not Abyss.playerHidden() then Replay.drawGhost() end
+        if require('final_spider').active then require('queen_escape').draw(require('final_spider')) end
         if not queenScene then drawFrame() end
         if queenScene then Campaign.drawTear(true) end
         Story.drawWallMessage()
@@ -454,7 +457,8 @@ function love.draw()
         sceneCanvas=require('world_lighting').apply(gameCanvas)
     end
     local w,h=love.graphics.getDimensions()
-    local bossArrival=App.state=='playing' and (require('abyss_boss_arrival').current() or require('hell_boss_arrival').current() or require('sky_boss_arrival').current() or require('queen_boss_arrival').current())
+    require('ambient_motion').endDraw()
+    local bossArrival=App.state=='playing' and (require('abyss_boss_arrival').current() or require('egg_boss_arrival').current() or require('hell_boss_arrival').current() or require('sky_boss_arrival').current() or require('queen_boss_arrival').current() or require('octopus_boss_arrival').current() or require('hedgehog_boss_arrival').current())
     if App.state=='playing' or App.state=='bossWorld' then
         local scale,x,y=App.viewport(w,h)
         local shakeX,shakeY=BossFX.offset();if App.state=='playing' then local gx,gy=require('abyss_gate').shake();shakeX,shakeY=shakeX+gx,shakeY+gy end;if App.state=='bossWorld' then shakeX,shakeY=0,0 end
@@ -747,22 +751,6 @@ function love.resize(w,h)
     AbyssTerrain.resize(ratio or 1)
     Bosses.resize(ratio or 1)
     gameCanvas=love.graphics.newCanvas(Arena.width,Arena.height)
-end
-
-local defaultErrorHandler=love.errorhandler
-function love.errorhandler(message)
-    local trace=tostring(message)..'\n'..debug.traceback()
-    if os.getenv('SILKEN_TEST')=='1' then
-        io.stderr:write(trace..'\n'); io.stderr:flush(); os.exit(1)
-    end
-    -- Preserve the normal error screen and keep diagnostic context across restarts.
-    pcall(function()
-        local context=string.format('%s | state=%s world=%s level=%s reset=%s falling=%s hardcore=%s\n',
-            os.date('%Y-%m-%d %H:%M:%S'),tostring(App and App.state),tostring(Campaign and Campaign.world),
-            tostring(player and player.level),tostring(player and player.reset),tostring(player and player.falling),tostring(App and App.hardcore))
-        love.filesystem.write('last-crash.log',context..trace..'\n')
-    end)
-    return defaultErrorHandler(message)
 end
 
 function love.joystickadded(j) if Input then Input.add(j) end end

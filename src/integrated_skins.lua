@@ -1,5 +1,5 @@
 -- Complete authored sprites: body and accessories live in the same PNG.
-local S={names={[4]='ecume',[6]='aureole',[8]='ambre',[9]='corail',[11]='cendre',[27]='amir'}}
+local S={names={[6]='aureole',[8]='ambre',[9]='corail',[11]='cendre',[27]='amir'}}
 function S.load(art)
  local metadata=require('json').decode(love.filesystem.read('assets/skins/integrated/frames.json'))
  for name,entry in pairs(metadata) do
@@ -15,6 +15,10 @@ function S.load(art)
 end
 function S.bubble(index)
  index=Characters.crowned[index] or index
- return index==4 or index==9
+ return index==9
+end
+function S.hideMarineOverlay(index)
+ index=Characters.crowned[index] or index
+ return index==4 or index==10
 end
 return S

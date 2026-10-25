@@ -1,254 +1,132 @@
--- The Merle swings captive snails on silk. Only freed snails damage him.
-local Timing=require('boss_attack_timing')
+-- Stable storm encounter ID, now a shell guardian with immediately usable snails.
 local S={active=false}
+local Timing=require('boss_attack_timing')
 local function clamp(v,a,b)return math.max(a,math.min(b,v))end
-local function length(x,y)return math.sqrt(x*x+y*y)end
 local function airborne()return player.throw or player.whirl or player.skyThrow or player.skyWhirl end
-local function setting(k,v)return Timing.get(S,k,v)end
-local function segmentDistance(x,y,ax,ay,bx,by)
- local dx,dy=bx-ax,by-ay;local d=dx*dx+dy*dy
- local t=d>0 and clamp(((x-ax)*dx+(y-ay)*dy)/d,0,1) or 0
- return length(x-ax-t*dx,y-ay-t*dy),t
-end
-local function pose()
- local flap=1+math.sin(S.clock*14)*.025
- return flap,math.cos(S.angle)<0 and -1 or 1
-end
-function S.anchor()
- -- The same transform as the sprite, at the tip of its lower tail feathers.
- local flap,flip=pose()
- return S.x-60*flap*flip,S.y+58/flap
-end
+function S.anchor()return S.x,S.y end
 function S.spawnSnails()
- S.snails={};local ax,ay=S.anchor();S.snailAnchorX,S.snailAnchorY=ax,ay
- local follow=require('mobs.bosses.storm.snail_follow');follow.reset(S)
- for i=1,S.wave do
-  local x,y=follow.sample(S,i)
-  S.snails[i]={id=i,x=x,y=y,vx=S.vx,vy=S.vy,rope=110+(i-1)*follow.gap,phase='tethered',age=0,angle=S.angle,lift=0}
+ S.snails={}
+ for i=1,3 do
+  local a=S.wave*.73+i*math.pi*2/3
+  local x,y=Arena.clearSpot(clamp(S.x+math.cos(a)*190,65,Arena.width-65)-20,clamp(S.y+math.sin(a)*160,140,510)-18,40,36)
+  S.snails[i]={x=x+20,y=y+18,phase='ready',age=0,angle=a}
  end
 end
-function S.aimAtPlayer()require('mobs.bosses.storm.flight').aim(S)end
 function S.setPhase(phase)
  S.phase=phase;S.phaseAge=0
  if phase=='tell' then
-  local side=S.wave%2==1 and 1 or -1
-  S.x=side==1 and -100 or Arena.width+100
-  S.y=155
-  local dx,dy=side,0;local d=1
-  S.angle=math.atan2(dy,dx);S.vx=dx/d*650;S.vy=dy/d*650
-  S.fogHits=0;S.fogAmount=0;S.fogTarget=0;S.smoke={};S.fogRows=0;S.cleanStage=nil
-  S.phaseTime=setting('hidden',.9);S.dir=side==1 and 'right' or 'left';S.spawnSnails()
- elseif phase=='charge' then
-  S.phaseTime=(Arena.width*.5+100)/650
- elseif phase=='hunt' then
-  S.turnClock=0;S.phaseTime=setting('huntDuration',18);S.flightSpeed=length(S.vx,S.vy);S.flightOmega=0;S.flightEdges=0
-  S.aimAtPlayer()
- elseif phase=='clean' then
-  S.phaseTime=999;S.groundRevision=S.groundRevision+1
-  require('mobs.bosses.storm.sweep').begin(S)
- elseif phase=='leave' then
-  S.exitX=S.x<Arena.width/2 and -220 or Arena.width+220;S.phaseTime=2
- elseif phase=='return' then
-  S.phaseTime=setting('returnDelay',.7)
+  local dx,dy=player.x+15-S.x,player.y+12-S.y;local d=math.max(1,math.sqrt(dx*dx+dy*dy))
+  S.vx,S.vy=dx/d*360*(S.movementRate or 1),dy/d*360*(S.movementRate or 1);S.angle=math.atan2(dy,dx);S.phaseTime=Timing.get(S,'hidden',1.15)
+ elseif phase=='charge' then S.phaseTime=Timing.get(S,'chargeDuration',.95)
+ elseif phase=='recover' then
+  S.phaseTime=Timing.get(S,'recoverDuration',2.1)
+  S.rings[#S.rings+1]={x=S.x,y=S.y,age=-.65,radius=0,angle=S.wave*.73}
  end
 end
 function S.reset(active)
- S.active=active;S.name='Merle noir';S.hp=10;S.maxHp=10;S.defeated=false;S.hidden=false
- S.wave=1;S.clock=0;S.flightSpeed=0;S.flash=0;S.contactGrace=0;S.vx=0;S.vy=0;S.angle=0
- S.playerX=player.x+15;S.playerY=player.y+12
- S.snails={};S.holes={};S.bursts={};S.projectiles={};S.groundRevision=0;S.trailKeys={}
- S.nest={x=Arena.width-105,y=115};S.setPhase('tell')
+ S.active=active;S.name="L’Escargot d’orage";S.hp=9;S.maxHp=9;S.defeated=false;S.hidden=false
+ S.x=Arena.width/2;S.y=230;S.wave=1;S.clock=0;S.flash=0;S.vx=0;S.vy=0;S.angle=0
+ S.snails={};S.rings={};S.holes={};S.bursts={};S.projectiles={};S.smoke={};S.groundRevision=0;S.fogAmount=0;S.trailKeys={};S.nest={x=S.x,y=S.y}
+ S.setPhase('tell');if active then S.spawnSnails()end
 end
-function S.holeAt(x,y)
- if not S.active or S.defeated or S.phase=='clean' then return false end
- for _,p in ipairs(S.holes)do
-  if p.radius>0 and x>=math.min(p.x,p.tx)-p.radius and x<=math.max(p.x,p.tx)+p.radius
-   and y>=math.min(p.y,p.ty)-p.radius and y<=math.max(p.y,p.ty)+p.radius
-   and segmentDistance(x,y,p.x,p.y,p.tx,p.ty)<p.radius then return true end
- end
- return false
-end
+function S.holeAt()return false end
+function S.releaseSnails()end
 function S.cut(p)
- if p.phase~='tethered' then return end
- p.phase='rise';p.age=0;p.vx=p.vx*.15;p.vy=p.vy*.15;p.lift=0
- S.bursts[#S.bursts+1]={x=p.x,y=p.y,age=0,kind='cut'}
+ if p.phase~='ready' then return end
+ p.phase='strike';p.age=0
+ S.bursts[#S.bursts+1]={x=p.x,y=p.y,age=0}
 end
 function S.finish()
- S.holes={};S.snails={};S.fogAmount=0
+ S.rings={};S.snails={};S.projectiles={}
  require('boss_liberation').start(S,'storm',function()
   S.defeated=true;objet.larme.taken=false
-  objet.larme.x,objet.larme.y=Arena.clearSpot(clamp(S.x,70,Arena.width-70)-15,clamp(S.y,85,515)-20,30,40)
+  objet.larme.x,objet.larme.y=Arena.clearSpot(S.x-15,S.y-20,30,40)
  end)
 end
 function S.contact()
- if not S.active or S.defeated or player.reset or S.phase=='tell' or S.phase=='return' or S.phase=='clean' then return end
- local px,py=player.x+15,player.y+12;local ax,ay=S.anchor()
- if require('collision_shapes').touchCircle('storm_body',S.x,S.y,47) then Hazards.kill('storm');return end
- local moving=(px-(S.playerX or px))^2+(py-(S.playerY or py))^2>.01
- S.playerX,S.playerY=px,py
- -- Bodies are lethal, while the open length of silk can be crossed on foot.
- for _,p in ipairs(S.snails)do if p.phase=='tethered' and (p.lift or 0)<8 then
-  if require('collision_shapes').touchRect('storm_snail',p.x-16,p.y-14,32,28) then Hazards.kill('cloud_snail');return end
- end end
- if S.phase=='charge' or S.phase=='hunt' then
-  for _,p in ipairs(S.snails)do if p.phase=='tethered' then
-   local distance,t=segmentDistance(px,py,ax,ay,p.x,p.y)
-   if moving and distance<12 and t>.12 and t<.87 then S.cut(p)end
-  end end
+ if not S.active or S.defeated or S.liberating or player.reset then return end
+ for _,p in ipairs(S.snails)do
+  if p.phase=='ready' and require('collision_shapes').touchRect('storm_snail',p.x-23,p.y-21,46,42)then S.cut(p)end
  end
- if S.holeAt(px,py) and not airborne() then Hazards.kill('storm');if player.reset then player.falling=true end;return end
-
-end
-local function trail(p)
- if p.x<25 or p.x>Arena.width-25 or p.y<25 or p.y>575 then p.tx=nil;return end
- local speed=length(p.vx,p.vy);if speed<10 then return end
- local x,y=p.x-p.vx/speed*18,p.y-p.vy/speed*18
- if not p.tx then p.tx,p.ty=x,y;return end
- if length(x-p.tx,y-p.ty)<10 then return end
- local function key(a,b)return math.floor(a/8+.5)..':'..math.floor(b/8+.5)end
- local a,b=key(p.tx,p.ty),key(x,y);if a>b then a,b=b,a end
- local k=a..'/'..b
- if not S.trailKeys[k] then
-  S.trailKeys[k]=true;S.holes[#S.holes+1]={x=p.tx,y=p.ty,tx=x,ty=y,radius=require('cloud_snail').width+require('cloud_snail').mergeMargin,owner=p.id,age=0,key=k}
- end
- p.tx,p.ty=x,y
+ if require('collision_shapes').touchCircle('storm_body',S.x,S.y,43)then Hazards.kill('storm')end
 end
 function S.updateSnails(dt)
- local ax,ay=S.anchor();local pending=0
- S.snailAnchorX,S.snailAnchorY=ax,ay
- local follow=require('mobs.bosses.storm.snail_follow');follow.record(S)
+ local pending=0
  for _,p in ipairs(S.snails)do
   p.age=p.age+dt
-  if p.phase=='tethered' then
-   pending=pending+1
-   follow.move(S,p,dt)
-   if S.phase=='hunt' or S.phase=='charge' then p.lift=math.max(0,p.lift-dt*60);trail(p)
-   else p.lift=math.min(22,p.lift+dt*65)end
-  elseif p.phase=='rise' then
-   pending=pending+1;p.x=p.x+p.vx*dt;p.y=p.y+p.vy*dt
-   local duration=setting('riseDuration',.65);local t=math.min(1,p.age/duration)
-   p.lift=75*t*t*(3-2*t);p.angle=p.angle+dt*3
-   if t>=1 then p.y=p.y-p.lift;p.lift=0;p.phase='strike';p.age=0 end
-  elseif p.phase=='strike' then
-   pending=pending+1;local dx,dy=S.x-p.x,S.y-p.y;local d=math.max(.001,length(dx,dy));local move=(850+p.age*650)*dt
+  if p.phase~='spent' then pending=pending+1 end
+  if p.phase=='strike' then
+   local dx,dy=S.x-p.x,S.y-p.y;local d=math.sqrt(dx*dx+dy*dy);local step=(650+p.age*420)*dt
    p.angle=math.atan2(dy,dx)
-   if d<move+25 then
-    p.phase='spent';S.hp=math.max(0,S.hp-1);S.flash=.5
-    S.bursts[#S.bursts+1]={x=S.x,y=S.y,age=0,kind='impact'}
-    require('mobs.bosses.storm.fog').impact(S)
-   else p.x=p.x+dx/d*move;p.y=p.y+dy/d*move end
+   if d<=step+38 then
+    p.phase='spent';S.hp=math.max(0,S.hp-1);S.flash=.35
+    S.bursts[#S.bursts+1]={x=S.x,y=S.y,age=0}
+    if S.hp==0 then S.finish();return end
+   else p.x=p.x+dx/d*step;p.y=p.y+dy/d*step end
   end
  end
- if pending==0 and (S.phase=='charge' or S.phase=='hunt') then
-  S.clearDelay=(S.clearDelay or 0)+dt
-  if S.clearDelay>=1.9 then S.clearDelay=0;S.advanceWave=true;S.setPhase('clean')end
- else S.clearDelay=0 end
-end
-local function moveToward(x,y,speed,dt)
- local dx,dy=x-S.x,y-S.y;local d=math.max(.001,length(dx,dy))
- local desired=math.min(speed,math.sqrt(2*1400*d))
- local dvx,dvy=dx/d*desired-S.vx,dy/d*desired-S.vy
- local change=length(dvx,dvy);local blend=math.min(1,1800*dt/math.max(.001,change))
- S.vx,S.vy=S.vx+dvx*blend,S.vy+dvy*blend
- S.x,S.y=S.x+S.vx*dt,S.y+S.vy*dt
- if length(S.vx,S.vy)>1 then
-  local delta=(math.atan2(S.vy,S.vx)-S.angle+math.pi)%(2*math.pi)-math.pi
-  S.angle=S.angle+clamp(delta,-3.4*dt,3.4*dt)
- end
- return d<5
-end
-local function clean(dt)
- if require('mobs.bosses.storm.sweep').update(S,dt,moveToward) then
-  if S.hp==0 then S.finish() else
-   if S.advanceWave then S.wave=S.wave+1 end
-   S.advanceWave=false
-   S.setPhase('tell')
-   S.setPhase('charge')
-  end
- end
+ if pending==0 then S.wave=S.wave+1;S.spawnSnails()end
 end
 function S.update(dt)
- if not S.active or S.defeated or player.reset then return end
- local steps=math.max(1,math.ceil(dt/(1/120)));local step=dt/steps
+ if not S.active or S.defeated or S.liberating or player.reset then return end
+ local steps=math.max(1,math.ceil(dt*120));local step=dt/steps
  for _=1,steps do
-  require('mobs.bosses.storm.fog').update(S,step)
-  for i=#S.holes,1,-1 do local h=S.holes[i];h.age=(h.age or 0)+step
-   h.initialRadius=h.initialRadius or h.radius
-   if h.closing then h.radius=0
-   elseif h.age>.25 then
-    local t=clamp((h.age-.25)/1.75,0,1)
-    h.radius=h.initialRadius*(1-t*t*(3-2*t));S.groundRevision=S.groundRevision+1
+  S.clock=S.clock+step;S.phaseAge=S.phaseAge+step;S.phaseTime=S.phaseTime-step*(S.attackRate or 1);S.flash=math.max(0,S.flash-step)
+  if S.phase=='charge' then
+   local x,y=S.x+S.vx*step,S.y+S.vy*step
+   if x<65 or x>Arena.width-65 or y<85 or y>515 or Arena.blocked(x-43,y-35,86,70)then S.setPhase('recover')
+   else S.x,S.y=x,y end
+  end
+  if S.phaseTime<=0 then S.setPhase(S.phase=='tell' and 'charge' or S.phase=='charge' and 'recover' or 'tell')end
+  for i=#S.rings,1,-1 do
+   local r=S.rings[i];r.age=r.age+step;r.radius=math.max(0,r.age)*155
+   if r.age>3.4 then table.remove(S.rings,i)
+   elseif r.age>=0 and not airborne()then
+    local d=math.sqrt((player.x+15-r.x)^2+(player.y+12-r.y)^2)
+    -- Two wide breaks rotate between waves, leaving a route without a jump.
+    local a=math.atan2(player.y+12-r.y,player.x+15-r.x)-r.angle
+    if math.abs(d-r.radius)<12 and math.abs(math.sin(a))>.42 then Hazards.kill('storm')end
    end
-   if h.radius<=0 then if h.key then S.trailKeys[h.key]=nil end;table.remove(S.holes,i)end
   end
-  S.clock=S.clock+step;S.phaseAge=S.phaseAge+step;S.phaseTime=S.phaseTime-step
-  S.flash=math.max(0,S.flash-step);S.contactGrace=math.max(0,S.contactGrace-step)
-  for i=#S.bursts,1,-1 do local b=S.bursts[i];b.age=b.age+step;if b.age>.75 then table.remove(S.bursts,i)end end
-  if S.phase=='tell' then if S.phaseTime<=0 then S.setPhase('charge')end
-  elseif S.phase=='charge' then
-   S.x=S.x+S.vx*step;S.y=S.y+S.vy*step
-   if S.phaseTime<=0 then S.setPhase('hunt')end
-  elseif S.phase=='hunt' then
-   require('mobs.bosses.storm.flight').update(S,step)
-  elseif S.phase=='clean' then clean(step)
-  elseif S.phase=='leave' then
-   if moveToward(S.exitX,clamp(S.y,100,500),650,step) then S.setPhase('return')end
-  elseif S.phase=='return' and S.phaseTime<=0 then
-   if S.advanceWave then S.wave=S.wave+1 end
-   S.setPhase('tell')
-  end
-  S.dir=Art.direction(math.cos(S.angle),math.sin(S.angle),S.dir)
-  if S.phase~='tell' and S.phase~='return' then S.updateSnails(step)end
-  S.contact()
-  if player.reset or S.defeated then break end
+  for i=#S.bursts,1,-1 do local b=S.bursts[i];b.age=b.age+step;if b.age>.65 then table.remove(S.bursts,i)end end
+  S.updateSnails(step);S.contact()
+  if S.liberating or S.defeated or player.reset then break end
  end
 end
 function S.resize(r)
- if S.fogFront then S.fogFront=S.fogFront*r end
- if S.snailAnchorX then S.snailAnchorX=S.snailAnchorX*r end
- S.x=S.x*r;if S.exitX then S.exitX=S.exitX*r end
- for _,p in ipairs(S.smoke or {}) do p.x=p.x*r end
- S.nest.x=S.nest.x*r
- for _,p in ipairs(S.snails)do p.x=p.x*r;if p.tx then p.tx=p.tx*r end end
- for _,p in ipairs(S.holes)do p.x=p.x*r;p.tx=p.tx*r end
- require('mobs.bosses.storm.snail_follow').resize(S,r)
- S.groundRevision=S.groundRevision+1
+ S.x=S.x*r;S.nest.x=S.nest.x*r
+ for _,list in ipairs({S.snails,S.rings,S.bursts})do for _,p in ipairs(list)do p.x=p.x*r end end
 end
-function S.visibleBounds()return S.x-80,S.y-80,160,160 end
-function S.drawFog()require('mobs.bosses.storm.fog').draw(S)end
-function S.drawGround()if S.active and not S.defeated then require('mobs.bosses.storm.ground').draw(S)end end
+function S.visibleBounds()if not S.active or S.defeated then return end;return S.x-80,S.y-100,160,170 end
+function S.drawGround()
+ if not S.active or S.defeated then return end
+ local g=love.graphics;g.push('all');g.setShader()
+ if S.phase=='tell' then
+  local t=math.min(1,S.phaseAge/math.max(.01,S.phaseAge+S.phaseTime))
+  g.setColor(.72,.83,.75,.18+t*.2);g.setLineWidth(44)
+  g.line(S.x,S.y,clamp(S.x+S.vx*Timing.get(S,'chargeDuration',.95)/(S.attackRate or 1),65,Arena.width-65),clamp(S.y+S.vy*Timing.get(S,'chargeDuration',.95)/(S.attackRate or 1),85,515))
+ end
+ for _,r in ipairs(S.rings)do
+  g.setColor(.69,.86,.87,r.age<0 and .3 or .8);g.setLineWidth(r.age<0 and 2 or 5)
+  local radius=r.age<0 and 32+(-r.age)*40 or r.radius
+  for j=0,1 do local a=r.angle+j*math.pi+.44
+   g.arc('line','open',r.x,r.y,radius,a,a+math.pi-.88,60)
+  end
+ end
+ g.pop()
+end
+function S.drawFog()end
 function S.draw()
  if not S.active or S.defeated and not S.liberating then return end
- local g=love.graphics;g.push('all')
- if S.phase=='tell' then
-  local x=S.x<0 and 0 or Arena.width;local dir=S.x<0 and 1 or -1
-  g.setColor(.95,.7,.15);g.polygon('fill',x,S.y-7,x+dir*(12+10*math.min(1,S.phaseAge/.3)),S.y,x,S.y+6)
- elseif S.phase~='return' then
-  local ax,ay=S.anchor()
-  for _,p in ipairs(S.snails)do if p.phase=='tethered' then
-   local dy=p.y-(p.lift or 0);g.setLineWidth(3);g.setColor(.08,.16,.2,.65);g.line(ax,ay,p.x,dy)
-   g.setLineWidth(1.3);g.setColor(.9,.97,1,.95);g.line(ax,ay,p.x,dy)
-  end end
-  for _,p in ipairs(S.snails)do if p.phase~='spent' then
-   if p.phase=='tethered' then Art.contactShadow(p.x,p.y+7,12,4,.25)end
-   require('mobs.bosses.storm.snail_art').draw(p,S.clock)
-  end end
-  if S.cleanStage=='dash' then
-   for i=1,16 do
-    local x=S.x-S.sweepDir*(20+i*9);local y=S.y+math.sin(i*2.399+S.clock*3)*48
-    g.setColor(.8,.94,1,.3);g.setLineWidth(1+i%2)
-    g.line(x,y,x-S.sweepDir*(35+i%4*16),y+math.sin(S.clock*9+i)*3)
-   end
-  end
-  local key='merle_flight';local a=Art.images[key]
-  local scale=150/math.max(a.w,a.h);local flap,flip=pose()
-  g.setColor(1,1-S.flash*.4,1-S.flash*.4)
-  Art.draw(key,S.x,S.y,a.w*scale*flap*flip,0,a.h*scale/flap)
- end
+ local g=love.graphics;g.push('all');g.setShader()
+ for _,p in ipairs(S.snails)do if p.phase~='spent' then
+  Art.contactShadow(p.x,p.y+7,12,4,.25);require('mobs.bosses.storm.snail_art').draw(p,S.clock)
+ end end
+ Art.contactShadow(S.x,S.y+27,57,19,.25)
+ require('cloud_snail_art').draw(S.x,S.y,155,S.clock,S.angle)
+ if S.flash>0 then g.setColor(.79,.93,1,S.flash);g.circle('line',S.x,S.y,58)end
  for _,b in ipairs(S.bursts)do
-  local t=b.age/.75;local radius=b.kind=='impact' and 75 or 28
-  g.setColor(.6,.9,1,(1-t)*.65);g.setLineWidth(2);g.circle('line',b.x,b.y,4+t*radius)
-  for i=1,14 do local a=i*2.399;local r=t*radius;g.setColor(1,.9,.5,1-t);g.circle('fill',b.x+math.cos(a)*r,b.y+math.sin(a)*r,2.5*(1-t))end
+  g.setColor(.71,.89,.91,1-b.age/.65);g.setLineWidth(2);g.circle('line',b.x,b.y,8+b.age*80)
  end
  g.pop()
 end

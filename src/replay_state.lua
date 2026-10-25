@@ -6,7 +6,7 @@ local fields={'routeOffset','snailDistance','flightEdges','flightHeading','fligh
  'fallTimer','charges','overload','cooldown','radius','r','rx','ry','w','h','rotation','seed','dir','burst','shot','bolt',
  'boltsRemaining','volleyClock','patrolClock','fishCharge','fishWave','electric','spent','committed',
  'weaveResume','weaveX','weaveY','weaveAngle','weaveCount','weaveFired','weaveSide','roamIndex','roamTime','roamSeed','volleyTell','shotAim','broodShift','delay','distance','heading','hitGrace','returnMode','liberating'}
-local lists={'snailRoute','inkPools','smoke','snails','digPath','route','snailHoles','trails','wind','mist','mistCuts','projectiles','strikes','holes','rain','tornadoes','current','vents','lightning','eggs','chicks',
+local lists={'rings','snailRoute','inkPools','smoke','snails','digPath','route','snailHoles','trails','wind','mist','mistCuts','projectiles','strikes','holes','rain','tornadoes','current','vents','lightning','eggs','chicks',
  'minions','shots','bones','chargedFish','returnShots','webLinks','webAnchors','beams','lightSites','lumenParticles',
  'webs','stuck','bombs','bursts','babies','schools','members','pools','sparks','orbs','rods','pickups','walls','lava','spawners'}
 local function actor(a,depth)

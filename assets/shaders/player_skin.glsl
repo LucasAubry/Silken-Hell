@@ -1,4 +1,5 @@
 extern vec3 bodyColor;
+extern number marinePattern;
 extern bool sideView;
 extern bool frontView;
 extern bool brownSkin;
@@ -22,6 +23,40 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
         rgb=mix(p.rgb*bodyColor,markingColor*max(p.r,max(p.g,p.b)),gold);
     }
     if (brownSkin) rgb=dot(p.rgb,vec3(.299,.587,.114))*vec3(.36,.22,.136);
+
+    // Use the exact shared sprite coverage, anatomy and shading for both marine skins.
+    if (marinePattern>0.5) {
+        vec2 grid=floor(uv*96.0)/96.0;
+        float shade=max(p.r,max(p.g,p.b));
+        if (marinePattern<1.5) {
+            // Sea glass and ivory foam; broad soft currents keep the small silhouette clean.
+            float flow=sin(grid.y*26.0+sin(grid.x*18.0)*1.8);
+            float foam=smoothstep(.72,.98,flow);
+            vec3 water=mix(vec3(.12,.43,.46),vec3(.43,.73,.72),uv.y);
+            rgb=mix(water,vec3(.87,.94,.85),foam*.85)*shade;
+        } else {
+            // Sparse inset lanterns with soft blue light on an indigo shell.
+            vec2 cell=floor(uv*8.0);
+            vec2 jitter=fract(sin(vec2(dot(cell,vec2(127.1,311.7)),dot(cell,vec2(269.5,183.3))))*43758.5453);
+            vec2 center=(cell+.28+jitter*.44)/8.0;
+            float edge=1.0;
+            vec2 margin=vec2(.027);
+            edge*=Texel(image,uv+vec2(margin.x,0)).a*Texel(image,uv-vec2(margin.x,0)).a;
+            edge*=Texel(image,uv+vec2(0,margin.y)).a*Texel(image,uv-vec2(0,margin.y)).a;
+            edge*=Texel(image,uv+margin).a*Texel(image,uv-margin).a;
+            edge*=Texel(image,uv+vec2(margin.x,-margin.y)).a*Texel(image,uv+vec2(-margin.x,margin.y)).a;
+            float inset=smoothstep(.85,.99,edge)*smoothstep(.10,.36,shade);
+            float distance=length(uv-center);
+            float halo=(1.0-smoothstep(.006,.039,distance))*inset;
+            float lamp=(1.0-smoothstep(.007,.014,distance))*inset;
+            float core=(1.0-smoothstep(.002,.006,distance))*inset;
+            vec3 shell=mix(vec3(.18,.19,.34),vec3(.24,.38,.48),smoothstep(.15,.85,uv.y));
+            rgb=shell*shade;
+            rgb=mix(rgb,vec3(.12,.43,.64)*(.45+.55*shade),halo*.58);
+            rgb=mix(rgb,vec3(.20,.72,.96),lamp*.88);
+            rgb=mix(rgb,vec3(.68,.94,1.0),core*.85);
+        }
+    }
 
     // Preserve the entire eye material (pupil, iris, catchlight), not isolated
     // white pixels. UVs cover only the eyes in the shared, authored PNGs.

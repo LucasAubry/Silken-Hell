@@ -98,6 +98,7 @@ function O.drawAt(x,y,r,clock,lantern,outline,locked,alpha,dir)
     g.pop()
 end
 function O.drawBubble(outline)
+    if require('integrated_skins').hideMarineOverlay(Characters.selected()) then return end
     local x,y,r=O.bubblePosition()
     if not x then return end
     if require('integrated_skins').bubble(Characters.selected()) then

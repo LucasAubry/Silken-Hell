@@ -27,8 +27,13 @@ function T.run()
  Profile.prologueSeen=true;Profile.transitionsSeen={['5']=true}
  H.open();UI.draw();assert(#UI.buttons==3 and UI.buttons[2],'Only discovered scenes and Return are visible')
  assert(not H.unlocked(H.scenes[2]) and H.unlocked(H.scenes[4]),'Unlocking is per transition, not inferred from later worlds')
- Profile.transitionsSeen={boss_abyss=true,boss_hell=true,boss_sky=true,boss_queen=true};for _,scene in ipairs(H.scenes) do if scene.world then Profile.transitionsSeen[tostring(scene.world)]=true end end
- H.open();capture('menu');assert(#UI.buttons==12 and H.scenes[1].label=='Introduction' and H.scenes[3].label=='Le Merle noir' and H.scenes[7].label=='Le Monstre d’os' and H.scenes[9].label=='Les Guêpes brûlées' and H.scenes[10].label=='Fin','Chapters and three discovered boss films')
+ Profile.transitionsSeen={boss_abyss=true,boss_hell=true,boss_sky=true,boss_queen=true,boss_octopus=true,boss_hedgehog=true};for _,scene in ipairs(H.scenes) do if scene.world then Profile.transitionsSeen[tostring(scene.world)]=true end end
+ H.open();capture('menu');assert(#UI.buttons==14 and #H.visibleScenes('chapters')==7 and #H.visibleScenes('boss')==6,'Seven chapters and six bosses in separate columns')
+ assert(H.visibleScenes('boss')[6].label=='Le Cocon de la Reine','Cocoon button has an explicit name')
+ for i,button in ipairs(UI.buttons) do
+  if i<=7 then assert(button.x==75) elseif i<=13 then assert(button.x==655) end
+ end
+
  -- Preview must preserve the progression that was present at launch.
  profile=snapshot({stats=Profile.stats,biomes=Profile.biomeStats,achievements=Profile.achievements,completed=Profile.completed,seen=Profile.prologueSeen,name=Profile.name})
 
@@ -44,7 +49,8 @@ function T.run()
   for _,world in ipairs({1,4,5,6,7}) do layouts[world..':1']={world=world,biome=2,level=1,width=960,height=600,entities={}} end
   return layouts
  end
- for i,scene in ipairs(H.scenes) do
+ local ordered=H.visibleScenes('chapters');for _,scene in ipairs(H.visibleScenes('boss')) do ordered[#ordered+1]=scene end
+ for i,scene in ipairs(ordered) do
   H.open();UI.draw();UI.buttons[i].run();assert(App.historyPreview,'Every scene button launches a preview')
   assert(App.selectedWorld==5,'History does not change the main-menu selection while playing')
   local world=Campaign.world;bridge.update(.3)
@@ -90,7 +96,7 @@ function T.run()
  assert(App.state=='history','Chooser remains open after automatic return')
  Profile.prologueSeen,Profile.transitionsSeen=seen,transitions
  Profile.record,Online.start,Replay.begin=record,online,begin
- print('PASS History: all eleven scene buttons, automatic return, Escape, return button, keyboard, no progression/bestiary/online/replay/RNG changes')
+ print('PASS History: all thirteen scene buttons in Chapters/Boss categories, automatic return, Escape, return button, keyboard, no progression/bestiary/online/replay/RNG changes')
  love.event.quit()
 end
 return T

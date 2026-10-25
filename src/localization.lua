@@ -13,6 +13,13 @@ local supported = {}
 for _, option in ipairs(L.options) do supported[option.code] = true end
 function L.valid(code) return supported[code] == true end
 local messages = {
+    ["Introduction"] = {en="Introduction", es="Introducción", ru="Вступление", pt="Introdução", zh="序章", ja="序章"},
+    ["Fin"] = {en="Ending", es="Final", ru="Финал", pt="Fim", zh="终章", ja="終章"},
+    ["Chapitre 1"] = {en="Chapter 1", es="Capítulo 1", ru="Глава 1", pt="Capítulo 1", zh="第1章", ja="第1章"},
+    ["Chapitre 2"] = {en="Chapter 2", es="Capítulo 2", ru="Глава 2", pt="Capítulo 2", zh="第2章", ja="第2章"},
+    ["Chapitre 3"] = {en="Chapter 3", es="Capítulo 3", ru="Глава 3", pt="Capítulo 3", zh="第3章", ja="第3章"},
+    ["Chapitre 4"] = {en="Chapter 4", es="Capítulo 4", ru="Глава 4", pt="Capítulo 4", zh="第4章", ja="第4章"},
+    ["Chapitre 5"] = {en="Chapter 5", es="Capítulo 5", ru="Глава 5", pt="Capítulo 5", zh="第5章", ja="第5章"},
     ["Effets psychédéliques : %s"] = {en="Psychedelic effects: %s", es="Efectos psicodélicos: %s", ru="Психоделические эффекты: %s", pt="Efeitos psicodélicos: %s", zh="迷幻特效：%s", ja="サイケデリック効果：%s"},
     ["désactivés"] = {en="off", es="desactivados", ru="выкл.", pt="desativados", zh="关", ja="オフ"},
     ["atténués"] = {en="reduced", es="suaves", ru="слабые", pt="suaves", zh="柔和", ja="控えめ"},

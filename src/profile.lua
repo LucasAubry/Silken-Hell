@@ -93,8 +93,11 @@ function P.load()
         end
         Achievements.check(score,P.achievements)
     end
-    -- Older saves reached this encounter before its History entry existed.
+    -- Recover boss movies for saves that reached their encounters before the movies existed.
+    if P.levels[3] or P.completed[3] or P.transitionsSeen['3'] then P.transitionsSeen.boss_queen=true end
+    if (P.levels[5] or 0)>=10 or P.completed[5] then P.transitionsSeen.boss_hedgehog=true end
     if (P.levels[7] or 0)>=10 or P.completed[7] then P.transitionsSeen.boss_abyss=true end
+    if (P.levels[4] or 0)>=10 or P.completed[4] then P.transitionsSeen.boss_octopus=true end
     if (P.levels[6] or 0)>=10 or P.completed[6] then P.transitionsSeen.boss_sky=true end
     if (P.levels[2] or 0)>=10 or P.completed[2] then P.transitionsSeen.boss_hell=true end
     if Achievements.unlocked({id='flawless_all'}) then P.achievements.flawless_all=true end

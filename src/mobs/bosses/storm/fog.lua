@@ -1,7 +1,7 @@
 local F={}
 function F.impact(s)
  s.fogHits=(s.fogHits or 0)+1
- s.fogTarget=math.min(1,s.fogHits/math.max(1,s.wave-1))
+ s.fogTarget=math.min(.72,.72*s.fogHits/math.max(1,s.wave-1))
  s.smoke=s.smoke or {};s.smoke[#s.smoke+1]={x=s.x,y=s.y,age=0}
 end
 function F.update(s,dt)

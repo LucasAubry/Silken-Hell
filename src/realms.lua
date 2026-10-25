@@ -557,19 +557,7 @@ function R.drawGround()
         if m.type=='jelly' then
             local t=m.age%3.5; if t>2.3 then g.setColor(.25,.95,1,.3); g.circle('line',m.x,m.y,26+math.sin(t*18)*3) end
         elseif m.type=='mole' then
-            local phase,t=R.molePhase(m.age)
-            if phase=='hidden' then g.setColor(.035,.02,.01,.45);g.ellipse('fill',m.x,m.y+8,22,10) end
-            if phase=='warning' or phase=='emerge' or phase=='dig' then
-                g.setColor(.085,.04,.025); g.ellipse('fill',m.x,m.y+10,23,11)
-                g.setColor(.52,.33,.16); g.ellipse('line',m.x,m.y+10,25,12)
-                for j=1,9 do
-                    local a=j*2.4; local travel=(m.age*2+j*.13)%1
-                    local r=phase=='dig' and 12+travel*23 or 27*(1-travel)
-                    local y=m.y+10+math.sin(a)*r*.5-(phase=='emerge' and math.sin(travel*math.pi)*20 or 0)
-                    g.setColor(.4+j%3*.07,.23,.1); g.rectangle('fill',m.x+math.cos(a)*r,y,3+j%3,3)
-                end
-                if phase=='warning' then g.setColor(.9,.62,.25,.6); g.ellipse('line',m.x,m.y+10,20+t*6,10+t*3) end
-            end
+            require('mole_dust').draw(m)
         elseif m.type=='worm' then
             local phase=R.wormPhase(m.age)
             if phase=='hidden' then

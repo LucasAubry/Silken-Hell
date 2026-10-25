@@ -321,7 +321,7 @@ function W.draw(airborne)
             if W.hardcore then
                 g.setColor(1,1,1,alpha);g.setShader(W.lavaMaterial())
             end
-            Art.drawFacing(flying and 'wasp' or 'wasp_ground',b.dir,b.x,b.y+(flying and -10+math.sin(W.elapsed*36+b.id)*2 or 0),flying and 96 or 80)
+            Art.drawFacing(flying and 'wasp' or 'wasp_ground',b.dir,b.x,b.y+(flying and -10+require('wasp_hover').offset(W.elapsed,b.id) or 0),flying and 96 or 80)
             g.setShader(previous)
             if W.hardcore and b.hp>0 then
                 g.push('all');g.setBlendMode('add')

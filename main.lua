@@ -1,5 +1,7 @@
 -- Both game and editor ship in the same portable archive.
 love.filesystem.setRequirePath('src/?.lua;src/?/init.lua;'..love.filesystem.getRequirePath())
+require('crash_report').install()
+require('crash_report').note('launch')
 if require('platform').flag('--platform-child') and os.getenv('SILKEN_TEST')=='1' then
     function love.load()
         love.filesystem.setIdentity('silken-hell-tests')
@@ -13,3 +15,5 @@ elseif require('platform').flag('--editor') then
 else
     require('game')
 end
+
+require('crash_report').install()

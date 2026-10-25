@@ -2,8 +2,10 @@
 local P={}
 function P.draw(x,y,size,time)
  if not P.rig then
+  local crab=MobBehaviors.crab
   P.rig=assert(love.filesystem.load('src/mobs/bosses/octopus/init.lua'))()
-  local r=P.rig;r.x=0;r.y=0;r.angle=0;r.arms={3,3,3,3,3,3,3,3}
+  MobBehaviors.crab=crab
+  local r=P.rig;r.x=0;r.y=0;r.angle=0;r.arms={3,3,3,3,3,3,3,3};r.wrapArms={};r.wrapRest={};r.clock=0
  end
  local g=love.graphics;local r=P.rig
  g.push('all');g.translate(x,y+math.sin((time or 0)*1.2)*size*.015)

@@ -1,6 +1,6 @@
 -- The three sisters rise from the same arena in which the fight will begin.
 -- Visual actors use no gameplay state or random-number draws.
-local B={duration=8.5,impact=5.3}
+local B={liveBackdrop=true,duration=8.5,impact=5.3}
 local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
 function B.reset(options)
  B.active=false;B.age=0;B.bees={};require('boss_arrival_backdrop').clear(B)
@@ -16,6 +16,7 @@ end
 function B.current()return B.active and B or nil end
 function B.update(dt)
  if not B.active then return false end
+ require('ambient_motion').update(dt)
  B.age=B.age+dt
  if B.age>=B.duration then
   B.active=false
@@ -65,7 +66,9 @@ end
 function B.draw(canvas,w,h)
  local g=love.graphics;local t=B.age;local width=Arena.width
  g.push('all');g.origin()
- require('boss_arrival_backdrop').draw(canvas,w,h)
+ local sx,sy=0,0
+ for _,event in ipairs({1.8,2.65,3.5,6.3})do local dx,dy=require('cinematic_accents').shake(t,event,3,.45);sx,sy=sx+dx,sy+dy end
+ require('boss_arrival_backdrop').draw(canvas,w,h,sx,sy)
  for i=1,3 do
   local fx=width/2+(i-2)*width*.27;local fy=360+(i==2 and 60 or -10)
   fissure(fx,fy,t,i)
@@ -79,7 +82,7 @@ function B.draw(canvas,w,h)
    g.setColor(1,.65,.13,alpha);g.circle('fill',ex,ey,1+j%3*.5)
   end
   if p.reveal>0 then
-   local hover=math.sin(t*36+i)*2*p.reveal
+   local hover=require('wasp_hover').offset(t,i)*p.reveal
    g.setColor(.14+.86*p.reveal,.06+.94*p.reveal,.035+.965*p.reveal,p.reveal)
    Art.drawFacing('wasp',p.dir,p.x,p.y+hover,96)
    for j=1,3 do

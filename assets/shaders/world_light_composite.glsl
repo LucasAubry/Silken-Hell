@@ -20,6 +20,9 @@ vec4 effect(vec4 color, Image texture, vec2 uv, vec2 pixel) {
     vec3 lit=surface.rgb*(ambient+light*1.5);
     vec3 gentle=surface.rgb*ambient+(vec3(1.0)-surface.rgb*ambient)*light*.64;
     lit=mix(lit,gentle,softHighlights);
+    // Shared shoulder preserves pigment under bright lights in every biome.
+    float peak=max(lit.r,max(lit.g,lit.b));
+    if(peak>.82) lit*= (.82+.18*(1.-exp(-(peak-.82)/.18)))/peak;
     // Scattering stays local; Abyss darkness never receives an additive reveal.
     lit+=light*scatter*surface.a;
     // Emissive molten pixels keep their colour instead of clipping under bursts.

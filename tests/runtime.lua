@@ -9,7 +9,14 @@ local function damageBird()
     if not Raven.defeated then assert(f.spot~=previous) end
 end
 function T.run()
+    if os.getenv('SILKEN_LANTERN_HISTORY_TEST')=='1' then require('tests.lantern_history').run();return end
+    if os.getenv('SILKEN_ESCARGOT_REVISION_TEST')=='1' then require('tests.escargot_revision').run();return end
     if os.getenv('SILKEN_VISUAL_COHERENCE_TEST')=='1' then require('tests.visual_coherence').run();return end
+    if os.getenv('SILKEN_SKIN_BESTIARY_REFRESH_TEST')=='1' then require('tests.skin_bestiary_refresh').run();return end
+    if os.getenv('SILKEN_HEDGEHOG_BOSS_ARRIVAL_TEST')=='1' then require('tests.hedgehog_boss_arrival').run();return end
+    if os.getenv('SILKEN_CINEMATIC_MOTION_TEST')=='1' then require('tests.cinematic_motion').run();return end
+    if os.getenv('SILKEN_OCTOPUS_BOSS_ARRIVAL_TEST')=='1' then require('tests.octopus_boss_arrival').run();return end
+    if os.getenv('SILKEN_STORM_RELEASE_TEST')=='1' then require('tests.storm_release').run();return end
     if os.getenv('SILKEN_QUEEN_BOSS_ARRIVAL_TEST')=='1' then require('tests.queen_boss_arrival').run();return end
     if os.getenv('SILKEN_SKY_BOSS_ARRIVAL_TEST')=='1' then require('tests.sky_boss_arrival').run();return end
     if os.getenv('SILKEN_HELL_BOSS_ARRIVAL_TEST')=='1' then require('tests.hell_boss_arrival').run();return end

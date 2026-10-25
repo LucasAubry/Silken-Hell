@@ -1,6 +1,6 @@
 -- Three authored arenas form one continuous travelling shot. All actors here
 -- are visual proxies: their motion never changes the recorded boss encounter.
-local B={lead=6.85,duration=10,impact=5.2}
+local B={lead=6.85,duration=10,impact=5.2,noScreenParticles=true}
 local function ease(t)t=math.max(0,math.min(1,t));return t*t*(3-2*t)end
 local function copy(value)
  if type(value)~='table' then return value end
@@ -156,7 +156,7 @@ function B.draw(canvas,w,h)
   local shader=lighting();shader:send('dimensions',{width,600});shader:send('lightCount',#B.lights)
   local lights={};for i=1,16 do lights[i]=B.lights[i] or {-1000,-1000,1} end
   shader:send('lights',unpack(lights));g.setShader(shader);g.setColor(1,1,1);g.draw(B.layer,x,y,0,scale,scale);g.setShader()
-  -- Emissive eyes and lumen motes remain readable through the deep-sea shade.
+  -- Emissive eyes remain readable through the deep-sea shade.
   g.push('all');g.translate(x,y);g.scale(scale);g.setBlendMode('add')
   local eye=B.eye;local bite=ease((t-B.impact)/.16)
   if eye then
@@ -167,18 +167,12 @@ function B.draw(canvas,w,h)
    g.setColor(1,.5*(1-bite),.65*(1-bite),.65+.35*bite)
    g.ellipse('fill',eye.x,eye.y,eye.r*.38,eye.r*.65)
   end
-  for i=1,220 do
-   local age=math.max(0,t-B.impact);local drift=math.max(0,p.offset-i*5.5)
-   local px=2*width+B.tear.x-p.camera+drift-i*3.7+math.sin(i*2.399+age)*18
-   local py=B.tear.y+math.sin(i*1.73)*110+math.sin(age*1.4+i)*15
-   local alpha=ease(age/.5)*(.35+.25*math.sin(i+age*2)^2)
-   g.setColor(.06,.38,1,alpha*.13);g.circle('fill',px,py,5+i%3)
-   g.setColor(.2,.7,1,alpha);g.circle('fill',px,py,1+i%3*.4)
-  end
+
   g.pop()
   g.setColor(.001,.003,.008,1-ease(t/.2));g.rectangle('fill',0,0,w,h)
  end
- -- Keep the empty level-nine view through the final pause. The real arrival
+ g.setColor(0,0,0,ease((t-8.7)/.65));g.rectangle('fill',0,0,w,h)
+ -- Hold black after the full body leaves the shot. The real arrival
  -- finishes behind this shot, so its player-spitting animation stays hidden.
  g.pop()
 end

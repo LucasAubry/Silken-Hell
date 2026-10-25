@@ -10,7 +10,7 @@ function A.draw(e,x,y,size,time,direction)
   require('mobs.plankton').art(x,y,size*.3,t)
  elseif id=='cloud_beast' then
   require('mobs.cloud_beast').art(x,y,size,t,angle)
- elseif id=='cloud_snail' then
+ elseif id=='cloud_snail' or id=='storm' then
   require('cloud_snail').art(x,y,size,t,angle+math.pi/2)
  elseif id=='dragonfly' or id=='mist_moth' or id=='wind_bat' or id=='lava_scorpion' then
   require('sky_insect_art').draw(id,x+math.sin(t*1.4)*size*.03,y,size,t,angle)

@@ -12,7 +12,7 @@ function T.run()
  while R.arrival do R.advance(.05);arrivalTicks=arrivalTicks+1;assert(arrivalTicks<350) end
  assert(B.active and not B.current() and B.age==0,'Cinematic does not advance while the run waits for input')
  assert(R.launch() and B.current() and not F.engaged,'Starting the run launches the cocoon')
- writes=0
+ writes=0;assert(R.goAge==nil,'Start prompt clears before the cocoon movie')
  local function capture(name)
   local g=love.graphics;local c=g.newCanvas(g.getDimensions());local set=g.setCanvas
   g.push('all');set(c);g.setCanvas=function(target,...)if target==nil then return set(c)end;return set(target,...)end
@@ -20,8 +20,10 @@ function T.run()
  end
  local function advance(t)while B.active and B.age<t-1e-6 do App.simulate(math.min(1/60,t-B.age))end end
  advance(1);capture('descent');advance(3.8);capture('shake');advance(4.6);capture('burst');advance(5.6);capture('trapped')
- assert(B.captures==1 and F.snare>0 and F.introContact and not F.engaged)
+ assert(B.pose(3).y<F.y and B.projectileSize==require('queen_projectile').size)
+ assert(B.captures>1 and F.snare>0 and F.introContact and not F.engaged)
  advance(7.3);assert(not B.active and writes==1)
+ assert(B.hitCount==1 and #B.splats>5 and #F.webs==0,'One real shot hits the player; the remaining volley collides with walls')
  local x,y=player.x,player.y;local move,slow=Input.move,Input.slow
  Input.move=function()return 1,0 end;Input.slow=function()return true end
  for _=1,180 do App.simulate(1/60)end

@@ -11,7 +11,7 @@ local B={seen={},unread={},dirty=false,entries={
  {id='spinner',name='Serpent tournoyant',art='serpent_down',world=2,text='Il tourne depuis que les Guêpes lui ont arraché le repos. Il rebondit sur les murs, incapable de choisir une cible.'},
  {id='wasp',boss=true,name='Les Guêpes brûlées',art='wasp_down',world=2,text='La Gardienne a brûlé leurs ailes sans couper ses fils. Leurs charges finissent contre les murs : touche-les pendant leur KO. Les survivantes deviennent plus rapides.'},
  {id='waspling',name='Petite guêpe',art='waspling_down',world=2,text='Dernière enfant des Guêpes, déjà prisonnière à sa naissance. Elle poursuit l’intrus et reste dangereuse même lorsque ses maîtresses tombent.'},
- {id='storm',boss=true,name='Merle noir',art='merle_flight_down',world=6,text='Les escargots sont attachés à sa queue : traverse leurs fils pour les libérer. Leurs explosions épaississent le brouillard jusqu’à masquer la carte. Une fois tous libérés, le Merle chasse le brouillard et referme leurs trous en cinq dashs, puis revient avec un escargot supplémentaire.'},
+ {id='storm',boss=true,name='L’Escargot d’orage',art='cloud_snail_down',world=6,text='Touche les petits escargots pour les renvoyer contre sa coquille. Sa charge est annoncée au sol ; après son arrêt, traverse les ouvertures de l’onde ou saute par-dessus.'},
  {id='hedgehog',boss=true,name='Hérisson Brise-Roche',art='hedgehog_down',world=5,text='La Gardienne a noué ses fils entre ses piquants. Il les projette, puis roule et rebondit jusqu’à se blesser lui-même. En boule, il te repousse à chaque contact ; heurter un mur pendant cette poussée est mortel.'},
  {id='octopus',boss=true,name='Pieuvre des Larmes Noires',art='octopus_extended_down',world=4,text='Elle garde l’Océan pour celle qui tient ses huit bras. Évite sa frappe, saisis le bout du bras au sol et fais un tour complet autour d’elle. Chaque blessure ajoute un bras qui te frappe pendant la prise. Son encre te noircit et fait zigzaguer tes pas.'},
  {id='crab',name='Crabe des marées',art='crab_open',world=4,text='Esclave de la Pieuvre, il cherche à mourir pour rompre ses fils. L’encre le rend frénétique : projette-le contre un mur ou un tentacule pour le faire exploser.'},
@@ -122,6 +122,7 @@ function B.openLevel()
     B.open(id,boss and boss.hardcore,ids)
 end
 function B.open(id,hardcore,filter)
+    require('crash_report').note('bestiary.open',id)
     UI.bestVariant=1
     B.levelFilter=filter;B.worldFilter=nil
     UI.bestSelected=nil;UI.bestScroll=0;UI.bestHardcore=hardcore or false

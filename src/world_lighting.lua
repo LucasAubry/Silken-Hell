@@ -166,7 +166,7 @@ function L.renderBloom(scene)
 end
 function L.apply(scene)
  L.collect()
- if #L.lights==0 and not require('biome_radiance').active() then return scene end
+ if not Graphics.effects or App.state=='playing' and (Campaign.biome==7 or Abyss.playerHidden() or Abyss.encounterActive()) then return scene end
  L.resize(scene)
  local g=love.graphics;g.push('all');g.setScissor()
  L.renderMap()
@@ -182,7 +182,7 @@ function L.apply(scene)
  L.composite:send('bloomStrength',biome==3 and .28 or biome==6 and .10 or .07)
  L.composite:send('preserveEmbers',biome==2 and 1 or 0)
  L.composite:send('scatter',biome==3 and .16 or .02)
- L.composite:send('softHighlights',biome==3 and 1 or 0)
+ L.composite:send('softHighlights',biome==3 and 1 or .45)
  g.setShader(L.composite);g.draw(scene);g.pop()
  return L.output
 end

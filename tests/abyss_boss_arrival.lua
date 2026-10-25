@@ -28,6 +28,7 @@ function T.run()
  App.simulate(.01)
  assert(player.level==10 and I.current and I.current.arrival.cinematic,'Finishing level nine starts the cinematic')
  assert(B.current() and Abyss.playerHidden() and not H.unlocked(scene),'Discovery waits until the film has finished')
+ assert(B.noScreenParticles,'No decorative blue overlay in the Abyss movie')
  assert(B.duration==10 and math.abs(B.lead+3.15-B.duration)<.001,'The slower film ends with the underlying arrival ready')
  assert(B.maps[7] and B.maps[8] and B.maps[9],'Travelling uses all three authored levels')
  assert(B.pose(0).camera==0 and math.abs(B.pose(4.65).camera-2*Arena.width)<.01,'Camera travels left to right through the adjoining arenas')
@@ -47,7 +48,7 @@ function T.run()
  local function capture(name)
   local g=love.graphics;local c=g.newCanvas(g.getDimensions());local set=g.setCanvas
   g.push('all');set(c);g.setCanvas=function(target,...)if target==nil then return set(c)end;return set(target,...)end
-  love.draw();g.setCanvas=set;set();g.pop();local data=c:newImageData();data:encode('png','boss-arrival-'..name..'.png');data:release();c:release();collectgarbage('collect')
+  love.draw();g.setCanvas=set;set();g.pop();local data=c:newImageData();data:encode('png','boss-arrival-'..name..'.png');if name=='handoff' then local red,green,blue=data:getPixel(math.floor(data:getWidth()/2),math.floor(data:getHeight()/2));assert(red==0 and green==0 and blue==0,'Final frame is black') end;data:release();c:release();collectgarbage('collect')
  end
  local function advanceTo(t)
   while I.current and I.current.arrival.elapsed<t-1e-6 do App.simulate(math.min(1/60,t-I.current.arrival.elapsed)) end

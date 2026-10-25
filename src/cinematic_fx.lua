@@ -16,11 +16,12 @@ function F.draw(scene,canvas,w,h)
  g.setCanvas(target);g.origin();g.setShader();g.setColor(1,1,1);g.setBlendMode('alpha','premultiplied')
  g.draw(F.canvas,math.sin(t*77)*pulse*fade*3,math.cos(t*93)*pulse*fade*4)
  g.setBlendMode('add','alphamultiply')
- for i=1,46 do
+ if not scene.noScreenParticles then for i=1,46 do
   local edge=i%2==0 and .02 or .98
   local px=w*(edge+math.sin(i*2.4+t*.6)*.035);local py=h*((i*.173-t*.075)%1)
   g.setColor(.55,.70,.85,fade*(.08+.08*math.sin(t*2+i)^2))
   g.circle('fill',px,py,1+i%3)
+ end
  end
  for i=1,12 do
   g.setColor(.32,.45,.62,fade*(.004+pulse*.004))

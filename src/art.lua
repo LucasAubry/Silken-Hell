@@ -114,39 +114,16 @@ function A.contactShadow(x,y,rx,ry,opacity)
     if not App or App.state~='playing' then return end
     local g=love.graphics;g.push('all');g.setShader();g.setBlendMode('alpha')
     local _,_,_,alpha=g.getColor()
-    if Campaign and Campaign.biome==1 and not (Secret and Secret.inArena()) then
-        if not A.paradiseContact then
-            local vertices={{0,0,0,0,1,1,1,1}}
-            for i=0,32 do
-                local angle=i*math.pi/16
-                vertices[#vertices+1]={math.cos(angle),math.sin(angle),0,0,1,1,1,0}
-            end
-            A.paradiseContact=g.newMesh(vertices,'fan','static')
+    if not A.contactMesh then
+        local vertices={{0,0,0,0,1,1,1,1}}
+        for i=0,40 do local angle=i*math.pi/20
+            vertices[#vertices+1]={math.cos(angle),math.sin(angle),0,0,1,1,1,0}
         end
-        g.setColor(.24,.18,.105,(opacity or .11)*alpha*2.2)
-        local ox,oy=g.transformPoint(0,0)
-        local dx,dy=g.inverseTransformPoint(ox+4,oy+7)
-        g.draw(A.paradiseContact,x+dx,y+dy,0,rx*1.12,ry*1.18)
-        g.pop();return
+        A.contactMesh=g.newMesh(vertices,'fan','static')
     end
-    if Campaign and Campaign.biome==6 then
-        if not A.skyContact then
-            local vertices={{0,0,0,0,1,1,1,1}}
-            for i=0,40 do
-                local angle=i*math.pi/20
-                vertices[#vertices+1]={math.cos(angle),math.sin(angle),0,0,1,1,1,0}
-            end
-            A.skyContact=g.newMesh(vertices,'fan','static')
-        end
-        g.setColor(.018,.035,.065,math.min(.75,(opacity or .28)*1.8)*alpha)
-        g.draw(A.skyContact,x+3,y+3,0,rx*1.28,ry*1.4)
-        g.pop();return
-    end
-    for i=12,1,-1 do
-        local scale=i/12
-        g.setColor(.025,.018,.025,(opacity or .10)*alpha*2/12*(1-scale*.7))
-        g.ellipse('fill',x,y,rx*scale,ry*scale)
-    end
+    local tint=require('shadow_palette').color()
+    g.setColor(tint[1],tint[2],tint[3],math.min(.65,(opacity or .18)*1.7)*alpha)
+    g.draw(A.contactMesh,x+2,y+3,0,rx*1.14,ry*1.18)
     g.pop()
 end
 local function creature(key)
@@ -215,6 +192,7 @@ function A.load(defer)
     A.add('map_cloud','assets/sprites/map_cloud.png')
     A.add('cave_wall','assets/environments/terre/soil-wall.png')
     A.add('magma_larva','assets/monstres/enfer/larve/magma_larva.png')
+    A.add('cloud_snail_down','assets/monstres/ciel/escargot/down.png')
     A.add('merle_flight','assets/monstres/paradis/merle/merle_flight.png')
     for _,dir in ipairs({'left','up','down'}) do A.add('merle_flight_'..dir,'assets/sprites/merle_flight_'..dir..'.png') end
     A.add('magma_nest','assets/monstres/enfer/larve/magma_nest.png')

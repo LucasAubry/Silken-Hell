@@ -8,6 +8,7 @@ function P.request()
     return r,raw
 end
 function P.update(dt)
+    if App.historyPreview then return end
     -- Every open game can receive an explicit test request from the editor.
     P.clock=P.clock+dt
     if P.clock<.15 then return end

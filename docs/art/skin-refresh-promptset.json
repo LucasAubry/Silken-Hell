@@ -1,0 +1,27 @@
+{
+  "mode": "builtin imagegen",
+  "prompts": [
+    [
+      "ecume",
+      "Use case: precise-object-edit. Create a production transparent PNG sprite sheet for the Silken Hell game, three equally sized cells horizontally in ONE row: LEFT front-facing/down view with two eyes, MIDDLE back/up view with no eyes, RIGHT left-facing profile. References 1,2,3 define the exact anatomy and views. Preserve the squat cute spider, two round body segments, EIGHT legs (four on each side), thick dark outlines and coarse crisp pixel-art blocks. Same scale and generous transparent padding around each complete spider; no cut legs, no overlap between cells. 1536x1024 canvas with three equal 512-wide columns, each sprite centred in its own column, all at the same vertical centre. Fully transparent background, no text, no labels, no ground shadow, no surrounding props. Keep the game reference's pixel-art style, not realistic, not a glossy 3D render. Redesign Écume: a blue and subdued coral-red aquatic spider, flowing cyan and reddish curved stripes on the body and legs resembling ocean water currents. Blue remains dominant, red is a secondary flowing accent. Bright readable cyan eyes on front/profile. NO air bubble, no helmet or glass ring, no lantern, no hat, no gold crown. The patterns belong to the spider's skin."
+    ],
+    [
+      "lanterne",
+      "Use case: precise-object-edit. Create a production transparent PNG sprite sheet for the Silken Hell game, three equally sized cells horizontally in ONE row: LEFT front-facing/down view with two eyes, MIDDLE back/up view with no eyes, RIGHT left-facing profile. References 1,2,3 define the exact anatomy and views. Preserve the squat cute spider, two round body segments, EIGHT legs (four on each side), thick dark outlines and coarse crisp pixel-art blocks. Same scale and generous transparent padding around each complete spider; no cut legs, no overlap between cells. 1536x1024 canvas with three equal 512-wide columns, each sprite centred in its own column, all at the same vertical centre. Fully transparent background, no text, no labels, no ground shadow, no surrounding props. Keep the game reference's pixel-art style, not realistic, not a glossy 3D render. Redesign Lanterne: a mostly charcoal-black and very dark navy spider with scattered small luminous blue/cyan plankton-like speckles across its body and legs, evoking the Abyss biome. Bright blue eyes on front/profile. Keep silhouette readable with subtle navy-blue edge light. NO lantern or dangling light, no antenna, no air bubble or helmet, no hat. Blue particles are small markings on the sprite, not a large aura outside it."
+    ],
+    [
+      "royale",
+      "Use case: precise-object-edit. Create a production transparent PNG sprite sheet for the Silken Hell game, three equally sized cells horizontally in ONE row: LEFT front-facing/down view with two eyes, MIDDLE back/up view with no eyes, RIGHT left-facing profile. References 1,2,3 define the exact anatomy and views. Preserve the squat cute spider, two round body segments, EIGHT legs (four on each side), thick dark outlines and coarse crisp pixel-art blocks. Same scale and generous transparent padding around each complete spider; no cut legs, no overlap between cells. 1536x1024 canvas with three equal 512-wide columns, each sprite centred in its own column, all at the same vertical centre. Fully transparent background, no text, no labels, no ground shadow, no surrounding props. Keep the game reference's pixel-art style, not realistic, not a glossy 3D render. Redesign Royale: a rich muted royal-purple spider with tasteful gold ornamental markings and bright readable eyes. Add ONE elegant small purple top hat with a gold ribbon and a tiny blue gemstone, firmly resting on top of the head and shown coherently in all three directions. Keep eyes visible. The hat should clearly be a brimmed hat, NOT a crown. No extra floating accessories, no bubble, no lantern."
+    ]
+  ],
+  "references": [
+    "assets/skins/base_marron/down.png",
+    "assets/skins/base_marron/up.png",
+    "assets/skins/base_marron/profil.png"
+  ],
+  "outputs": [
+    "assets/skins/integrated/ecume.png",
+    "assets/skins/integrated/lanterne.png",
+    "assets/skins/integrated/royale.png"
+  ]
+}
